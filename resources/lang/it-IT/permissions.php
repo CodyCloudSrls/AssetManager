@@ -109,6 +109,58 @@ return [
         'name' => 'Gestisce File Accessori',
         'note' => 'Consente all\'utente di caricare, scaricare ed eliminare i file associati agli accessori.',
     ],
+    'documents' => [
+        'name' => 'Documenti',
+        'note' => 'Concede l\'accesso alla sezione Documenti dell\'applicazione.',
+    ],
+    'documentsview' => [
+        'name' => 'Visualizza documenti',
+    ],
+    'documentscreate' => [
+        'name' => 'Crea nuovi documenti',
+    ],
+    'documentsedit' => [
+        'name' => 'Modifica documenti',
+    ],
+    'documentsdelete' => [
+        'name' => 'Elimina documenti',
+    ],
+    'documentsfiles' => [
+        'name' => 'Gestisci file documenti',
+        'note' => 'Consente all\'utente di caricare, scaricare ed eliminare i file associati ai documenti.',
+    ],
+    'documenttypes' => [
+        'name' => 'Tipologie documento',
+        'note' => 'Concede l\'accesso alla gestione delle tipologie documento.',
+    ],
+    'documenttypesview' => [
+        'name' => 'Visualizza tipologie documento',
+    ],
+    'documenttypescreate' => [
+        'name' => 'Crea tipologie documento',
+    ],
+    'documenttypesedit' => [
+        'name' => 'Modifica tipologie documento',
+    ],
+    'documenttypesdelete' => [
+        'name' => 'Elimina tipologie documento',
+    ],
+    'documentframeworks' => [
+        'name' => 'Framework documentali',
+        'note' => 'Concede l\'accesso alla gestione dei framework documentali.',
+    ],
+    'documentframeworksview' => [
+        'name' => 'Visualizza framework documentali',
+    ],
+    'documentframeworkscreate' => [
+        'name' => 'Crea framework documentali',
+    ],
+    'documentframeworksedit' => [
+        'name' => 'Modifica framework documentali',
+    ],
+    'documentframeworksdelete' => [
+        'name' => 'Elimina framework documentali',
+    ],
     'consumables' => [
         'name' => 'Consumabili',
         'note' => 'Concede l\'accesso alla sezione Consumabili dell\'applicazione.',

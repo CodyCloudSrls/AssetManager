@@ -755,4 +755,10 @@ Resultados da Sincronização',
 
     'months_plural' => '1 mês | :count meses',
 
+    'document_framework' => 'Document Framework',
+    'document_frameworks' => 'Document Frameworks',
+    'document_type' => 'Document Type',
+    'document_types' => 'Document Types',
+    'new_document' => 'New Document',
+    'new_kit' => 'New Kit',
 ];

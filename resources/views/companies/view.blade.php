@@ -21,7 +21,6 @@
                     <x-tabs.license-tab count="{{ $company->licenses->count() }}"/>
                     <x-tabs.accessory-tab count="{{ $company->accessories->count() }}"/>
                     <x-tabs.consumable-tab count="{{ $company->consumables->count() }}"/>
-                    <x-tabs.component-tab count="{{ $company->components->count() }}"/>
                     <x-tabs.files-tab :item="$company" count="{{ $company->uploads()->count() }}"/>
                     <x-tabs.upload-tab :item="$company"/>
                 </x-slot:tabnav>
@@ -57,11 +56,6 @@
                     </x-tabs.pane>
                     <!-- end components tab pane -->
 
-                    <!-- start components tab pane -->
-                    <x-tabs.pane name="components">
-                        <x-table.components name="components" :route="route('api.components.index', ['company_id' => $company->id])"/>
-                    </x-tabs.pane>
-
                     <!-- start files tab pane -->
                     <x-tabs.pane name="files">
                         <x-table.files object_type="companies" :object="$company"/>
@@ -95,4 +89,3 @@
     @endcan
     @include ('partials.bootstrap-table')
 @endsection
-

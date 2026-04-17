@@ -97,7 +97,6 @@
 
 
                   <x-tabs.consumable-tab count="{{ $location->consumables()->count() }}"/>
-                  <x-tabs.component-tab count="{{ $location->components()->count() }}"/>
 
                   <x-tabs.nav-item
                           name="child_locations"
@@ -182,14 +181,6 @@
                   @endcan
                   <!-- end consumables tab pane -->
 
-                  <!-- start components tab pane -->
-                  @can('view', \App\Models\Component::class)
-                  <x-tabs.pane name="components">
-                      <x-table.components :route="route('api.components.index', ['location_id' => $location->id]) "/>
-                  </x-tabs.pane>
-                  @endcan
-                  <!-- end components tab pane -->
-
                   <!-- start child locations tab pane -->
                   <x-tabs.pane name="child_locations">
                       <x-table.locations :table_header="trans('general.child_locations')" :route="route('api.locations.index', ['parent_id' => $location->id]) "/>
@@ -248,4 +239,3 @@
 
     @include ('partials.bootstrap-table')
 @endsection
-

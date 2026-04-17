@@ -21,7 +21,6 @@
                     <x-tabs.license-tab count="{{ $manufacturer->licenses->count() }}" />
                     <x-tabs.accessory-tab count="{{ $manufacturer->accessories->count() }}" />
                     <x-tabs.consumable-tab count="{{ $manufacturer->consumables->count() }}" />
-                    <x-tabs.component-tab count="{{ $manufacturer->components->count() }}" />
                 </x-slot:tabnav>
 
                 <x-slot:tabpanes>
@@ -40,10 +39,6 @@
 
                     <x-tabs.pane name="consumables">
                         <x-table.consumables :name="$manufacturer->name" :route="route('api.consumables.index', ['manufacturer_id' => $manufacturer->id])" />
-                    </x-tabs.pane>
-
-                    <x-tabs.pane name="components">
-                        <x-table.components :name="$manufacturer->name" :route="route('api.components.index', ['manufacturer_id' => $manufacturer->id])" />
                     </x-tabs.pane>
 
                 </x-slot:tabpanes>

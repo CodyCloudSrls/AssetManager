@@ -755,4 +755,10 @@ return [
 
     'months_plural' => '1 month|:count months',
 
+    'document_framework' => 'Document Framework',
+    'document_frameworks' => 'Document Frameworks',
+    'document_type' => 'Document Type',
+    'document_types' => 'Document Types',
+    'new_document' => 'New Document',
+    'new_kit' => 'New Kit',
 ];

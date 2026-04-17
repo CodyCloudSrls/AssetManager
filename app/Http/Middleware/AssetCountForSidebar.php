@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Asset;
+use App\Models\Document;
 use App\Models\Setting;
 use Closure;
 use Illuminate\Http\Request;
@@ -26,6 +27,15 @@ class AssetCountForSidebar
         $total_overdue_for_checkin = 0;
         $total_due_for_audit = 0;
         $total_overdue_for_audit = 0;
+        $total_documents = 0;
+        $total_documents_active = 0;
+        $total_documents_draft = 0;
+        $total_documents_in_review = 0;
+        $total_documents_obsolete = 0;
+        $total_documents_archived = 0;
+        $total_documents_deleted = 0;
+        $total_documents_due_review = 0;
+        $total_documents_overdue_review = 0;
 
         try {
             $settings = Setting::getSettings();
@@ -107,6 +117,69 @@ class AssetCountForSidebar
         try {
             $total_overdue_for_checkin = Asset::OverdueForCheckin()->count();
             view()->share('total_overdue_for_checkin', $total_overdue_for_checkin);
+        } catch (\Exception $e) {
+            Log::debug($e);
+        }
+
+        try {
+            $total_documents = Document::count();
+            view()->share('total_documents', $total_documents);
+        } catch (\Exception $e) {
+            Log::debug($e);
+        }
+
+        try {
+            $total_documents_active = Document::Active()->count();
+            view()->share('total_documents_active', $total_documents_active);
+        } catch (\Exception $e) {
+            Log::debug($e);
+        }
+
+        try {
+            $total_documents_draft = Document::Draft()->count();
+            view()->share('total_documents_draft', $total_documents_draft);
+        } catch (\Exception $e) {
+            Log::debug($e);
+        }
+
+        try {
+            $total_documents_in_review = Document::InReview()->count();
+            view()->share('total_documents_in_review', $total_documents_in_review);
+        } catch (\Exception $e) {
+            Log::debug($e);
+        }
+
+        try {
+            $total_documents_obsolete = Document::Obsolete()->count();
+            view()->share('total_documents_obsolete', $total_documents_obsolete);
+        } catch (\Exception $e) {
+            Log::debug($e);
+        }
+
+        try {
+            $total_documents_archived = Document::Archived()->count();
+            view()->share('total_documents_archived', $total_documents_archived);
+        } catch (\Exception $e) {
+            Log::debug($e);
+        }
+
+        try {
+            $total_documents_deleted = Document::onlyTrashed()->count();
+            view()->share('total_documents_deleted', $total_documents_deleted);
+        } catch (\Exception $e) {
+            Log::debug($e);
+        }
+
+        try {
+            $total_documents_due_review = Document::DueForReview()->count();
+            view()->share('total_documents_due_review', $total_documents_due_review);
+        } catch (\Exception $e) {
+            Log::debug($e);
+        }
+
+        try {
+            $total_documents_overdue_review = Document::OverdueForReview()->count();
+            view()->share('total_documents_overdue_review', $total_documents_overdue_review);
         } catch (\Exception $e) {
             Log::debug($e);
         }

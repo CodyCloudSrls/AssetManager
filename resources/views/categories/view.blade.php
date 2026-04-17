@@ -27,8 +27,6 @@
                         <x-tabs.license-tab count="{{ $category->licenses->count() }}"/>
                     @elseif ($category->category_type=='consumable')
                         <x-tabs.consumable-tab count="{{ $category->consumables->count() }}"/>
-                    @elseif ($category->category_type=='component')
-                        <x-tabs.component-tab count="{{ $category->components->count() }}"/>
                     @endif
 
                 </x-slot:tabnav>
@@ -70,13 +68,6 @@
                         @can('view', \App\Models\Consumable::class)
                             <x-tabs.pane name="consumables">
                                 <x-table.consumables :route="route('api.consumables.index', ['category_id' => $category->id])"/>
-                            </x-tabs.pane>
-                        @endcan
-
-                    @elseif ($category->category_type=='component')
-                        @can('view', \App\Models\Component::class)
-                            <x-tabs.pane name="components">
-                                <x-table.components :route="route('api.components.index', ['category_id' => $category->id])" />
                             </x-tabs.pane>
                         @endcan
                     @endif

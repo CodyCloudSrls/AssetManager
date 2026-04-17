@@ -1426,6 +1426,8 @@ class Helper
             'statuslabels*',
             'models*',
             'categories*',
+            'documenttypes*',
+            'documentframeworks*',
             'manufacturers*',
             'suppliers*',
             'departments*',

@@ -757,4 +757,10 @@ Context | Request Context
 
     'months_plural' => '1 ay|:ayları say',
 
+    'document_framework' => 'Document Framework',
+    'document_frameworks' => 'Document Frameworks',
+    'document_type' => 'Document Type',
+    'document_types' => 'Document Types',
+    'new_document' => 'New Document',
+    'new_kit' => 'New Kit',
 ];

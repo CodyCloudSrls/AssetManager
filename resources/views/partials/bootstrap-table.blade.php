@@ -410,6 +410,60 @@
         },
     });
 
+    window.documentButtons = () => ({
+        @can('create', \App\Models\Document::class)
+        btnAdd: {
+            text: '{{ trans('general.create') }}',
+            icon: 'fa fa-plus',
+            event () {
+                window.location.href = '{{ route('documents.create') }}';
+            },
+            attributes: {
+                class: 'btn-warning',
+                title: '{{ trans('general.create') }}',
+                @if ($snipeSettings->shortcuts_enabled == 1)
+                accesskey: 'n'
+                @endif
+            }
+        },
+        @endcan
+        @can('view', \App\Models\DocumentType::class)
+        btnManageTypes: {
+            text: '{{ trans('general.document_types') }}',
+            icon: 'fa-solid fa-tags',
+            event () {
+                window.location.href = '{{ route('documenttypes.index') }}';
+            },
+            attributes: {
+                title: '{{ trans('general.document_types') }}',
+            }
+        },
+        @endcan
+        @can('view', \App\Models\DocumentFramework::class)
+        btnManageFrameworks: {
+            text: '{{ trans('general.document_frameworks') }}',
+            icon: 'fa-solid fa-folder-tree',
+            event () {
+                window.location.href = '{{ route('documentframeworks.index') }}';
+            },
+            attributes: {
+                title: '{{ trans('general.document_frameworks') }}',
+            }
+        },
+        @endcan
+        btnShowDeleted: {
+            text: '{{ (request()->input('status_type') == "Deleted") ? trans('general.list_all') : trans('general.deleted') }}',
+            icon: 'fa-solid fa-trash',
+            event () {
+                window.location.href = '{{ (request()->input('status_type') == "Deleted") ? route('documents.index') : route('documents.index', ['status_type' => 'Deleted']) }}';
+            },
+            attributes: {
+                class: '{{ (request()->input('status_type') == "Deleted") ? 'btn-selected' : '' }}',
+                title: '{{ (request()->input('status_type') == "Deleted") ? trans('general.list_all') : trans('general.deleted') }}',
+            }
+        },
+    });
+
     @can('create', \App\Models\Location::class)
     // Location table buttons
     window.locationButtons = () => ({
@@ -483,6 +537,60 @@
     });
     @endcan
 
+    @can('create', \App\Models\DocumentType::class)
+    window.documenttypeButtons = () => ({
+        btnAdd: {
+            text: '{{ trans('general.create') }}',
+            icon: 'fa fa-plus',
+            event () {
+                window.location.href = '{{ route('documenttypes.create') }}';
+            },
+            attributes: {
+                class: 'btn-warning',
+                title: '{{ trans('general.create') }}',
+            }
+        },
+        btnShowDeleted: {
+            text: '{{ (request()->input('status') == "deleted") ? trans('general.show_current') : trans('general.show_deleted') }}',
+            icon: 'fa-solid fa-trash',
+            event () {
+                window.location.href = '{{ (request()->input('status') == "deleted") ? route('documenttypes.index') : route('documenttypes.index', ['status' => 'deleted']) }}';
+            },
+            attributes: {
+                class: '{{ (request()->input('status') == "deleted") ? 'btn-selected' : '' }}',
+                title: '{{ (request()->input('status') == "deleted") ? trans('general.show_current') : trans('general.show_deleted') }}',
+            }
+        },
+    });
+    @endcan
+
+    @can('create', \App\Models\DocumentFramework::class)
+    window.documentframeworkButtons = () => ({
+        btnAdd: {
+            text: '{{ trans('general.create') }}',
+            icon: 'fa fa-plus',
+            event () {
+                window.location.href = '{{ route('documentframeworks.create') }}';
+            },
+            attributes: {
+                class: 'btn-warning',
+                title: '{{ trans('general.create') }}',
+            }
+        },
+        btnShowDeleted: {
+            text: '{{ (request()->input('status') == "deleted") ? trans('general.show_current') : trans('general.show_deleted') }}',
+            icon: 'fa-solid fa-trash',
+            event () {
+                window.location.href = '{{ (request()->input('status') == "deleted") ? route('documentframeworks.index') : route('documentframeworks.index', ['status' => 'deleted']) }}';
+            },
+            attributes: {
+                class: '{{ (request()->input('status') == "deleted") ? 'btn-selected' : '' }}',
+                title: '{{ (request()->input('status') == "deleted") ? trans('general.show_current') : trans('general.show_deleted') }}',
+            }
+        },
+    });
+    @endcan
+
     @can('create', \App\Models\CustomField::class)
     // Accessory table buttons
     window.customFieldButtons = () => ({
@@ -525,7 +633,7 @@
     @endcan
 
     @can('create', \App\Models\Component::class)
-    // Compoment table buttons
+    // Component table buttons kept for backward compatibility while the module is decommissioned from UI entrypoints.
     window.componentButtons = () => ({
         btnAdd: {
             text: '{{ trans('general.create') }}',
@@ -1210,6 +1318,9 @@
             } else if (value.type == 'maintenance') {
                 item_destination = 'maintenances'
                 item_icon = 'fa-solid fa-screwdriver-wrench';
+            } else if (value.type == 'document') {
+                item_destination = 'documents'
+                item_icon = 'fa-regular fa-file-lines';
             } else if (value.type == 'model') {
                 item_destination = 'models'
                 item_icon = '';
@@ -1353,6 +1464,9 @@
         'components',
         'consumables',
         'departments',
+        'documentframeworks',
+        'documenttypes',
+        'documents',
         'depreciations',
         'fieldsets',
         'groups',

@@ -24,7 +24,6 @@
                     <x-tabs.license-tab count="{{ $supplier->licenses->count() }}" />
                     <x-tabs.accessory-tab count="{{ $supplier->accessories->count() }}" />
                     <x-tabs.consumable-tab count="{{ $supplier->consumables->count() }}" />
-                    <x-tabs.component-tab count="{{ $supplier->components->count() }}" />
                     <x-tabs.maintenance-tab count="{{ $supplier->maintenances->count() }}"/>
                     <x-tabs.files-tab :item="$supplier" count="{{ $supplier->uploads()->count() }}"/>
                     <x-tabs.upload-tab :item="$supplier"/>
@@ -53,12 +52,6 @@
                         <x-table.accessories :name="$supplier->name" :route="route('api.accessories.index', ['supplier_id' => $supplier->id])"/>
                     </x-tabs.pane>
                     <!-- end accessories tab pane -->
-
-                    <!-- start components tab pane -->
-                    <x-tabs.pane name="components">
-                        <x-table.accessories :name="$supplier->name" :route="route('api.components.index', ['supplier_id' => $supplier->id])"/>
-                    </x-tabs.pane>
-                    <!-- end components tab pane -->
 
                     <!-- start consumables tab pane -->
                     <x-tabs.pane name="consumables">
@@ -152,4 +145,3 @@
 
     @include ('partials.bootstrap-table', ['exportFile' => 'suppliers-' . $supplier->name . '-export', 'search' => false])
 @endsection
-

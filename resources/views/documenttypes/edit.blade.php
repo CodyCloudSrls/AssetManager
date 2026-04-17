@@ -1,0 +1,45 @@
+@extends('layouts/edit-form', [
+    'createText' => trans('admin/documenttypes/general.create'),
+    'updateText' => trans('admin/documenttypes/general.update'),
+    'formAction' => (isset($item->id)) ? route('documenttypes.update', ['documenttype' => $item->id]) : route('documenttypes.store'),
+    'index_route' => 'documenttypes.index',
+    'item' => $item,
+])
+
+@section('inputFields')
+    @include('partials.forms.edit.name', ['translated_name' => trans('admin/documenttypes/table.name'), 'item' => $item])
+
+    <div class="form-group {{ $errors->has('slug') ? ' has-error' : '' }}">
+        <label for="slug" class="col-md-3 control-label">{{ trans('admin/documenttypes/table.slug') }}</label>
+        <div class="col-md-6">
+            <input class="form-control" type="text" name="slug" id="slug" value="{{ old('slug', $item->slug) }}" placeholder="policy">
+            {!! $errors->first('slug', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('description') ? ' has-error' : '' }}">
+        <label for="description" class="col-md-3 control-label">{{ trans('admin/documenttypes/table.description') }}</label>
+        <div class="col-md-9">
+            <textarea class="form-control" name="description" id="description" rows="4">{{ old('description', $item->description) }}</textarea>
+            {!! $errors->first('description', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('sort_order') ? ' has-error' : '' }}">
+        <label for="sort_order" class="col-md-3 control-label">{{ trans('admin/documenttypes/table.sort_order') }}</label>
+        <div class="col-md-2">
+            <input class="form-control" type="number" min="0" name="sort_order" id="sort_order" value="{{ old('sort_order', $item->sort_order ?? 0) }}">
+            {!! $errors->first('sort_order', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-9 col-md-offset-3">
+            <input type="hidden" name="is_active" value="0">
+            <label class="form-control">
+                <input type="checkbox" value="1" name="is_active" {{ old('is_active', $item->is_active ?? true) ? ' checked="checked"' : '' }} aria-label="is_active">
+                {{ trans('admin/documenttypes/table.is_active') }}
+            </label>
+        </div>
+    </div>
+@stop

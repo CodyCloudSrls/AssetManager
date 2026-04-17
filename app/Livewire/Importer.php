@@ -207,7 +207,6 @@ class Importer extends Component
             'accessory' => trans('general.accessories'),
             'asset' => trans('general.assets'),
             'assetModel' => trans('general.asset_models'),
-            'component' => trans('general.components'),
             'consumable' => trans('general.consumables'),
             'license' => trans('general.licenses'),
             'location' => trans('general.locations'),

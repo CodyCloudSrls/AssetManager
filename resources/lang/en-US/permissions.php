@@ -115,6 +115,64 @@ return [
         'note' => 'Allows the user to upload, download, and delete files associated with assets. (This only makes sense with view privileges or higher.)',
     ],
 
+    'documents' => [
+        'name' => 'Documents',
+        'note' => 'Grants access to the Documents section of the application.',
+    ],
+
+    'documentsview' => [
+        'name' => 'View Documents',
+    ],
+
+    'documentscreate' => [
+        'name' => 'Create New Documents',
+    ],
+
+    'documentsedit' => [
+        'name' => 'Edit Documents',
+    ],
+
+    'documentsdelete' => [
+        'name' => 'Delete Documents',
+    ],
+
+    'documentsfiles' => [
+        'name' => 'Manage Document Files',
+        'note' => 'Allows the user to upload, download, and delete files associated with documents.',
+    ],
+    'documenttypes' => [
+        'name' => 'Document Types',
+        'note' => 'Grants access to document type settings.',
+    ],
+    'documenttypesview' => [
+        'name' => 'View Document Types',
+    ],
+    'documenttypescreate' => [
+        'name' => 'Create Document Types',
+    ],
+    'documenttypesedit' => [
+        'name' => 'Edit Document Types',
+    ],
+    'documenttypesdelete' => [
+        'name' => 'Delete Document Types',
+    ],
+    'documentframeworks' => [
+        'name' => 'Document Frameworks',
+        'note' => 'Grants access to document framework settings.',
+    ],
+    'documentframeworksview' => [
+        'name' => 'View Document Frameworks',
+    ],
+    'documentframeworkscreate' => [
+        'name' => 'Create Document Frameworks',
+    ],
+    'documentframeworksedit' => [
+        'name' => 'Edit Document Frameworks',
+    ],
+    'documentframeworksdelete' => [
+        'name' => 'Delete Document Frameworks',
+    ],
+
     'usersfiles' => [
         'name' => 'Manage User Files',
         'note' => 'Allows the user to upload, download, and delete files associated with users. (This only makes sense with view privileges or higher.)',

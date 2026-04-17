@@ -145,6 +145,9 @@ class IconHelper
                 return 'fas fa-paperclip';
             case 'files':
                 return 'fa-solid fa-file-contract';
+            case 'documents':
+            case 'document':
+                return 'fa-regular fa-file-lines';
             case 'contact-card':
                 return 'fa-regular fa-id-card';
             case 'eula':
