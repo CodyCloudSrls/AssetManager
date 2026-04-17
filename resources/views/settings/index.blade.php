@@ -224,21 +224,6 @@
         <div class="admin box box-default">
           <div class="box-body text-center">
             <h5>
-              <a href="{{ route('settings.google.index') }}" class="settings_button">
-                <x-icon type="google" class="fa-4x"/>
-                <br><br>
-                <span class="name">Google</span>
-              </a>
-            </h5>
-            <p class="index-block">{{ trans('admin/settings/general.google_login') }}</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-4 col-lg-3 col-sm-6 col-xl-1">
-        <div class="admin box box-default">
-          <div class="box-body text-center">
-            <h5>
               <a href="{{ route('settings.saml.index') }}" class="settings_button">
                 <x-icon type="saml" class="fa-4x"/>
                 <br><br>
@@ -492,4 +477,3 @@
   @endsection
 
 @stop
-

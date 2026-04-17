@@ -12,8 +12,6 @@ return [
     'remember_me' => 'Kom ihåg mig',
     'username_help_top' => 'Ange ditt <strong>användarnamn</strong> för att få en återställningslänk.',
     'username_help_bottom' => 'Ditt användarnamn och din e-postadress <em>kan</em> vara samma, men kanske inte är beroende på din konfiguration. Om du inte kommer ihåg ditt användarnamn, kontakta din administratör. <br><br><strong>Användarnamn utan en associerad e-postadress kommer inte att få en länk e-postad för att återställa lösenordet.</strong> ',
-    'google_login' => 'Logga in med Google Workspace',
-    'google_login_failed' => 'Google-inloggningen misslyckades. Vänligen försök igen.',
     'invite_password_expires' => 'This password reset link will expire on :expire_date. You can use the manual password reset link to receive a new reset token by clicking here',
 
 ];

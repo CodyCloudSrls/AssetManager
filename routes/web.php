@@ -229,14 +229,6 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'authorize:superuser
         ->breadcrumbs(fn (Trail $trail) => $trail->parent('settings.index')
             ->push(trans('admin/settings/general.oauth'), route('settings.oauth.index')));
 
-    Route::get('google', [SettingsController::class, 'getGoogleLoginSettings'])
-        ->name('settings.google.index')
-        ->breadcrumbs(fn (Trail $trail) => $trail->parent('settings.index')
-            ->push(trans('admin/settings/general.google_login'), route('settings.google.index')));
-
-    Route::post('google', [SettingsController::class, 'postGoogleLoginSettings'])
-        ->name('settings.google.save');
-
     Route::get('purge', [SettingsController::class, 'getPurge'])
         ->name('settings.purge.index')
         ->breadcrumbs(fn (Trail $trail) => $trail->parent('settings.index')
@@ -646,10 +638,6 @@ Route::group(['middleware' => 'web'], function () {
         'password/email',
         [ForgotPasswordController::class, 'sendResetLinkEmail']
     )->name('password.email')->middleware('throttle:forgotten_password');
-
-    // Socialite Google login
-    Route::get('google', 'App\Http\Controllers\GoogleAuthController@redirectToGoogle')->name('google.redirect');
-    Route::get('google/callback', 'App\Http\Controllers\GoogleAuthController@handleGoogleCallback')->name('google.callback');
 
     // need to keep GET /logout for SAML SLO
     Route::get(
