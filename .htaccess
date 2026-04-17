@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Needed for https://letsencrypt.org/ certificates.
+    RewriteRule ^\.well-known/acme-challenge/ - [L]
+
+    # Route every web request through Laravel's public directory.
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+Options -Indexes
