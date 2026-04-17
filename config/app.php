@@ -150,6 +150,11 @@ return [
     */
 
     'url' => env('APP_URL', 'http://localhost'),
+    'docs_url' => env('APP_DOCS_URL'),
+    'api_docs_url' => env('APP_API_DOCS_URL'),
+    'support_url' => env('APP_SUPPORT_URL'),
+    'public_repo_url' => env('APP_PUBLIC_REPO_URL'),
+    'vendor_name' => env('SITE_VENDOR', 'CodyCloud'),
 
     /*
     |--------------------------------------------------------------------------

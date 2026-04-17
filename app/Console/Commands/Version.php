@@ -11,7 +11,7 @@ class Version extends Command
      *
      * @var string
      */
-    protected $signature = 'version:update {--branch=master} {--type=patch}';
+    protected $signature = 'version:update {--branch=main} {--type=patch}';
 
     /**
      * The console command description.
@@ -42,7 +42,7 @@ class Version extends Command
         $git_branch = trim(shell_exec('git rev-parse --abbrev-ref HEAD'));
         $build_version = trim(shell_exec('git rev-list --count '.$use_branch));
         $versionFile = 'config/version.php';
-        $full_hash_version = str_replace("\n", '', shell_exec('git describe master --tags'));
+        $full_hash_version = str_replace("\n", '', shell_exec('git describe '.$use_branch.' --tags'));
 
         $version = explode('-', $full_hash_version);
         $app_version = $current_app_version = $version[0];
@@ -93,10 +93,10 @@ class Version extends Command
         }
 
         // Determine if this tag already exists, or if this prior to a release
-        $this->line('Running: git rev-parse master '.$current_app_version);
+        $this->line('Running: git rev-parse '.$use_branch.' '.$current_app_version);
         // $pre_release = trim(shell_exec('git rev-parse '.$use_branch.' '.$current_app_version.' 2>&1 1> /dev/null'));
 
-        if ($use_branch == 'develop') {
+        if ($use_branch != 'main') {
             $app_version = $app_version.'-pre';
         }
 

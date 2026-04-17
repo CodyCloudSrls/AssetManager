@@ -1,9 +1,6 @@
 {
     "private": true,
     "scripts": {
-        "contributors:add": "all-contributors add",
-        "contributors:check": "all-contributors check",
-        "contributors:generate": "all-contributors generate",
         "dev": "npm run development",
         "development": "mix",
         "watch": "mix watch",
@@ -16,7 +13,6 @@
         "node": ">=0.12"
     },
     "devDependencies": {
-        "all-contributors-cli": "^6.26.1",
         "axios": "^1.11.0",
         "jquery": "^3.7.1",
         "laravel-mix": "^6.0.49",

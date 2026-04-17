@@ -362,16 +362,18 @@ class LoginController extends Controller
 
         $secret = Google2FA::generateSecretKey();
         $user->two_factor_secret = $secret;
+        $issuer = $settings->site_name ?: config('app.name');
 
         $barcode = new Barcode;
         $barcode_obj =
             $barcode->getBarcodeObj(
                 'QRCODE',
                 sprintf(
-                    'otpauth://totp/%s:%s?secret=%s&issuer=Snipe-IT&period=30',
+                    'otpauth://totp/%s:%s?secret=%s&issuer=%s&period=30',
                     urlencode($settings->site_name),
                     urlencode($user->username),
-                    urlencode($secret)
+                    urlencode($secret),
+                    urlencode($issuer)
                 ),
                 300,
                 300,

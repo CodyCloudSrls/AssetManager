@@ -1,4 +1,4 @@
-# GitHub Copilot Custom Instructions for Snipe-IT
+# GitHub Copilot Custom Instructions for CodyCloud Asset Management
 
 These instructions guide Copilot to generate code that aligns with modern Laravel 11 standards, PHP 8.2/8.4 features, software engineering principles, and industry best practices to improve software quality, maintainability, and security.
 

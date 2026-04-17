@@ -5,7 +5,7 @@
 {{ trans('mail.test_mail_text') }}
 
 Thanks,
-Snipe-IT
+{{ config('app.name') }}
 @if ($setupCompleted)
 @endcomponent
 @endif

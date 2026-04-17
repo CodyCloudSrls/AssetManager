@@ -425,7 +425,9 @@
                 </div>
                 <div class="col-md-4">
                     <code>{{ url('/api/v1') }}{!! trans('account/general.api_base_url_endpoint') !!}</code>
-                    <a href="https://snipe-it.readme.io/reference/api-overview" target="_blank" data-tooltip="true" title="{{ trans('general.documentation') }}"><x-icon type="external-link" /></a>
+                    @if (config('app.api_docs_url'))
+                    <a href="{{ config('app.api_docs_url') }}" target="_blank" data-tooltip="true" title="{{ trans('general.documentation') }}"><x-icon type="external-link" /></a>
+                    @endif
 
                 </div>
 
@@ -434,7 +436,9 @@
                 </div>
                 <div class="col-md-4">
                     <code>{{ config('app.url') }}/scim/v2/</code>
-                    <a href="https://snipe-it.readme.io/docs/scim" target="_blank" data-tooltip="true" title="{{ trans('general.documentation') }}"><x-icon type="external-link" /></a>
+                    @if (config('app.docs_url'))
+                    <a href="{{ config('app.docs_url') }}" target="_blank" data-tooltip="true" title="{{ trans('general.documentation') }}"><x-icon type="external-link" /></a>
+                    @endif
 
                 </div>
             </div>
@@ -488,5 +492,4 @@
   @endsection
 
 @stop
-
 

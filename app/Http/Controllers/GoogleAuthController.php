@@ -51,7 +51,7 @@ class GoogleAuthController extends Controller
         $user = User::where('username', $socialUser->getEmail())->first();
 
         if ($user) {
-            Log::debug('Google user '.$socialUser->getEmail().' found in Snipe-IT');
+            Log::debug('Google user '.$socialUser->getEmail().' found in the application');
             $user->update([
                 'avatar' => $socialUser->avatar,
             ]);
@@ -61,7 +61,7 @@ class GoogleAuthController extends Controller
             return redirect()->route('home');
         }
 
-        Log::debug('Google user '.$socialUser->getEmail().' NOT found in Snipe-IT');
+        Log::debug('Google user '.$socialUser->getEmail().' NOT found in the application');
 
         return redirect()->route('login')
             ->withErrors(

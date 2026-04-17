@@ -99,12 +99,13 @@ class SettingsSamlRequest extends FormRequest
                 // key regeneration requested, no certificate defined yet or previous custom certicate was removed
                 error_log('regen');
                 $cert_updated = true;
+                $certificateSubject = config('app.vendor_name', config('app.name'));
                 $dn = [
                     'countryName' => 'US',
                     'stateOrProvinceName' => 'N/A',
                     'localityName' => 'N/A',
-                    'organizationName' => 'Snipe-IT',
-                    'commonName' => 'Snipe-IT',
+                    'organizationName' => $certificateSubject,
+                    'commonName' => $certificateSubject,
                 ];
 
                 $pkey = openssl_pkey_new([
