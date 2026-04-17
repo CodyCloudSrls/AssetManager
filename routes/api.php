@@ -162,6 +162,64 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
     ); // end category API routes
 
     /**
+     * Document frameworks API routes
+     */
+    Route::group(['prefix' => 'documentframeworks'], function () {
+        Route::get('selectlist', [
+            Api\DocumentFrameworksController::class,
+            'selectlist',
+        ])->name('api.documentframeworks.selectlist');
+
+        Route::post('{id}/restore', [
+            Api\DocumentFrameworksController::class,
+            'restore',
+        ])->name('api.documentframeworks.restore');
+    });
+
+    Route::resource('documentframeworks',
+        Api\DocumentFrameworksController::class,
+        ['names' => [
+            'index' => 'api.documentframeworks.index',
+            'show' => 'api.documentframeworks.show',
+            'update' => 'api.documentframeworks.update',
+            'store' => 'api.documentframeworks.store',
+            'destroy' => 'api.documentframeworks.destroy',
+        ],
+            'except' => ['create', 'edit'],
+            'parameters' => ['documentframeworks' => 'documentframework'],
+        ]
+    );
+
+    /**
+     * Document types API routes
+     */
+    Route::group(['prefix' => 'documenttypes'], function () {
+        Route::get('selectlist', [
+            Api\DocumentTypesController::class,
+            'selectlist',
+        ])->name('api.documenttypes.selectlist');
+
+        Route::post('{id}/restore', [
+            Api\DocumentTypesController::class,
+            'restore',
+        ])->name('api.documenttypes.restore');
+    });
+
+    Route::resource('documenttypes',
+        Api\DocumentTypesController::class,
+        ['names' => [
+            'index' => 'api.documenttypes.index',
+            'show' => 'api.documenttypes.show',
+            'update' => 'api.documenttypes.update',
+            'store' => 'api.documenttypes.store',
+            'destroy' => 'api.documenttypes.destroy',
+        ],
+            'except' => ['create', 'edit'],
+            'parameters' => ['documenttypes' => 'documenttype'],
+        ]
+    );
+
+    /**
      * Companies API routes
      */
     Route::group(['prefix' => 'companies'], function () {
@@ -596,6 +654,34 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
             'parameters' => ['asset' => 'asset_id'],
         ]
     ); // end assets API routes
+
+    /**
+     * Documents API routes
+     */
+    Route::group(['prefix' => 'documents'], function () {
+        Route::get('{document}/history',
+            [
+                Api\DocumentsController::class,
+                'history',
+            ]
+        )->name('api.documents.history')->withTrashed();
+    });
+
+    Route::patch('/documents/{document}', [Api\DocumentsController::class, 'update'])->name('api.documents.update');
+    Route::put('/documents/{document}', [Api\DocumentsController::class, 'update'])->name('api.documents.put-update');
+
+    Route::resource('documents',
+        Api\DocumentsController::class,
+        ['names' => [
+            'index' => 'api.documents.index',
+            'show' => 'api.documents.show',
+            'store' => 'api.documents.store',
+            'destroy' => 'api.documents.destroy',
+        ],
+            'except' => ['create', 'edit', 'update'],
+            'parameters' => ['documents' => 'document'],
+        ]
+    );
 
     /**
      * Asset maintenances API routes
@@ -1352,7 +1438,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
             'index',
         ]
     )->name('api.files.index')
-        ->where(['object_type' => 'accessories|audits|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|users|companies|departments']);
+        ->where(['object_type' => 'accessories|audits|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|users|companies|departments|documents']);
 
     // Get a file
     Route::get('{object_type}/{id}/files/{file_id}',
@@ -1361,7 +1447,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
             'show',
         ]
     )->name('api.files.show')
-        ->where(['object_type' => 'accessories|audits|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|users|companies|departments']);
+        ->where(['object_type' => 'accessories|audits|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|users|companies|departments|documents']);
 
     // Upload files(s)
     Route::post('{object_type}/{id}/files',
@@ -1370,7 +1456,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
             'store',
         ]
     )->name('api.files.store')
-        ->where(['object_type' => 'accessories|audits|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|users|companies|departments']);
+        ->where(['object_type' => 'accessories|audits|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|users|companies|departments|documents']);
 
     // Delete files(s)
     Route::delete('{object_type}/{id}/files/{file_id}/delete',
@@ -1379,6 +1465,6 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
             'destroy',
         ]
     )->name('api.files.destroy')
-        ->where(['object_type' => 'accessories|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|users|companies|departments']);
+        ->where(['object_type' => 'accessories|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|users|companies|departments|documents']);
 
 }); // end API routes

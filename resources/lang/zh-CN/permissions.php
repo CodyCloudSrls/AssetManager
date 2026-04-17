@@ -420,4 +420,36 @@ return [
     'inherit' => '继承来自权限组的 :area 的权限',
     'use_groups' => '为简化管理，我们强烈建议使用权限组进行权限分配，而非逐一设置单个权限。',
 
+    'documenttypes' => [
+        'name' => 'Document Types',
+        'note' => 'Grants access to document type settings.',
+    ],
+    'documenttypesview' => [
+        'name' => 'View Document Types',
+    ],
+    'documenttypescreate' => [
+        'name' => 'Create Document Types',
+    ],
+    'documenttypesedit' => [
+        'name' => 'Edit Document Types',
+    ],
+    'documenttypesdelete' => [
+        'name' => 'Delete Document Types',
+    ],
+    'documentframeworks' => [
+        'name' => 'Document Frameworks',
+        'note' => 'Grants access to document framework settings.',
+    ],
+    'documentframeworksview' => [
+        'name' => 'View Document Frameworks',
+    ],
+    'documentframeworkscreate' => [
+        'name' => 'Create Document Frameworks',
+    ],
+    'documentframeworksedit' => [
+        'name' => 'Edit Document Frameworks',
+    ],
+    'documentframeworksdelete' => [
+        'name' => 'Delete Document Frameworks',
+    ],
 ];

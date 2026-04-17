@@ -89,6 +89,67 @@ return [
 
     ],
 
+    'Documents' => [
+        [
+            'permission' => 'documents.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.create',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.edit',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.delete',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.files',
+            'display' => true,
+        ],
+    ],
+
+    'DocumentTypes' => [
+        [
+            'permission' => 'documenttypes.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documenttypes.create',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documenttypes.edit',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documenttypes.delete',
+            'display' => true,
+        ],
+    ],
+
+    'DocumentFrameworks' => [
+        [
+            'permission' => 'documentframeworks.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documentframeworks.create',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documentframeworks.edit',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documentframeworks.delete',
+            'display' => true,
+        ],
+    ],
+
     'Accessories' => [
         [
             'permission' => 'accessories.view',
@@ -181,38 +242,6 @@ return [
             'permission' => 'licenses.files',
             'display' => true,
         ],
-    ],
-
-    'Components' => [
-        [
-            'permission' => 'components.view',
-            'display' => true,
-        ],
-        [
-            'permission' => 'components.create',
-            'display' => true,
-        ],
-        [
-            'permission' => 'components.edit',
-            'display' => true,
-        ],
-        [
-            'permission' => 'components.delete',
-            'display' => true,
-        ],
-        [
-            'permission' => 'components.checkout',
-            'display' => true,
-        ],
-        [
-            'permission' => 'components.checkin',
-            'display' => true,
-        ],
-        [
-            'permission' => 'components.files',
-            'display' => true,
-        ],
-
     ],
 
     'Kits' => [

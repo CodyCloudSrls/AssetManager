@@ -30,6 +30,7 @@ use App\Models\Company;
 use App\Models\Component;
 use App\Models\Consumable;
 use App\Models\Department;
+use App\Models\Document;
 use App\Models\License;
 use App\Models\Location;
 use App\Models\Maintenance;
@@ -50,6 +51,7 @@ abstract class Controller extends BaseController
         'accessories' => Accessory::class,
         'companies' => Company::class,
         'departments' => Department::class,
+        'documents' => Document::class,
         'maintenances' => Maintenance::class,
         'assets' => Asset::class,
         'audits' => Asset::class,
@@ -69,6 +71,7 @@ abstract class Controller extends BaseController
         'assets' => 'private_uploads/assets/',
         'audits' => 'private_uploads/audits/',
         'departments' => 'private_uploads/departments/',
+        'documents' => 'private_uploads/documents/',
         'companies' => 'private_uploads/companies/',
         'components' => 'private_uploads/components/',
         'consumables' => 'private_uploads/consumables/',
@@ -87,6 +90,7 @@ abstract class Controller extends BaseController
         'audits' => 'audits',
         'companies' => 'company',
         'departments' => 'department',
+        'documents' => 'document',
         'components' => 'component',
         'consumables' => 'consumable',
         'hardware' => 'asset',

@@ -420,4 +420,36 @@ return [
     'inherit' => 'Успадкувати дозвіл для :area від груп дозволів',
     'use_groups' => 'Ми наполегливо рекомендуємо використовувати Групи дозволів замість призначення індивідуальних дозволів для полегшення керування.',
 
+    'documenttypes' => [
+        'name' => 'Document Types',
+        'note' => 'Grants access to document type settings.',
+    ],
+    'documenttypesview' => [
+        'name' => 'View Document Types',
+    ],
+    'documenttypescreate' => [
+        'name' => 'Create Document Types',
+    ],
+    'documenttypesedit' => [
+        'name' => 'Edit Document Types',
+    ],
+    'documenttypesdelete' => [
+        'name' => 'Delete Document Types',
+    ],
+    'documentframeworks' => [
+        'name' => 'Document Frameworks',
+        'note' => 'Grants access to document framework settings.',
+    ],
+    'documentframeworksview' => [
+        'name' => 'View Document Frameworks',
+    ],
+    'documentframeworkscreate' => [
+        'name' => 'Create Document Frameworks',
+    ],
+    'documentframeworksedit' => [
+        'name' => 'Edit Document Frameworks',
+    ],
+    'documentframeworksdelete' => [
+        'name' => 'Delete Document Frameworks',
+    ],
 ];

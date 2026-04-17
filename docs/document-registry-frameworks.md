@@ -1,12 +1,21 @@
 # Document Registry Blueprint
 
-This instance now includes a document-registry foundation built around:
+This instance now includes a first-class `documents` module.
 
-- asset category: `Documenti`
-- asset model: `Documento normativo`
-- fieldset: `Registro documenti normativi`
+The registry is no longer implemented as asset category/model/custom fields. Documents now live in dedicated tables and UI screens, with their own lifecycle, uploads, notes and history.
 
-The goal is to inventory normative, procedural, governance and compliance documents in one place with a shared metadata model.
+The controlled taxonomies for the module are now first-class settings resources:
+
+- `Settings > Document Types`
+- `Settings > Document Frameworks`
+
+These settings have dedicated CRUD screens, API endpoints, select lists for the document form, soft delete support, and usage-aware delete protection when documents are still assigned.
+
+Core reference tables:
+
+- `documents`
+- `document_types`
+- `document_frameworks`
 
 ## Core Metadata
 
@@ -29,7 +38,22 @@ Each document record should at least capture:
 
 ## Suggested Document Types
 
-Use `Documento - Tipo` to normalize the registry across frameworks:
+Use `Document Type` to normalize the registry across frameworks.
+
+Current seeded defaults in this fork are:
+
+- Policy
+- Procedura
+- Registro
+- Valutazione
+- Piano
+- Informativa
+- Nomina
+- Verbale
+- Evidenza
+- Inventario
+
+Additional practical candidates, depending on operating model:
 
 - Policy
 - Procedura
@@ -46,13 +70,18 @@ Use `Documento - Tipo` to normalize the registry across frameworks:
 
 ## Suggested Framework Families
 
-Use `Documento - Framework` to classify the main obligation family:
+Use `Document Framework` to classify the main obligation family.
+
+Current seeded defaults in this fork are:
 
 - Generale
 - Dlgs 81/2008
 - GDPR
 - NIS2
 - AI Act
+
+Additional practical candidates, depending on governance scope:
+
 - Privacy nazionale
 - Cybersecurity
 - ISO 27001 / 27002
@@ -142,14 +171,24 @@ Official references used for the structure:
 
 ## Operating Recommendation
 
-Use one asset record per governed document, not one record per framework.
+Use one document record per governed document, not one record per framework.
 
 Recommended naming convention:
 
-- asset name: human title of the document
-- asset tag or internal code: document control ID
-- category: `Documenti`
-- model: `Documento normativo`
-- custom fields: governance metadata
+- document name: human title of the document
+- document number: controlled internal code
+- type: controlled document family
+- framework: main legal or governance family
+- metadata fields: owner, status, classification, retention, dates and evidence links
 
-This keeps the registry usable both for inventory and for audit evidence collection.
+This keeps the registry usable both for inventory and for audit evidence collection without overloading the asset domain.
+
+## Implementation Status
+
+At the time of this document, the repository includes:
+
+- dedicated web and API CRUD for documents
+- dedicated web and API CRUD for document types and frameworks
+- sidebar filters for document status and review windows
+- quick-create modals for document types and frameworks from the document form
+- locale coverage seeded across the available language folders so the module does not fall back to missing keys

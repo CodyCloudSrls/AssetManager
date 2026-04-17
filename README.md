@@ -6,7 +6,8 @@ This codebase started from the Snipe-IT project and remains licensed under `AGPL
 
 - production operations and hardening
 - CodyCloud default branding
-- compliance-oriented customization for GDPR and NIS2 use cases
+- a dedicated document registry for compliance and governance workflows
+- compliance-oriented customization for GDPR, NIS2, AI Act, and safety use cases
 - fork hygiene for self-hosted and managed deployments
 
 ## Scope
@@ -18,6 +19,8 @@ This repository intentionally excludes live runtime material such as:
 - local backups, dumps, and operational artifacts
 
 Those assets stay outside Git and are managed per environment.
+
+This repository also intentionally excludes legacy one-shot installer and upgrade helpers that targeted upstream deployment paths and remotes. The supported maintenance workflows are the repository-local Laravel and container workflows described here.
 
 ## Local Development
 
@@ -35,6 +38,17 @@ php artisan serve
 ```
 
 Adjust storage, mail, queue, and database settings for your environment before use.
+
+## Documents Module
+
+The fork includes a first-class `documents` module with dedicated data tables, UI, uploads, notes, and history.
+
+Document governance settings are managed through:
+
+- `Settings > Document Types`
+- `Settings > Document Frameworks`
+
+The reference taxonomy and implementation notes for the compliance-oriented registry live in [docs/document-registry-frameworks.md](docs/document-registry-frameworks.md).
 
 ## Security
 

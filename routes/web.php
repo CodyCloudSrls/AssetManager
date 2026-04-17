@@ -13,6 +13,8 @@ use App\Http\Controllers\CompaniesController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentsController;
 use App\Http\Controllers\DepreciationsController;
+use App\Http\Controllers\DocumentFrameworksController;
+use App\Http\Controllers\DocumentTypesController;
 use App\Http\Controllers\GroupsController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\LabelsController;
@@ -51,6 +53,24 @@ Route::group(['middleware' => 'auth'], function () {
     ]);
 
     Route::post('categories/bulk/delete', [BulkCategoriesController::class, 'destroy'])->name('categories.bulk.delete');
+
+    /*
+    * Document Types
+    */
+    Route::group(['prefix' => 'documenttypes', 'middleware' => ['auth']], function () {
+        Route::post('{id}/restore', [DocumentTypesController::class, 'restore'])->name('documenttypes.restore');
+    });
+
+    Route::resource('documenttypes', DocumentTypesController::class);
+
+    /*
+    * Document Frameworks
+    */
+    Route::group(['prefix' => 'documentframeworks', 'middleware' => ['auth']], function () {
+        Route::post('{id}/restore', [DocumentFrameworksController::class, 'restore'])->name('documentframeworks.restore');
+    });
+
+    Route::resource('documentframeworks', DocumentFrameworksController::class);
 
     /*
     * Labels
@@ -661,7 +681,7 @@ Route::group(['middleware' => 'web'], function () {
             'show',
         ]
     )->name('ui.files.show')
-        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|components|companies|departments']);
+        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|components|companies|departments|documents']);
 
     // Upload files(s)
     Route::post('{object_type}/{id}/files',
@@ -670,7 +690,7 @@ Route::group(['middleware' => 'web'], function () {
             'store',
         ]
     )->name('ui.files.store')
-        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|components|companies|departments']);
+        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|components|companies|departments|documents']);
 
     // Delete files(s)
     Route::delete('{object_type}/{id}/files/{file_id}/delete',
@@ -679,7 +699,7 @@ Route::group(['middleware' => 'web'], function () {
             'destroy',
         ]
     )->name('ui.files.destroy')
-        ->where(['object_type' => 'assets|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|components|companies|departments']);
+        ->where(['object_type' => 'assets|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|components|companies|departments|documents']);
 });
 
 /*

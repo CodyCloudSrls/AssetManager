@@ -13,6 +13,9 @@ use App\Models\CustomField;
 use App\Models\CustomFieldset;
 use App\Models\Department;
 use App\Models\Depreciation;
+use App\Models\Document;
+use App\Models\DocumentFramework;
+use App\Models\DocumentType;
 use App\Models\License;
 use App\Models\Location;
 use App\Models\Manufacturer;
@@ -31,6 +34,9 @@ use App\Policies\CustomFieldPolicy;
 use App\Policies\CustomFieldsetPolicy;
 use App\Policies\DepartmentPolicy;
 use App\Policies\DepreciationPolicy;
+use App\Policies\DocumentPolicy;
+use App\Policies\DocumentFrameworkPolicy;
+use App\Policies\DocumentTypePolicy;
 use App\Policies\LicensePolicy;
 use App\Policies\LocationPolicy;
 use App\Policies\ManufacturerPolicy;
@@ -66,6 +72,9 @@ class AuthServiceProvider extends ServiceProvider
         CustomFieldset::class => CustomFieldsetPolicy::class,
         Department::class => DepartmentPolicy::class,
         Depreciation::class => DepreciationPolicy::class,
+        Document::class => DocumentPolicy::class,
+        DocumentFramework::class => DocumentFrameworkPolicy::class,
+        DocumentType::class => DocumentTypePolicy::class,
         License::class => LicensePolicy::class,
         Location::class => LocationPolicy::class,
         PredefinedKit::class => PredefinedKitPolicy::class,
@@ -234,6 +243,8 @@ class AuthServiceProvider extends ServiceProvider
                 || $user->can('view', Location::class)
                 || $user->can('view', Company::class)
                 || $user->can('view', Manufacturer::class)
+                || $user->can('view', DocumentType::class)
+                || $user->can('view', DocumentFramework::class)
                 || $user->can('view', CustomField::class)
                 || $user->can('view', CustomFieldset::class)
                 || $user->can('view', Depreciation::class);
@@ -257,6 +268,8 @@ class AuthServiceProvider extends ServiceProvider
                 || $user->can('create', Consumable::class)
                 || $user->can('update', Accessory::class)
                 || $user->can('create', Accessory::class)
+                || $user->can('update', Document::class)
+                || $user->can('create', Document::class)
                 || $user->can('update', User::class)
                 || $user->can('create', User::class)
                 || ($user->hasAccess('reports.view'));

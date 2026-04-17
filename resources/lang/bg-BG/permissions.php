@@ -420,4 +420,36 @@ return [
     'inherit' => 'Наследяване на права за :area от група',
     'use_groups' => 'Силно се препоръчва да се използват групи за достъп вместо даване на индивидуални права за по лесно управление.',
 
+    'documenttypes' => [
+        'name' => 'Document Types',
+        'note' => 'Grants access to document type settings.',
+    ],
+    'documenttypesview' => [
+        'name' => 'View Document Types',
+    ],
+    'documenttypescreate' => [
+        'name' => 'Create Document Types',
+    ],
+    'documenttypesedit' => [
+        'name' => 'Edit Document Types',
+    ],
+    'documenttypesdelete' => [
+        'name' => 'Delete Document Types',
+    ],
+    'documentframeworks' => [
+        'name' => 'Document Frameworks',
+        'note' => 'Grants access to document framework settings.',
+    ],
+    'documentframeworksview' => [
+        'name' => 'View Document Frameworks',
+    ],
+    'documentframeworkscreate' => [
+        'name' => 'Create Document Frameworks',
+    ],
+    'documentframeworksedit' => [
+        'name' => 'Edit Document Frameworks',
+    ],
+    'documentframeworksdelete' => [
+        'name' => 'Delete Document Frameworks',
+    ],
 ];

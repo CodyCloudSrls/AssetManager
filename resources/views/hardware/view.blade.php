@@ -58,7 +58,6 @@
                 <x-slot:tabnav>
                     <x-tabs.details-tab/>
                     <x-tabs.license-tab count="{{ $asset->licenses->count() }}"/>
-                    <x-tabs.component-tab count="{{ $asset->components()->sum('assigned_qty') }}"/>
                     <x-tabs.asset-tab count="{{ $asset->assignedAssets()->AssetsForShow()->count() }}"/>
                     <x-tabs.accessory-tab count="{{ $asset->assignedAccessories()->count() }}"/>
                     <x-tabs.maintenance-tab count="{{ $asset->maintenances->count() }}"/>
@@ -317,10 +316,6 @@
 
                     <x-tabs.pane name="licenses" :count="$asset->licenses->count()">
                         <x-table.licenses show_search="false" :route="route('api.assets.licenselist', $asset)" :presenter="\App\Presenters\LicensePresenter::dataTableLayoutSeatsCheckedOutToAssets()"/>
-                    </x-tabs.pane>
-
-                    <x-tabs.pane name="components" :count="$asset->components->sum('assigned_qty')">
-                        <x-table.components :table_header="trans('general.components')" :presenter="\App\Presenters\ComponentPresenter::checkedOut()" :route="route('api.assets.assigned_components', $asset)"/>
                     </x-tabs.pane>
 
                     <x-tabs.pane name="assets" :count="$asset->assignedAssets()->AssetsForShow()->count()">

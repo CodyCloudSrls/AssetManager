@@ -1246,11 +1246,11 @@
                                     </a>
                                 </li>
                             @endcan
-                            @can('view', \App\Models\Component::class)
-                                <li aria-hidden="true"{!! (request()->is('components*') ? ' class="active"' : '') !!}>
-                                    <a href="{{ route('components.index') }}" {{$snipeSettings->shortcuts_enabled == 1 ? "accesskey=5" : ''}} tabindex="-1" data-tooltip="true" data-placement="bottom" data-title="{{ trans('general.components') }}">
-                                        <x-icon type="components" class="fa-fw" />
-                                        <span class="sr-only">{{ trans('general.components') }}</span>
+                            @can('index', \App\Models\Document::class)
+                                <li aria-hidden="true"{!! (request()->is('documents*') ? ' class="active"' : '') !!}>
+                                    <a href="{{ route('documents.index') }}" {{$snipeSettings->shortcuts_enabled == 1 ? "accesskey=5" : ''}} tabindex="-1" data-tooltip="true" data-placement="bottom" data-title="{{ trans('general.documents') }}">
+                                        <x-icon type="documents" class="fa-fw" />
+                                        <span class="sr-only">{{ trans('general.documents') }}</span>
                                     </a>
                                 </li>
                             @endcan
@@ -1323,11 +1323,11 @@
                                                 </a>
                                             </li>
                                         @endcan
-                                        @can('create', \App\Models\Component::class)
-                                            <li {!! (request()->is('components/create') ? 'class="active"' : '') !!}>
-                                                <a href="{{ route('components.create') }}" tabindex="-1">
-                                                    <x-icon type="components" class="fa-fw" />
-                                                    {{ trans('general.component') }}
+                                        @can('create', \App\Models\Document::class)
+                                            <li {!! (request()->is('documents/create') ? 'class="active"' : '') !!}>
+                                                <a href="{{ route('documents.create') }}" tabindex="-1">
+                                                    <x-icon type="documents" class="fa-fw" />
+                                                    {{ trans('general.document') }}
                                                 </a>
                                             </li>
                                         @endcan
@@ -1627,6 +1627,80 @@
                                 </ul>
                             </li>
                         @endcan
+                        @can('index', \App\Models\Document::class)
+                            <li class="treeview{{ (request()->is('documents*') ? ' active' : '') }}">
+                                <a href="#">
+                                    <x-icon type="documents" class="fa-fw" />
+                                    <span>{{ trans('general.documents') }}</span>
+                                    <x-icon type="angle-left" class="pull-right fa-fw"/>
+                                </a>
+                                <ul class="treeview-menu">
+                                    <li{!! (!request()->query('status') && !request()->query('review_status') && !request()->query('status_type') && request()->is('documents') ? ' class="active"' : '') !!}>
+                                        <a href="{{ route('documents.index') }}">
+                                            <x-icon type="circle" class="text-grey fa-fw"/>
+                                            {{ trans('general.list_all') }}
+                                            <span class="badge">{{ $total_documents ?? '' }}</span>
+                                        </a>
+                                    </li>
+                                    <li{!! (request()->query('status') == 'active' ? ' class="active"' : '') !!}>
+                                        <a href="{{ route('documents.index', ['status' => 'active']) }}">
+                                            <x-icon type="circle" class="text-green fa-fw"/>
+                                            {{ trans('admin/documents/general.statuses.active') }}
+                                            <span class="badge">{{ $total_documents_active ?? '' }}</span>
+                                        </a>
+                                    </li>
+                                    <li{!! (request()->query('status') == 'draft' ? ' class="active"' : '') !!}>
+                                        <a href="{{ route('documents.index', ['status' => 'draft']) }}">
+                                            <x-icon type="circle" class="text-blue fa-fw"/>
+                                            {{ trans('admin/documents/general.statuses.draft') }}
+                                            <span class="badge">{{ $total_documents_draft ?? '' }}</span>
+                                        </a>
+                                    </li>
+                                    <li{!! (request()->query('status') == 'in_review' ? ' class="active"' : '') !!}>
+                                        <a href="{{ route('documents.index', ['status' => 'in_review']) }}">
+                                            <x-icon type="circle" class="text-orange fa-fw"/>
+                                            {{ trans('admin/documents/general.statuses.in_review') }}
+                                            <span class="badge">{{ $total_documents_in_review ?? '' }}</span>
+                                        </a>
+                                    </li>
+                                    <li{!! (request()->query('review_status') == 'due' ? ' class="active"' : '') !!}>
+                                        <a href="{{ route('documents.index', ['review_status' => 'due']) }}">
+                                            <x-icon type="calendar" class="text-yellow fa-fw"/>
+                                            {{ trans('admin/documents/general.review_due') }}
+                                            <span class="badge">{{ $total_documents_due_review ?? '' }}</span>
+                                        </a>
+                                    </li>
+                                    <li{!! (request()->query('review_status') == 'overdue' ? ' class="active"' : '') !!}>
+                                        <a href="{{ route('documents.index', ['review_status' => 'overdue']) }}">
+                                            <x-icon type="expiration" class="text-red fa-fw"/>
+                                            {{ trans('admin/documents/general.review_overdue') }}
+                                            <span class="badge">{{ $total_documents_overdue_review ?? '' }}</span>
+                                        </a>
+                                    </li>
+                                    <li{!! (request()->query('status') == 'obsolete' ? ' class="active"' : '') !!}>
+                                        <a href="{{ route('documents.index', ['status' => 'obsolete']) }}">
+                                            <x-icon type="x" class="text-red fa-fw"/>
+                                            {{ trans('admin/documents/general.statuses.obsolete') }}
+                                            <span class="badge">{{ $total_documents_obsolete ?? '' }}</span>
+                                        </a>
+                                    </li>
+                                    <li{!! (request()->query('status') == 'archived' ? ' class="active"' : '') !!}>
+                                        <a href="{{ route('documents.index', ['status' => 'archived']) }}">
+                                            <x-icon type="files" class="text-grey fa-fw"/>
+                                            {{ trans('admin/documents/general.statuses.archived') }}
+                                            <span class="badge">{{ $total_documents_archived ?? '' }}</span>
+                                        </a>
+                                    </li>
+                                    <li{!! (request()->query('status_type') == 'Deleted' ? ' class="active"' : '') !!}>
+                                        <a href="{{ route('documents.index', ['status_type' => 'Deleted']) }}">
+                                            <x-icon type="delete" class="text-red fa-fw"/>
+                                            {{ trans('general.deleted') }}
+                                            <span class="badge">{{ $total_documents_deleted ?? '' }}</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        @endcan
                         @can('view', \App\Models\License::class)
                             <li{!! (request()->is('licenses*') ? ' class="active"' : '') !!}>
                                 <a href="{{ route('licenses.index') }}">
@@ -1648,14 +1722,6 @@
                                 <a href="{{ url('consumables') }}">
                                     <x-icon type="consumables" class="fa-fw" />
                                     <span>{{ trans('general.consumables') }}</span>
-                                </a>
-                            </li>
-                        @endcan
-                        @can('view', \App\Models\Component::class)
-                            <li id="components-sidenav-option"{!! (request()->is('components*') ? ' class="active"' : '') !!}>
-                                <a href="{{ route('components.index') }}">
-                                    <x-icon type="components" class="fa-fw" />
-                                    <span>{{ trans('general.components') }}</span>
                                 </a>
                             </li>
                         @endcan
@@ -1762,6 +1828,22 @@
                                         <li {{!! (request()->is('categories*') ? ' class="active"' : '') !!}}>
                                             <a href="{{ route('categories.index') }}">
                                                 {{ trans('general.categories') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+
+                                    @can('view', \App\Models\DocumentType::class)
+                                        <li {{!! (request()->is('documenttypes*') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('documenttypes.index') }}">
+                                                {{ trans('general.document_types') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+
+                                    @can('view', \App\Models\DocumentFramework::class)
+                                        <li {{!! (request()->is('documentframeworks*') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('documentframeworks.index') }}">
+                                                {{ trans('general.document_frameworks') }}
                                             </a>
                                         </li>
                                     @endcan

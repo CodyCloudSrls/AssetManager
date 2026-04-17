@@ -540,6 +540,8 @@ class Actionlog extends SnipeModel
                 return 'private_uploads/consumables/'.$this->filename;
             case Department::class:
                 return 'private_uploads/departments/'.$this->filename;
+            case Document::class:
+                return 'private_uploads/documents/'.$this->filename;
             case Component::class:
                 return 'private_uploads/components/'.$this->filename;
             case License::class:

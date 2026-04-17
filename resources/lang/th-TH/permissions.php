@@ -420,4 +420,36 @@ return [
     'inherit' => 'สืบทอดสิทธิ์สำหรับ :area จากสิทธิ์ของกลุ่ม',
     'use_groups' => 'เราขอแนะนำให้ใช้สิทธิ์ของกลุ่ม แทนการกำหนดสิทธิ์รายบุคคลเพื่อให้ง่ายต่อการจัดการ',
 
+    'documenttypes' => [
+        'name' => 'Document Types',
+        'note' => 'Grants access to document type settings.',
+    ],
+    'documenttypesview' => [
+        'name' => 'View Document Types',
+    ],
+    'documenttypescreate' => [
+        'name' => 'Create Document Types',
+    ],
+    'documenttypesedit' => [
+        'name' => 'Edit Document Types',
+    ],
+    'documenttypesdelete' => [
+        'name' => 'Delete Document Types',
+    ],
+    'documentframeworks' => [
+        'name' => 'Document Frameworks',
+        'note' => 'Grants access to document framework settings.',
+    ],
+    'documentframeworksview' => [
+        'name' => 'View Document Frameworks',
+    ],
+    'documentframeworkscreate' => [
+        'name' => 'Create Document Frameworks',
+    ],
+    'documentframeworksedit' => [
+        'name' => 'Edit Document Frameworks',
+    ],
+    'documentframeworksdelete' => [
+        'name' => 'Delete Document Frameworks',
+    ],
 ];
