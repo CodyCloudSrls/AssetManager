@@ -1,7 +1,4 @@
-Contact: mailto:security@snipeitapp.com
-Expires: 2025-05-16T11:30:00.000Z
-Acknowledgments: https://snipeitapp.com/thanks
-Preferred-Languages: en-US, pt-PT, de-DE
-Canonical: https://github.com/grokability/snipe-it/blob/master/public/.well-known/security.txt
-Policy: https://snipeitapp.com/security
-Hiring: https://snipeitapp.com/company/careers
+Contact: mailto:security@codycloud.it
+Expires: 2027-04-17T00:00:00.000Z
+Preferred-Languages: en-US, it-IT
+Canonical: https://asset.codycloud.it/.well-known/security.txt

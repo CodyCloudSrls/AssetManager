@@ -8,6 +8,12 @@ if [ "$(id -u)" != "0" ]; then
     fi
 fi
 
-wget https://raw.githubusercontent.com/grokability/snipe-it/master/snipeit.sh
-chmod 744 snipeit.sh
-./snipeit.sh 2>&1 | tee -a /var/log/snipeit-install.log
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+if [ ! -f "$SCRIPT_DIR/snipeit.sh" ]; then
+    echo "Missing installer helper: $SCRIPT_DIR/snipeit.sh" 1>&2
+    exit 1
+fi
+
+chmod 744 "$SCRIPT_DIR/snipeit.sh"
+"$SCRIPT_DIR/snipeit.sh" 2>&1 | tee -a /var/log/codycloud-asset-install.log

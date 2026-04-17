@@ -190,7 +190,7 @@ class RestoreFromBackup extends Command
      *
      * @var string
      */
-    protected $description = 'Restore from a previously created Snipe-IT backup file';
+    protected $description = 'Restore from a previously created application backup file';
 
     /**
      * Create a new command instance.

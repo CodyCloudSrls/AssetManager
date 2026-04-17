@@ -1,6 +1,6 @@
 {
-  "name": "grokability/snipe-it",
-  "description": "Open source asset management system built on Laravel.",
+  "name": "codycloud/asset-management",
+  "description": "CodyCloud asset management platform built on Laravel.",
   "keywords": [
     "assets",
     "asset-management",

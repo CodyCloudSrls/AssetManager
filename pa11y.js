@@ -1,6 +1,6 @@
 const pa11y = require('pa11y');
 
-pa11y('http://snipe-it.test', {
+pa11y(process.env.PA11Y_URL || 'http://localhost:8000', {
     standard: "WCAG2AA",
     level: "error",
     defaults: {

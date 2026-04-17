@@ -3,8 +3,7 @@ name: Tests in SQLite
 on:
   push:
     branches:
-      - master
-      - develop
+      - main
   pull_request:
 
 jobs:
@@ -56,7 +55,7 @@ jobs:
         run: php artisan passport:keys
 
       - name: Directory Permissions
-        run: chmod -R 777 storage bootstrap/cache
+        run: chmod -R ug+rwX storage bootstrap/cache
 
       - name: Execute tests (Unit and Feature tests) via PHPUnit
         env:
