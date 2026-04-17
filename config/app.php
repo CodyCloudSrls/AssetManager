@@ -68,8 +68,6 @@ use Illuminate\Validation\ValidationServiceProvider;
 use Illuminate\View\ViewServiceProvider;
 use Intervention\Image\ImageServiceProvider;
 use Laravel\Passport\PassportServiceProvider;
-use Laravel\Socialite\Facades\Socialite;
-use Laravel\Socialite\SocialiteServiceProvider;
 use Laravel\Tinker\TinkerServiceProvider;
 use PragmaRX\Google2FALaravel\Facade;
 use PragmaRX\Google2FALaravel\ServiceProvider;
@@ -389,7 +387,6 @@ return [
         TinkerServiceProvider::class,
         DumbPasswordServiceProvider::class,
         Eduardokum\LaravelMailAutoEmbed\ServiceProvider::class,
-        SocialiteServiceProvider::class,
         Elibyy\TCPDF\ServiceProvider::class,
 
         /*
@@ -465,8 +462,6 @@ return [
         'Helper' => Helper::class,
         'StorageHelper' => StorageHelper::class,
         'Icon' => IconHelper::class,
-        'Socialite' => Socialite::class,
-
     ],
 
     /*

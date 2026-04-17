@@ -50,7 +50,6 @@ class Setting extends Model
     protected $rules = [
         'brand' => 'required|min:1|numeric',
         'thumbnail_max_h' => 'numeric|max:500|min:25',
-        'google_client_id' => 'nullable|ends_with:apps.googleusercontent.com',
     ];
 
     protected $fillable = [
@@ -61,9 +60,6 @@ class Setting extends Model
         'webhook_endpoint',
         'webhook_channel',
         'webhook_botname',
-        'google_login',
-        'google_client_id',
-        'google_client_secret',
         'manager_view_enabled',
     ];
 

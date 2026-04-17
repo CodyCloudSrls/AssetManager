@@ -17,18 +17,6 @@
 
                 <div class="col-md-4 col-md-offset-4">
 
-                    @if (($snipeSettings->google_login=='1') && ($snipeSettings->google_client_id!='') && ($snipeSettings->google_client_secret!=''))
-
-                        <br><br>
-                        <a href="{{ route('google.redirect')  }}" class="btn btn-block btn-social btn-google btn-lg">
-                            <i class="fa-brands fa-google"></i>
-                            {{ trans('auth/general.google_login') }}
-                        </a>
-
-                        <div class="separator">{{ strtoupper(trans('general.or')) }}</div>
-                    @endif
-
-
                     <div class="box login-box">
                         <div class="box-header with-border">
                             <h1 class="box-title"> {{ trans('auth/general.login_prompt')  }}</h1>
