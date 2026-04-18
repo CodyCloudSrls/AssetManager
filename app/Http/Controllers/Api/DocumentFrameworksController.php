@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FilterRequest;
+use App\Http\Requests\StoreDocumentFrameworkRequest;
 use App\Http\Transformers\DocumentFrameworksTransformer;
 use App\Http\Transformers\SelectlistTransformer;
 use App\Models\DocumentFramework;
@@ -37,11 +38,13 @@ class DocumentFrameworksController extends Controller
             'sort_order',
             'is_active',
             'created_by',
+            'company_id',
+            'visibility_type',
             'created_at',
             'updated_at',
             'deleted_at',
         ])
-            ->with('adminuser')
+            ->with('adminuser', 'company')
             ->withCount('documents as documents_count');
 
         if ($request->input('deleted') == 'true' || $request->input('status') == 'deleted') {
@@ -56,8 +59,8 @@ class DocumentFrameworksController extends Controller
             $documentFrameworks->where('is_active', '=', $request->boolean('is_active'));
         }
 
-        $offset = ($request->input('offset') > $documentFrameworks->count()) ? $documentFrameworks->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $documentFrameworks->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sortOverride = $request->input('sort');
         $columnSort = in_array($sortOverride, $allowedColumns) ? $sortOverride : 'sort_order';
@@ -74,7 +77,7 @@ class DocumentFrameworksController extends Controller
         return (new DocumentFrameworksTransformer)->transformDocumentFrameworks($documentFrameworks, $total);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreDocumentFrameworkRequest $request): JsonResponse
     {
         $this->authorize('create', DocumentFramework::class);
 
@@ -92,16 +95,16 @@ class DocumentFrameworksController extends Controller
 
     public function show(DocumentFramework $documentframework): array
     {
-        $this->authorize('view', DocumentFramework::class);
+        $this->authorize('view', $documentframework);
 
         $documentframework->load('adminuser')->loadCount('documents');
 
         return (new DocumentFrameworksTransformer)->transformDocumentFramework($documentframework);
     }
 
-    public function update(Request $request, DocumentFramework $documentframework): JsonResponse
+    public function update(StoreDocumentFrameworkRequest $request, DocumentFramework $documentframework): JsonResponse
     {
-        $this->authorize('update', DocumentFramework::class);
+        $this->authorize('update', $documentframework);
 
         $documentframework->fill($request->all());
         $documentframework->is_active = $request->boolean('is_active');
@@ -131,6 +134,7 @@ class DocumentFrameworksController extends Controller
         $this->authorize('delete', DocumentFramework::class);
 
         $documentframework = DocumentFramework::withTrashed()->findOrFail($id);
+        $this->authorize('delete', $documentframework);
 
         if ($documentframework->restore()) {
             return response()->json(Helper::formatStandardApiResponse('success', null, trans('admin/documentframeworks/message.restore.success')));

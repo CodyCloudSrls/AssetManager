@@ -29,6 +29,7 @@ use App\Http\Controllers\SetupController;
 use App\Http\Controllers\StatuslabelsController;
 use App\Http\Controllers\StorageProxyController;
 use App\Http\Controllers\SuppliersController;
+use App\Http\Controllers\TenantsController;
 use App\Http\Controllers\UploadedFilesController;
 use App\Http\Controllers\ViewAssetsController;
 use App\Livewire\Importer;
@@ -38,6 +39,9 @@ use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 
 Route::group(['middleware' => 'auth'], function () {
+    Route::post('tenants/switch-context', [TenantsController::class, 'switchContext'])->name('tenants.switch-context');
+    Route::post('companies/switch-context', [CompaniesController::class, 'switchContext'])->name('companies.switch-context');
+
     /*
     * Companies
     */
@@ -122,6 +126,18 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('departments', DepartmentsController::class);
 });
 
+Route::group(['prefix' => 'admin/tenants', 'middleware' => ['auth']], function () {
+    Route::get('/', [TenantsController::class, 'index'])->name('tenants.index');
+    Route::get('/create', [TenantsController::class, 'create'])->name('tenants.create');
+    Route::post('/', [TenantsController::class, 'store'])->name('tenants.store');
+    Route::get('/{tenant}', [TenantsController::class, 'show'])->name('tenants.show');
+    Route::get('/{tenant}/helpdesk', [TenantsController::class, 'editHelpdesk'])->name('tenants.helpdesk.edit');
+    Route::put('/{tenant}/helpdesk', [TenantsController::class, 'updateHelpdesk'])->name('tenants.helpdesk.update');
+    Route::post('/{tenant}/members', [TenantsController::class, 'storeMember'])->name('tenants.members.store');
+    Route::put('/{tenant}/members/{user}', [TenantsController::class, 'updateMember'])->name('tenants.members.update');
+    Route::delete('/{tenant}/members/{user}', [TenantsController::class, 'destroyMember'])->name('tenants.members.destroy');
+});
+
 /*
 |
 |--------------------------------------------------------------------------
@@ -166,7 +182,6 @@ Route::group(['middleware' => 'auth'], function () {
 */
 
 Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'authorize:superuser']], function () {
-
     Route::get('settings', [SettingsController::class, 'getSettings'])
         ->name('settings.general.index')
         ->breadcrumbs(fn (Trail $trail) => $trail->parent('settings.index')
@@ -681,7 +696,7 @@ Route::group(['middleware' => 'web'], function () {
             'show',
         ]
     )->name('ui.files.show')
-        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|components|companies|departments|documents']);
+        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|components|companies|departments|documents|tickets']);
 
     // Upload files(s)
     Route::post('{object_type}/{id}/files',
@@ -690,7 +705,7 @@ Route::group(['middleware' => 'web'], function () {
             'store',
         ]
     )->name('ui.files.store')
-        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|components|companies|departments|documents']);
+        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|components|companies|departments|documents|tickets']);
 
     // Delete files(s)
     Route::delete('{object_type}/{id}/files/{file_id}/delete',
@@ -699,7 +714,7 @@ Route::group(['middleware' => 'web'], function () {
             'destroy',
         ]
     )->name('ui.files.destroy')
-        ->where(['object_type' => 'assets|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|components|companies|departments|documents']);
+        ->where(['object_type' => 'assets|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|components|companies|departments|documents|tickets']);
 });
 
 /*

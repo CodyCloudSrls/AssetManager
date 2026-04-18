@@ -105,6 +105,18 @@ class ActionlogPresenter extends Presenter
             return 'fas fa-sticky-note';
         }
 
+        if ($this->action_type == 'ticket comment added') {
+            return 'fas fa-comments';
+        }
+
+        if ($this->action_type == 'ticket public reply') {
+            return 'fa-regular fa-envelope-open';
+        }
+
+        if ($this->action_type == 'ticket worklog added') {
+            return 'fa-solid fa-clock';
+        }
+
         if ($this->action_type == 'audit') {
             return 'fas fa-clipboard-check';
         }

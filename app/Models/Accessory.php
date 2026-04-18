@@ -79,12 +79,14 @@ class Accessory extends SnipeModel
     public $rules = [
         'name' => 'required|max:255',
         'qty' => 'nullable|integer|min:0',
-        'category_id' => 'required|integer|exists:categories,id',
+        'category_id' => 'required|integer|scoped_exists:App\Models\Category',
         'company_id' => 'integer|nullable',
-        'location_id' => 'exists:locations,id|nullable|fmcs_location',
+        'location_id' => 'scoped_exists:App\Models\Location|nullable|fmcs_location',
         'min_amt' => 'integer|min:0|nullable',
         'purchase_cost' => 'numeric|nullable|gte:0|max:99999999999999999.99',
         'purchase_date' => 'date_format:Y-m-d|nullable',
+        'manufacturer_id' => 'nullable|integer|scoped_exists:App\Models\Manufacturer',
+        'supplier_id' => 'nullable|integer|scoped_exists:App\Models\Supplier',
     ];
 
     /**

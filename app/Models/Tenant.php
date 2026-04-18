@@ -1,0 +1,533 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+class Tenant extends Model
+{
+    use HasFactory;
+
+    public const ACTIVE_TENANT_SESSION_KEY = 'active_tenant_id';
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_VIEWER = 'viewer';
+
+    protected static ?array $currentUserTenantRolesCache = null;
+
+    protected $fillable = [
+        'uuid',
+    ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $tenant) {
+            if (blank($tenant->uuid)) {
+                $tenant->uuid = (string) Str::uuid();
+            }
+        });
+    }
+
+    public function companies(): HasMany
+    {
+        return $this->hasMany(Company::class, 'tenant_id');
+    }
+
+    public function members(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'tenant_users')
+            ->withPivot(['role', 'created_by'])
+            ->withTimestamps();
+    }
+
+    public function helpdeskTicketTypes(): BelongsToMany
+    {
+        return $this->belongsToMany(TicketType::class, 'tenant_helpdesk_ticket_types')
+            ->withTimestamps();
+    }
+
+    public function rootCompany(): ?Company
+    {
+        return Company::withoutGlobalScopes()
+            ->where('tenant_id', $this->id)
+            ->whereNull('deleted_at')
+            ->whereNull('parent_id')
+            ->orderBy('id')
+            ->first();
+    }
+
+    public function activeCompanyIds(): array
+    {
+        return Company::withoutGlobalScopes()
+            ->where('tenant_id', $this->id)
+            ->whereNull('deleted_at')
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->rootCompany()?->name ?? ('Tenant '.$this->uuid);
+    }
+
+    public function publicHelpdeskUrl(): string
+    {
+        return route('tickets.portal.create', ['tenantPortal' => $this->publicHelpdeskRouteKey()]);
+    }
+
+    public function publicHelpdeskRouteKey(): string
+    {
+        return $this->rootCompany()?->helpdesk_slug ?: $this->uuid;
+    }
+
+    public function isHelpdeskEnabled(): bool
+    {
+        return (bool) ($this->rootCompany()?->helpdesk_enabled ?? false);
+    }
+
+    public function publicHelpdeskAllowsAttachments(): bool
+    {
+        return (bool) ($this->rootCompany()?->helpdesk_allow_attachments ?? true);
+    }
+
+    public function publicHelpdeskContactEmail(): ?string
+    {
+        return $this->rootCompany()?->helpdesk_contact_email ?: $this->rootCompany()?->email;
+    }
+
+    public function publicHelpdeskContactPhone(): ?string
+    {
+        return $this->rootCompany()?->helpdesk_contact_phone ?: $this->rootCompany()?->phone;
+    }
+
+    public function publicHelpdeskIntro(): ?string
+    {
+        return $this->rootCompany()?->helpdesk_intro;
+    }
+
+    public function publicHelpdeskPrivacyNote(): ?string
+    {
+        return $this->rootCompany()?->helpdesk_privacy_note;
+    }
+
+    public static function resolvePublicHelpdeskIdentifier(string $identifier): ?self
+    {
+        $rootCompany = Company::withoutGlobalScopes()
+            ->whereNull('deleted_at')
+            ->whereNull('parent_id')
+            ->whereNotNull('tenant_id')
+            ->where('helpdesk_slug', $identifier)
+            ->first();
+
+        if ($rootCompany?->tenant_id) {
+            return static::query()->find($rootCompany->tenant_id);
+        }
+
+        return static::query()->where('uuid', $identifier)->first();
+    }
+
+    public function publicHelpdeskAvailableTicketTypes(): Collection
+    {
+        $rootCompany = $this->rootCompany();
+        $companyIds = $this->activeCompanyIds();
+
+        if (is_null($rootCompany)) {
+            return collect();
+        }
+
+        $ancestorIds = Company::ancestorCompanyIds($rootCompany->id);
+
+        return TicketType::withoutGlobalScopes()
+            ->whereNull('deleted_at')
+            ->active()
+            ->public()
+            ->where(function ($query) use ($companyIds, $ancestorIds) {
+                $query->whereNull('company_id');
+
+                if (count($companyIds) > 0) {
+                    $query->orWhereIn('company_id', $companyIds);
+                }
+
+                if (count($ancestorIds) > 0) {
+                    $query->orWhere(function ($nested) use ($ancestorIds) {
+                        $nested->whereIn('company_id', $ancestorIds)
+                            ->where('visibility_type', 'descendants');
+                    });
+                }
+            })
+            ->ordered()
+            ->get();
+    }
+
+    public function publicHelpdeskSelectedTicketTypes(): Collection
+    {
+        $selectedIds = DB::table('tenant_helpdesk_ticket_types')
+            ->where('tenant_id', $this->id)
+            ->pluck('ticket_type_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if (count($selectedIds) === 0) {
+            return $this->publicHelpdeskAvailableTicketTypes();
+        }
+
+        return $this->publicHelpdeskAvailableTicketTypes()
+            ->whereIn('id', $selectedIds)
+            ->values();
+    }
+
+    public static function createMinimal(): self
+    {
+        return static::create();
+    }
+
+    public static function explicitMembershipTenantIdsForCurrentUser(): array
+    {
+        $authContext = Company::currentAuthContext();
+
+        if (is_null($authContext['id'])) {
+            return [];
+        }
+
+        return DB::table('tenant_users')
+            ->where('user_id', $authContext['id'])
+            ->pluck('tenant_id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public static function currentUserTenantRoles(): array
+    {
+        if (! is_null(static::$currentUserTenantRolesCache)) {
+            return static::$currentUserTenantRolesCache;
+        }
+
+        $authContext = Company::currentAuthContext();
+
+        if (is_null($authContext['id'])) {
+            return static::$currentUserTenantRolesCache = [];
+        }
+
+        return static::$currentUserTenantRolesCache = DB::table('tenant_users')
+            ->where('user_id', $authContext['id'])
+            ->pluck('role', 'tenant_id')
+            ->mapWithKeys(fn ($role, $tenantId) => [(int) $tenantId => (string) $role])
+            ->all();
+    }
+
+    public static function currentUserRoleForTenant(?int $tenantId): ?string
+    {
+        if (is_null($tenantId)) {
+            return null;
+        }
+
+        $roles = static::currentUserTenantRoles();
+
+        return $roles[(int) $tenantId] ?? null;
+    }
+
+    public static function accessibleTenantIdsForCurrentUser(): array
+    {
+        $authContext = Company::currentAuthContext();
+
+        if (is_null($authContext['id'])) {
+            return [];
+        }
+
+        if ($authContext['is_superuser']) {
+            return Company::withoutGlobalScopes()
+                ->whereNull('deleted_at')
+                ->whereNotNull('tenant_id')
+                ->pluck('tenant_id')
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values()
+                ->all();
+        }
+
+        $tenantIds = static::explicitMembershipTenantIdsForCurrentUser();
+
+        if (! is_null($authContext['company_id'])) {
+            $currentTenantId = Company::withoutGlobalScopes()
+                ->where('id', $authContext['company_id'])
+                ->value('tenant_id');
+
+            if (! is_null($currentTenantId)) {
+                $tenantIds[] = (int) $currentTenantId;
+            }
+        }
+
+        return collect($tenantIds)
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public static function switchableTenantIdsForCurrentUser(): array
+    {
+        return static::accessibleTenantIdsForCurrentUser();
+    }
+
+    public static function switchableTenantsForCurrentUser(): Collection
+    {
+        $tenantIds = static::switchableTenantIdsForCurrentUser();
+
+        if (count($tenantIds) === 0) {
+            return collect();
+        }
+
+        return static::query()
+            ->whereIn('id', $tenantIds)
+            ->get()
+            ->filter(fn (self $tenant) => ! is_null($tenant->rootCompany()))
+            ->sortBy(fn (self $tenant) => mb_strtolower($tenant->display_name))
+            ->values();
+    }
+
+    public static function canCurrentUserSwitchTenants(): bool
+    {
+        return static::switchableTenantsForCurrentUser()->count() > 1;
+    }
+
+    public static function shouldShowGlobalTenantContextOption(): bool
+    {
+        return static::switchableTenantsForCurrentUser()->count() > 1;
+    }
+
+    public static function canCurrentUserSwitchToTenant(?int $tenantId): bool
+    {
+        if (is_null(Company::currentAuthContext()['id'])) {
+            return false;
+        }
+
+        if (is_null($tenantId)) {
+            return true;
+        }
+
+        return in_array($tenantId, static::switchableTenantIdsForCurrentUser(), true);
+    }
+
+    public static function activeTenantId(): ?int
+    {
+        if (is_null(Company::currentAuthContext()['id'])) {
+            return null;
+        }
+
+        if (! session()->has(static::ACTIVE_TENANT_SESSION_KEY) && session()->has(Company::ACTIVE_COMPANY_SESSION_KEY)) {
+            $legacyCompanyId = Company::getIdFromInput(session(Company::ACTIVE_COMPANY_SESSION_KEY));
+            $legacyTenantId = $legacyCompanyId
+                ? Company::withoutGlobalScopes()->where('id', $legacyCompanyId)->value('tenant_id')
+                : null;
+
+            if ($legacyTenantId) {
+                session([static::ACTIVE_TENANT_SESSION_KEY => (int) $legacyTenantId]);
+            }
+
+            session()->forget(Company::ACTIVE_COMPANY_SESSION_KEY);
+        }
+
+        if (! session()->has(static::ACTIVE_TENANT_SESSION_KEY)) {
+            return null;
+        }
+
+        $activeTenantId = Company::getIdFromInput(session(static::ACTIVE_TENANT_SESSION_KEY));
+
+        if (is_null($activeTenantId) || ! static::canCurrentUserSwitchToTenant((int) $activeTenantId)) {
+            session()->forget(static::ACTIVE_TENANT_SESSION_KEY);
+
+            return null;
+        }
+
+        return (int) $activeTenantId;
+    }
+
+    public static function activeTenant(): ?self
+    {
+        $activeTenantId = static::activeTenantId();
+
+        if (is_null($activeTenantId)) {
+            return null;
+        }
+
+        return static::find($activeTenantId);
+    }
+
+    public static function currentTenant(): ?self
+    {
+        $activeTenant = static::activeTenant();
+        $authContext = Company::currentAuthContext();
+
+        if ($activeTenant) {
+            return $activeTenant;
+        }
+
+        $accessibleTenantIds = static::accessibleTenantIdsForCurrentUser();
+
+        if (count($accessibleTenantIds) > 1) {
+            return null;
+        }
+
+        $companyId = $authContext['company_id'];
+
+        if (! is_null($companyId)) {
+            $tenantId = Company::withoutGlobalScopes()
+                ->where('id', $companyId)
+                ->value('tenant_id');
+
+            if ($tenantId) {
+                return static::find((int) $tenantId);
+            }
+        }
+
+        if (count($accessibleTenantIds) === 1) {
+            return static::find((int) $accessibleTenantIds[0]);
+        }
+
+        return null;
+    }
+
+    public static function activeTenantCompanyIds(): array
+    {
+        $tenant = static::activeTenant();
+
+        if (! $tenant) {
+            return [];
+        }
+
+        return $tenant->activeCompanyIds();
+    }
+
+    public static function currentTenantRootCompany(): ?Company
+    {
+        return static::currentTenant()?->rootCompany();
+    }
+
+    public static function aggregatedAccessibleCompanyIdsForCurrentUser(): array
+    {
+        $tenantIds = static::accessibleTenantIdsForCurrentUser();
+
+        if (count($tenantIds) === 0) {
+            return [];
+        }
+
+        return Company::withoutGlobalScopes()
+            ->whereNull('deleted_at')
+            ->whereIn('tenant_id', $tenantIds)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public static function canCurrentUserViewTenant(self $tenant): bool
+    {
+        $authContext = Company::currentAuthContext();
+
+        if (is_null($authContext['id'])) {
+            return false;
+        }
+
+        if ($authContext['is_superuser']) {
+            return true;
+        }
+
+        return in_array(static::currentUserRoleForTenant((int) $tenant->id), [static::ROLE_ADMIN, static::ROLE_VIEWER], true);
+    }
+
+    public static function canCurrentUserManageTenant(self $tenant): bool
+    {
+        $authContext = Company::currentAuthContext();
+
+        if (is_null($authContext['id'])) {
+            return false;
+        }
+
+        if ($authContext['is_superuser']) {
+            return true;
+        }
+
+        return static::currentUserRoleForTenant((int) $tenant->id) === static::ROLE_ADMIN;
+    }
+
+    public static function canCurrentUserAccessTenantAdminArea(): bool
+    {
+        $authContext = Company::currentAuthContext();
+
+        if (is_null($authContext['id'])) {
+            return false;
+        }
+
+        return $authContext['is_superuser']
+            || (count(static::explicitMembershipTenantIdsForCurrentUser()) > 0);
+    }
+
+    public static function tenantManageablePermissions(): array
+    {
+        return [
+            'import',
+            'reports.view',
+            'assets.view', 'assets.create', 'assets.edit', 'assets.delete', 'assets.checkin', 'assets.checkout', 'assets.audit', 'assets.view.requestable', 'assets.view.encrypted_custom_fields', 'assets.files',
+            'documents.view', 'documents.create', 'documents.edit', 'documents.delete', 'documents.files',
+            'tickets.view', 'tickets.create', 'tickets.operate', 'tickets.edit', 'tickets.delete', 'tickets.files',
+            'documenttypes.view', 'documenttypes.create', 'documenttypes.edit', 'documenttypes.delete',
+            'documentframeworks.view', 'documentframeworks.create', 'documentframeworks.edit', 'documentframeworks.delete',
+            'accessories.view', 'accessories.create', 'accessories.edit', 'accessories.delete', 'accessories.checkout', 'accessories.checkin', 'accessories.files',
+            'consumables.view', 'consumables.create', 'consumables.edit', 'consumables.delete', 'consumables.checkout', 'consumables.files',
+            'licenses.view', 'licenses.create', 'licenses.edit', 'licenses.delete', 'licenses.checkout', 'licenses.checkin', 'licenses.keys', 'licenses.files',
+            'components.view', 'components.create', 'components.edit', 'components.delete', 'components.checkout', 'components.checkin', 'components.files',
+            'users.view', 'users.create', 'users.edit', 'users.delete', 'users.files',
+            'locations.view', 'locations.create', 'locations.edit', 'locations.delete',
+            'departments.view', 'departments.create', 'departments.edit', 'departments.delete',
+            'companies.view', 'companies.create', 'companies.edit', 'companies.delete',
+            'categories.view', 'categories.create', 'categories.edit', 'categories.delete',
+            'manufacturers.view', 'manufacturers.create', 'manufacturers.edit', 'manufacturers.delete',
+            'suppliers.view', 'suppliers.create', 'suppliers.edit', 'suppliers.delete',
+            'models.view', 'models.create', 'models.edit', 'models.delete',
+            'statuslabels.view', 'statuslabels.create', 'statuslabels.edit', 'statuslabels.delete',
+            'depreciations.view', 'depreciations.create', 'depreciations.edit', 'depreciations.delete',
+            'customfields.view', 'customfields.create', 'customfields.edit', 'customfields.delete',
+        ];
+    }
+
+    public static function tenantViewerPermissions(): array
+    {
+        return array_values(array_filter(static::tenantManageablePermissions(), function ($permission) {
+            return ($permission === 'reports.view')
+                || str_contains($permission, '.view');
+        }));
+    }
+
+    public static function clearCurrentUserTenantRoleCache(): void
+    {
+        static::$currentUserTenantRolesCache = null;
+    }
+
+    public static function setActiveTenantContext($tenantId): void
+    {
+        $tenantId = Company::getIdFromInput($tenantId);
+
+        if (is_null($tenantId)) {
+            session()->forget(static::ACTIVE_TENANT_SESSION_KEY);
+
+            return;
+        }
+
+        session([static::ACTIVE_TENANT_SESSION_KEY => (int) $tenantId]);
+    }
+
+    public static function clearActiveTenantContext(): void
+    {
+        session()->forget(static::ACTIVE_TENANT_SESSION_KEY);
+    }
+}

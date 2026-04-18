@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\Depreciation;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -80,6 +81,10 @@ class DepreciationsController extends Controller
         ]);
         $depreciation->depreciation_type = $request->input('depreciation_type');
         $depreciation->depreciation_min = $request->input('depreciation_min');
+        [$depreciation->company_id, $depreciation->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
 
         // Was the asset created?
         if ($depreciation->save()) {
@@ -141,6 +146,10 @@ class DepreciationsController extends Controller
         ]);
         $depreciation->depreciation_type = $request->input('depreciation_type');
         $depreciation->depreciation_min = $request->input('depreciation_min');
+        [$depreciation->company_id, $depreciation->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
 
         // Was the asset created?
         if ($depreciation->save()) {

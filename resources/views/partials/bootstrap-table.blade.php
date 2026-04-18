@@ -13,6 +13,23 @@
 <script nonce="{{ csrf_token() }}">
     $(function () {
 
+        @if (request()->boolean('reset_view') || request()->boolean('tenant_switched'))
+        if (typeof localStorage !== 'undefined') {
+            for (var storedStateKey in localStorage) {
+                if (storedStateKey.includes('.bs.table.')) {
+                    localStorage.removeItem(storedStateKey);
+                }
+            }
+        }
+
+        document.cookie.split(';').forEach(function(cookie) {
+            var cookieName = cookie.split('=')[0].trim();
+            if (cookieName.includes('.bs.table.')) {
+                document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+            }
+        });
+        @endif
+
 
         var blockedFields = "searchable,sortable,switchable,title,visible,formatter,class".split(",");
 
@@ -134,7 +151,7 @@
                 paginationNextText: "{{ trans('general.next') }}",
                 paginationPreText: "{{ trans('general.previous') }}",
                 search: data_with_default('search', true),
-                searchText: "{{ request()->get('assetTag') ?? session()->get('search') }}", // this is needed so that people who incorrectly use the topsearch as an omnibar will not have an additional filter from BS tables
+                searchText: "{{ request()->get('assetTag') ?? request()->get('search', '') }}",
                 searchHighlight: data_with_default('search-highlight', true),
                 showColumns: data_with_default('show-columns', true),
                 showColumnsToggleAll: data_with_default('show-columns-toggle-all', true),
@@ -456,6 +473,47 @@
             icon: 'fa-solid fa-trash',
             event () {
                 window.location.href = '{{ (request()->input('status_type') == "Deleted") ? route('documents.index') : route('documents.index', ['status_type' => 'Deleted']) }}';
+            },
+            attributes: {
+                class: '{{ (request()->input('status_type') == "Deleted") ? 'btn-selected' : '' }}',
+                title: '{{ (request()->input('status_type') == "Deleted") ? trans('general.list_all') : trans('general.deleted') }}',
+            }
+        },
+    });
+
+    window.ticketButtons = () => ({
+        @can('create', \App\Models\Ticket::class)
+        btnAdd: {
+            text: '{{ trans('general.create') }}',
+            icon: 'fa fa-plus',
+            event () {
+                window.location.href = '{{ route('tickets.create') }}';
+            },
+            attributes: {
+                class: 'btn-warning',
+                title: '{{ trans('general.create') }}',
+                @if ($snipeSettings->shortcuts_enabled == 1)
+                accesskey: 'n'
+                @endif
+            }
+        },
+        @endcan
+        btnOpenQueue: {
+            text: '{{ trans('admin/tickets/general.open_queue') }}',
+            icon: 'fa-regular fa-life-ring',
+            event () {
+                window.location.href = '{{ route('tickets.index', ['queue' => 'open']) }}';
+            },
+            attributes: {
+                class: '{{ (request()->input('queue') == "open") ? 'btn-selected' : '' }}',
+                title: '{{ trans('admin/tickets/general.open_queue') }}',
+            }
+        },
+        btnShowDeleted: {
+            text: '{{ (request()->input('status_type') == "Deleted") ? trans('general.list_all') : trans('general.deleted') }}',
+            icon: 'fa-solid fa-trash',
+            event () {
+                window.location.href = '{{ (request()->input('status_type') == "Deleted") ? route('tickets.index') : route('tickets.index', ['status_type' => 'Deleted']) }}';
             },
             attributes: {
                 class: '{{ (request()->input('status_type') == "Deleted") ? 'btn-selected' : '' }}',
@@ -1321,6 +1379,9 @@
             } else if (value.type == 'document') {
                 item_destination = 'documents'
                 item_icon = 'fa-regular fa-file-lines';
+            } else if (value.type == 'ticket') {
+                item_destination = 'tickets'
+                item_icon = 'fa-regular fa-life-ring';
             } else if (value.type == 'model') {
                 item_destination = 'models'
                 item_icon = '';
@@ -1467,6 +1528,7 @@
         'documentframeworks',
         'documenttypes',
         'documents',
+        'tickets',
         'depreciations',
         'fieldsets',
         'groups',
@@ -1500,6 +1562,51 @@
         var owner_name = child_formatters[i][0];
         var child_name = child_formatters[i][1];
         window[owner_name + '_' + child_name + 'ActionsFormatter'] = genericActionsFormatter(owner_name, child_name);
+    }
+
+    function ticketsActionsFormatter(value, row) {
+        var actions = '<nobr>';
+        var ticketLabel = row.subject ? row.subject : row.ticket_number;
+
+        if ((row.available_actions) && (row.available_actions.view === true)) {
+            actions += '<a href="{{ config('app.url') }}/tickets/' + row.id + '" class="actions btn btn-sm btn-info hidden-print" data-tooltip="true" title="{{ trans('general.view') }}"><i class="far fa-eye fa-fw" aria-hidden="true"></i><span class="sr-only">{{ trans('general.view') }}</span></a>&nbsp;';
+        }
+
+        if ((row.available_actions) && (row.available_actions.update === true)) {
+            actions += '<a href="{{ config('app.url') }}/tickets/' + row.id + '/edit" class="actions btn btn-sm btn-warning hidden-print" data-tooltip="true" title="{{ trans('general.update') }}"><x-icon type="edit" class="fa-fw" /><span class="sr-only">{{ trans('general.update') }}</span></a>&nbsp;';
+        }
+
+        if ((row.available_actions) && (row.available_actions.delete === true)) {
+            actions += '<a href="{{ config('app.url') }}/tickets/' + row.id + '" '
+                + ' class="actions btn btn-danger btn-sm delete-asset hidden-print" data-tooltip="true" '
+                + ' data-toggle="modal" data-icon="fa-trash"'
+                + ' data-content="{{ trans('general.sure_to_delete') }}: ' + ticketLabel + '?" '
+                + ' data-title="{{  trans('general.delete') }}" onClick="return false;">'
+                + '<x-icon type="delete" class="fa-fw" /><span class="sr-only">{{ trans('general.delete') }}</span></a>&nbsp;';
+        }
+
+        if ((row.available_actions) && (row.available_actions.restore === true)) {
+            actions += '<form style="display: inline;" method="POST" action="{{ config('app.url') }}/tickets/' + row.id + '/restore">';
+            actions += '@csrf';
+            actions += '<button class="btn btn-sm btn-warning" data-tooltip="true" title="{{ trans('general.restore') }}"><x-icon type="restore" class="fa-fw" /><span class="sr-only">{{ trans('general.restore') }}</span></button>&nbsp;';
+            actions += '</form>';
+        }
+
+        actions += '</nobr>';
+
+        return actions;
+    }
+
+    function ticketPersonFormatter(value) {
+        if (!value || !value.name) {
+            return '';
+        }
+
+        if (value.id && value.id > 0) {
+            return '<a href="{{ config('app.url') }}/users/' + value.id + '">' + value.name + '</a>';
+        }
+
+        return value.name;
     }
 
 

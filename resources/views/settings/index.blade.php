@@ -50,11 +50,71 @@
       cursor: pointer;
       color: #ccc;
     }
+    #setting-list .list.clearfix {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    #setting-list .list.clearfix > [class*="col-"] {
+      display: flex;
+      margin-bottom: 15px;
+    }
+    #setting-list .admin.box {
+      display: flex;
+      width: 100%;
+      margin-bottom: 0;
+    }
+    #setting-list .admin.box .box-body {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      justify-content: flex-start;
+      min-height: 190px;
+    }
+    #setting-list .admin.box .settings_button {
+      display: inline-block;
+    }
+    #setting-list .admin.box .name {
+      display: block;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    #setting-list .admin.box .index-block {
+      margin-bottom: 0;
+      overflow: visible;
+      text-overflow: clip;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.45;
+      min-height: 3em;
+    }
+    @media (max-width: 767px) {
+      #setting-list .admin.box .box-body {
+        min-height: 0;
+      }
+      #setting-list .admin.box .index-block {
+        min-height: 0;
+      }
+    }
   </style>
 
   <div class="row">
     <!-- search filter list -->
     <div class="list clearfix">
+
+        <div class="col-md-4 col-lg-3 col-sm-6 col-xl-1">
+          <div class="admin box box-default">
+            <div class="box-body text-center">
+              <h5>
+              <a href="{{ route('tenants.index') }}" class="settings_button">
+                <x-icon type="department" class="fa-4x"/>
+                <br><br>
+                <span class="name">{{ trans('admin/tenants/general.title') }}</span>
+              </a>
+              </h5>
+              <p class="index-block">{{ trans('admin/tenants/general.help') }}</p>
+            </div>
+          </div>
+        </div>
 
         <div class="col-md-4 col-lg-3 col-sm-6 col-xl-1">
           <div class="admin box box-default">

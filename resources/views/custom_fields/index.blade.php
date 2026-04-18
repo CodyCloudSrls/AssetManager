@@ -40,6 +40,8 @@
           <thead>
             <tr>
               <th>{{ trans('general.name') }}</th>
+              <th>{{ trans('general.company') }}</th>
+              <th>{{ trans('general.template_visibility.label') }}</th>
               <th>{{ trans('admin/custom_fields/general.qty_fields') }}</th>
               <th>{{ trans('admin/custom_fields/general.used_by_models') }}</th>
               <th>{{ trans('table.actions') }}</th>
@@ -53,6 +55,8 @@
               <td>
                 <a href="{{ route('fieldsets.show', ['fieldset' => $fieldset->id]) }}">{{ $fieldset->name }}</a>
               </td>
+              <td>{{ $fieldset->company?->name ?? '-' }}</td>
+              <td>{{ $fieldset->visibility_label }}</td>
               <td>
                 {{ $fieldset->fields->count() }}
               </td>
@@ -125,6 +129,8 @@
           <thead>
             <tr>
               <th data-sortable="true" data-searchable="true">{{ trans('general.name') }}</th>
+              <th data-sortable="true" data-searchable="true">{{ trans('general.company') }}</th>
+              <th data-sortable="true" data-searchable="true">{{ trans('general.template_visibility.label') }}</th>
               <th data-sortable="true" data-searchable="true">{{ trans('admin/custom_fields/general.help_text')}}</th>
               <th data-sortable="true" data-visible="false">{{ trans('admin/custom_fields/general.db_field') }}</th>
               <th data-sortable="true" data-searchable="true">{{ trans('admin/custom_fields/general.field_format') }}</th>
@@ -196,6 +202,8 @@
             @foreach($custom_fields as $field)
             <tr>
               <td>{{ $field->name }}</td>
+              <td>{{ $field->company?->name ?? '-' }}</td>
+              <td>{{ $field->visibility_label }}</td>
               <td>{{ $field->help_text }}</td>
               <td>
                  <code>{{ $field->convertUnicodeDbSlug() }}</code>

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Presenters\CustomFieldsetPresenter;
 use App\Presenters\Presentable;
+use App\Models\Traits\TenantTemplateTrait;
 use App\Rules\AlphaEncrypted;
 use App\Rules\BooleanEncrypted;
 use App\Rules\DateEncrypted;
@@ -25,6 +26,7 @@ class CustomFieldset extends SnipeModel
 {
     use HasFactory;
     use Presentable;
+    use TenantTemplateTrait;
     use ValidatingTrait;
 
     protected $presenter = CustomFieldsetPresenter::class;
@@ -37,7 +39,20 @@ class CustomFieldset extends SnipeModel
      * @var array
      */
     public $rules = [
-        'name' => 'required|unique:custom_fieldsets',
+        'name' => 'required',
+        'company_id' => 'nullable|integer|exists:companies,id',
+        'visibility_type' => 'required|string|in:private,descendants,global',
+    ];
+
+    protected $fillable = [
+        'name',
+        'company_id',
+        'visibility_type',
+        'created_by',
+    ];
+
+    protected $casts = [
+        'company_id' => 'integer',
     ];
 
     /**

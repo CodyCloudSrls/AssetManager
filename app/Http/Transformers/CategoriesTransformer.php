@@ -56,6 +56,12 @@ class CategoriesTransformer
                 'eula' => ($category->getEula()),
                 'checkin_email' => ($category->checkin_email == '1'),
                 'require_acceptance' => ($category->require_acceptance == '1'),
+                'company' => $category->company ? [
+                    'id' => (int) $category->company->id,
+                    'name' => e($category->company->name),
+                ] : null,
+                'visibility_type' => $category->visibility_type,
+                'visibility_label' => e($category->visibility_label),
                 'item_count' => (int) $category->item_count,
                 'assets_count' => (int) $category->assets_count,
                 'accessories_count' => (int) $category->accessories_count,
@@ -73,7 +79,7 @@ class CategoriesTransformer
             ];
 
             $permissions_array['available_actions'] = [
-                'update' => Gate::allows('update', Category::class),
+                'update' => Gate::allows('update', $category),
                 'delete' => $category->isDeletable(),
             ];
 

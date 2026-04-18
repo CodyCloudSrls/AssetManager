@@ -41,6 +41,12 @@ class CustomFieldsTransformer
         $array = [
             'id' => $field->id,
             'name' => e($field->name),
+            'company' => ($field->company) ? [
+                'id' => (int) $field->company->id,
+                'name' => e($field->company->name),
+            ] : null,
+            'visibility_type' => e($field->visibility_type),
+            'visibility_label' => e($field->visibility_label),
             'db_column_name' => e($field->db_column_name()),
             'format' => e($field->format),
             'field_values' => ($field->field_values) ? e($field->field_values) : null,

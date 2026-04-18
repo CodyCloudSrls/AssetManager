@@ -115,14 +115,6 @@
               </label>
 
           </div>
-
-          <!-- Multi Company Support -->
-          <div class="form-group col-lg-6">
-              <label class="form-control form-control">
-                  <input type="checkbox" value="1" name="full_multiple_companies_support">  {{ trans('admin/settings/general.full_multiple_companies_support_text') }}
-              </label>
-          </div>
-
       </div>
 
 

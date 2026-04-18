@@ -52,8 +52,8 @@ class UploadedFilesController extends Controller
         $uploads = self::$map_object_type[$object_type]::withTrashed()->find($id)->uploads()
             ->with('adminuser');
 
-        $offset = ($request->input('offset') > $uploads->count()) ? $uploads->count() : abs($request->input('offset'));
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $uploads->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sort = in_array($request->input('sort'), $allowed_columns) ? $request->input('sort') : 'created_at';
 

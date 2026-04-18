@@ -19,6 +19,9 @@ enum ActionType: string
     case Declined = 'declined';
     case Audit = 'audit';
     case NoteAdded = 'note added';
+    case TicketCommentAdded = 'ticket comment added';
+    case TicketPublicReply = 'ticket public reply';
+    case TicketWorklogAdded = 'ticket worklog added';
 
     // Users
     case TwoFactorReset = '2FA reset';

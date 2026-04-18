@@ -1,13 +1,16 @@
 <!-- Company -->
-@if (($snipeSettings->full_multiple_companies_support=='1') && (!Auth::user()->isSuperUser()))
-    <!-- full company support is enabled and this user isn't a superadmin -->
+@if (!\App\Models\Company::canCurrentUserSelectCompany())
     <div class="form-group">
         <label for="{{ $fieldname }}" class="col-md-3 control-label">{{ $translated_name }}</label>
         <div class="col-md-6">
+            @php
+                $lockedCompanyId = old($fieldname, (isset($item) && $item->{$fieldname}) ? $item->{$fieldname} : (\App\Models\Company::preferredCompanySelectionId() ?? auth()->user()?->company_id));
+            @endphp
+            <input type="hidden" name="{{ $fieldname }}" value="{{ $lockedCompanyId }}">
             <select class="js-data-ajax" disabled data-endpoint="companies"
                     data-placeholder="{{ trans('general.select_company') }}" name="{{ $fieldname }}" style="width: 100%"
                     aria-label="{{ $fieldname }}"{{ (isset($multiple) && ($multiple=='true')) ? " multiple='multiple'" : '' }}>
-                @if ($company_id = old($fieldname, (isset($item)) ? $item->{$fieldname} : ''))
+                @if ($company_id = $lockedCompanyId)
                     <option value="{{ $company_id }}" selected="selected" role="option" aria-selected="true"  role="option">
                         {{ (\App\Models\Company::find($company_id)) ? \App\Models\Company::find($company_id)->name : '' }}
                     </option>
@@ -19,7 +22,6 @@
     </div>
 
 @else
-    <!-- full company support is enabled or this user is a superadmin -->
     <div id="{{ $fieldname }}" class="form-group{{ $errors->has($fieldname) ? ' has-error' : '' }}">
         <label for="{{ $fieldname }}" class="col-md-3 control-label">{{ $translated_name }}</label>
         <div class="col-md-8">
@@ -31,7 +33,7 @@
                         </option>
                     @endforeach
                 @endisset
-                @if ($company_id = old($fieldname, (isset($item)) ? $item->{$fieldname} : ''))
+                @if ($company_id = old($fieldname, (isset($item) && $item->{$fieldname}) ? $item->{$fieldname} : (\App\Models\Company::preferredCompanySelectionId() ?? '')))
                     <option value="{{ $company_id }}" selected="selected">
                         {{ (\App\Models\Company::find($company_id)) ? \App\Models\Company::find($company_id)->name : '' }}
                     </option>

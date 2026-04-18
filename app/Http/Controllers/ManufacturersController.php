@@ -6,6 +6,7 @@ use App\Actions\Manufacturers\DeleteManufacturerAction;
 use App\Exceptions\ItemStillHasChildren;
 use App\Http\Requests\ImageUploadRequest;
 use App\Models\Actionlog;
+use App\Models\Company;
 use App\Models\Manufacturer;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -98,6 +99,10 @@ class ManufacturersController extends Controller
         $manufacturer->notes = $request->input('notes');
         $manufacturer = $request->handleImages($manufacturer);
         $manufacturer->tag_color = $request->input('tag_color');
+        [$manufacturer->company_id, $manufacturer->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
 
         if ($manufacturer->save()) {
             return redirect()->route('manufacturers.index')->with('success', trans('admin/manufacturers/message.create.success'));
@@ -119,7 +124,7 @@ class ManufacturersController extends Controller
      */
     public function edit(Manufacturer $manufacturer): View|RedirectResponse
     {
-        $this->authorize('update', Manufacturer::class);
+        $this->authorize('update', $manufacturer);
 
         return view('manufacturers/edit')->with('item', $manufacturer);
     }
@@ -138,7 +143,7 @@ class ManufacturersController extends Controller
      */
     public function update(ImageUploadRequest $request, Manufacturer $manufacturer): RedirectResponse
     {
-        $this->authorize('update', Manufacturer::class);
+        $this->authorize('update', $manufacturer);
 
         $manufacturer->name = $request->input('name');
         $manufacturer->url = $request->input('url');
@@ -148,6 +153,10 @@ class ManufacturersController extends Controller
         $manufacturer->support_email = $request->input('support_email');
         $manufacturer->tag_color = $request->input('tag_color');
         $manufacturer->notes = $request->input('notes');
+        [$manufacturer->company_id, $manufacturer->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
 
         // Set the model's image property to null if the image is being deleted
         if ($request->input('image_delete') == 1) {
@@ -201,7 +210,7 @@ class ManufacturersController extends Controller
      */
     public function show(Manufacturer $manufacturer): View|RedirectResponse
     {
-        $this->authorize('view', Manufacturer::class);
+        $this->authorize('view', $manufacturer);
 
         return view('manufacturers/view', compact('manufacturer'));
     }
@@ -217,9 +226,8 @@ class ManufacturersController extends Controller
      */
     public function restore($id): RedirectResponse
     {
-        $this->authorize('delete', Manufacturer::class);
-
         if ($manufacturer = Manufacturer::withTrashed()->find($id)) {
+            $this->authorize('delete', $manufacturer);
 
             if ($manufacturer->deleted_at == '') {
                 return redirect()->back()->with('error', trans('general.not_deleted', ['item_type' => trans('general.manufacturer')]));

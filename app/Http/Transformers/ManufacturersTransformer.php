@@ -32,6 +32,12 @@ class ManufacturersTransformer
                 'warranty_lookup_url' => e($manufacturer->warranty_lookup_url),
                 'support_phone' => e($manufacturer->support_phone),
                 'support_email' => e($manufacturer->support_email),
+                'company' => $manufacturer->company ? [
+                    'id' => (int) $manufacturer->company->id,
+                    'name' => e($manufacturer->company->name),
+                ] : null,
+                'visibility_type' => $manufacturer->visibility_type,
+                'visibility_label' => e($manufacturer->visibility_label),
                 'assets_count' => (int) $manufacturer->assets_count,
                 'licenses_count' => (int) $manufacturer->licenses_count,
                 'consumables_count' => (int) $manufacturer->consumables_count,
@@ -49,7 +55,7 @@ class ManufacturersTransformer
             ];
 
             $permissions_array['available_actions'] = [
-                'update' => (($manufacturer->deleted_at == '') && (Gate::allows('update', Manufacturer::class))),
+                'update' => (($manufacturer->deleted_at == '') && (Gate::allows('update', $manufacturer))),
                 'restore' => (($manufacturer->deleted_at != '') && (Gate::allows('create', Manufacturer::class))),
                 'delete' => $manufacturer->isDeletable(),
             ];

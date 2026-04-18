@@ -10,6 +10,8 @@
 @section('inputFields')
 
 @include ('partials.forms.edit.name', ['translated_name' => trans('admin/depreciations/general.depreciation_name')])
+@include ('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id', 'item' => $item])
+@include ('partials.forms.edit.template-visibility-select', ['translated_name' => trans('general.template_visibility.label'), 'fieldname' => 'visibility_type', 'item' => $item])
 <!-- Months -->
 <div class="form-group {{ $errors->has('months') ? ' has-error' : '' }}">
     <label for="months" class="col-md-3 control-label">

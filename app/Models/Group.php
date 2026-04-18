@@ -23,6 +23,7 @@ class Group extends SnipeModel
 
     protected $fillable = [
         'name',
+        'system_key',
         'permissions',
         'notes',
     ];

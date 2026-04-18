@@ -36,35 +36,6 @@
 
                        <fieldset>
                            <x-form.legend>
-                               {{ trans('admin/settings/general.legends.scoping') }}
-                           </x-form.legend>
-                            <!-- Full Multiple Companies Support -->
-                            <div class="form-group {{ $errors->has('full_multiple_companies_support') ? 'error' : '' }}">
-                                <div class="col-md-8 col-md-offset-3">
-                                    <label class="form-control">
-                                        <input type="checkbox" name="full_multiple_companies_support" value="1" @checked(old('full_multiple_companies_support', $setting->full_multiple_companies_support)) aria-label="full_multiple_companies_support" />
-                                        {{ trans('admin/settings/general.full_multiple_companies_support_text') }}
-                                    </label>
-                                    {!! $errors->first('full_multiple_companies_support', '<span class="alert-msg" aria-hidden="true">:message</span>') !!}
-                                    <p class="help-block">
-                                        {{ trans('admin/settings/general.full_multiple_companies_support_help_text') }}
-                                    </p>
-                                </div>
-                            </div>
-                            <!-- /.form-group -->
-
-                            <!-- Scope Locations with Full Multiple Companies Support -->
-                            <div class="form-group {{ $errors->has('scope_locations_fmcs') ? 'error' : '' }}">
-                                <div class="col-md-8 col-md-offset-3">
-                                    <livewire:location-scope-check />
-                                </div>
-                            </div>
-                            <!-- /.form-group -->
-
-                       </fieldset>
-
-                       <fieldset>
-                           <x-form.legend>
                                {{ trans('admin/settings/general.legends.formats') }}
                            </x-form.legend>
                            <!-- Email domain -->

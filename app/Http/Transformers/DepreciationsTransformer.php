@@ -26,6 +26,12 @@ class DepreciationsTransformer
             'name' => e($depreciation->name),
             'months' => trans_choice('general.months_plural', $depreciation->months),
             'depreciation_min' => $depreciation->depreciation_type === 'percent' ? $depreciation->depreciation_min.'%' : $depreciation->depreciation_min,
+            'company' => $depreciation->company ? [
+                'id' => (int) $depreciation->company->id,
+                'name' => e($depreciation->company->name),
+            ] : null,
+            'visibility_type' => $depreciation->visibility_type,
+            'visibility_label' => e($depreciation->visibility_label),
             'assets_count' => ($depreciation->assets_count > 0) ? (int) $depreciation->assets_count : 0,
             'models_count' => ($depreciation->models_count > 0) ? (int) $depreciation->models_count : 0,
             'licenses_count' => ($depreciation->licenses_count > 0) ? (int) $depreciation->licenses_count : 0,
@@ -38,8 +44,8 @@ class DepreciationsTransformer
         ];
 
         $permissions_array['available_actions'] = [
-            'update' => Gate::allows('update', Depreciation::class),
-            'delete' => Gate::allows('delete', Depreciation::class),
+            'update' => Gate::allows('update', $depreciation),
+            'delete' => Gate::allows('delete', $depreciation),
         ];
 
         $array += $permissions_array;

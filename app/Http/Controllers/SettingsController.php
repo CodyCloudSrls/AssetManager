@@ -49,7 +49,7 @@ class SettingsController extends Controller
      */
     public function index(): View
     {
-        $settings = Setting::getSettings();
+        $settings = Setting::getRawSettings();
 
         return view('settings/index', compact('settings'));
     }
@@ -63,7 +63,7 @@ class SettingsController extends Controller
      */
     public function getSettings(): View
     {
-        $setting = Setting::getSettings();
+        $setting = Setting::getRawSettings();
 
         return view('settings/general', compact('setting'));
     }
@@ -77,7 +77,7 @@ class SettingsController extends Controller
      */
     public function postSettings(Request $request): RedirectResponse
     {
-        if (is_null($setting = Setting::getSettings())) {
+        if (is_null($setting = Setting::getRawSettings())) {
             return redirect()->to('admin')->with('error', trans('admin/settings/message.update.error'));
         }
 
@@ -87,22 +87,8 @@ class SettingsController extends Controller
             $setting->modellist_displays = implode(',', $request->input('show_in_model_list'));
         }
 
-        $old_locations_fmcs = $setting->scope_locations_fmcs;
-        $setting->full_multiple_companies_support = $request->input('full_multiple_companies_support', '0');
-        $setting->scope_locations_fmcs = $request->input('scope_locations_fmcs', '0');
-
-        // Backward compatibility for locations makes no sense without FullMultipleCompanySupport
-        if (! $setting->full_multiple_companies_support) {
-            $setting->scope_locations_fmcs = '0';
-        }
-
-        // check for inconsistencies when activating scoped locations
-        if ($old_locations_fmcs == '0' && $setting->scope_locations_fmcs == '1') {
-            $mismatched = Helper::test_locations_fmcs(false);
-            if (count($mismatched) != 0) {
-                return redirect()->back()->withInput()->with('error', trans_choice('admin/settings/message.location_scoping.mismatch', count($mismatched)).' '.trans('admin/settings/message.location_scoping.not_saved'));
-            }
-        }
+        $setting->full_multiple_companies_support = 1;
+        $setting->scope_locations_fmcs = 1;
 
         $setting->unique_serial = $request->input('unique_serial', '0');
         $setting->shortcuts_enabled = $request->input('shortcuts_enabled', '0');
@@ -150,7 +136,7 @@ class SettingsController extends Controller
      */
     public function getBranding(): View
     {
-        $setting = Setting::getSettings();
+        $setting = Setting::getRawSettings();
 
         return view('settings.branding', compact('setting'));
     }
@@ -165,7 +151,7 @@ class SettingsController extends Controller
     public function postBranding(ImageUploadRequest $request): RedirectResponse
     {
         // Something has gone horribly wrong - no settings record exists!
-        if (is_null($setting = Setting::getSettings())) {
+        if (is_null($setting = Setting::getRawSettings())) {
             return redirect()->to('admin')->with('error', trans('admin/settings/message.update.error'));
         }
 
@@ -265,7 +251,7 @@ class SettingsController extends Controller
      */
     public function getSecurity(): View
     {
-        $setting = Setting::getSettings();
+        $setting = Setting::getRawSettings();
 
         return view('settings.security', compact('setting'));
     }
@@ -292,7 +278,7 @@ class SettingsController extends Controller
             ],
         ]);
 
-        if (is_null($setting = Setting::getSettings())) {
+        if (is_null($setting = Setting::getRawSettings())) {
             return redirect()->to('admin')->with('error', trans('admin/settings/message.update.error'));
         }
         if (! config('app.lock_passwords')) {
@@ -334,7 +320,7 @@ class SettingsController extends Controller
      */
     public function getLocalization(): View
     {
-        $setting = Setting::getSettings();
+        $setting = Setting::getRawSettings();
 
         return view('settings.localization', compact('setting'));
     }
@@ -348,7 +334,7 @@ class SettingsController extends Controller
      */
     public function postLocalization(StoreLocalizationSettings $request): RedirectResponse
     {
-        if (is_null($setting = Setting::getSettings())) {
+        if (is_null($setting = Setting::getRawSettings())) {
             return redirect()->to('admin')->with('error', trans('admin/settings/message.update.error'));
         }
 
@@ -379,7 +365,7 @@ class SettingsController extends Controller
      */
     public function getAlerts(): View
     {
-        $setting = Setting::getSettings();
+        $setting = Setting::getRawSettings();
 
         return view('settings.alerts', compact('setting'));
     }
@@ -393,7 +379,7 @@ class SettingsController extends Controller
      */
     public function postAlerts(StoreNotificationSettings $request): RedirectResponse
     {
-        if (is_null($setting = Setting::getSettings())) {
+        if (is_null($setting = Setting::getRawSettings())) {
             return redirect()->to('admin')->with('error', trans('admin/settings/message.update.error'));
         }
 
@@ -448,7 +434,7 @@ class SettingsController extends Controller
      */
     public function getSlack(): View
     {
-        $setting = Setting::getSettings();
+        $setting = Setting::getRawSettings();
 
         return view('settings.slack', compact('setting'));
     }
@@ -462,7 +448,7 @@ class SettingsController extends Controller
      */
     public function getAssetTags(): View
     {
-        $setting = Setting::getSettings();
+        $setting = Setting::getRawSettings();
 
         return view('settings.asset_tags', compact('setting'));
     }
@@ -476,7 +462,7 @@ class SettingsController extends Controller
      */
     public function postAssetTags(Request $request): RedirectResponse
     {
-        if (is_null($setting = Setting::getSettings())) {
+        if (is_null($setting = Setting::getRawSettings())) {
             return redirect()->to('admin')->with('error', trans('admin/settings/message.update.error'));
         }
 
@@ -522,7 +508,7 @@ class SettingsController extends Controller
         $is_gd_installed = extension_loaded('gd');
 
         return view('settings.labels')
-            ->with('setting', Setting::getSettings())
+            ->with('setting', Setting::getRawSettings())
             ->with('is_gd_installed', $is_gd_installed)
             ->with('customFields', CustomField::where('field_encrypted', '=', 0)->get());
     }
@@ -536,7 +522,7 @@ class SettingsController extends Controller
      */
     public function postLabels(StoreLabelSettings $request): RedirectResponse
     {
-        if (is_null($setting = Setting::getSettings())) {
+        if (is_null($setting = Setting::getRawSettings())) {
             return redirect()->to('admin')->with('error', trans('admin/settings/message.update.error'));
         }
         $setting->label2_enable = $request->input('label2_enable');
@@ -618,7 +604,7 @@ class SettingsController extends Controller
      */
     public function getLdapSettings(): View
     {
-        $setting = Setting::getSettings();
+        $setting = Setting::getRawSettings();
         $groups = Group::pluck('name', 'id');
 
         return view('settings.ldap', compact('setting', 'groups'));
@@ -633,7 +619,7 @@ class SettingsController extends Controller
      */
     public function postLdapSettings(StoreLdapSettings $request): RedirectResponse
     {
-        if (is_null($setting = Setting::getSettings())) {
+        if (is_null($setting = Setting::getRawSettings())) {
             return redirect()->to('admin')->with('error', trans('admin/settings/message.update.error'));
         }
 
@@ -696,7 +682,7 @@ class SettingsController extends Controller
      */
     public function getSamlSettings(): View
     {
-        $setting = Setting::getSettings();
+        $setting = Setting::getRawSettings();
 
         return view('settings.saml', compact('setting'));
     }
@@ -710,7 +696,7 @@ class SettingsController extends Controller
      */
     public function postSamlSettings(SettingsSamlRequest $request): RedirectResponse
     {
-        if (is_null($setting = Setting::getSettings())) {
+        if (is_null($setting = Setting::getRawSettings())) {
             return redirect()->to('admin')->with('error', trans('admin/settings/message.update.error'));
         }
 
@@ -743,7 +729,7 @@ class SettingsController extends Controller
      */
     public static function getPDFBranding(): Setting
     {
-        $pdf_branding = Setting::getSettings();
+        $pdf_branding = Setting::getRawSettings();
 
         return $pdf_branding;
     }
@@ -757,7 +743,7 @@ class SettingsController extends Controller
      */
     public function getBackups(): View
     {
-        $settings = Setting::getSettings();
+        $settings = Setting::getRawSettings();
         $path = 'app/backups';
         $backup_files = Storage::files($path);
         $files_raw = [];

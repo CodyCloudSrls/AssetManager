@@ -11,7 +11,17 @@
     <div class="row">
 
         <div class="col-md-3">
-            <a class="btn btn-link" href="{{ $index_route ? route($index_route) : url()->previous() }}">{{ trans('button.cancel') }}</a>
+            @php
+                $cancelUrl = url()->previous();
+
+                if ($index_route) {
+                    $cancelUrl = str_contains($index_route, '/')
+                        ? $index_route
+                        : route($index_route);
+                }
+            @endphp
+
+            <a class="btn btn-link" href="{{ $cancelUrl }}">{{ trans('button.cancel') }}</a>
         </div>
 
         <div class="col-md-9 text-right">

@@ -45,6 +45,7 @@ class UsersController extends Controller
     public function index(FilterRequest $request): array
     {
         $this->authorize('view', User::class);
+        $authenticatedUser = auth()->user();
 
         $users = User::select([
             'users.activated',
@@ -102,6 +103,10 @@ class UsersController extends Controller
                 'managesUsers as manages_users_count',
                 'managedLocations as manages_locations_count',
             ]);
+
+        if (! $authenticatedUser->isSuperUser()) {
+            $users->withoutPlatformSuperAdmins();
+        }
 
         $allowed_columns =
             [
@@ -361,8 +366,8 @@ class UsersController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $users->count()) ? $users->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $users->count(), $limit);
 
         $total = $users->count();
         $users = $users->skip($offset)->take($limit)->get();
@@ -380,6 +385,8 @@ class UsersController extends Controller
      */
     public function selectlist(Request $request): array
     {
+        $authenticatedUser = auth()->user();
+
         $users = User::select(
             [
                 'users.id',
@@ -393,6 +400,23 @@ class UsersController extends Controller
                 'users.email',
             ]
         )->where('show_in_list', '=', '1');
+
+        if (($request->boolean('exclude_superusers')) || (! $authenticatedUser->isSuperUser())) {
+            $users->withoutPlatformSuperAdmins();
+        }
+
+        if ($request->filled('tenant_exclude')) {
+            $tenantId = (int) $request->input('tenant_exclude');
+            $users->whereDoesntHave('tenants', fn ($query) => $query->where('tenants.id', $tenantId));
+        }
+
+        if ($request->filled('companyId')) {
+            $companyId = Company::getIdForCurrentUser($request->input('companyId'));
+
+            if (! is_null($companyId)) {
+                $users->whereIn('users.company_id', Company::descendantCompanyIds($companyId));
+            }
+        }
 
         if ($request->filled('search')) {
             $users = $users->where(function ($query) use ($request) {
@@ -941,8 +965,8 @@ class UsersController extends Controller
         $this->authorize('history', $user);
         $history = $user->getHistory($request);
         $total = $user->getHistory($request)->count();
-        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $total, $limit);
         $history = $history->skip($offset)->take($limit)->get();
 
         return response()->json((new ActionlogsTransformer)->transformActionlogs($history, $total), 200, ['Content-Type' => 'application/json;charset=utf8'], JSON_UNESCAPED_UNICODE);

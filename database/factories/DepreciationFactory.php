@@ -23,9 +23,11 @@ class DepreciationFactory extends Factory
     public function definition()
     {
         return [
+            'company_id' => null,
             'created_by' => User::factory()->superuser(),
             'months' => 36,
             'name' => $this->faker->unique()->catchPhrase(),
+            'visibility_type' => Depreciation::VISIBILITY_GLOBAL,
         ];
     }
 

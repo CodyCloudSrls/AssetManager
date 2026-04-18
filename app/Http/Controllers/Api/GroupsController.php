@@ -37,8 +37,8 @@ class GroupsController extends Controller
             $groups->where('name', '=', $request->input('name'));
         }
 
-        $offset = ($request->input('offset') > $groups->count()) ? $groups->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $groups->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
 
         switch ($request->input('sort')) {

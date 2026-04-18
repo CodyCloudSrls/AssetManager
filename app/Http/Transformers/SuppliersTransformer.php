@@ -38,6 +38,12 @@ class SuppliersTransformer
                 'phone' => e($supplier->phone),
                 'email' => e($supplier->email),
                 'contact' => e($supplier->contact),
+                'company' => $supplier->company ? [
+                    'id' => (int) $supplier->company->id,
+                    'name' => e($supplier->company->name),
+                ] : null,
+                'visibility_type' => $supplier->visibility_type,
+                'visibility_label' => e($supplier->visibility_label),
                 'assets_count' => (int) $supplier->assets_count,
                 'accessories_count' => (int) $supplier->accessories_count,
                 'licenses_count' => (int) $supplier->licenses_count,
@@ -55,8 +61,8 @@ class SuppliersTransformer
             ];
 
             $permissions_array['available_actions'] = [
-                'update' => Gate::allows('update', Supplier::class),
-                'delete' => (Gate::allows('delete', Supplier::class) && ($supplier->isDeletable())),
+                'update' => Gate::allows('update', $supplier),
+                'delete' => (Gate::allows('delete', $supplier) && ($supplier->isDeletable())),
             ];
 
             $array += $permissions_array;

@@ -26,6 +26,7 @@ class SupplierFactory extends Factory
             'address' => $this->faker->streetAddress(),
             'address2' => $this->faker->secondaryAddress(),
             'city' => $this->faker->city(),
+            'company_id' => null,
             'contact' => $this->faker->name(),
             'country' => $this->faker->countryCode(),
             'created_by' => User::factory()->superuser(),
@@ -37,6 +38,7 @@ class SupplierFactory extends Factory
             'state' => $this->faker->stateAbbr(),
             'tag_color' => $this->faker->hexColor(),
             'url' => $this->faker->url(),
+            'visibility_type' => Supplier::VISIBILITY_GLOBAL,
             'zip' => $this->faker->postCode(),
         ];
     }

@@ -25,6 +25,7 @@ class CategoryFactory extends Factory
         return [
             'category_type' => 'asset',
             'checkin_email' => true,
+            'company_id' => null,
             'created_by' => User::factory()->superuser(),
             'eula_text' => $this->faker->paragraph(),
             'name' => $this->faker->catchPhrase(),
@@ -32,6 +33,7 @@ class CategoryFactory extends Factory
             'require_acceptance' => false,
             'tag_color' => $this->faker->hexColor(),
             'use_default_eula' => false,
+            'visibility_type' => Category::VISIBILITY_GLOBAL,
         ];
     }
 

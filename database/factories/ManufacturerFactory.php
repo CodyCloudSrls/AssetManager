@@ -23,6 +23,7 @@ class ManufacturerFactory extends Factory
     public function definition()
     {
         return [
+            'company_id' => null,
             'created_by' => User::factory()->superuser(),
             'name' => $this->faker->unique()->company(),
             'notes' => 'Created by DB seeder',
@@ -30,6 +31,7 @@ class ManufacturerFactory extends Factory
             'support_phone' => $this->faker->phoneNumber(),
             'tag_color' => $this->faker->hexColor(),
             'url' => $this->faker->url(),
+            'visibility_type' => Manufacturer::VISIBILITY_GLOBAL,
         ];
     }
 

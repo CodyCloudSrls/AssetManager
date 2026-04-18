@@ -9,6 +9,67 @@
 {{-- Page content --}}
 @section('content')
 
+<style>
+    .dashboard-card-grid {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -7.5px 10px;
+    }
+    .dashboard-card-col {
+        padding: 0 7.5px 15px;
+        width: 100%;
+    }
+    .dashboard-card-col > a {
+        display: block;
+        height: 100%;
+    }
+    .dashboard-card-grid .dashboard.small-box {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+        min-height: 132px;
+        margin-bottom: 0;
+        max-width: none !important;
+        overflow: hidden !important;
+        white-space: normal !important;
+    }
+    .dashboard-card-grid .dashboard.small-box .inner {
+        min-height: 96px;
+        padding-right: 92px;
+    }
+    .dashboard-card-grid .dashboard.small-box .icon {
+        right: 12px;
+        top: 14px;
+        max-width: 36%;
+        font-size: 68px;
+        opacity: .2;
+    }
+    .dashboard-card-grid .dashboard.small-box .small-box-footer {
+        margin-top: auto;
+    }
+    @media (min-width: 768px) {
+        .dashboard-card-col {
+            width: 50%;
+        }
+    }
+    @media (min-width: 992px) {
+        .dashboard-card-col {
+            width: 33.3333%;
+        }
+    }
+    @media (min-width: 1400px) {
+        .dashboard-card-col {
+            width: 25%;
+        }
+    }
+    @media (min-width: 1680px) {
+        .dashboard-card-col {
+            width: 14.2857%;
+        }
+    }
+</style>
+
 @if ($snipeSettings->dashboard_message!='')
 <div class="row">
     <div class="col-md-12">
@@ -26,11 +87,11 @@
 </div>
 @endif
 
-<div class="row">
+<div class="row dashboard-card-grid">
 
     <!-- panel -->
-    <div class="col-lg-2 col-xs-6">
-        <a href="{{ route('hardware.index') }}">
+    <div class="dashboard-card-col">
+        <a href="{{ route('hardware.index', ['reset_view' => 1]) }}">
             <!-- small hardware box -->
             <div class="dashboard small-box bg-teal">
                 <div class="inner">
@@ -48,8 +109,8 @@
         </a>
     </div><!-- ./col -->
 
-    <div class="col-lg-2 col-xs-6">
-        <a href="{{ route('licenses.index') }}" aria-hidden="true">
+    <div class="dashboard-card-col">
+        <a href="{{ route('licenses.index', ['reset_view' => 1]) }}" aria-hidden="true">
             <!-- small license box -->
             <div class="dashboard small-box bg-maroon">
                 <div class="inner">
@@ -68,9 +129,9 @@
     </div><!-- ./col -->
 
 
-    <div class="col-lg-2 col-xs-6">
+    <div class="dashboard-card-col">
     <!-- small documents box -->
-        <a href="{{ route('documents.index') }}">
+        <a href="{{ route('documents.index', ['reset_view' => 1]) }}">
             <div class="dashboard small-box bg-orange">
                 <div class="inner">
                     <h3> {{ number_format($counts['document']) }}</h3>
@@ -87,9 +148,27 @@
         </a>
     </div><!-- ./col -->
 
-    <div class="col-lg-2 col-xs-6">
+    <div class="dashboard-card-col">
+        <a href="{{ route('tickets.index', ['reset_view' => 1]) }}">
+            <div class="dashboard small-box bg-aqua">
+                <div class="inner">
+                    <h3>{{ number_format($counts['ticket']) }}</h3>
+                    <p>{{ trans('general.tickets') }}</p>
+                </div>
+                <div class="icon" aria-hidden="true">
+                    <x-icon type="tickets" />
+                </div>
+                <span class="small-box-footer">
+                    {{ trans('general.view_all') }}
+                    <x-icon type="arrow-circle-right" />
+                </span>
+            </div>
+        </a>
+    </div><!-- ./col -->
+
+    <div class="dashboard-card-col">
     <!-- small consumables box -->
-        <a href="{{ route('consumables.index') }}">
+        <a href="{{ route('consumables.index', ['reset_view' => 1]) }}">
             <div class="dashboard small-box bg-purple">
                 <div class="inner">
                     <h3> {{ number_format($counts['consumable']) }}</h3>
@@ -106,9 +185,9 @@
         </a>
     </div><!-- ./col -->
 
-    <div class="col-lg-2 col-xs-6">
+    <div class="dashboard-card-col">
         <!-- small kits box -->
-        <a href="{{ route('kits.index') }}">
+        <a href="{{ route('kits.index', ['reset_view' => 1]) }}">
             <div class="dashboard small-box bg-yellow">
                 <div class="inner">
                     <h3>{{ number_format($counts['kit']) }}</h3>
@@ -125,9 +204,9 @@
         </a>
     </div><!-- ./col -->
 
-    <div class="col-lg-2 col-xs-6">
+    <div class="dashboard-card-col">
         <!-- small users box -->
-        <a href="{{ route('users.index') }}">
+        <a href="{{ route('users.index', ['reset_view' => 1]) }}">
             <div class="dashboard small-box bg-light-blue">
                 <div class="inner">
                     <h3>{{ number_format($counts['user']) }}</h3>
@@ -289,7 +368,7 @@
 <div class="row">
     <div class="col-md-6">
 
-		@if ((($snipeSettings->scope_locations_fmcs!='1') && ($snipeSettings->full_multiple_companies_support=='1')))
+		@can('view', \App\Models\Company::class)
 			 <!-- Companies -->	
 			<div class="box box-default">
 				<div class="box-header with-border">
@@ -414,7 +493,7 @@
 				</div><!-- /.box-body -->
 			</div> <!-- /.box -->
 
-		@endif
+		@endcan
 			
     </div>
     <div class="col-md-6">
@@ -502,9 +581,9 @@
     // ---------------------------
     // - ASSET STATUS CHART -
     // ---------------------------
-      var pieChartCanvas = $("#statusPieChart").get(0).getContext("2d");
-      var pieChart = new Chart(pieChartCanvas);
-      var ctx = document.getElementById("statusPieChart");
+      var statusPieCanvas = document.getElementById("statusPieChart");
+
+      if (statusPieCanvas) {
       var pieOptions = {
               legend: {
                   position: 'top',
@@ -535,7 +614,11 @@
           },
           dataType: 'json',
           success: function (data) {
-              var myPieChart = new Chart(ctx,{
+              if (!data || !data.datasets || !data.datasets.length) {
+                  return;
+              }
+
+              new Chart(statusPieCanvas,{
                   type   : 'pie',
                   data   : data,
                   options: pieOptions
@@ -545,11 +628,12 @@
               // window.location.reload(true);
           },
       });
-        var last = document.getElementById('statusPieChart').clientWidth;
+        var last = statusPieCanvas.clientWidth;
         addEventListener('resize', function() {
-        var current = document.getElementById('statusPieChart').clientWidth;
+        var current = statusPieCanvas.clientWidth;
         if (current != last) location.reload();
         last = current;
     });
+    }
 </script>
 @endpush

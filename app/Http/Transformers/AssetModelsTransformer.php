@@ -47,6 +47,11 @@ class AssetModelsTransformer
                 'name' => e($assetmodel->manufacturer->name),
                 'tag_color' => ($assetmodel->manufacturer->tag_color) ? e($assetmodel->manufacturer->tag_color) : null,
             ] : null,
+            'company' => ($assetmodel->company) ? [
+                'id' => (int) $assetmodel->company->id,
+                'name' => e($assetmodel->company->name),
+                'tag_color' => ($assetmodel->company->tag_color) ? e($assetmodel->company->tag_color) : null,
+            ] : null,
             'image' => ($assetmodel->image != '') ? Storage::disk('public')->url('models/'.e($assetmodel->image)) : null,
             'model_number' => ($assetmodel->model_number ? e($assetmodel->model_number) : null),
             'min_amt' => ($assetmodel->min_amt) ? (int) $assetmodel->min_amt : null,
@@ -74,6 +79,8 @@ class AssetModelsTransformer
             'requestable' => ($assetmodel->requestable == '1') ? true : false,
             'require_serial' => ($assetmodel->require_serial == '1') ? true : false,
             'notes' => Helper::parseEscapedMarkedownInline($assetmodel->notes),
+            'visibility_type' => e($assetmodel->visibility_type),
+            'visibility_label' => e($assetmodel->visibility_label),
             'created_by' => ($assetmodel->adminuser) ? [
                 'id' => (int) $assetmodel->adminuser->id,
                 'name' => e($assetmodel->adminuser->display_name),
@@ -86,7 +93,7 @@ class AssetModelsTransformer
 
         $permissions_array['available_actions'] = [
             'create_asset' => (Gate::allows('create', Asset::class) && ($assetmodel->deleted_at == '')),
-            'update' => (Gate::allows('update', AssetModel::class) && ($assetmodel->deleted_at == '')),
+            'update' => (Gate::allows('update', $assetmodel) && ($assetmodel->deleted_at == '')),
             'delete' => $assetmodel->isDeletable(),
             'clone' => (Gate::allows('create', AssetModel::class) && ($assetmodel->deleted_at == '')),
             'restore' => (Gate::allows('create', AssetModel::class) && ($assetmodel->deleted_at != '')),

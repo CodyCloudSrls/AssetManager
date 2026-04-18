@@ -112,6 +112,33 @@ return [
         ],
     ],
 
+    'Tickets' => [
+        [
+            'permission' => 'tickets.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'tickets.create',
+            'display' => true,
+        ],
+        [
+            'permission' => 'tickets.operate',
+            'display' => true,
+        ],
+        [
+            'permission' => 'tickets.edit',
+            'display' => true,
+        ],
+        [
+            'permission' => 'tickets.delete',
+            'display' => true,
+        ],
+        [
+            'permission' => 'tickets.files',
+            'display' => true,
+        ],
+    ],
+
     'DocumentTypes' => [
         [
             'permission' => 'documenttypes.view',

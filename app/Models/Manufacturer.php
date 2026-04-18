@@ -3,16 +3,19 @@
 namespace App\Models;
 
 use App\Models\Traits\Searchable;
+use App\Models\Traits\TenantTemplateTrait;
 use App\Presenters\ManufacturerPresenter;
 use App\Presenters\Presentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Watson\Validating\ValidatingTrait;
 
 class Manufacturer extends SnipeModel
 {
     use HasFactory;
+    use TenantTemplateTrait;
 
     protected $presenter = ManufacturerPresenter::class;
 
@@ -20,15 +23,6 @@ class Manufacturer extends SnipeModel
     use SoftDeletes;
 
     protected $table = 'manufacturers';
-
-    // Declare the rules for the form validation
-    protected $rules = [
-        'name' => 'required|max:255|unique:manufacturers,name,NULL,id,deleted_at,NULL',
-        'url' => 'nullable|starts_with:http://,https://,afp://,facetime://,file://,irc://',
-        'support_email' => 'email|nullable',
-        'support_url' => 'nullable|starts_with:http://,https://,afp://,facetime://,file://,irc://',
-        'warranty_lookup_url' => 'nullable|starts_with:http://,https://,afp://,facetime://,file://,irc://',
-    ];
 
     protected $hidden = ['user_id'];
 
@@ -56,8 +50,14 @@ class Manufacturer extends SnipeModel
         'support_url',
         'url',
         'warranty_lookup_url',
+        'company_id',
+        'visibility_type',
         'tag_color',
         'notes',
+    ];
+
+    protected $casts = [
+        'company_id' => 'integer',
     ];
 
     use Searchable;
@@ -71,6 +71,7 @@ class Manufacturer extends SnipeModel
         'name',
         'created_at',
         'notes',
+        'visibility_type',
     ];
 
     /**
@@ -79,8 +80,36 @@ class Manufacturer extends SnipeModel
      * @var array
      */
     protected $searchableRelations = [
+        'company' => ['name'],
         'adminuser' => ['first_name', 'last_name', 'display_name'],
     ];
+
+    public function getRules()
+    {
+        return [
+            'name' => [
+                'required',
+                'max:255',
+                Rule::unique('manufacturers', 'name')
+                    ->ignore($this->getKey())
+                    ->where(function ($query) {
+                        $query->whereNull('deleted_at');
+
+                        if (is_null($this->company_id)) {
+                            $query->whereNull('company_id');
+                        } else {
+                            $query->where('company_id', $this->company_id);
+                        }
+                    }),
+            ],
+            'url' => 'nullable|starts_with:http://,https://,afp://,facetime://,file://,irc://',
+            'support_email' => 'email|nullable',
+            'support_url' => 'nullable|starts_with:http://,https://,afp://,facetime://,file://,irc://',
+            'warranty_lookup_url' => 'nullable|starts_with:http://,https://,afp://,facetime://,file://,irc://',
+            'company_id' => 'nullable|integer|exists:companies,id',
+            'visibility_type' => 'required|string|in:private,descendants,global',
+        ];
+    }
 
     public function isDeletable()
     {

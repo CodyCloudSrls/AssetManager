@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Helpers\Helper;
 use App\Http\Requests\CustomFieldRequest;
+use App\Models\Company;
 use App\Models\CustomField;
 use App\Models\CustomFieldset;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -35,8 +37,8 @@ class CustomFieldsController extends Controller
     {
         $this->authorize('view', CustomField::class);
 
-        $fieldsets = CustomFieldset::with('fields', 'models')->get();
-        $fields = CustomField::with('fieldset')->get();
+        $fieldsets = CustomFieldset::with('company', 'fields', 'models')->get();
+        $fields = CustomField::with('company', 'fieldset')->get();
 
         return view('custom_fields.index')->with('custom_fieldsets', $fieldsets)->with('custom_fields', $fields);
     }
@@ -68,13 +70,20 @@ class CustomFieldsController extends Controller
     public function create(Request $request): View
     {
         $this->authorize('create', CustomField::class);
-        $fieldsets = CustomFieldset::get();
+        [$companyId, $visibilityType] = Company::normalizeTemplateOwnership(
+            $request->old('company_id', $request->input('company_id')),
+            $request->old('visibility_type', $request->input('visibility_type')),
+        );
+        $field = new CustomField([
+            'company_id' => $companyId,
+            'visibility_type' => $visibilityType,
+        ]);
 
         return view('custom_fields.fields.edit', [
             'predefinedFormats' => Helper::predefined_formats(),
             'customFormat' => '',
-            'fieldsets' => $fieldsets,
-            'field' => new CustomField,
+            'fieldsets' => $this->availableFieldsetsForField($field),
+            'field' => $field,
         ]);
     }
 
@@ -104,6 +113,8 @@ class CustomFieldsController extends Controller
             'name' => trim($request->input('name')),
             'element' => $request->input('element'),
             'help_text' => $request->input('help_text'),
+            'company_id' => $request->input('company_id'),
+            'visibility_type' => $request->input('visibility_type'),
             'field_values' => $request->input('field_values'),
             'field_encrypted' => $request->input('field_encrypted', 0),
             'show_in_email' => $show_in_email,
@@ -127,9 +138,9 @@ class CustomFieldsController extends Controller
         if ($field->save()) {
 
             // Sync fields with fieldsets
-            $fieldset_array = $request->input('associate_fieldsets');
-            if ($request->has('associate_fieldsets') && (is_array($fieldset_array))) {
-                $field->fieldset()->sync(array_keys($fieldset_array));
+            $fieldsetIds = $request->associatedFieldsetIds();
+            if (count($fieldsetIds) > 0) {
+                $field->fieldset()->sync($fieldsetIds);
             } else {
                 $field->fieldset()->sync([]);
             }
@@ -150,13 +161,13 @@ class CustomFieldsController extends Controller
      */
     public function deleteFieldFromFieldset($field_id, $fieldset_id): RedirectResponse
     {
-        $this->authorize('update', CustomField::class);
         $field = CustomField::find($field_id);
 
         // Check that the field exists - this is mostly related to the demo, where we
         // rewrite the data every x minutes, so it's possible someone might be disassociating
         // a field from a fieldset just as we're wiping the database
         if (($field) && ($fieldset_id)) {
+            $this->authorize('update', $field);
 
             if ($field->fieldset()->detach($fieldset_id)) {
                 return redirect()->route('fieldsets.show', ['fieldset' => $fieldset_id])
@@ -180,7 +191,7 @@ class CustomFieldsController extends Controller
      */
     public function destroy(CustomField $field): RedirectResponse
     {
-        $this->authorize('delete', CustomField::class);
+        $this->authorize('delete', $field);
 
         if (($field->fieldset) && ($field->fieldset->count() > 0)) {
             return redirect()->back()->with('error', trans('admin/custom_fields/message.field.delete.in_use'));
@@ -202,8 +213,7 @@ class CustomFieldsController extends Controller
      */
     public function edit(Request $request, CustomField $field): View|RedirectResponse
     {
-        $this->authorize('update', CustomField::class);
-        $fieldsets = CustomFieldset::get();
+        $this->authorize('update', $field);
         $customFormat = '';
         if ((stripos($field->format, 'regex') === 0) && ($field->format !== CustomField::PREDEFINED_FORMATS['MAC'])) {
             $customFormat = $field->format;
@@ -212,7 +222,7 @@ class CustomFieldsController extends Controller
         return view('custom_fields.fields.edit', [
             'field' => $field,
             'customFormat' => $customFormat,
-            'fieldsets' => $fieldsets,
+            'fieldsets' => $this->availableFieldsetsForField($field),
             'predefinedFormats' => Helper::predefined_formats(),
         ]);
 
@@ -233,7 +243,7 @@ class CustomFieldsController extends Controller
      */
     public function update(CustomFieldRequest $request, CustomField $field): RedirectResponse
     {
-        $this->authorize('update', CustomField::class);
+        $this->authorize('update', $field);
         $show_in_email = $request->input('show_in_email', 0);
         $display_in_user_view = $request->input('display_in_user_view', 0);
 
@@ -248,6 +258,8 @@ class CustomFieldsController extends Controller
         $field->field_values = $request->input('field_values');
         $field->created_by = auth()->id();
         $field->help_text = $request->input('help_text');
+        $field->company_id = $request->input('company_id');
+        $field->visibility_type = $request->input('visibility_type');
         $field->show_in_email = $show_in_email;
         $field->is_unique = $request->input('is_unique', 0);
         $field->display_in_user_view = $display_in_user_view;
@@ -271,9 +283,9 @@ class CustomFieldsController extends Controller
         if ($field->save()) {
 
             // Sync fields with fieldsets
-            $fieldset_array = $request->input('associate_fieldsets');
-            if ($request->has('associate_fieldsets') && (is_array($fieldset_array))) {
-                $field->fieldset()->sync(array_keys($fieldset_array));
+            $fieldsetIds = $request->associatedFieldsetIds();
+            if (count($fieldsetIds) > 0) {
+                $field->fieldset()->sync($fieldsetIds);
             } else {
                 $field->fieldset()->sync([]);
             }
@@ -282,5 +294,13 @@ class CustomFieldsController extends Controller
         }
 
         return redirect()->back()->withInput()->with('error', trans('admin/custom_fields/message.field.update.error'));
+    }
+
+    private function availableFieldsetsForField($field): Collection
+    {
+        return CustomFieldset::with('company')
+            ->get()
+            ->filter(fn (CustomFieldset $fieldset) => Company::templateCanBeAppliedToCompany($field, $fieldset->company_id))
+            ->values();
     }
 }

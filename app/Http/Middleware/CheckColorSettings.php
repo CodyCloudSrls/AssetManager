@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Company;
 use App\Models\Setting;
 use Closure;
 use Illuminate\Contracts\Auth\Guard;
@@ -34,6 +35,7 @@ class CheckColorSettings
      */
     public function handle($request, Closure $next)
     {
+        $user = Company::currentAuthUserData();
 
         // Set defaults in case this is accessed via the /setup screen
         $nav_color = '#ffffff';
@@ -47,16 +49,16 @@ class CheckColorSettings
         }
 
         // Override system settings
-        if ($request->user()) {
+        if ($user) {
 
-            if ($request->user()->nav_color) {
-                $nav_color = $request->user()->nav_color;
+            if ($user->nav_link_color) {
+                $nav_color = $user->nav_link_color;
             }
-            if ($request->user()->link_dark_color) {
-                $link_dark_color = $request->user()->link_dark_color;
+            if ($user->link_dark_color) {
+                $link_dark_color = $user->link_dark_color;
             }
-            if ($request->user()->nav_color) {
-                $link_light_color = $request->user()->link_light_color;
+            if ($user->nav_link_color) {
+                $link_light_color = $user->link_light_color;
             }
         }
 

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\Searchable;
+use App\Models\Traits\TenantTemplateTrait;
 use App\Presenters\Presentable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +17,7 @@ class DocumentFramework extends SnipeModel
     use Presentable;
     use Searchable;
     use SoftDeletes;
+    use TenantTemplateTrait;
     use ValidatingTrait;
 
     protected $table = 'document_frameworks';
@@ -23,11 +25,13 @@ class DocumentFramework extends SnipeModel
     protected $hidden = ['created_by', 'deleted_at'];
 
     protected $rules = [
-        'name' => 'required|string|max:255|unique:document_frameworks,name,NULL,id,deleted_at,NULL',
-        'slug' => 'nullable|string|max:255|unique:document_frameworks,slug,NULL,id,deleted_at,NULL',
+        'name' => 'required|string|max:255',
+        'slug' => 'nullable|string|max:255',
         'description' => 'nullable|string|max:65535',
         'sort_order' => 'nullable|integer|min:0|max:65535',
         'is_active' => 'boolean',
+        'company_id' => 'nullable|integer|exists:companies,id',
+        'visibility_type' => 'required|string|in:private,descendants,global',
     ];
 
     protected $injectUniqueIdentifier = true;
@@ -39,21 +43,26 @@ class DocumentFramework extends SnipeModel
         'sort_order',
         'is_active',
         'created_by',
+        'company_id',
+        'visibility_type',
     ];
 
     protected $casts = [
         'sort_order' => 'integer',
         'is_active' => 'boolean',
         'created_by' => 'integer',
+        'company_id' => 'integer',
     ];
 
     protected $searchableAttributes = [
         'name',
         'slug',
         'description',
+        'visibility_type',
     ];
 
     protected $searchableRelations = [
+        'company' => ['name'],
         'adminuser' => ['first_name', 'last_name', 'display_name'],
     ];
 

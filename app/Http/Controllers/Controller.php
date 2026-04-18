@@ -35,6 +35,7 @@ use App\Models\License;
 use App\Models\Location;
 use App\Models\Maintenance;
 use App\Models\Supplier;
+use App\Models\Ticket;
 use App\Models\User;
 use App\Traits\DisablesDebugbar;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -52,6 +53,7 @@ abstract class Controller extends BaseController
         'companies' => Company::class,
         'departments' => Department::class,
         'documents' => Document::class,
+        'tickets' => Ticket::class,
         'maintenances' => Maintenance::class,
         'assets' => Asset::class,
         'audits' => Asset::class,
@@ -72,6 +74,7 @@ abstract class Controller extends BaseController
         'audits' => 'private_uploads/audits/',
         'departments' => 'private_uploads/departments/',
         'documents' => 'private_uploads/documents/',
+        'tickets' => 'private_uploads/tickets/',
         'companies' => 'private_uploads/companies/',
         'components' => 'private_uploads/components/',
         'consumables' => 'private_uploads/consumables/',
@@ -91,6 +94,7 @@ abstract class Controller extends BaseController
         'companies' => 'company',
         'departments' => 'department',
         'documents' => 'document',
+        'tickets' => 'ticket',
         'components' => 'component',
         'consumables' => 'consumable',
         'hardware' => 'asset',

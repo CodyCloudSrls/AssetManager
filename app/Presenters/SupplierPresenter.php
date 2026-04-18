@@ -100,6 +100,21 @@ class SupplierPresenter extends Presenter
                 'visible' => true,
                 'formatter' => 'externalLinkFormatter',
             ], [
+                'field' => 'company',
+                'searchable' => false,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('general.company'),
+                'visible' => true,
+                'formatter' => 'companiesLinkObjFormatter',
+            ], [
+                'field' => 'visibility_label',
+                'searchable' => true,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('general.template_visibility.label'),
+                'visible' => true,
+            ], [
                 'field' => 'address',
                 'searchable' => true,
                 'sortable' => true,

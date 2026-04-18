@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use App\Http\Traits\TwoColumnUniqueUndeletedTrait;
 use App\Models\Traits\HasUploads;
 use App\Models\Traits\Loggable;
 use App\Models\Traits\Requestable;
 use App\Models\Traits\Searchable;
+use App\Models\Traits\TenantTemplateTrait;
 use App\Presenters\AssetModelPresenter;
 use App\Presenters\Presentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -29,7 +29,7 @@ class AssetModel extends SnipeModel
     use HasUploads;
     use Loggable, Presentable, Requestable;
     use SoftDeletes;
-    use TwoColumnUniqueUndeletedTrait;
+    use TenantTemplateTrait;
 
     /**
      * Whether the model should inject its identifier to the unique
@@ -49,12 +49,15 @@ class AssetModel extends SnipeModel
     // Declare the rules for the model validation
 
     protected $rules = [
-        'name' => 'string|required|min:1|max:255|two_column_unique_undeleted:model_number',
-        'model_number' => 'string|max:255|nullable|two_column_unique_undeleted:name',
+        'name' => 'string|required|min:1|max:255',
+        'model_number' => 'string|max:255|nullable',
         'min_amt' => 'integer|min:0|nullable',
-        'category_id' => 'required|integer|exists:categories,id',
-        'manufacturer_id' => 'integer|exists:manufacturers,id|nullable',
+        'category_id' => 'required|integer|scoped_exists:App\Models\Category',
+        'manufacturer_id' => 'integer|scoped_exists:App\Models\Manufacturer|nullable',
+        'depreciation_id' => 'nullable|integer|scoped_exists:App\Models\Depreciation',
         'eol' => 'integer:min:0|max:240|nullable',
+        'company_id' => 'nullable|integer|exists:companies,id',
+        'visibility_type' => 'required|string|in:private,descendants,global',
     ];
 
     /**
@@ -75,6 +78,12 @@ class AssetModel extends SnipeModel
         'notes',
         'requestable',
         'require_serial',
+        'company_id',
+        'visibility_type',
+    ];
+
+    protected $casts = [
+        'company_id' => 'integer',
     ];
 
     use Searchable;
@@ -91,6 +100,7 @@ class AssetModel extends SnipeModel
         'model_number',
         'name',
         'notes',
+        'visibility_type',
     ];
 
     /**
@@ -103,6 +113,7 @@ class AssetModel extends SnipeModel
         'category' => ['name'],
         'manufacturer' => ['name'],
         'fieldset' => ['name'],
+        'company' => ['name'],
         'adminuser' => ['first_name', 'last_name', 'display_name'],
     ];
 

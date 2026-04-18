@@ -37,6 +37,10 @@ abstract class SnipePermissionsPolicy
 
     public function before(User $user, $ability, $item)
     {
+        if (($item instanceof User) && $item->isSuperUser() && (! $user->isSuperUser())) {
+            return false;
+        }
+
         /**
          * If an admin, they can do all item related tasks, but ARE constrained by FMCSA company access.
          * That scoping happens on the model level (except for the Users model) via the Companyable trait.
@@ -66,6 +70,14 @@ abstract class SnipePermissionsPolicy
          * The Company::isCurrentUserHasAccess() method from the company model handles the check for FMCS already so we
          * don't have to do that here.
          */
+        if (method_exists($item, 'isTenantScopedTemplate') && $item->isTenantScopedTemplate()) {
+            if (! Company::isCurrentUserHasTemplateAccess($item)) {
+                return false;
+            }
+
+            return;
+        }
+
         if (! Company::isCurrentUserHasAccess($item)) {
             return false;
         }

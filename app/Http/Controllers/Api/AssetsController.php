@@ -436,8 +436,8 @@ class AssetsController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $assets->count()) ? $assets->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $assets->count(), $limit);
 
         $total = $assets->count();
         $assets = $assets->skip($offset)->take($limit)->get();
@@ -523,8 +523,8 @@ class AssetsController extends Controller
             $assets = $assets->withTrashed();
         }
 
-        $offset = ($request->input('offset') > $assets->count()) ? $assets->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $assets->count(), $limit);
 
         $total = $assets->count();
         $assets = $assets->skip($offset)->take($limit)->get();
@@ -593,7 +593,7 @@ class AssetsController extends Controller
         ])->with('model', 'status', 'assignedTo')
             ->NotArchived();
 
-        if ((Setting::getSettings()->full_multiple_companies_support == '1') && ($request->filled('companyId'))) {
+        if ($request->filled('companyId')) {
             $assets->where('assets.company_id', $request->input('companyId'));
         }
 
@@ -1292,8 +1292,8 @@ class AssetsController extends Controller
         $assets->requestableAssets();
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $assets->count()) ? $assets->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $assets->count(), $limit);
 
         $total = $assets->count();
         $assets = $assets->skip($offset)->take($limit)->get();
@@ -1326,8 +1326,8 @@ class AssetsController extends Controller
             ->with('adminuser')
             ->with('accessories');
 
-        $offset = ($request->input('offset') > $accessory_checkouts->count()) ? $accessory_checkouts->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $accessory_checkouts->count(), $limit);
 
         $total = $accessory_checkouts->count();
         $accessory_checkouts = $accessory_checkouts->skip($offset)->take($limit)->get();
@@ -1364,9 +1364,9 @@ class AssetsController extends Controller
                 break;
         }
 
-        $offset = ($request->input('offset') > $component_checkouts->count()) ? $component_checkouts->count() : app('api_offset_value');
         $total = $component_checkouts->count();
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $total, $limit);
         $component_checkouts = $component_checkouts->skip($offset)->take($limit)->get();
 
         return (new AssetsTransformer)->transformCheckedoutComponents($component_checkouts, $total);
@@ -1462,8 +1462,8 @@ class AssetsController extends Controller
         $this->authorize('history', $asset);
         $history = $asset->getHistory($request);
         $total = $asset->getHistory($request)->count();
-        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $total, $limit);
         $history = $history->skip($offset)->take($limit)->get();
 
         return response()->json((new ActionlogsTransformer)->transformActionlogs($history, $total), 200, ['Content-Type' => 'application/json;charset=utf8'], JSON_UNESCAPED_UNICODE);

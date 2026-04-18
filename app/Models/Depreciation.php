@@ -3,26 +3,23 @@
 namespace App\Models;
 
 use App\Models\Traits\Searchable;
+use App\Models\Traits\TenantTemplateTrait;
 use App\Presenters\DepreciationPresenter;
 use App\Presenters\Presentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Watson\Validating\ValidatingTrait;
 
 class Depreciation extends SnipeModel
 {
     use HasFactory;
+    use TenantTemplateTrait;
 
     protected $presenter = DepreciationPresenter::class;
 
     use Presentable;
-
-    // Declare the rules for the form validation
-    protected $rules = [
-        'name' => 'required|max:255|unique:depreciations,name',
-        'months' => 'required|max:3600|integer',
-    ];
 
     /**
      * Whether the model should inject it's identifier to the unique
@@ -43,6 +40,12 @@ class Depreciation extends SnipeModel
     protected $fillable = [
         'name',
         'months',
+        'company_id',
+        'visibility_type',
+    ];
+
+    protected $casts = [
+        'company_id' => 'integer',
     ];
 
     use Searchable;
@@ -55,6 +58,7 @@ class Depreciation extends SnipeModel
     protected $searchableAttributes = [
         'name',
         'months',
+        'visibility_type',
     ];
 
     /**
@@ -63,8 +67,31 @@ class Depreciation extends SnipeModel
      * @var array
      */
     protected $searchableRelations = [
+        'company' => ['name'],
         'adminuser' => ['first_name', 'last_name', 'display_name'],
     ];
+
+    public function getRules()
+    {
+        return [
+            'name' => [
+                'required',
+                'max:255',
+                Rule::unique('depreciations', 'name')
+                    ->ignore($this->getKey())
+                    ->where(function ($query) {
+                        if (is_null($this->company_id)) {
+                            $query->whereNull('company_id');
+                        } else {
+                            $query->where('company_id', $this->company_id);
+                        }
+                    }),
+            ],
+            'months' => 'required|max:3600|integer',
+            'company_id' => 'nullable|integer|exists:companies,id',
+            'visibility_type' => 'required|string|in:private,descendants,global',
+        ];
+    }
 
     public function isDeletable()
     {

@@ -6,6 +6,7 @@ use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FilterRequest;
 use App\Http\Transformers\DepreciationsTransformer;
+use App\Models\Company;
 use App\Models\Depreciation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,14 +29,16 @@ class DepreciationsController extends Controller
             'months',
             'depreciation_min',
             'depreciation_type',
+            'company_id',
+            'visibility_type',
             'created_at',
             'assets_count',
             'models_count',
             'licenses_count',
         ];
 
-        $depreciations = Depreciation::select(['id', 'name', 'months', 'depreciation_min', 'depreciation_type', 'created_at', 'updated_at', 'created_by'])
-            ->with('adminuser')
+        $depreciations = Depreciation::select(['id', 'name', 'months', 'depreciation_min', 'depreciation_type', 'company_id', 'visibility_type', 'created_at', 'updated_at', 'created_by'])
+            ->with('adminuser', 'company')
             ->withCount('assets as assets_count')
             ->withCount('models as models_count')
             ->withCount('licenses as licenses_count');
@@ -46,8 +49,8 @@ class DepreciationsController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $depreciations->count()) ? $depreciations->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $depreciations->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sort_override = $request->input('sort');
         $column_sort = in_array($sort_override, $allowed_columns) ? $sort_override : 'created_at';
@@ -79,6 +82,10 @@ class DepreciationsController extends Controller
         $this->authorize('create', Depreciation::class);
         $depreciation = new Depreciation;
         $depreciation->fill($request->all());
+        [$depreciation->company_id, $depreciation->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
 
         if ($depreciation->save()) {
             return response()->json(Helper::formatStandardApiResponse('success', $depreciation, trans('admin/depreciations/message.create.success')));
@@ -98,8 +105,8 @@ class DepreciationsController extends Controller
      */
     public function show($id): JsonResponse|array
     {
-        $this->authorize('view', Depreciation::class);
-        $depreciation = Depreciation::findOrFail($id);
+        $depreciation = Depreciation::with('company')->findOrFail($id);
+        $this->authorize('view', $depreciation);
 
         return (new DepreciationsTransformer)->transformDepreciation($depreciation);
     }
@@ -115,9 +122,13 @@ class DepreciationsController extends Controller
      */
     public function update(Request $request, $id): JsonResponse
     {
-        $this->authorize('update', Depreciation::class);
         $depreciation = Depreciation::findOrFail($id);
+        $this->authorize('update', $depreciation);
         $depreciation->fill($request->all());
+        [$depreciation->company_id, $depreciation->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
 
         if ($depreciation->save()) {
             return response()->json(Helper::formatStandardApiResponse('success', $depreciation, trans('admin/depreciations/message.update.success')));
@@ -137,7 +148,6 @@ class DepreciationsController extends Controller
      */
     public function destroy($id): JsonResponse
     {
-        $this->authorize('delete', Depreciation::class);
         $depreciation = Depreciation::withCount('models as models_count')->findOrFail($id);
         $this->authorize('delete', $depreciation);
 

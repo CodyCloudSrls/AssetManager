@@ -129,6 +129,31 @@ return [
         'name' => 'Gestisci file documenti',
         'note' => 'Consente all\'utente di caricare, scaricare ed eliminare i file associati ai documenti.',
     ],
+    'tickets' => [
+        'name' => 'Ticket',
+        'note' => 'Concede l\'accesso alla sezione Ticket dell\'applicazione.',
+    ],
+    'ticketsview' => [
+        'name' => 'Visualizza ticket',
+    ],
+    'ticketscreate' => [
+        'name' => 'Crea ticket',
+    ],
+    'ticketsoperate' => [
+        'name' => 'Opera sui ticket',
+        'note' => 'Consente all\'utente di aggiornare stato, priorità, tipologia, assegnatario, SLA operativi e di aggiungere commenti e worklog senza accedere alla modifica completa del ticket.',
+    ],
+    'ticketsedit' => [
+        'name' => 'Modifica ticket',
+        'note' => 'Consente la modifica completa del ticket dopo la creazione, inclusi soggetto, descrizione, collegamenti e ownership.',
+    ],
+    'ticketsdelete' => [
+        'name' => 'Elimina ticket',
+    ],
+    'ticketsfiles' => [
+        'name' => 'Gestisci file ticket',
+        'note' => 'Consente all\'utente di caricare, scaricare ed eliminare i file associati ai ticket.',
+    ],
     'documenttypes' => [
         'name' => 'Tipologie documento',
         'note' => 'Concede l\'accesso alla gestione delle tipologie documento.',

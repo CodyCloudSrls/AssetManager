@@ -24,6 +24,8 @@ class CustomFieldsetFactory extends Factory
     {
         return [
             'name' => $this->faker->unique()->catchPhrase(),
+            'company_id' => null,
+            'visibility_type' => CustomFieldset::VISIBILITY_GLOBAL,
         ];
     }
 

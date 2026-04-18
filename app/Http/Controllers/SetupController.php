@@ -160,7 +160,8 @@ class SetupController extends Controller
         $data['password'] = $request->input('password');
 
         $settings = new Setting;
-        $settings->full_multiple_companies_support = $request->input('full_multiple_companies_support', 0);
+        $settings->full_multiple_companies_support = 1;
+        $settings->scope_locations_fmcs = 1;
         $settings->site_name = $request->input('site_name');
         $settings->alert_email = $request->input('email');
         $settings->alerts_enabled = 1;

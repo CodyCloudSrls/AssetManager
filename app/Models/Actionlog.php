@@ -79,6 +79,7 @@ class Actionlog extends SnipeModel
     protected $searchableRelations = [
         'company' => ['name'],
         'adminuser' => ['first_name', 'last_name', 'username', 'email', 'employee_num'],
+        'tickets' => ['ticket_number', 'subject', 'description', 'guest_name', 'guest_email'],
         'user' => ['first_name', 'last_name', 'username', 'email', 'employee_num'],
         'assets' => ['asset_tag', 'name', 'serial', 'order_number', 'notes', 'purchase_date'],
         'assets.model' => ['name', 'model_number', 'eol', 'notes'],
@@ -192,6 +193,11 @@ class Actionlog extends SnipeModel
         return $this->hasMany(License::class, 'id', 'item_id');
     }
 
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class, 'id', 'item_id');
+    }
+
     /**
      * Establishes the actionlog -> consumable relationship
      *
@@ -296,7 +302,21 @@ class Actionlog extends SnipeModel
     public function adminuser()
     {
         return $this->belongsTo(User::class, 'created_by')
+            ->withoutGlobalScopes()
             ->withTrashed();
+    }
+
+    public function getTicketActorDisplayNameAttribute(): string
+    {
+        if ($this->adminuser?->display_name) {
+            return $this->adminuser->display_name;
+        }
+
+        if ($this->created_by) {
+            return trans('admin/tickets/general.internal_user');
+        }
+
+        return trans('admin/tickets/general.public_user');
     }
 
     /**
@@ -552,6 +572,8 @@ class Actionlog extends SnipeModel
                 return 'private_uploads/maintenances/'.$this->filename;
             case Supplier::class:
                 return 'private_uploads/suppliers/'.$this->filename;
+            case Ticket::class:
+                return 'private_uploads/tickets/'.$this->filename;
             case User::class:
                 return 'private_uploads/users/'.$this->filename;
             default:

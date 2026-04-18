@@ -20,6 +20,8 @@
 @section('inputFields')
 
 @include ('partials.forms.edit.name', ['translated_name' => trans('general.name')])
+@include ('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id', 'item' => $item])
+@include ('partials.forms.edit.template-visibility-select', ['translated_name' => trans('general.template_visibility.label'), 'fieldname' => 'visibility_type', 'item' => $item])
 
 <!-- Label type -->
 <div class="form-group{{ $errors->has('statuslabel_types') ? ' has-error' : '' }}">
@@ -71,4 +73,3 @@
 </div>
 
 @stop
-

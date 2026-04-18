@@ -28,6 +28,12 @@ class StatuslabelsTransformer
             'color' => ($statuslabel->color) ? e($statuslabel->color) : null,
             'show_in_nav' => ($statuslabel->show_in_nav == '1') ? true : false,
             'default_label' => ($statuslabel->default_label == '1') ? true : false,
+            'company' => $statuslabel->company ? [
+                'id' => (int) $statuslabel->company->id,
+                'name' => e($statuslabel->company->name),
+            ] : null,
+            'visibility_type' => $statuslabel->visibility_type,
+            'visibility_label' => e($statuslabel->visibility_label),
             'assets_count' => (int) $statuslabel->assets_count,
             'notes' => e($statuslabel->notes),
             'created_by' => ($statuslabel->adminuser) ? [
@@ -39,8 +45,8 @@ class StatuslabelsTransformer
         ];
 
         $permissions_array['available_actions'] = [
-            'update' => Gate::allows('update', Statuslabel::class) ? true : false,
-            'delete' => (Gate::allows('delete', Statuslabel::class) && ($statuslabel->isDeletable())) ? true : false,
+            'update' => Gate::allows('update', $statuslabel) ? true : false,
+            'delete' => (Gate::allows('delete', $statuslabel) && ($statuslabel->isDeletable())) ? true : false,
         ];
         $array += $permissions_array;
 

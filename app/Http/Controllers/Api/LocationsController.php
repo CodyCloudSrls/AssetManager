@@ -15,7 +15,6 @@ use App\Models\AccessoryCheckout;
 use App\Models\Asset;
 use App\Models\Company;
 use App\Models\Location;
-use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -103,11 +102,6 @@ class LocationsController extends Controller
             ->withCount('components as components_count')
             ->with('adminuser');
 
-        // Only scope locations if the setting is enabled
-        if (Setting::getSettings()->scope_locations_fmcs) {
-            $locations = Company::scopeCompanyables($locations);
-        }
-
         // This invokes the Searchable model trait scopeTextSearch and will handle input by search or by advanced search filter
         if ($request->filled('filter') || $request->filled('search')) {
             $locations->TextSearch($request->input('filter') ? $request->input('filter') : $request->input('search'));
@@ -158,8 +152,8 @@ class LocationsController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $locations->count()) ? $locations->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $locations->count(), $limit);
 
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sort = in_array($request->input('sort'), $allowed_columns) ? $request->input('sort') : 'created_at';
@@ -199,13 +193,9 @@ class LocationsController extends Controller
         $location->fill($request->all());
         $location = $request->handleImages($location);
 
-        // Only scope location if the setting is enabled
-        if (Setting::getSettings()->scope_locations_fmcs) {
-            $location->company_id = Company::getIdForCurrentUser($request->input('company_id'));
-            // check if parent is set and has a different company
-            if ($location->parent_id && Location::find($location->parent_id)->company_id != $location->company_id) {
-                response()->json(Helper::formatStandardApiResponse('error', null, 'different company than parent'));
-            }
+        $location->company_id = Company::getIdForCurrentUser($request->input('company_id'));
+        if ($location->parent_id && Location::find($location->parent_id)->company_id != $location->company_id) {
+            return response()->json(Helper::formatStandardApiResponse('error', null, 'different company than parent'));
         }
 
         if ($location->save()) {
@@ -279,15 +269,9 @@ class LocationsController extends Controller
         $location = $request->handleImages($location);
 
         if ($request->filled('company_id')) {
-            // Only scope location if the setting is enabled
-            if (Setting::getSettings()->scope_locations_fmcs) {
-                $location->company_id = Company::getIdForCurrentUser($request->input('company_id'));
-                // check if there are related objects with different company
-                if (Helper::test_locations_fmcs(false, $id, $location->company_id)) {
-                    return response()->json(Helper::formatStandardApiResponse('error', null, 'error scoped locations'));
-                }
-            } else {
-                $location->company_id = $request->input('company_id');
+            $location->company_id = Company::getIdForCurrentUser($request->input('company_id'));
+            if (Helper::test_locations_fmcs(false, $id, $location->company_id)) {
+                return response()->json(Helper::formatStandardApiResponse('error', null, 'error scoped locations'));
             }
         }
 
@@ -333,8 +317,8 @@ class LocationsController extends Controller
         $this->authorize('view', $location);
         $accessory_checkouts = AccessoryCheckout::LocationAssigned()->where('assigned_to', $location->id)->with('adminuser')->with('accessories');
 
-        $offset = ($request->input('offset') > $accessory_checkouts->count()) ? $accessory_checkouts->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $accessory_checkouts->count(), $limit);
 
         $total = $accessory_checkouts->count();
         $accessory_checkouts = $accessory_checkouts->skip($offset)->take($limit)->get();
@@ -422,11 +406,6 @@ class LocationsController extends Controller
             'locations.tag_color',
         ]);
 
-        // Only scope locations if the setting is enabled
-        if (Setting::getSettings()->scope_locations_fmcs) {
-            $locations = Company::scopeCompanyables($locations);
-        }
-
         $page = 1;
         if ($request->filled('page')) {
             $page = $request->input('page');
@@ -464,8 +443,8 @@ class LocationsController extends Controller
         $this->authorize('history', $location);
         $history = $location->getHistory($request);
         $total = $location->getHistory($request)->count();
-        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $total, $limit);
         $history = $history->skip($offset)->take($limit)->get();
 
         return response()->json((new ActionlogsTransformer)->transformActionlogs($history, $total), 200, ['Content-Type' => 'application/json;charset=utf8'], JSON_UNESCAPED_UNICODE);

@@ -103,7 +103,7 @@ class ComponentCheckoutController extends Controller
         // Check if the asset exists
         $asset = Asset::find($request->input('asset_id'));
 
-        if ((Setting::getSettings()->full_multiple_companies_support) && $component->company_id !== $asset->company_id) {
+        if ($component->company_id !== $asset->company_id) {
             return redirect()->route('components.checkout.show', $componentId)->with('error', trans('general.error_user_company'));
         }
 

@@ -86,6 +86,8 @@ class AssetModelsController extends Controller
         $model->created_by = auth()->id();
         $model->requestable = $request->has('requestable');
         $model->require_serial = $request->input('require_serial', 0);
+        $model->company_id = $request->input('company_id');
+        $model->visibility_type = $request->input('visibility_type');
 
         if ($request->input('fieldset_id') != '') {
             $model->fieldset_id = $request->input('fieldset_id');
@@ -128,7 +130,7 @@ class AssetModelsController extends Controller
      */
     public function edit(AssetModel $model): View|RedirectResponse
     {
-        $this->authorize('update', AssetModel::class);
+        $this->authorize('update', $model);
         $category_type = 'asset';
 
         return view('models/edit', compact('category_type'))->with('item', $model)->with('depreciation_list', Helper::depreciationList());
@@ -149,7 +151,7 @@ class AssetModelsController extends Controller
      */
     public function update(StoreAssetModelRequest $request, AssetModel $model): RedirectResponse
     {
-        $this->authorize('update', AssetModel::class);
+        $this->authorize('update', $model);
 
         $model = $request->handleImages($model);
         $model->depreciation_id = $request->input('depreciation_id');
@@ -163,6 +165,8 @@ class AssetModelsController extends Controller
         $model->requestable = $request->input('requestable', '0');
         $model->require_serial = $request->input('require_serial', 0);
         $model->fieldset_id = $request->input('fieldset_id');
+        $model->company_id = $request->input('company_id');
+        $model->visibility_type = $request->input('visibility_type');
 
         if ($model->save()) {
             $this->removeCustomFieldsDefaultValues($model);
@@ -202,7 +206,7 @@ class AssetModelsController extends Controller
      */
     public function destroy(AssetModel $model): RedirectResponse
     {
-        $this->authorize('delete', AssetModel::class);
+        $this->authorize('delete', $model);
 
         if ($model->assets()->count() > 0) {
             // Throw an error that this model is associated with assets
@@ -230,6 +234,7 @@ class AssetModelsController extends Controller
         $this->authorize('create', AssetModel::class);
 
         if ($model = AssetModel::withTrashed()->find($id)) {
+            $this->authorize('delete', $model);
 
             if ($model->deleted_at == '') {
                 return redirect()->back()->with('error', trans('general.not_deleted', ['item_type' => trans('general.asset_model')]));
@@ -271,7 +276,7 @@ class AssetModelsController extends Controller
      */
     public function show(AssetModel $model): View|RedirectResponse
     {
-        $this->authorize('view', AssetModel::class);
+        $this->authorize('view', $model);
 
         return view('models/view', compact('model'));
     }
@@ -288,6 +293,7 @@ class AssetModelsController extends Controller
     public function getClone(AssetModel $model): View|RedirectResponse
     {
         $this->authorize('create', AssetModel::class);
+        $this->authorize('view', $model);
 
         $cloned_model = clone $model;
         $model->id = null;

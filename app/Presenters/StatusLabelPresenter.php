@@ -39,6 +39,21 @@ class StatusLabelPresenter extends Presenter
                 'visible' => true,
                 'formatter' => 'statusLabelTypeFormatter',
             ], [
+                'field' => 'company',
+                'searchable' => false,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('general.company'),
+                'visible' => true,
+                'formatter' => 'companiesLinkObjFormatter',
+            ], [
+                'field' => 'visibility_label',
+                'searchable' => true,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('general.template_visibility.label'),
+                'visible' => true,
+            ], [
                 'field' => 'assets_count',
                 'searchable' => false,
                 'sortable' => true,

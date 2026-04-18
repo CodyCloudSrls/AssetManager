@@ -12,6 +12,12 @@
                 <div class="dynamic-form-row">
                     @include('partials.forms.edit.name', ['required' => 'true', 'item' => new \App\Models\Statuslabel(),'translated_name' => trans('admin/statuslabels/table.name')  ])
                 </div>
+                <div class="dynamic-form-row">
+                    @include('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id', 'item' => new \App\Models\Statuslabel()])
+                </div>
+                <div class="dynamic-form-row">
+                    @include('partials.forms.edit.template-visibility-select', ['translated_name' => trans('general.template_visibility.label'), 'fieldname' => 'visibility_type', 'item' => new \App\Models\Statuslabel()])
+                </div>
 
                 <div class="dynamic-form-row">
                     <div class="col-md-3 col-xs-12"><label for="modal-type">{{ trans('admin/statuslabels/table.status_type') }}:

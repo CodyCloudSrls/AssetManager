@@ -25,6 +25,9 @@
                         <button class="btn btn-success">{{ (isset($custom_fieldset->id)) ? trans('general.update') :  trans('general.create')  }}</button>
                     </div>
                 </div>
+
+                @include('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id', 'item' => $custom_fieldset])
+                @include('partials.forms.edit.template-visibility-select', ['translated_name' => trans('general.template_visibility.label'), 'fieldname' => 'visibility_type', 'item' => $custom_fieldset])
             </x-form>
 
             @if((isset($custom_fieldset)) && ($custom_fieldset->id!=''))

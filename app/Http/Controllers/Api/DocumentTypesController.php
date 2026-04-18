@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FilterRequest;
+use App\Http\Requests\StoreDocumentTypeRequest;
 use App\Http\Transformers\DocumentTypesTransformer;
 use App\Http\Transformers\SelectlistTransformer;
 use App\Models\DocumentType;
@@ -37,11 +38,13 @@ class DocumentTypesController extends Controller
             'sort_order',
             'is_active',
             'created_by',
+            'company_id',
+            'visibility_type',
             'created_at',
             'updated_at',
             'deleted_at',
         ])
-            ->with('adminuser')
+            ->with('adminuser', 'company')
             ->withCount('documents as documents_count');
 
         if ($request->input('deleted') == 'true' || $request->input('status') == 'deleted') {
@@ -56,8 +59,8 @@ class DocumentTypesController extends Controller
             $documentTypes->where('is_active', '=', $request->boolean('is_active'));
         }
 
-        $offset = ($request->input('offset') > $documentTypes->count()) ? $documentTypes->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $documentTypes->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sortOverride = $request->input('sort');
         $columnSort = in_array($sortOverride, $allowedColumns) ? $sortOverride : 'sort_order';
@@ -74,7 +77,7 @@ class DocumentTypesController extends Controller
         return (new DocumentTypesTransformer)->transformDocumentTypes($documentTypes, $total);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreDocumentTypeRequest $request): JsonResponse
     {
         $this->authorize('create', DocumentType::class);
 
@@ -92,16 +95,16 @@ class DocumentTypesController extends Controller
 
     public function show(DocumentType $documenttype): array
     {
-        $this->authorize('view', DocumentType::class);
+        $this->authorize('view', $documenttype);
 
         $documenttype->load('adminuser')->loadCount('documents');
 
         return (new DocumentTypesTransformer)->transformDocumentType($documenttype);
     }
 
-    public function update(Request $request, DocumentType $documenttype): JsonResponse
+    public function update(StoreDocumentTypeRequest $request, DocumentType $documenttype): JsonResponse
     {
-        $this->authorize('update', DocumentType::class);
+        $this->authorize('update', $documenttype);
 
         $documenttype->fill($request->all());
         $documenttype->is_active = $request->boolean('is_active');
@@ -131,6 +134,7 @@ class DocumentTypesController extends Controller
         $this->authorize('delete', DocumentType::class);
 
         $documenttype = DocumentType::withTrashed()->findOrFail($id);
+        $this->authorize('delete', $documenttype);
 
         if ($documenttype->restore()) {
             return response()->json(Helper::formatStandardApiResponse('success', null, trans('admin/documenttypes/message.restore.success')));

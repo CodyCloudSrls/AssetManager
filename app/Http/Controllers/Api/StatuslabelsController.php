@@ -10,6 +10,7 @@ use App\Http\Transformers\PieChartTransformer;
 use App\Http\Transformers\SelectlistTransformer;
 use App\Http\Transformers\StatuslabelsTransformer;
 use App\Models\Asset;
+use App\Models\Company;
 use App\Models\Setting;
 use App\Models\Statuslabel;
 use Illuminate\Http\JsonResponse;
@@ -37,7 +38,7 @@ class StatuslabelsController extends Controller
             'default_label',
         ];
 
-        $statuslabels = Statuslabel::with('adminuser')->withCount('assets as assets_count');
+        $statuslabels = Statuslabel::with('adminuser', 'company')->withCount('assets as assets_count');
 
         // This invokes the Searchable model trait scopeTextSearch and will handle input by search or by advanced search filter
         if ($request->filled('filter') || $request->filled('search')) {
@@ -62,8 +63,8 @@ class StatuslabelsController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $statuslabels->count()) ? $statuslabels->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $statuslabels->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sort_override = $request->input('sort');
         $column_sort = in_array($sort_override, $allowed_columns) ? $sort_override : 'created_at';
@@ -110,6 +111,10 @@ class StatuslabelsController extends Controller
         $statuslabel->color = $request->input('color');
         $statuslabel->show_in_nav = $request->input('show_in_nav', 0);
         $statuslabel->default_label = $request->input('default_label', 0);
+        [$statuslabel->company_id, $statuslabel->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
 
         if ($statuslabel->save()) {
             return response()->json(Helper::formatStandardApiResponse('success', $statuslabel, trans('admin/statuslabels/message.create.success')));
@@ -130,8 +135,8 @@ class StatuslabelsController extends Controller
      */
     public function show($id): array
     {
-        $this->authorize('view', Statuslabel::class);
-        $statuslabel = Statuslabel::findOrFail($id);
+        $statuslabel = Statuslabel::with('company')->findOrFail($id);
+        $this->authorize('view', $statuslabel);
 
         return (new StatuslabelsTransformer)->transformStatuslabel($statuslabel);
     }
@@ -147,8 +152,8 @@ class StatuslabelsController extends Controller
      */
     public function update(Request $request, $id): JsonResponse
     {
-        $this->authorize('update', Statuslabel::class);
         $statuslabel = Statuslabel::findOrFail($id);
+        $this->authorize('update', $statuslabel);
 
         $request->except('deployable', 'pending', 'archived');
 
@@ -165,6 +170,10 @@ class StatuslabelsController extends Controller
         $statuslabel->color = $request->input('color');
         $statuslabel->show_in_nav = $request->input('show_in_nav', 0);
         $statuslabel->default_label = $request->input('default_label', 0);
+        [$statuslabel->company_id, $statuslabel->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
 
         if ($statuslabel->save()) {
             return response()->json(Helper::formatStandardApiResponse('success', $statuslabel, trans('admin/statuslabels/message.update.success')));
@@ -184,7 +193,6 @@ class StatuslabelsController extends Controller
      */
     public function destroy($id): JsonResponse
     {
-        $this->authorize('delete', Statuslabel::class);
         $statuslabel = Statuslabel::findOrFail($id);
         $this->authorize('delete', $statuslabel);
 
@@ -218,11 +226,16 @@ class StatuslabelsController extends Controller
         $total = [];
 
         foreach ($statuslabels as $statuslabel) {
+            if (! array_key_exists($statuslabel->name, $total)) {
+                $total[$statuslabel->name] = [
+                    'label' => $statuslabel->name,
+                    'count' => 0,
+                ];
+            }
 
-            $total[$statuslabel->name]['label'] = $statuslabel->name;
-            $total[$statuslabel->name]['count'] = $statuslabel->assets_count;
+            $total[$statuslabel->name]['count'] += (int) $statuslabel->assets_count;
 
-            if ($statuslabel->color != '') {
+            if (($statuslabel->color != '') && empty($total[$statuslabel->name]['color'])) {
                 $total[$statuslabel->name]['color'] = $statuslabel->color;
             }
         }

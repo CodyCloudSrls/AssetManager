@@ -29,6 +29,12 @@ class DocumentTypesTransformer
             'description' => e($documentType->description),
             'sort_order' => (int) $documentType->sort_order,
             'is_active' => (bool) $documentType->is_active,
+            'company' => ($documentType->company) ? [
+                'id' => (int) $documentType->company->id,
+                'name' => e($documentType->company->name),
+            ] : null,
+            'visibility_type' => e($documentType->visibility_type),
+            'visibility_label' => e($documentType->visibility_label),
             'documents_count' => (int) ($documentType->documents_count ?? 0),
             'created_by' => ($documentType->adminuser) ? [
                 'id' => (int) $documentType->adminuser->id,
@@ -40,7 +46,7 @@ class DocumentTypesTransformer
             'available_actions' => [
                 'update' => ($documentType->deleted_at == '' && Gate::allows('update', $documentType)),
                 'delete' => ($documentType->deleted_at == '' && Gate::allows('delete', $documentType) && $documentType->isDeletable()),
-                'restore' => ($documentType->deleted_at != '' && Gate::allows('delete', DocumentType::class)),
+                'restore' => ($documentType->deleted_at != '' && Gate::allows('delete', $documentType)),
             ],
         ];
     }

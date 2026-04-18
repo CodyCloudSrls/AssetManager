@@ -26,6 +26,10 @@ class CompaniesTransformer
             $array = [
                 'id' => (int) $company->id,
                 'name' => e($company->name),
+                'parent' => ($company->parent) ? [
+                    'id' => (int) $company->parent->id,
+                    'name' => e($company->parent->name),
+                ] : null,
                 'phone' => ($company->phone != '') ? e($company->phone) : null,
                 'fax' => ($company->fax != '') ? e($company->fax) : null,
                 'email' => ($company->email != '') ? e($company->email) : null,
