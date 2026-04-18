@@ -6,12 +6,14 @@ use App\Http\Traits\UniqueUndeletedTrait;
 use App\Models\Traits\HasUploads;
 use App\Models\Traits\Loggable;
 use App\Models\Traits\Searchable;
+use App\Models\Traits\TenantTemplateTrait;
 use App\Presenters\Presentable;
 use App\Presenters\SupplierPresenter;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Watson\Validating\ValidatingTrait;
 
 class Supplier extends SnipeModel
@@ -20,26 +22,11 @@ class Supplier extends SnipeModel
     use HasUploads;
     use Presentable;
     use SoftDeletes;
+    use TenantTemplateTrait;
 
     protected $presenter = SupplierPresenter::class;
 
     protected $table = 'suppliers';
-
-    protected $rules = [
-        'name' => 'required|max:255|unique_undeleted',
-        'fax' => 'min:7|max:35|nullable',
-        'phone' => 'min:7|max:35|nullable',
-        'contact' => 'max:100|nullable',
-        'notes' => 'max:191|nullable', // Default string length is 191 characters..
-        'email' => 'email|max:150|nullable',
-        'address' => 'max:250|nullable',
-        'address2' => 'max:250|nullable',
-        'city' => 'max:191|nullable',
-        'state' => 'min:2|max:191|nullable',
-        'country' => 'min:2|max:191|nullable',
-        'zip' => 'max:10|nullable',
-        'url' => 'sometimes|url|nullable|string|max:250',
-    ];
 
     /**
      * Whether the model should inject it's identifier to the unique
@@ -60,21 +47,62 @@ class Supplier extends SnipeModel
      *
      * @var array
      */
-    protected $searchableAttributes = ['name', 'notes', 'phone', 'fax', 'url', 'email', 'contact', 'address', 'address2', 'city', 'state', 'country', 'zip'];
+    protected $searchableAttributes = ['name', 'notes', 'phone', 'fax', 'url', 'email', 'contact', 'address', 'address2', 'city', 'state', 'country', 'zip', 'visibility_type'];
 
     /**
      * The relations and their attributes that should be included when searching the model.
      *
      * @var array
      */
-    protected $searchableRelations = [];
+    protected $searchableRelations = [
+        'company' => ['name'],
+    ];
 
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = ['name', 'address', 'address2', 'city', 'state', 'country', 'zip', 'phone', 'fax', 'email', 'contact', 'url', 'tag_color', 'notes'];
+    protected $fillable = ['name', 'address', 'address2', 'city', 'state', 'country', 'zip', 'phone', 'fax', 'email', 'contact', 'url', 'company_id', 'visibility_type', 'tag_color', 'notes'];
+
+    protected $casts = [
+        'company_id' => 'integer',
+    ];
+
+    public function getRules()
+    {
+        return [
+            'name' => [
+                'required',
+                'max:255',
+                Rule::unique('suppliers', 'name')
+                    ->ignore($this->getKey())
+                    ->where(function ($query) {
+                        $query->whereNull('deleted_at');
+
+                        if (is_null($this->company_id)) {
+                            $query->whereNull('company_id');
+                        } else {
+                            $query->where('company_id', $this->company_id);
+                        }
+                    }),
+            ],
+            'fax' => 'min:7|max:35|nullable',
+            'phone' => 'min:7|max:35|nullable',
+            'contact' => 'max:100|nullable',
+            'notes' => 'max:191|nullable',
+            'email' => 'email|max:150|nullable',
+            'address' => 'max:250|nullable',
+            'address2' => 'max:250|nullable',
+            'city' => 'max:191|nullable',
+            'state' => 'min:2|max:191|nullable',
+            'country' => 'min:2|max:191|nullable',
+            'zip' => 'max:10|nullable',
+            'url' => 'sometimes|url|nullable|string|max:250',
+            'company_id' => 'nullable|integer|exists:companies,id',
+            'visibility_type' => 'required|string|in:private,descendants,global',
+        ];
+    }
 
     public function isDeletable()
     {

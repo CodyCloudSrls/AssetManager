@@ -140,6 +140,31 @@ return [
         'name' => 'Manage Document Files',
         'note' => 'Allows the user to upload, download, and delete files associated with documents.',
     ],
+    'tickets' => [
+        'name' => 'Tickets',
+        'note' => 'Grants access to the Tickets section of the application.',
+    ],
+    'ticketsview' => [
+        'name' => 'View Tickets',
+    ],
+    'ticketscreate' => [
+        'name' => 'Create Tickets',
+    ],
+    'ticketsoperate' => [
+        'name' => 'Operate Tickets',
+        'note' => 'Allows the user to update ticket status, priority, type, assignee, operational SLA fields, and add comments and worklogs without full ticket editing access.',
+    ],
+    'ticketsedit' => [
+        'name' => 'Edit Tickets',
+        'note' => 'Allows full ticket editing after creation, including subject, description, links, and ownership.',
+    ],
+    'ticketsdelete' => [
+        'name' => 'Delete Tickets',
+    ],
+    'ticketsfiles' => [
+        'name' => 'Manage Ticket Files',
+        'note' => 'Allows the user to upload, download, and delete files associated with tickets.',
+    ],
     'documenttypes' => [
         'name' => 'Document Types',
         'note' => 'Grants access to document type settings.',

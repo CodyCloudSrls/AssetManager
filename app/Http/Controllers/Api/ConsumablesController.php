@@ -103,8 +103,8 @@ class ConsumablesController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $consumables->count()) ? $consumables->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $consumables->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
 
         switch ($request->input('sort')) {
@@ -363,8 +363,8 @@ class ConsumablesController extends Controller
         $this->authorize('history', $consumable);
         $history = $consumable->getHistory($request);
         $total = $consumable->getHistory($request)->count();
-        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $total, $limit);
         $history = $history->skip($offset)->take($limit)->get();
 
         return response()->json((new ActionlogsTransformer)->transformActionlogs($history, $total), 200, ['Content-Type' => 'application/json;charset=utf8'], JSON_UNESCAPED_UNICODE);

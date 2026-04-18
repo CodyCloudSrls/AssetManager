@@ -11,7 +11,13 @@
                 {{ csrf_field() }}
                 <div class="alert alert-danger" id="modal_error_msg" style="display:none">
                 </div>
-                @include('modals.partials.name', ['required' => 'true'])
+                @include('partials.forms.edit.name', ['item' => new \App\Models\Category(), 'required' => 'true', 'translated_name' => trans('general.name')])
+                <div class="dynamic-form-row">
+                    @include('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id', 'item' => new \App\Models\Category()])
+                </div>
+                <div class="dynamic-form-row">
+                    @include('partials.forms.edit.template-visibility-select', ['translated_name' => trans('general.template_visibility.label'), 'fieldname' => 'visibility_type', 'item' => new \App\Models\Category()])
+                </div>
                 <input type="hidden" name='category_type' id="modal-category_type" value="{{ request('category_type') }}" />
             </form>
         </div>

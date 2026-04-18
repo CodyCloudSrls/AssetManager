@@ -349,16 +349,27 @@ class ValidationServiceProvider extends ServiceProvider
             return in_array($value, $options);
         });
 
+        Validator::extend('scoped_exists', function ($attribute, $value, $parameters) {
+            if (blank($value)) {
+                return true;
+            }
+
+            $modelClass = $parameters[0] ?? null;
+
+            if (! $modelClass || ! class_exists($modelClass)) {
+                return false;
+            }
+
+            return $modelClass::query()->whereKey($value)->exists();
+        });
+
         // Validates that the company of the validated object matches the company of the location in case of scoped locations
         Validator::extend('fmcs_location', function ($attribute, $value, $parameters, $validator) {
-            $settings = Setting::getSettings();
-            if ($settings->full_multiple_companies_support == '1' && $settings->scope_locations_fmcs == '1') {
-                $company_id = array_get($validator->getData(), 'company_id');
-                $location = Location::find($value);
+            $company_id = array_get($validator->getData(), 'company_id');
+            $location = Location::find($value);
 
-                if (($location) && ($company_id != $location->company_id)) {
-                    return false;
-                }
+            if (($location) && ($company_id != $location->company_id)) {
+                return false;
             }
 
             return true;

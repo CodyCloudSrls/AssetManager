@@ -87,6 +87,23 @@ class ManufacturerPresenter extends Presenter
                 'formatter' => 'emailFormatter',
             ],
             [
+                'field' => 'company',
+                'searchable' => false,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('general.company'),
+                'visible' => true,
+                'formatter' => 'companiesLinkObjFormatter',
+            ],
+            [
+                'field' => 'visibility_label',
+                'searchable' => true,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('general.template_visibility.label'),
+                'visible' => true,
+            ],
+            [
                 'field' => 'warranty_lookup_url',
                 'searchable' => true,
                 'sortable' => true,

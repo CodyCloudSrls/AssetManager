@@ -10,6 +10,7 @@ use App\Exceptions\ItemStillHasConsumables;
 use App\Exceptions\ItemStillHasLicenses;
 use App\Exceptions\ItemStillHasMaintenances;
 use App\Http\Requests\ImageUploadRequest;
+use App\Models\Company;
 use App\Models\Supplier;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
@@ -70,6 +71,10 @@ class SuppliersController extends Controller
         $supplier->url = $supplier->addhttp(request('url'));
         $supplier->created_by = auth()->id();
         $supplier = $request->handleImages($supplier);
+        [$supplier->company_id, $supplier->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
 
         if ($supplier->save()) {
             return redirect()->route('suppliers.index')->with('success', trans('admin/suppliers/message.create.success'));
@@ -85,7 +90,7 @@ class SuppliersController extends Controller
      */
     public function edit(Supplier $supplier): View|RedirectResponse
     {
-        $this->authorize('update', Supplier::class);
+        $this->authorize('update', $supplier);
 
         return view('suppliers/edit')->with('item', $supplier);
     }
@@ -97,7 +102,7 @@ class SuppliersController extends Controller
      */
     public function update(ImageUploadRequest $request, Supplier $supplier): RedirectResponse
     {
-        $this->authorize('update', Supplier::class);
+        $this->authorize('update', $supplier);
         // Save the  data
         $supplier->name = request('name');
         $supplier->address = request('address');
@@ -114,6 +119,10 @@ class SuppliersController extends Controller
         $supplier->tag_color = $request->input('tag_color');
         $supplier->notes = request('notes');
         $supplier = $request->handleImages($supplier);
+        [$supplier->company_id, $supplier->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
 
         if ($supplier->save()) {
             return redirect()->route('suppliers.index')->with('success', trans('admin/suppliers/message.update.success'));
@@ -129,7 +138,7 @@ class SuppliersController extends Controller
      */
     public function destroy(Supplier $supplier): RedirectResponse
     {
-        $this->authorize('delete', Supplier::class);
+        $this->authorize('delete', $supplier);
         try {
             DestroySupplierAction::run(supplier: $supplier);
         } catch (ItemStillHasAssets $e) {
@@ -174,7 +183,7 @@ class SuppliersController extends Controller
      */
     public function show(Supplier $supplier): View|RedirectResponse
     {
-        $this->authorize('view', Supplier::class);
+        $this->authorize('view', $supplier);
 
         return view('suppliers/view', compact('supplier'));
     }

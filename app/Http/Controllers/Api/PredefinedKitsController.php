@@ -32,8 +32,8 @@ class PredefinedKitsController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $kits->count()) ? $kits->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $kits->count(), $limit);
 
         $order = $request->input('order') === 'desc' ? 'desc' : 'asc';
 

@@ -1,0 +1,309 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\ImageUploadRequest;
+use App\Http\Requests\StoreTenantHelpdeskSettingsRequest;
+use App\Models\Company;
+use App\Models\Tenant;
+use App\Models\User;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class TenantsController extends Controller
+{
+    public function switchContext(Request $request): RedirectResponse
+    {
+        abort_unless(auth()->check(), 403);
+        abort_unless(Tenant::canCurrentUserSwitchTenants(), 403);
+
+        $tenantId = Company::getIdFromInput($request->input('tenant_id'));
+
+        if (! is_null($tenantId) && ! Tenant::canCurrentUserSwitchToTenant((int) $tenantId)) {
+            abort(403);
+        }
+
+        if (is_null($tenantId)) {
+            $request->session()->forget(Tenant::ACTIVE_TENANT_SESSION_KEY);
+        } else {
+            $request->session()->put(Tenant::ACTIVE_TENANT_SESSION_KEY, (int) $tenantId);
+        }
+
+        Company::flushHierarchyCache();
+
+        return redirect()->to($this->resolveSwitchRedirect($request));
+    }
+
+    public function index(): View
+    {
+        abort_unless(auth()->user()->hasAccessToTenantAdminArea(), 403);
+
+        $tenantIds = auth()->user()->isSuperUser()
+            ? Tenant::accessibleTenantIdsForCurrentUser()
+            : Tenant::explicitMembershipTenantIdsForCurrentUser();
+
+        $tenants = Tenant::query()
+            ->whereIn('id', $tenantIds)
+            ->get()
+            ->map(function (Tenant $tenant) {
+                $rootCompany = $tenant->rootCompany();
+                $companyIds = $tenant->activeCompanyIds();
+
+                return (object) [
+                    'tenant' => $tenant,
+                    'root_company' => $rootCompany,
+                    'companies_count' => count($companyIds),
+                    'users_count' => Company::withoutGlobalScopes()->whereIn('id', $companyIds)->withCount('users')->get()->sum('users_count'),
+                    'assets_count' => Company::withoutGlobalScopes()->whereIn('id', $companyIds)->withCount('assets')->get()->sum('assets_count'),
+                ];
+            })
+            ->filter(fn ($row) => ! is_null($row->root_company))
+            ->sortBy(fn ($row) => mb_strtolower($row->root_company->name))
+            ->values();
+
+        return view('tenants.index', compact('tenants'));
+    }
+
+    public function create(): View
+    {
+        abort_unless(auth()->user()->isSuperUser(), 403);
+
+        return view('tenants.create', [
+            'item' => new Company,
+        ]);
+    }
+
+    public function store(ImageUploadRequest $request): RedirectResponse
+    {
+        abort_unless(auth()->user()->isSuperUser(), 403);
+
+        $request->validate([
+            'name' => 'required|string|max:255|unique:companies,name',
+            'phone' => 'nullable|string|max:35',
+            'fax' => 'nullable|string|max:35',
+            'email' => 'nullable|email|max:150',
+            'tag_color' => 'nullable|string|max:16',
+            'brand' => 'nullable|integer|in:1,2,3',
+            'header_color' => 'nullable|string|max:16',
+            'nav_link_color' => 'nullable|string|max:16',
+            'link_light_color' => 'nullable|string|max:16',
+            'link_dark_color' => 'nullable|string|max:16',
+            'privacy_policy_link' => 'nullable|url|max:255',
+        ]);
+
+        $company = null;
+
+        try {
+            DB::transaction(function () use ($request, &$company) {
+                $tenant = Tenant::createMinimal();
+
+                $company = new Company;
+                $company->tenant_id = $tenant->id;
+                $company->name = $request->input('name');
+                $company->phone = $request->input('phone');
+                $company->fax = $request->input('fax');
+                $company->email = $request->input('email');
+                $company->tag_color = $request->input('tag_color');
+                $company->notes = $request->input('notes');
+                $company->brand = $request->input('brand', 3);
+                $company->header_color = $request->input('header_color');
+                $company->nav_link_color = $request->input('nav_link_color');
+                $company->link_light_color = $request->input('link_light_color');
+                $company->link_dark_color = $request->input('link_dark_color');
+                $company->footer_text = $request->input('footer_text');
+                $company->privacy_policy_link = $request->input('privacy_policy_link');
+                $company->custom_css = $request->input('custom_css');
+                $company->helpdesk_slug = Company::generateUniqueHelpdeskSlug($company->name);
+                $company->created_by = auth()->id();
+
+                $company = $request->handleImages($company);
+
+                if (! $company->save()) {
+                    throw new \RuntimeException('Tenant root company save failed');
+                }
+
+                foreach (['brand_logo', 'favicon'] as $field) {
+                    $company = $request->handleImages($company, 600, $field, 'companies/branding', $field);
+
+                    if ($company->{$field} && ! str_contains($company->{$field}, '/')) {
+                        $company->{$field} = 'companies/branding/'.$company->{$field};
+                    }
+                }
+
+                $company->saveQuietly();
+            });
+        } catch (\Throwable $e) {
+            report($e);
+
+            return redirect()->back()->withInput()->withErrors([
+                'name' => trans('admin/tenants/message.create.error'),
+            ]);
+        }
+
+        return redirect()->route('tenants.index')->with('success', trans('admin/tenants/message.create.success'));
+    }
+
+    public function show(Tenant $tenant): View
+    {
+        abort_unless(auth()->user()->canViewTenant($tenant), 403);
+
+        $rootCompany = $tenant->rootCompany();
+        $companies = Company::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->id)
+            ->whereNull('deleted_at')
+            ->orderByRaw('parent_id is null desc')
+            ->orderBy('name')
+            ->get();
+
+        $members = $tenant->members()
+            ->with('company')
+            ->when(! auth()->user()->isSuperUser(), fn ($query) => $query->withoutPlatformSuperAdmins())
+            ->orderBy('display_name')
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get();
+
+        $canManageTenant = auth()->user()->canManageTenant($tenant);
+        $publicTicketTypes = $tenant->publicHelpdeskSelectedTicketTypes();
+
+        return view('tenants.show', compact('tenant', 'rootCompany', 'companies', 'members', 'canManageTenant', 'publicTicketTypes'));
+    }
+
+    public function storeMember(Request $request, Tenant $tenant): RedirectResponse
+    {
+        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+
+        $payload = $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+            'role' => 'required|string|in:'.Tenant::ROLE_ADMIN.','.Tenant::ROLE_VIEWER,
+        ]);
+
+        $user = User::withoutGlobalScopes()->findOrFail($payload['user_id']);
+        abort_if($user->isSuperUser(), 403);
+
+        $tenant->members()->syncWithoutDetaching([
+            $user->id => [
+                'role' => $payload['role'],
+                'created_by' => auth()->id(),
+            ],
+        ]);
+
+        Tenant::clearCurrentUserTenantRoleCache();
+
+        return redirect()->route('tenants.show', $tenant)->with('success', trans('admin/tenants/message.membership.create.success'));
+    }
+
+    public function updateMember(Request $request, Tenant $tenant, User $user): RedirectResponse
+    {
+        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+        abort_if($user->isSuperUser(), 403);
+
+        $payload = $request->validate([
+            'role' => 'required|string|in:'.Tenant::ROLE_ADMIN.','.Tenant::ROLE_VIEWER,
+        ]);
+
+        $tenant->members()->updateExistingPivot($user->id, [
+            'role' => $payload['role'],
+        ]);
+
+        Tenant::clearCurrentUserTenantRoleCache();
+
+        return redirect()->route('tenants.show', $tenant)->with('success', trans('admin/tenants/message.membership.update.success'));
+    }
+
+    public function destroyMember(Tenant $tenant, User $user): RedirectResponse
+    {
+        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+        abort_if($user->isSuperUser(), 403);
+
+        $tenant->members()->detach($user->id);
+
+        Tenant::clearCurrentUserTenantRoleCache();
+
+        return redirect()->route('tenants.show', $tenant)->with('success', trans('admin/tenants/message.membership.delete.success'));
+    }
+
+    public function editHelpdesk(Tenant $tenant): View
+    {
+        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+
+        $rootCompany = $tenant->rootCompany();
+        abort_if(is_null($rootCompany), 404);
+
+        return view('tenants.helpdesk', [
+            'tenant' => $tenant,
+            'rootCompany' => $rootCompany,
+            'availableTicketTypes' => $tenant->publicHelpdeskAvailableTicketTypes(),
+            'selectedTicketTypeIds' => $tenant->publicHelpdeskSelectedTicketTypes()->pluck('id')->all(),
+        ]);
+    }
+
+    public function updateHelpdesk(StoreTenantHelpdeskSettingsRequest $request, Tenant $tenant): RedirectResponse
+    {
+        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+
+        $rootCompany = $tenant->rootCompany();
+        abort_if(is_null($rootCompany), 404);
+
+        $rootCompany->helpdesk_enabled = $request->boolean('helpdesk_enabled');
+        $rootCompany->helpdesk_allow_attachments = $request->boolean('helpdesk_allow_attachments', true);
+        $rootCompany->helpdesk_slug = Company::generateUniqueHelpdeskSlug(
+            $request->input('helpdesk_slug') ?: $rootCompany->name,
+            $rootCompany->id
+        );
+        $rootCompany->helpdesk_intro = $request->input('helpdesk_intro');
+        $rootCompany->helpdesk_privacy_note = $request->input('helpdesk_privacy_note');
+        $rootCompany->helpdesk_contact_email = $request->input('helpdesk_contact_email');
+        $rootCompany->helpdesk_contact_phone = $request->input('helpdesk_contact_phone');
+        $rootCompany->save();
+
+        $selectedIds = collect($request->input('public_ticket_type_ids', []))
+            ->filter(fn ($id) => $id !== null && $id !== '')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        $tenant->helpdeskTicketTypes()->sync($selectedIds);
+
+        return redirect()->route('tenants.show', $tenant)
+            ->with('success', trans('admin/tenants/message.helpdesk.update.success'));
+    }
+
+    private function resolveSwitchRedirect(Request $request): string
+    {
+        $fallbackUrl = route('home');
+        $redirectTo = trim((string) $request->input('redirect_to'));
+
+        if ($redirectTo === '') {
+            return $this->appendTenantSwitchFlag($fallbackUrl);
+        }
+
+        if (str_starts_with($redirectTo, '/')) {
+            return $this->appendTenantSwitchFlag($redirectTo);
+        }
+
+        $appUrl = parse_url(config('app.url'));
+        $redirectUrl = parse_url($redirectTo);
+
+        if (
+            $appUrl
+            && $redirectUrl
+            && (($appUrl['host'] ?? null) === ($redirectUrl['host'] ?? null))
+            && (($appUrl['scheme'] ?? null) === ($redirectUrl['scheme'] ?? null))
+        ) {
+            return $this->appendTenantSwitchFlag($redirectTo);
+        }
+
+        return $this->appendTenantSwitchFlag($fallbackUrl);
+    }
+
+    private function appendTenantSwitchFlag(string $url): string
+    {
+        $separator = str_contains($url, '?') ? '&' : '?';
+
+        return $url.$separator.'tenant_switched=1';
+    }
+}

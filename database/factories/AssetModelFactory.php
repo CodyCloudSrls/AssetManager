@@ -34,7 +34,8 @@ class AssetModelFactory extends Factory
             'name' => $this->faker->catchPhrase(),
             'notes' => 'Created by demo seeder',
             'require_serial' => 0,
-
+            'company_id' => null,
+            'visibility_type' => AssetModel::VISIBILITY_GLOBAL,
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\Helper;
+use App\Models\Company;
 use App\Models\Statuslabel;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -28,7 +29,7 @@ class StatuslabelsController extends Controller
 
     public function show(Statuslabel $statuslabel): View|RedirectResponse
     {
-        $this->authorize('view', Statuslabel::class);
+        $this->authorize('view', $statuslabel);
 
         return view('statuslabels.view')->with('statuslabel', $statuslabel);
     }
@@ -71,6 +72,10 @@ class StatuslabelsController extends Controller
         $statusLabel->color = $request->input('color');
         $statusLabel->show_in_nav = $request->input('show_in_nav', 0);
         $statusLabel->default_label = $request->input('default_label', 0);
+        [$statusLabel->company_id, $statusLabel->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
 
         if ($statusLabel->save()) {
             // Redirect to the new Statuslabel  page
@@ -87,7 +92,7 @@ class StatuslabelsController extends Controller
      */
     public function edit(Statuslabel $statuslabel): View|RedirectResponse
     {
-        $this->authorize('update', Statuslabel::class);
+        $this->authorize('update', $statuslabel);
 
         $statuslabel_types = ['' => trans('admin/hardware/form.select_statustype')] + ['undeployable' => trans('admin/hardware/general.undeployable')] + ['pending' => trans('admin/hardware/general.pending')] + ['archived' => trans('admin/hardware/general.archived')] + ['deployable' => trans('admin/hardware/general.deployable')];
 
@@ -103,7 +108,7 @@ class StatuslabelsController extends Controller
      */
     public function update(Request $request, Statuslabel $statuslabel): RedirectResponse
     {
-        $this->authorize('update', Statuslabel::class);
+        $this->authorize('update', $statuslabel);
 
         if (! $request->filled('statuslabel_types')) {
             return redirect()->back()->withInput()->withErrors(['statuslabel_types' => trans('validation.statuslabel_type')]);
@@ -119,6 +124,10 @@ class StatuslabelsController extends Controller
         $statuslabel->color = $request->input('color');
         $statuslabel->show_in_nav = $request->input('show_in_nav', 0);
         $statuslabel->default_label = $request->input('default_label', 0);
+        [$statuslabel->company_id, $statuslabel->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
 
         // Was the asset created?
         if ($statuslabel->save()) {
@@ -136,11 +145,8 @@ class StatuslabelsController extends Controller
      */
     public function destroy($statuslabelId): RedirectResponse
     {
-        $this->authorize('delete', Statuslabel::class);
-        // Check if the Statuslabel exists
-        if (is_null($statuslabel = Statuslabel::find($statuslabelId))) {
-            return redirect()->route('statuslabels.index')->with('error', trans('admin/statuslabels/message.not_found'));
-        }
+        $statuslabel = Statuslabel::findOrFail($statuslabelId);
+        $this->authorize('delete', $statuslabel);
 
         // Check that there are no assets associated
         if ($statuslabel->assets()->count() == 0) {

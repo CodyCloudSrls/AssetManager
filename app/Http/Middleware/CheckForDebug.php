@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Company;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class CheckForDebug
 {
@@ -18,7 +18,7 @@ class CheckForDebug
     {
         view()->share('debug_in_production', false);
 
-        if (((Auth::check() && (auth()->user()->isSuperUser()))) && (app()->environment() == 'production') && (config('app.warn_debug') === true) && (config('app.debug') === true)) {
+        if ((Company::currentAuthContext()['is_superuser']) && (app()->environment() == 'production') && (config('app.warn_debug') === true) && (config('app.debug') === true)) {
             view()->share('debug_in_production', true);
         }
 

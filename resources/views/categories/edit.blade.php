@@ -16,6 +16,9 @@
             name="name"
     />
 
+@include ('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id', 'item' => $item])
+@include ('partials.forms.edit.template-visibility-select', ['translated_name' => trans('general.template_visibility.label'), 'fieldname' => 'visibility_type', 'item' => $item])
+
 
 <!-- Type -->
 <div class="form-group {{ $errors->has('category_type') ? ' has-error' : '' }}">

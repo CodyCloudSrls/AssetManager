@@ -13,6 +13,12 @@
                    @include('partials.forms.edit.name', [ 'item' => new \App\Models\Supplier(), 'translated_name' => trans('admin/suppliers/table.name')])
                 </div>
                 <div class="dynamic-form-row">
+                    @include('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id', 'item' => new \App\Models\Supplier()])
+                </div>
+                <div class="dynamic-form-row">
+                    @include('partials.forms.edit.template-visibility-select', ['translated_name' => trans('general.template_visibility.label'), 'fieldname' => 'visibility_type', 'item' => new \App\Models\Supplier()])
+                </div>
+                <div class="dynamic-form-row">
                     <div class="form-group {{ $errors->has('contact') ? ' has-error' : '' }}">
                         <label for="contact" class="col-md-3 control-label">{{ trans('admin/suppliers/table.contact') }}</label>
                         <div class="col-md-7">

@@ -8,7 +8,6 @@ use App\Models\Actionlog;
 use App\Models\Asset;
 use App\Models\Company;
 use App\Models\Location;
-use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -90,16 +89,8 @@ class LocationsController extends Controller
         $location->tag_color = $request->input('tag_color');
         $location->notes = $request->input('notes');
         $location->company_id = Company::getIdForCurrentUser($request->input('company_id'));
-
-        // Only scope the location if the setting is enabled
-        if (Setting::getSettings()->scope_locations_fmcs) {
-            $location->company_id = Company::getIdForCurrentUser($request->input('company_id'));
-            // check if parent is set and has a different company
-            if ($location->parent_id && Location::find($location->parent_id)->company_id != $location->company_id) {
-                return redirect()->back()->withInput()->withInput()->with('error', 'different company than parent');
-            }
-        } else {
-            $location->company_id = $request->input('company_id');
+        if ($location->parent_id && Location::find($location->parent_id)->company_id != $location->company_id) {
+            return redirect()->back()->withInput()->with('error', 'different company than parent');
         }
 
         if ($request->has('use_cloned_image')) {
@@ -171,15 +162,9 @@ class LocationsController extends Controller
         $location->tag_color = $request->input('tag_color');
         $location->notes = $request->input('notes');
 
-        // Only scope the location if the setting is enabled
-        if (Setting::getSettings()->scope_locations_fmcs) {
-            $location->company_id = Company::getIdForCurrentUser($request->input('company_id'));
-            // check if there are related objects with different company
-            if (Helper::test_locations_fmcs(false, $location->id, $location->company_id)) {
-                return redirect()->back()->withInput()->withInput()->with('error', 'error scoped locations');
-            }
-        } else {
-            $location->company_id = $request->input('company_id');
+        $location->company_id = Company::getIdForCurrentUser($request->input('company_id'));
+        if (Helper::test_locations_fmcs(false, $location->id, $location->company_id)) {
+            return redirect()->back()->withInput()->with('error', 'error scoped locations');
         }
 
         $location = $request->handleImages($location);

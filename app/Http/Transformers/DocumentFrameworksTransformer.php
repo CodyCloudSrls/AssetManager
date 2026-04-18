@@ -29,6 +29,12 @@ class DocumentFrameworksTransformer
             'description' => e($documentFramework->description),
             'sort_order' => (int) $documentFramework->sort_order,
             'is_active' => (bool) $documentFramework->is_active,
+            'company' => ($documentFramework->company) ? [
+                'id' => (int) $documentFramework->company->id,
+                'name' => e($documentFramework->company->name),
+            ] : null,
+            'visibility_type' => e($documentFramework->visibility_type),
+            'visibility_label' => e($documentFramework->visibility_label),
             'documents_count' => (int) ($documentFramework->documents_count ?? 0),
             'created_by' => ($documentFramework->adminuser) ? [
                 'id' => (int) $documentFramework->adminuser->id,
@@ -40,7 +46,7 @@ class DocumentFrameworksTransformer
             'available_actions' => [
                 'update' => ($documentFramework->deleted_at == '' && Gate::allows('update', $documentFramework)),
                 'delete' => ($documentFramework->deleted_at == '' && Gate::allows('delete', $documentFramework) && $documentFramework->isDeletable()),
-                'restore' => ($documentFramework->deleted_at != '' && Gate::allows('delete', DocumentFramework::class)),
+                'restore' => ($documentFramework->deleted_at != '' && Gate::allows('delete', $documentFramework)),
             ],
         ];
     }

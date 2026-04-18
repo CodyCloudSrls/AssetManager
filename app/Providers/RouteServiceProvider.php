@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Tenant;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -18,6 +19,10 @@ class RouteServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->configureRateLimiting();
+
+        Route::bind('tenantPortal', function ($value) {
+            return Tenant::resolvePublicHelpdeskIdentifier((string) $value) ?? abort(404);
+        });
 
         $this->routes(function () {
             $this->mapApiRoutes();
@@ -43,6 +48,7 @@ class RouteServiceProvider extends ServiceProvider
         ], function ($router) {
             require base_path('routes/web/hardware.php');
             require base_path('routes/web/documents.php');
+            require base_path('routes/web/tickets.php');
             require base_path('routes/web/models.php');
             require base_path('routes/web/accessories.php');
             require base_path('routes/web/licenses.php');
@@ -66,7 +72,7 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapApiRoutes()
     {
         Route::group([
-            'middleware' => 'auth:api',
+            'middleware' => 'auth:web,api',
             //            'namespace' => $this->namespace, // this might also be a problem? I don't really know :/
             'prefix' => 'api',
         ], function ($router) {

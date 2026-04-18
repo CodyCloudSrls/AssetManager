@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Helpers\Helper;
+use App\Models\Company;
 use App\Models\Setting;
 use Closure;
 use Illuminate\Http\Request;
@@ -26,17 +27,17 @@ class CheckLocale
      */
     public function handle($request, Closure $next, $guard = null)
     {
-
         // Default app settings from config
         $language = config('app.locale');
         $this->warn_legacy_locale($language, 'APP_LOCALE in .env is set to');
+        $user = Company::currentAuthUserData();
 
         if ($settings = Setting::getSettings()) {
 
             // User's preference
-            if (($request->user()) && ($request->user()->locale)) {
-                $language = $request->user()->locale;
-                $this->warn_legacy_locale($language, 'username '.$request->user()->username.' ('.$request->user()->id.') has a language');
+            if (($user) && ($user->locale)) {
+                $language = $user->locale;
+                $this->warn_legacy_locale($language, 'username '.$user->username.' ('.$user->id.') has a language');
 
                 // App setting preference
             } elseif ($settings->locale != '') {

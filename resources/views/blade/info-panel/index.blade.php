@@ -227,6 +227,14 @@
             </x-info-element>
         @endif
 
+        @if (isset($infoPanelObj->visibility_type))
+            <x-info-element icon_type="general-settings" title="{{ trans('general.template_visibility.label') }}">
+                <x-copy-to-clipboard class="pull-right" copy_what="template_visibility">
+                    {{ $infoPanelObj->visibility_label ?? $infoPanelObj->visibility_type }}
+                </x-copy-to-clipboard>
+            </x-info-element>
+        @endif
+
         @if ($infoPanelObj->department)
             <x-info-element icon_type="department" icon_color="{{ $infoPanelObj->department->tag_color }}" title="{{ trans('general.department') }}">
                 <x-copy-to-clipboard class="pull-right" copy_what="department">
@@ -275,8 +283,8 @@
         <x-info-panel.manufacturer :asset="$infoPanelObj" :manufacturer="($infoPanelObj->manufacturer ?? $infoPanelObj->model?->manufacturer)"/>
 
         @if ((isset($infoPanelObj->parent)) && ($infoPanelObj->parent))
-            <x-info-element icon_type="parent" title="{{ trans('admin/locations/table.parent') }}">
-                <a href="{{ route('locations.show', $infoPanelObj->parent->id) }}">{{ $infoPanelObj->parent->display_name }}</a>
+            <x-info-element icon_type="parent" title="{{ $infoPanelObj instanceof \App\Models\Company ? trans('admin/companies/table.parent') : trans('admin/locations/table.parent') }}">
+                {!! $infoPanelObj->parent->present()->nameUrl !!}
             </x-info-element>
         @endif
 
@@ -549,4 +557,3 @@
 </div>
 
 <!-- end side info-box -->
-

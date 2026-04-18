@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreDocumentTypeRequest;
 use App\Models\DocumentType;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class DocumentTypesController extends Controller
 {
@@ -23,7 +23,7 @@ class DocumentTypesController extends Controller
         return view('documenttypes.edit')->with('item', new DocumentType);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreDocumentTypeRequest $request): RedirectResponse
     {
         $this->authorize('create', DocumentType::class);
 
@@ -41,7 +41,7 @@ class DocumentTypesController extends Controller
 
     public function show(DocumentType $documenttype): View
     {
-        $this->authorize('view', DocumentType::class);
+        $this->authorize('view', $documenttype);
 
         $documenttype->loadCount('documents');
 
@@ -50,14 +50,14 @@ class DocumentTypesController extends Controller
 
     public function edit(DocumentType $documenttype): View
     {
-        $this->authorize('update', DocumentType::class);
+        $this->authorize('update', $documenttype);
 
         return view('documenttypes.edit')->with('item', $documenttype);
     }
 
-    public function update(Request $request, DocumentType $documenttype): RedirectResponse
+    public function update(StoreDocumentTypeRequest $request, DocumentType $documenttype): RedirectResponse
     {
-        $this->authorize('update', DocumentType::class);
+        $this->authorize('update', $documenttype);
 
         $documenttype->fill($request->all());
         $documenttype->is_active = $request->boolean('is_active');
@@ -87,6 +87,7 @@ class DocumentTypesController extends Controller
         $this->authorize('delete', DocumentType::class);
 
         $documenttype = DocumentType::withTrashed()->findOrFail($id);
+        $this->authorize('delete', $documenttype);
 
         if ($documenttype->restore()) {
             return redirect()->route('documenttypes.index')->with('success', trans('admin/documenttypes/message.restore.success'));

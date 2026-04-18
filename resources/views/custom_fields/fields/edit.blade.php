@@ -139,6 +139,9 @@
               </div>
           </div>
 
+          @include('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id', 'item' => $field])
+          @include('partials.forms.edit.template-visibility-select', ['translated_name' => trans('general.template_visibility.label'), 'fieldname' => 'visibility_type', 'item' => $field])
+
          <!-- Set up checkbox form group -->
          <div class="form-group">
 

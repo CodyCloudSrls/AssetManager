@@ -70,8 +70,8 @@ class DepartmentsController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $departments->count()) ? $departments->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $departments->count(), $limit);
 
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sort = in_array($request->input('sort'), $allowed_columns) ? $request->input('sort') : 'created_at';

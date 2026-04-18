@@ -19,6 +19,10 @@
                         <dd>{{ $documenttype->is_active ? trans('general.yes') : trans('general.no') }}</dd>
                         <dt>{{ trans('admin/documenttypes/table.sort_order') }}</dt>
                         <dd>{{ $documenttype->sort_order }}</dd>
+                        <dt>{{ trans('general.company') }}</dt>
+                        <dd>{{ $documenttype->company?->name ?? trans('general.na') }}</dd>
+                        <dt>{{ trans('general.template_visibility.label') }}</dt>
+                        <dd>{{ $documenttype->visibility_label }}</dd>
                         <dt>{{ trans('general.documents') }}</dt>
                         <dd>{{ $documenttype->documents_count }}</dd>
                         @if ($documenttype->description)

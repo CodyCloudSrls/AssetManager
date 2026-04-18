@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCustomFieldsetRequest;
 use App\Http\Transformers\CustomFieldsetsTransformer;
 use App\Http\Transformers\CustomFieldsTransformer;
+use App\Models\Company;
 use App\Models\CustomField;
 use App\Models\CustomFieldset;
 use Illuminate\Http\JsonResponse;
@@ -38,7 +40,7 @@ class CustomFieldsetsController extends Controller
     public function index(): array
     {
         $this->authorize('index', CustomField::class);
-        $fieldsets = CustomFieldset::withCount('fields as fields_count', 'models as models_count')->get();
+        $fieldsets = CustomFieldset::with('company')->withCount('fields as fields_count', 'models as models_count')->get();
 
         return (new CustomFieldsetsTransformer)->transformCustomFieldsets($fieldsets, $fieldsets->count());
     }
@@ -57,6 +59,7 @@ class CustomFieldsetsController extends Controller
     {
         $this->authorize('view', CustomField::class);
         if ($fieldset = CustomFieldset::find($id)) {
+            $this->authorize('view', $fieldset);
             return (new CustomFieldsetsTransformer)->transformCustomFieldset($fieldset);
         }
 
@@ -72,10 +75,11 @@ class CustomFieldsetsController extends Controller
      *
      * @param  int  $id
      */
-    public function update(Request $request, $id): JsonResponse
+    public function update(StoreCustomFieldsetRequest $request, $id): JsonResponse
     {
         $this->authorize('update', CustomField::class);
         $fieldset = CustomFieldset::findOrFail($id);
+        $this->authorize('update', $fieldset);
         $fieldset->fill($request->all());
 
         if ($fieldset->save()) {
@@ -92,7 +96,7 @@ class CustomFieldsetsController extends Controller
      *
      * @since [v4.0]
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreCustomFieldsetRequest $request): JsonResponse
     {
         $this->authorize('create', CustomField::class);
         $fieldset = new CustomFieldset;
@@ -100,7 +104,8 @@ class CustomFieldsetsController extends Controller
 
         if ($fieldset->save()) {
             // Sync fieldset with auto_add_to_fieldsets
-            $fields = CustomField::select('id')->where('auto_add_to_fieldsets', '=', '1')->get();
+            $fields = CustomField::where('auto_add_to_fieldsets', '=', '1')->get()
+                ->filter(fn (CustomField $field) => Company::templateCanBeAppliedToCompany($field, $fieldset->company_id));
 
             if ($fields->count() > 0) {
 
@@ -128,6 +133,7 @@ class CustomFieldsetsController extends Controller
     {
         $this->authorize('delete', CustomField::class);
         $fieldset = CustomFieldset::findOrFail($id);
+        $this->authorize('delete', $fieldset);
 
         $modelsCount = $fieldset->models->count();
         $fieldsCount = $fieldset->fields->count();
@@ -157,6 +163,7 @@ class CustomFieldsetsController extends Controller
     {
         $this->authorize('view', CustomField::class);
         $set = CustomFieldset::findOrFail($id);
+        $this->authorize('view', $set);
         $fields = $set->fields;
 
         return (new CustomFieldsTransformer)->transformCustomFields($fields, $fields->count());
@@ -172,6 +179,7 @@ class CustomFieldsetsController extends Controller
     {
         $this->authorize('view', CustomField::class);
         $set = CustomFieldset::findOrFail($fieldsetId);
+        $this->authorize('view', $set);
         $fields = $set->fields;
 
         return (new CustomFieldsTransformer)->transformCustomFieldsWithDefaultValues($fields, $modelId, $fields->count());

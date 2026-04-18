@@ -25,6 +25,7 @@ class Setting extends Model
      * The cache property so that multiple invocations of this will only load the Settings record from disk only once
      */
     public static ?self $_cache = null;
+    public static ?self $_resolved_cache = null;
 
     /**
      * The setup check cache key name.
@@ -77,7 +78,7 @@ class Setting extends Model
      *
      * @since 5.0.0
      */
-    public static function getSettings(): ?self
+    public static function getRawSettings(): ?self
     {
         if (! self::$_cache) {
             // Need for setup as no tables exist
@@ -89,6 +90,16 @@ class Setting extends Model
         }
 
         return self::$_cache;
+    }
+
+    public static function getSettings(): ?self
+    {
+        if (! self::$_resolved_cache) {
+            $settings = self::getRawSettings();
+            self::$_resolved_cache = $settings ? self::resolveForCurrentTenant(clone $settings) : null;
+        }
+
+        return self::$_resolved_cache;
     }
 
     /**
@@ -367,5 +378,41 @@ class Setting extends Model
     public static function get_client_side_key_path()
     {
         return self::get_fresh_file_path('ldap_client_tls_key', 'ldap_client_tls.key');
+    }
+
+    private static function resolveForCurrentTenant(self $settings): self
+    {
+        $rootCompany = Tenant::currentTenantRootCompany();
+
+        if (! $rootCompany) {
+            return $settings;
+        }
+
+        $settings->site_name = $rootCompany->name ?: $settings->site_name;
+        $settings->brand = $rootCompany->brand ?? $settings->brand;
+        $settings->logo = self::resolveTenantAssetPath($rootCompany->brand_logo)
+            ?? ($rootCompany->image ? 'companies/'.$rootCompany->image : $settings->logo);
+        $settings->email_logo = self::resolveTenantAssetPath($rootCompany->brand_logo) ?? $settings->email_logo;
+        $settings->label_logo = self::resolveTenantAssetPath($rootCompany->brand_logo) ?? $settings->label_logo;
+        $settings->acceptance_pdf_logo = self::resolveTenantAssetPath($rootCompany->brand_logo) ?? $settings->acceptance_pdf_logo;
+        $settings->favicon = self::resolveTenantAssetPath($rootCompany->favicon) ?? $settings->favicon;
+        $settings->header_color = $rootCompany->header_color ?: $settings->header_color;
+        $settings->nav_link_color = $rootCompany->nav_link_color ?: $settings->nav_link_color;
+        $settings->link_light_color = $rootCompany->link_light_color ?: $settings->link_light_color;
+        $settings->link_dark_color = $rootCompany->link_dark_color ?: $settings->link_dark_color;
+        $settings->footer_text = $rootCompany->footer_text ?: $settings->footer_text;
+        $settings->privacy_policy_link = $rootCompany->privacy_policy_link ?: $settings->privacy_policy_link;
+        $settings->custom_css = $rootCompany->custom_css ?: $settings->custom_css;
+
+        return $settings;
+    }
+
+    private static function resolveTenantAssetPath(?string $path): ?string
+    {
+        if (blank($path)) {
+            return null;
+        }
+
+        return ltrim($path, '/');
     }
 }

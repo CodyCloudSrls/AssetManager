@@ -34,6 +34,12 @@ class CustomFieldsetsTransformer
         $array = [
             'id' => (int) $fieldset->id,
             'name' => e($fieldset->name),
+            'company' => ($fieldset->company) ? [
+                'id' => (int) $fieldset->company->id,
+                'name' => e($fieldset->company->name),
+            ] : null,
+            'visibility_type' => e($fieldset->visibility_type),
+            'visibility_label' => e($fieldset->visibility_label),
             'fields' => (new CustomFieldsTransformer)->transformCustomFields($fields, $fieldset->fields_count),
             'models' => (new DatatablesTransformer)->transformDatatables($modelsArray, $fieldset->models_count),
             'created_at' => Helper::getFormattedDateObject($fieldset->created_at, 'datetime'),

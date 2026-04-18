@@ -7,6 +7,7 @@ use App\Exceptions\ItemStillHasChildren;
 use App\Helpers\Helper;
 use App\Http\Requests\ImageUploadRequest;
 use App\Models\Category;
+use App\Models\Company;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -76,6 +77,10 @@ class CategoriesController extends Controller
         $category->tag_color = $request->input('tag_color');
         $category->notes = $request->input('notes');
         $category->created_by = auth()->id();
+        [$category->company_id, $category->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
 
         $category = $request->handleImages($category);
         if ($category->save()) {
@@ -98,7 +103,7 @@ class CategoriesController extends Controller
      */
     public function edit(Category $category): RedirectResponse|View
     {
-        $this->authorize('update', Category::class);
+        $this->authorize('update', $category);
 
         return view('categories/edit')->with('item', $category)
             ->with('category_types', Helper::categoryTypeList());
@@ -117,7 +122,7 @@ class CategoriesController extends Controller
      */
     public function update(ImageUploadRequest $request, Category $category): RedirectResponse
     {
-        $this->authorize('update', Category::class);
+        $this->authorize('update', $category);
         $category->name = $request->input('name');
 
         // Don't allow the user to change the category_type once it's been created
@@ -136,6 +141,10 @@ class CategoriesController extends Controller
         $category->checkin_email = $request->input('checkin_email', '0');
         $category->tag_color = $request->input('tag_color');
         $category->notes = $request->input('notes');
+        [$category->company_id, $category->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
 
         $category = $request->handleImages($category);
 
@@ -159,7 +168,7 @@ class CategoriesController extends Controller
      */
     public function destroy(Category $category): RedirectResponse
     {
-        $this->authorize('delete', Category::class);
+        $this->authorize('delete', $category);
         try {
             DestroyCategoryAction::run($category);
         } catch (ItemStillHasChildren $e) {
@@ -187,7 +196,7 @@ class CategoriesController extends Controller
      */
     public function show(Category $category): View|RedirectResponse
     {
-        $this->authorize('view', Category::class);
+        $this->authorize('view', $category);
 
         if ($category->category_type == 'asset') {
             $category_type = 'hardware';

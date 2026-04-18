@@ -36,6 +36,13 @@ class AssetModelPresenter extends Presenter
                 'visible' => false,
                 'formatter' => 'companiesLinkObjFormatter',
             ], [
+                'field' => 'visibility_label',
+                'searchable' => true,
+                'sortable' => true,
+                'switchable' => true,
+                'title' => trans('general.template_visibility.label'),
+                'visible' => false,
+            ], [
                 'field' => 'name',
                 'searchable' => true,
                 'sortable' => true,

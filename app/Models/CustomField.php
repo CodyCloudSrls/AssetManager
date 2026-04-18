@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Traits\UniqueUndeletedTrait;
+use App\Models\Traits\TenantTemplateTrait;
 use EasySlugger\Utf8Slugger;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,7 @@ use Watson\Validating\ValidatingTrait;
 class CustomField extends Model
 {
     use HasFactory;
+    use TenantTemplateTrait;
     use UniqueUndeletedTrait,
         ValidatingTrait;
 
@@ -58,9 +60,12 @@ class CustomField extends Model
         'show_in_requestable_list' => 'boolean',
         'show_in_email' => 'boolean',
         'format' => 'nullable|string|max:191',
+        'company_id' => 'nullable|integer|exists:companies,id',
+        'visibility_type' => 'required|string|in:private,descendants,global',
     ];
 
     protected $casts = [
+        'company_id' => 'integer',
         'show_in_requestable_list' => 'boolean',
     ];
 
@@ -76,6 +81,8 @@ class CustomField extends Model
         'field_values',
         'field_encrypted',
         'help_text',
+        'company_id',
+        'visibility_type',
         'show_in_email',
         'is_unique',
         'display_in_user_view',
@@ -99,6 +106,7 @@ class CustomField extends Model
         'element',
         'db_column',
         'help_text',
+        'visibility_type',
     ];
 
     /**

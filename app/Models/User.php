@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
@@ -320,7 +321,11 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
             return true;
         }
 
-        return $this->checkPermissionSection($section);
+        if ($this->checkPermissionSection($section)) {
+            return true;
+        }
+
+        return $this->hasTenantRoleAccess($section);
     }
 
     /**
@@ -664,6 +669,13 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
     public function groups()
     {
         return $this->belongsToMany(Group::class, 'users_groups');
+    }
+
+    public function tenants(): BelongsToMany
+    {
+        return $this->belongsToMany(Tenant::class, 'tenant_users')
+            ->withPivot(['role', 'created_by'])
+            ->withTimestamps();
     }
 
     /**
@@ -1037,6 +1049,20 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
 
     }
 
+    public function scopeWithoutPlatformSuperAdmins($query)
+    {
+        return $query->where(function ($subquery) {
+            $subquery->whereNull('users.permissions')
+                ->orWhere(function ($permissionsQuery) {
+                    $permissionsQuery->where('users.permissions', 'NOT LIKE', '%"superuser":"1"%')
+                        ->where('users.permissions', 'NOT LIKE', '%"superuser":1%');
+                });
+        })->whereDoesntHave('groups', function ($groupQuery) {
+            $groupQuery->where('permission_groups.permissions', 'LIKE', '%"superuser":"1"%')
+                ->orWhere('permission_groups.permissions', 'LIKE', '%"superuser":1%');
+        });
+    }
+
     /**
      * Return only admins and superusers
      *
@@ -1058,6 +1084,63 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
                 }
             );
 
+    }
+
+    public function tenantRoleFor(?int $tenantId): ?string
+    {
+        if (is_null($tenantId)) {
+            return null;
+        }
+
+        $tenant = $this->tenants->firstWhere('id', (int) $tenantId);
+
+        return $tenant?->pivot?->role;
+    }
+
+    public function canViewTenant(Tenant $tenant): bool
+    {
+        return Tenant::canCurrentUserViewTenant($tenant);
+    }
+
+    public function canManageTenant(Tenant $tenant): bool
+    {
+        return Tenant::canCurrentUserManageTenant($tenant);
+    }
+
+    public function hasAccessToTenantAdminArea(): bool
+    {
+        return Tenant::canCurrentUserAccessTenantAdminArea();
+    }
+
+    protected function hasTenantRoleAccess($section): bool
+    {
+        $activeTenantId = Tenant::activeTenantId();
+
+        if (! is_null($activeTenantId)) {
+            $role = Tenant::currentUserRoleForTenant((int) $activeTenantId);
+
+            if ($role === Tenant::ROLE_ADMIN) {
+                return in_array($section, Tenant::tenantManageablePermissions(), true);
+            }
+
+            if ($role === Tenant::ROLE_VIEWER) {
+                return in_array($section, Tenant::tenantViewerPermissions(), true);
+            }
+
+            return false;
+        }
+
+        $roles = array_values(Tenant::currentUserTenantRoles());
+
+        if (in_array(Tenant::ROLE_ADMIN, $roles, true)) {
+            return in_array($section, Tenant::tenantManageablePermissions(), true);
+        }
+
+        if (in_array(Tenant::ROLE_VIEWER, $roles, true)) {
+            return in_array($section, Tenant::tenantViewerPermissions(), true);
+        }
+
+        return false;
     }
 
     /**

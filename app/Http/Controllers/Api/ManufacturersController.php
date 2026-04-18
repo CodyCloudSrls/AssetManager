@@ -11,6 +11,7 @@ use App\Http\Requests\ImageUploadRequest;
 use App\Http\Transformers\ManufacturersTransformer;
 use App\Http\Transformers\SelectlistTransformer;
 use App\Models\Actionlog;
+use App\Models\Company;
 use App\Models\Manufacturer;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
@@ -40,6 +41,8 @@ class ManufacturersController extends Controller
             'support_email',
             'warranty_lookup_url',
             'support_phone',
+            'company_id',
+            'visibility_type',
             'created_at',
             'updated_at',
             'image',
@@ -60,6 +63,8 @@ class ManufacturersController extends Controller
             'support_email',
             'support_phone',
             'created_by',
+            'company_id',
+            'visibility_type',
             'created_at',
             'updated_at',
             'image',
@@ -67,7 +72,7 @@ class ManufacturersController extends Controller
             'tag_color',
             'notes',
         ])
-            ->with('adminuser')
+            ->with('adminuser', 'company')
             ->withCount('assets as assets_count')
             ->withCount('licenses as licenses_count')
             ->withCount('consumables as consumables_count')
@@ -116,8 +121,8 @@ class ManufacturersController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $manufacturers->count()) ? $manufacturers->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $manufacturers->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sort_override = $request->input('sort');
         $column_sort = in_array($sort_override, $allowed_columns) ? $sort_override : 'created_at';
@@ -149,6 +154,10 @@ class ManufacturersController extends Controller
         $this->authorize('create', Manufacturer::class);
         $manufacturer = new Manufacturer;
         $manufacturer->fill($request->all());
+        [$manufacturer->company_id, $manufacturer->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
         $manufacturer = $request->handleImages($manufacturer);
 
         if ($manufacturer->save()) {
@@ -170,8 +179,8 @@ class ManufacturersController extends Controller
      */
     public function show($id): JsonResponse|array
     {
-        $this->authorize('view', Manufacturer::class);
-        $manufacturer = Manufacturer::withCount('assets as assets_count')->withCount('licenses as licenses_count')->withCount('consumables as consumables_count')->withCount('accessories as accessories_count')->findOrFail($id);
+        $manufacturer = Manufacturer::with('company')->withCount('assets as assets_count')->withCount('licenses as licenses_count')->withCount('consumables as consumables_count')->withCount('accessories as accessories_count')->findOrFail($id);
+        $this->authorize('view', $manufacturer);
 
         return (new ManufacturersTransformer)->transformManufacturer($manufacturer);
     }
@@ -187,9 +196,13 @@ class ManufacturersController extends Controller
      */
     public function update(ImageUploadRequest $request, $id): JsonResponse
     {
-        $this->authorize('update', Manufacturer::class);
         $manufacturer = Manufacturer::findOrFail($id);
+        $this->authorize('update', $manufacturer);
         $manufacturer->fill($request->all());
+        [$manufacturer->company_id, $manufacturer->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
         $manufacturer = $request->handleImages($manufacturer);
 
         if ($manufacturer->save()) {
@@ -237,9 +250,8 @@ class ManufacturersController extends Controller
      */
     public function restore($id): JsonResponse
     {
-        $this->authorize('delete', Manufacturer::class);
-
         if ($manufacturer = Manufacturer::withTrashed()->find($id)) {
+            $this->authorize('delete', $manufacturer);
 
             if ($manufacturer->deleted_at == '') {
                 return response()->json(Helper::formatStandardApiResponse('error', trans('general.not_deleted', ['item_type' => trans('general.manufacturer')])), 200);

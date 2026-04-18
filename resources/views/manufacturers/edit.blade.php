@@ -21,6 +21,9 @@
                         name="name"
                 />
 
+                @include ('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id', 'item' => $item])
+                @include ('partials.forms.edit.template-visibility-select', ['translated_name' => trans('general.template_visibility.label'), 'fieldname' => 'visibility_type', 'item' => $item])
+
                 <!-- URL -->
                 <x-form.row
                         :label="trans('general.url')"

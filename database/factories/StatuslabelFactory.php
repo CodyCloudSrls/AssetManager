@@ -24,6 +24,7 @@ class StatuslabelFactory extends Factory
     {
         return [
             'archived' => 0,
+            'company_id' => null,
             'created_at' => $this->faker->dateTime(),
             'created_by' => User::factory()->superuser(),
             'deleted_at' => null,
@@ -32,6 +33,7 @@ class StatuslabelFactory extends Factory
             'notes' => '',
             'pending' => 0,
             'updated_at' => $this->faker->dateTime(),
+            'visibility_type' => Statuslabel::VISIBILITY_GLOBAL,
         ];
     }
 

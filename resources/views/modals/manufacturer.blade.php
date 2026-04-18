@@ -11,6 +11,12 @@
                 <div class="dynamic-form-row">
                     @include('partials.forms.edit.name', ['item' => new \App\Models\Manufacturer(), 'translated_name' => trans('admin/manufacturers/table.name')])
                 </div>
+                <div class="dynamic-form-row">
+                    @include('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id', 'item' => new \App\Models\Manufacturer()])
+                </div>
+                <div class="dynamic-form-row">
+                    @include('partials.forms.edit.template-visibility-select', ['translated_name' => trans('general.template_visibility.label'), 'fieldname' => 'visibility_type', 'item' => new \App\Models\Manufacturer()])
+                </div>
             </form>
         </div>
         <div class="dynamic-form-row">

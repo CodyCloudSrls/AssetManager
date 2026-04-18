@@ -66,8 +66,8 @@ class MaintenancesController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $maintenances->count()) ? $maintenances->count() : abs($request->input('offset'));
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $maintenances->count(), $limit);
 
         $allowed_columns = [
             'id',
@@ -262,8 +262,8 @@ class MaintenancesController extends Controller
         $this->authorize('history', $asset);
         $history = $maintenance->getHistory($request);
         $total = $maintenance->getHistory($request)->count();
-        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $total, $limit);
         $history = $history->skip($offset)->take($limit)->get();
 
         return response()->json((new ActionlogsTransformer)->transformActionlogs($history, $total), 200, ['Content-Type' => 'application/json;charset=utf8'], JSON_UNESCAPED_UNICODE);

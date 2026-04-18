@@ -1,0 +1,35 @@
+<?php
+
+return [
+    'title' => 'Tickets',
+    'view' => 'View ticket',
+    'open_queue' => 'Open queue',
+    'my_queue' => 'My queue',
+    'unassigned_queue' => 'Unassigned',
+    'waiting_customer_queue' => 'Waiting customer',
+    'waiting_vendor_queue' => 'Waiting vendor',
+    'public_queue' => 'Public portal',
+    'sla_at_risk_queue' => 'SLA at risk',
+    'closed_queue' => 'Closed',
+    'worklogs' => 'Worklogs',
+    'public_user' => 'Public user',
+    'internal_user' => 'Internal user',
+    'empty_comments' => 'No comments yet.',
+    'empty_worklogs' => 'No worklogs logged for this ticket yet.',
+    'public_open' => 'Open a support ticket',
+    'public_submit' => 'Submit ticket',
+    'public_reply' => 'Add a public reply',
+    'sources' => [
+        'internal' => 'Internal',
+        'public' => 'Public portal',
+        'email' => 'Email',
+    ],
+    'worklog_categories' => [
+        'analysis' => 'Analysis',
+        'remote_support' => 'Remote support',
+        'onsite' => 'On-site',
+        'vendor_coordination' => 'Vendor coordination',
+        'documentation' => 'Documentation',
+        'admin' => 'Administration',
+    ],
+];

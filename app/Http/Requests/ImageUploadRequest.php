@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Http\Traits\ConvertsBase64ToFiles;
+use App\Models\Company;
+use App\Models\Setting;
 use App\Models\SnipeModel;
 use enshrined\svgSanitize\Sanitizer;
 use Illuminate\Http\UploadedFile;
@@ -102,11 +104,12 @@ class ImageUploadRequest extends Request
 
             $ext = $image->guessExtension();
             $file_name = $type.'-'.$form_fieldname.($item->id ?? '-'.$item->id).'-'.str_random(10).'.'.$ext;
+            $targetPath = $path.'/'.$file_name;
 
             if (($image->getMimeType() == 'image/vnd.microsoft.icon') || ($image->getMimeType() == 'image/x-icon') || ($image->getMimeType() == 'image/avif') || ($image->getMimeType() == 'image/webp')) {
                 // If the file is an icon, webp or avif, we need to just move it since gd doesn't support resizing
                 // icons or avif, and webp support and needs to be compiled into gd for resizing to be available
-                Storage::disk('public')->put($path.'/'.$file_name, file_get_contents($image));
+                Storage::disk('public')->put($targetPath, file_get_contents($image));
 
             } elseif ($image->getMimeType() == 'image/svg+xml') {
                 // If the file is an SVG, we need to clean it and NOT encode it
@@ -115,10 +118,13 @@ class ImageUploadRequest extends Request
                 $cleanSVG = $sanitizer->sanitize($dirtySVG);
 
                 try {
-                    Storage::disk('public')->put($path.'/'.$file_name, $cleanSVG);
+                    Storage::disk('public')->put($targetPath, $cleanSVG);
                 } catch (\Exception $e) {
                     Log::debug($e);
                 }
+            } elseif ($this->shouldPreserveOriginalRasterUpload($item, $db_fieldname)) {
+                // Branding uploads should keep the original encoded bytes to avoid color-profile loss.
+                Storage::disk('public')->put($targetPath, file_get_contents($image->getRealPath()));
             } else {
 
                 try {
@@ -136,7 +142,7 @@ class ImageUploadRequest extends Request
                 }
 
                 // This requires a string instead of an object, so we use ($string)
-                Storage::disk('public')->put($path.'/'.$file_name, (string) $upload->encode());
+                Storage::disk('public')->put($targetPath, (string) $upload->encode());
 
             }
 
@@ -152,12 +158,35 @@ class ImageUploadRequest extends Request
         return $item;
     }
 
+    private function shouldPreserveOriginalRasterUpload($item, string $dbFieldname): bool
+    {
+        if ($item instanceof Setting) {
+            return in_array($dbFieldname, [
+                'logo',
+                'email_logo',
+                'label_logo',
+                'acceptance_pdf_logo',
+                'favicon',
+            ], true);
+        }
+
+        if ($item instanceof Company) {
+            return $dbFieldname === 'image';
+        }
+
+        return false;
+    }
+
     public function deleteExistingImage($item, $path = null, $db_fieldname = 'image')
     {
 
         if ($item->{$db_fieldname} != '') {
             try {
-                Storage::disk('public')->delete($path.'/'.$item->{$db_fieldname});
+                $storedPath = ltrim((string) $item->{$db_fieldname}, '/');
+                $diskPath = str_contains($storedPath, '/') ? $storedPath : trim((string) $path, '/').'/'.$storedPath;
+                $diskPath = ltrim($diskPath, '/');
+
+                Storage::disk('public')->delete($diskPath);
                 $item->{$db_fieldname} = null;
             } catch (\Exception $e) {
                 Log::debug($e);

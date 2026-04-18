@@ -23,7 +23,8 @@ class SettingsSeeder extends Seeder
         $settings->default_currency = 'USD';
         $settings->brand = 2;
         $settings->ldap_enabled = 0;
-        $settings->full_multiple_companies_support = 0;
+        $settings->full_multiple_companies_support = 1;
+        $settings->scope_locations_fmcs = 1;
         $settings->label2_1d_type = 'C128';
         $settings->skin = 'blue';
         $settings->email_domain = 'example.org';

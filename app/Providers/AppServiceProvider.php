@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Accessory;
 use App\Models\Asset;
 use App\Models\AssetModel;
+use App\Models\Company;
 use App\Models\Component;
 use App\Models\Consumable;
 use App\Models\Document;
@@ -13,6 +14,8 @@ use App\Models\Location;
 use App\Models\Maintenance;
 use App\Models\Setting;
 use App\Models\SnipeSCIMConfig;
+use App\Models\Tenant;
+use App\Models\Ticket;
 use App\Models\User;
 use App\Observers\AccessoryObserver;
 use App\Observers\AssetModelObserver;
@@ -24,12 +27,14 @@ use App\Observers\LicenseObserver;
 use App\Observers\LocationObserver;
 use App\Observers\MaintenanceObserver;
 use App\Observers\SettingObserver;
+use App\Observers\TicketObserver;
 use App\Observers\UserObserver;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Rollbar\Laravel\RollbarServiceProvider;
 
@@ -88,7 +93,19 @@ class AppServiceProvider extends ServiceProvider
         Location::observe(LocationObserver::class);
         Maintenance::observe(MaintenanceObserver::class);
         Setting::observe(SettingObserver::class);
+        Ticket::observe(TicketObserver::class);
         User::observe(UserObserver::class);
+
+        View::composer('layouts.default', function ($view) {
+            $currentTenant = Tenant::currentTenant();
+
+            $view->with('navbarSwitchableTenants', Tenant::switchableTenantsForCurrentUser())
+                ->with('navbarActiveTenant', Tenant::activeTenant())
+                ->with('navbarCurrentTenant', $currentTenant)
+                ->with('navbarCanSwitchTenants', Tenant::canCurrentUserSwitchTenants())
+                ->with('navbarShowGlobalTenantContextOption', Tenant::shouldShowGlobalTenantContextOption())
+                ->with('navbarCanAccessTenantAdminArea', auth()->check() && auth()->user()->hasAccessToTenantAdminArea());
+        });
     }
 
     /**

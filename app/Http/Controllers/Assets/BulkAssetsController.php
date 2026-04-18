@@ -673,8 +673,8 @@ class BulkAssetsController extends Controller
                     ->with('error', trans('general.error_assets_already_checked_out'));
             }
 
-            // Prevent checking out assets across companies if FMCS enabled
-            if (Setting::getSettings()->full_multiple_companies_support && $target->company_id) {
+            // Prevent checking out assets across companies
+            if ($target->company_id) {
                 $company_ids = $assets->pluck('company_id')->unique();
 
                 // if there is more than one unique company id or the singular company id does not match

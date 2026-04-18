@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FilterRequest;
+use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Transformers\ActionlogsTransformer;
 use App\Http\Transformers\DocumentsTransformer;
 use App\Models\Document;
@@ -74,8 +75,8 @@ class DocumentsController extends Controller
             'document_type',
         ];
 
-        $offset = ($request->input('offset') > $documents->count()) ? $documents->count() : abs($request->input('offset'));
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $documents->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sort = in_array($request->input('sort'), $allowedColumns) ? $request->input('sort') : 'created_at';
 
@@ -110,17 +111,13 @@ class DocumentsController extends Controller
         return response()->json((new DocumentsTransformer)->transformDocument($document));
     }
 
-    public function store(Request $request): JsonResponse|array
+    public function store(StoreDocumentRequest $request): JsonResponse|array
     {
         $this->authorize('create', Document::class);
 
         $document = new Document;
         $document->fill($request->all());
         $document->created_by = auth()->id();
-
-        if (($document->company_id === null) && auth()->user()?->company_id) {
-            $document->company_id = auth()->user()->company_id;
-        }
 
         if ($document->save()) {
             return response()->json(Helper::formatStandardApiResponse('success', (new DocumentsTransformer)->transformDocument($document), trans('admin/documents/message.create.success')));
@@ -129,7 +126,7 @@ class DocumentsController extends Controller
         return response()->json(Helper::formatStandardApiResponse('error', null, $document->getErrors()), 422);
     }
 
-    public function update(Request $request, Document $document): JsonResponse|array
+    public function update(StoreDocumentRequest $request, Document $document): JsonResponse|array
     {
         $this->authorize('update', $document);
 

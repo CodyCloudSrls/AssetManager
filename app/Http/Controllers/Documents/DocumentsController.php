@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Documents;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreDocumentRequest;
 use App\Models\Document;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class DocumentsController extends Controller
 {
@@ -24,7 +24,7 @@ class DocumentsController extends Controller
         return view('documents.edit', $this->formData(new Document));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreDocumentRequest $request): RedirectResponse
     {
         $this->authorize('create', Document::class);
 
@@ -54,7 +54,7 @@ class DocumentsController extends Controller
         return view('documents.edit', $this->formData($document));
     }
 
-    public function update(Request $request, Document $document): RedirectResponse
+    public function update(StoreDocumentRequest $request, Document $document): RedirectResponse
     {
         $this->authorize('update', $document);
 
@@ -89,13 +89,9 @@ class DocumentsController extends Controller
             ->with('success', trans('admin/documents/message.restore.success'));
     }
 
-    private function fillDocument(Document $document, Request $request): void
+    private function fillDocument(Document $document, StoreDocumentRequest $request): void
     {
         $document->fill($request->all());
-
-        if (($document->company_id === null) && auth()->user()?->company_id) {
-            $document->company_id = auth()->user()->company_id;
-        }
     }
 
     private function formData(Document $document): array

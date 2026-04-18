@@ -148,6 +148,9 @@ class IconHelper
             case 'documents':
             case 'document':
                 return 'fa-regular fa-file-lines';
+            case 'tickets':
+            case 'ticket':
+                return 'fa-regular fa-life-ring';
             case 'contact-card':
                 return 'fa-regular fa-id-card';
             case 'eula':

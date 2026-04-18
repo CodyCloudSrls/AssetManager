@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Company;
 use App\Models\Setting;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class CheckForTwoFactor
 {
@@ -22,6 +22,8 @@ class CheckForTwoFactor
      */
     public function handle($request, Closure $next)
     {
+        $user = Company::currentAuthUserData();
+
         // Skip the logic if the user is on the two factor pages or the setup pages
 
         // TODO - what we have below only works because our ROUTE uri's look _exactly_ like the route *names*.
@@ -35,19 +37,19 @@ class CheckForTwoFactor
 
         // Two-factor is enabled (either optional or required)
         if ($settings = Setting::getSettings()) {
-            if (Auth::check() && ($settings->two_factor_enabled != '')) {
+            if (($user) && ($settings->two_factor_enabled != '')) {
                 // This user is already 2fa-authed
-                if ($request->session()->get('2fa_authed') == auth()->id()) {
+                if ($request->session()->get('2fa_authed') == $user->id) {
                     return $next($request);
                 }
 
                 // Two-factor is optional and the user has NOT opted in, let them through
-                if (($settings->two_factor_enabled == '1') && (auth()->user()->two_factor_optin != '1')) {
+                if (($settings->two_factor_enabled == '1') && ($user->two_factor_optin != '1')) {
                     return $next($request);
                 }
 
                 // Otherwise make sure they're enrolled and show them the 2FA code screen
-                if ((auth()->user()->two_factor_secret != '') && (auth()->user()->two_factor_enrolled == '1')) {
+                if (($user->two_factor_secret != '') && ($user->two_factor_enrolled == '1')) {
                     return redirect()->route('two-factor')->with('info', trans('auth/message.two_factor.enter_two_factor_code'));
                 }
 

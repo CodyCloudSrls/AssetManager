@@ -31,6 +31,14 @@ class CompanyPresenter extends Presenter
                 'visible' => true,
                 'formatter' => 'companiesLinkFormatter',
             ], [
+                'field' => 'parent',
+                'searchable' => true,
+                'sortable' => true,
+                'switchable' => true,
+                'title' => trans('admin/companies/table.parent'),
+                'visible' => false,
+                'formatter' => 'companiesLinkObjFormatter',
+            ], [
                 'field' => 'phone',
                 'searchable' => true,
                 'sortable' => true,

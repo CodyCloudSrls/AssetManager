@@ -14,6 +14,8 @@ use App\Models\Location;
 use App\Models\Setting;
 use App\Models\Statuslabel;
 use App\Models\Supplier;
+use App\Models\Ticket;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
@@ -48,6 +50,52 @@ class ActionlogsTransformer
         }
 
         return is_scalar($value) || is_null($value) ? e($value) : e(json_encode($value));
+    }
+
+    private function formatDateMetaValue($value): string
+    {
+        if (($value === null) || ($value === '')) {
+            return '';
+        }
+
+        try {
+            return Helper::getFormattedDateObject(Carbon::parse((string) $value), 'datetime', false);
+        } catch (\Throwable) {
+            return e((string) $value);
+        }
+    }
+
+    private function formatTicketDateMeta(array &$clean_meta, string $field, string $label): void
+    {
+        if (! array_key_exists($field, $clean_meta)) {
+            return;
+        }
+
+        $clean_meta[$field]['old'] = $this->formatDateMetaValue($clean_meta[$field]['old']);
+        $clean_meta[$field]['new'] = $this->formatDateMetaValue($clean_meta[$field]['new']);
+        $clean_meta[$label] = $clean_meta[$field];
+        unset($clean_meta[$field]);
+    }
+
+    private function fallbackCreatedBy(Actionlog $actionlog): ?array
+    {
+        if (! $actionlog->created_by) {
+            return null;
+        }
+
+        if (
+            ($actionlog->item_type === Ticket::class)
+            || in_array($actionlog->action_type, ['ticket comment added', 'ticket public reply'], true)
+        ) {
+            return [
+                'id' => 0,
+                'name' => trans('admin/tickets/general.internal_user'),
+                'first_name' => trans('admin/tickets/general.internal_user'),
+                'last_name' => '',
+            ];
+        }
+
+        return null;
     }
 
     public function transformActionlog(Actionlog $actionlog, $settings = null)
@@ -171,13 +219,13 @@ class ActionlogsTransformer
                 'name' => e($actionlog->adminuser->display_name) ?? null,
                 'first_name' => e($actionlog->adminuser->first_name),
                 'last_name' => e($actionlog->adminuser->last_name),
-            ] : null,
+            ] : $this->fallbackCreatedBy($actionlog),
             'created_by' => ($actionlog->adminuser) ? [
                 'id' => (int) $actionlog->adminuser->id,
                 'name' => e($actionlog->adminuser->display_name),
                 'first_name' => e($actionlog->adminuser->first_name),
                 'last_name' => e($actionlog->adminuser->last_name),
-            ] : null,
+            ] : $this->fallbackCreatedBy($actionlog),
             'target' => ($actionlog->target) ? [
                 'id' => (int) $actionlog->target->id,
                 'name' => e($actionlog->target->display_name) ?? null,
@@ -319,6 +367,14 @@ class ActionlogsTransformer
             $clean_meta[trans('general.status_label')] = $clean_meta['status_id'];
             unset($clean_meta['status_id']);
         }
+
+        $this->formatTicketDateMeta($clean_meta, 'first_response_due_at', trans('admin/tickets/form.first_response_due_at'));
+        $this->formatTicketDateMeta($clean_meta, 'resolution_due_at', trans('admin/tickets/form.resolution_due_at'));
+        $this->formatTicketDateMeta($clean_meta, 'first_responded_at', trans('admin/tickets/form.first_response_due_at'));
+        $this->formatTicketDateMeta($clean_meta, 'last_replied_at', trans('general.updated_at'));
+        $this->formatTicketDateMeta($clean_meta, 'last_public_reply_at', trans('admin/tickets/general.public_reply'));
+        $this->formatTicketDateMeta($clean_meta, 'resolved_at', trans('general.status'));
+        $this->formatTicketDateMeta($clean_meta, 'closed_at', trans('admin/tickets/general.closed_queue'));
         if (array_key_exists('asset_eol_date', $clean_meta)) {
             $clean_meta[trans('admin/hardware/form.eol_date')] = $clean_meta['asset_eol_date'];
             unset($clean_meta['asset_eol_date']);

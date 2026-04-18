@@ -15,6 +15,7 @@ use App\Http\Requests\FilterRequest;
 use App\Http\Requests\ImageUploadRequest;
 use App\Http\Transformers\SelectlistTransformer;
 use App\Http\Transformers\SuppliersTransformer;
+use App\Models\Company;
 use App\Models\Supplier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -54,19 +55,21 @@ class SuppliersController extends Controller
             'accessories_count',
             'components_count',
             'consumables_count',
+            'company_id',
+            'visibility_type',
             'tag_color',
             'url',
             'notes',
         ];
 
         $suppliers = Supplier::select(
-            ['id', 'name', 'address', 'address2', 'city', 'state', 'country', 'fax', 'phone', 'email', 'contact', 'created_at', 'created_by', 'updated_at', 'deleted_at', 'image', 'notes', 'url', 'zip', 'tag_color'])
+            ['id', 'name', 'address', 'address2', 'city', 'state', 'country', 'fax', 'phone', 'email', 'contact', 'created_at', 'created_by', 'updated_at', 'deleted_at', 'image', 'notes', 'url', 'zip', 'tag_color', 'company_id', 'visibility_type'])
             ->withCount('assets as assets_count')
             ->withCount('licenses as licenses_count')
             ->withCount('accessories as accessories_count')
             ->withCount('components as components_count')
             ->withCount('consumables as consumables_count')
-            ->with('adminuser');
+            ->with('adminuser', 'company');
 
         // This invokes the Searchable model trait scopeTextSearch and will handle input by search or by advanced search filter
         if ($request->filled('filter') || $request->filled('search')) {
@@ -114,8 +117,8 @@ class SuppliersController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $suppliers->count()) ? $suppliers->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $suppliers->count(), $limit);
 
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sort = in_array($request->input('sort'), $allowed_columns) ? $request->input('sort') : 'created_at';
@@ -147,6 +150,10 @@ class SuppliersController extends Controller
         $this->authorize('create', Supplier::class);
         $supplier = new Supplier;
         $supplier->fill($request->all());
+        [$supplier->company_id, $supplier->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
         $supplier = $request->handleImages($supplier);
 
         if ($supplier->save()) {
@@ -168,8 +175,8 @@ class SuppliersController extends Controller
      */
     public function show($id): array
     {
-        $this->authorize('view', Supplier::class);
-        $supplier = Supplier::findOrFail($id);
+        $supplier = Supplier::with('company')->findOrFail($id);
+        $this->authorize('view', $supplier);
 
         return (new SuppliersTransformer)->transformSupplier($supplier);
     }
@@ -185,9 +192,13 @@ class SuppliersController extends Controller
      */
     public function update(ImageUploadRequest $request, $id): JsonResponse
     {
-        $this->authorize('update', Supplier::class);
         $supplier = Supplier::findOrFail($id);
+        $this->authorize('update', $supplier);
         $supplier->fill($request->all());
+        [$supplier->company_id, $supplier->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
         $supplier = $request->handleImages($supplier);
 
         if ($supplier->save()) {

@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Asset;
 use App\Models\Document;
 use App\Models\Setting;
+use App\Models\Ticket;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -36,6 +37,10 @@ class AssetCountForSidebar
         $total_documents_deleted = 0;
         $total_documents_due_review = 0;
         $total_documents_overdue_review = 0;
+        $total_tickets = 0;
+        $total_tickets_open = 0;
+        $total_tickets_my_queue = 0;
+        $total_tickets_unassigned = 0;
 
         try {
             $settings = Setting::getSettings();
@@ -180,6 +185,34 @@ class AssetCountForSidebar
         try {
             $total_documents_overdue_review = Document::OverdueForReview()->count();
             view()->share('total_documents_overdue_review', $total_documents_overdue_review);
+        } catch (\Exception $e) {
+            Log::debug($e);
+        }
+
+        try {
+            $total_tickets = Ticket::count();
+            view()->share('total_tickets', $total_tickets);
+        } catch (\Exception $e) {
+            Log::debug($e);
+        }
+
+        try {
+            $total_tickets_open = Ticket::Open()->count();
+            view()->share('total_tickets_open', $total_tickets_open);
+        } catch (\Exception $e) {
+            Log::debug($e);
+        }
+
+        try {
+            $total_tickets_my_queue = Ticket::Open()->AssignedToMe()->count();
+            view()->share('total_tickets_my_queue', $total_tickets_my_queue);
+        } catch (\Exception $e) {
+            Log::debug($e);
+        }
+
+        try {
+            $total_tickets_unassigned = Ticket::Open()->Unassigned()->count();
+            view()->share('total_tickets_unassigned', $total_tickets_unassigned);
         } catch (\Exception $e) {
             Log::debug($e);
         }

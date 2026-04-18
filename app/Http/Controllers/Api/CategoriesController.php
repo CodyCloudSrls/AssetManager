@@ -11,6 +11,7 @@ use App\Http\Requests\ImageUploadRequest;
 use App\Http\Transformers\CategoriesTransformer;
 use App\Http\Transformers\SelectlistTransformer;
 use App\Models\Category;
+use App\Models\Company;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -41,6 +42,8 @@ class CategoriesController extends Controller
             'eula_text',
             'id',
             'image',
+            'company_id',
+            'visibility_type',
             'licenses_count',
             'name',
             'notes',
@@ -58,6 +61,8 @@ class CategoriesController extends Controller
             'eula_text',
             'id',
             'image',
+            'company_id',
+            'visibility_type',
             'name',
             'notes',
             'require_acceptance',
@@ -65,7 +70,7 @@ class CategoriesController extends Controller
             'updated_at',
             'use_default_eula',
         ])
-            ->with('adminuser')
+            ->with('adminuser', 'company')
             ->withCount('accessories as accessories_count', 'consumables as consumables_count', 'components as components_count', 'licenses as licenses_count', 'models as models_count');
 
         // This invokes the Searchable model trait scopeTextSearch and will handle input by search or by advanced search filter
@@ -119,8 +124,8 @@ class CategoriesController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $categories->count()) ? $categories->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $categories->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sort_override = $request->input('sort');
         $column_sort = in_array($sort_override, $allowed_columns) ? $sort_override : 'assets_count';
@@ -156,6 +161,10 @@ class CategoriesController extends Controller
         $category = new Category;
         $category->fill($request->all());
         $category->category_type = strtolower($request->input('category_type'));
+        [$category->company_id, $category->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
         $category = $request->handleImages($category);
 
         if ($category->save()) {
@@ -177,8 +186,8 @@ class CategoriesController extends Controller
      */
     public function show($id): array
     {
-        $this->authorize('view', Category::class);
-        $category = Category::withCount('assets as assets_count', 'accessories as accessories_count', 'consumables as consumables_count', 'components as components_count', 'licenses as licenses_count')->findOrFail($id);
+        $category = Category::with('company')->withCount('assets as assets_count', 'accessories as accessories_count', 'consumables as consumables_count', 'components as components_count', 'licenses as licenses_count')->findOrFail($id);
+        $this->authorize('view', $category);
 
         return (new CategoriesTransformer)->transformCategory($category);
 
@@ -196,8 +205,8 @@ class CategoriesController extends Controller
      */
     public function update(ImageUploadRequest $request, $id): JsonResponse
     {
-        $this->authorize('update', Category::class);
         $category = Category::findOrFail($id);
+        $this->authorize('update', $category);
 
         // Don't allow the user to change the category_type once it's been created
         if (($request->filled('category_type')) && ($category->category_type != $request->input('category_type'))) {
@@ -206,6 +215,10 @@ class CategoriesController extends Controller
             );
         }
         $category->fill($request->all());
+        [$category->company_id, $category->visibility_type] = Company::normalizeTemplateOwnership(
+            $request->input('company_id'),
+            $request->input('visibility_type'),
+        );
         $category = $request->handleImages($category);
 
         if ($category->save()) {
@@ -227,7 +240,7 @@ class CategoriesController extends Controller
      */
     public function destroy(Category $category): JsonResponse
     {
-        $this->authorize('delete', Category::class);
+        $this->authorize('delete', $category);
         try {
             DestroyCategoryAction::run(category: $category);
         } catch (ItemStillHasChildren $e) {

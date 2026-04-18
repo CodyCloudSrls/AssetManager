@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Traits\UniqueUndeletedTrait;
+use App\Models\Traits\TenantTemplateTrait;
 use App\Models\Traits\Searchable;
 use App\Presenters\Presentable;
 use App\Presenters\StatusLabelPresenter;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Watson\Validating\ValidatingTrait;
 
 class Statuslabel extends SnipeModel
@@ -18,6 +20,7 @@ class Statuslabel extends SnipeModel
     use HasFactory;
     use Presentable;
     use SoftDeletes;
+    use TenantTemplateTrait;
     use UniqueUndeletedTrait;
     use ValidatingTrait;
 
@@ -29,20 +32,18 @@ class Statuslabel extends SnipeModel
 
     protected $presenter = StatusLabelPresenter::class;
 
-    protected $rules = [
-        'name' => 'required|max:255|string|unique_undeleted',
-        'notes' => 'string|nullable',
-        'deployable' => 'required',
-        'pending' => 'required',
-        'archived' => 'required',
-    ];
-
     protected $fillable = [
         'archived',
+        'company_id',
+        'visibility_type',
         'deployable',
         'name',
         'notes',
         'pending',
+    ];
+
+    protected $casts = [
+        'company_id' => 'integer',
     ];
 
     use Searchable;
@@ -52,14 +53,44 @@ class Statuslabel extends SnipeModel
      *
      * @var array
      */
-    protected $searchableAttributes = ['name', 'notes'];
+    protected $searchableAttributes = ['name', 'notes', 'visibility_type'];
 
     /**
      * The relations and their attributes that should be included when searching the model.
      *
      * @var array
      */
-    protected $searchableRelations = [];
+    protected $searchableRelations = [
+        'company' => ['name'],
+    ];
+
+    public function getRules()
+    {
+        return [
+            'name' => [
+                'required',
+                'max:255',
+                'string',
+                Rule::unique('status_labels', 'name')
+                    ->ignore($this->getKey())
+                    ->where(function ($query) {
+                        $query->whereNull('deleted_at');
+
+                        if (is_null($this->company_id)) {
+                            $query->whereNull('company_id');
+                        } else {
+                            $query->where('company_id', $this->company_id);
+                        }
+                    }),
+            ],
+            'notes' => 'string|nullable',
+            'deployable' => 'required',
+            'pending' => 'required',
+            'archived' => 'required',
+            'company_id' => 'nullable|integer|exists:companies,id',
+            'visibility_type' => 'required|string|in:private,descendants,global',
+        ];
+    }
 
     public function isDeletable()
     {

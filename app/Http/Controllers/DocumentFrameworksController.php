@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreDocumentFrameworkRequest;
 use App\Models\DocumentFramework;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class DocumentFrameworksController extends Controller
 {
@@ -23,7 +23,7 @@ class DocumentFrameworksController extends Controller
         return view('documentframeworks.edit')->with('item', new DocumentFramework);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreDocumentFrameworkRequest $request): RedirectResponse
     {
         $this->authorize('create', DocumentFramework::class);
 
@@ -41,7 +41,7 @@ class DocumentFrameworksController extends Controller
 
     public function show(DocumentFramework $documentframework): View
     {
-        $this->authorize('view', DocumentFramework::class);
+        $this->authorize('view', $documentframework);
 
         $documentframework->loadCount('documents');
 
@@ -50,14 +50,14 @@ class DocumentFrameworksController extends Controller
 
     public function edit(DocumentFramework $documentframework): View
     {
-        $this->authorize('update', DocumentFramework::class);
+        $this->authorize('update', $documentframework);
 
         return view('documentframeworks.edit')->with('item', $documentframework);
     }
 
-    public function update(Request $request, DocumentFramework $documentframework): RedirectResponse
+    public function update(StoreDocumentFrameworkRequest $request, DocumentFramework $documentframework): RedirectResponse
     {
-        $this->authorize('update', DocumentFramework::class);
+        $this->authorize('update', $documentframework);
 
         $documentframework->fill($request->all());
         $documentframework->is_active = $request->boolean('is_active');
@@ -87,6 +87,7 @@ class DocumentFrameworksController extends Controller
         $this->authorize('delete', DocumentFramework::class);
 
         $documentframework = DocumentFramework::withTrashed()->findOrFail($id);
+        $this->authorize('delete', $documentframework);
 
         if ($documentframework->restore()) {
             return redirect()->route('documentframeworks.index')->with('success', trans('admin/documentframeworks/message.restore.success'));

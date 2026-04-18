@@ -15,8 +15,8 @@
                     <div class="col-md-9 col-xs-12"><input type='text' name="name" id='modal-name' class="form-control"></div>
                 </div>
 
-                <!-- Setup of default company, taken from asset creator if scoped locations are activated in the settings -->
-				@if (($snipeSettings->scope_locations_fmcs == '1') && ($user->company))
+                <!-- Default company for tenant-scoped location creation -->
+				@if ($user->company)
 					<input type="hidden" name="company_id" id='modal-company' value='{{ $user->company->id }}' class="form-control">
 				@endif
 

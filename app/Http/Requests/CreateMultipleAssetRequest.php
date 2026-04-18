@@ -26,7 +26,7 @@ class CreateMultipleAssetRequest extends ImageUploadRequest // should I extend f
     {
         parent::prepareForValidation();
 
-        if (Setting::getSettings()->full_multiple_companies_support == '1' && ! $this->user()->isSuperUser()) {
+        if ($this->user() && ! $this->user()->isSuperUser()) {
             $this->mergeIfMissing(['company_id' => $this->user()->company_id]);
         }
     }

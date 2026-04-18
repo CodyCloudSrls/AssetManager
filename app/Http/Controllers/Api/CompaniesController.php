@@ -42,12 +42,13 @@ class CompaniesController extends Controller
             'components_count',
             'tag_color',
             'notes',
+            'parent',
         ];
 
         $companies = Company::withCount(['assets as assets_count' => function ($query) {
             $query->AssetsForShow();
         }])
-            ->with('adminuser')
+            ->with('adminuser', 'parent')
             ->withCount('licenses as licenses_count', 'accessories as accessories_count', 'consumables as consumables_count', 'components as components_count', 'users as users_count');
 
         // This invokes the Searchable model trait scopeTextSearch and will handle input by search or by advanced search filter
@@ -72,8 +73,8 @@ class CompaniesController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $companies->count()) ? $companies->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $companies->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sort_override = $request->input('sort');
         $column_sort = in_array($sort_override, $allowed_columns) ? $sort_override : 'created_at';
@@ -81,6 +82,12 @@ class CompaniesController extends Controller
         switch ($sort_override) {
             case 'created_by':
                 $companies = $companies->OrderByCreatedBy($order);
+                break;
+            case 'parent':
+                $companies = $companies
+                    ->leftJoin('companies as parent_companies', 'companies.parent_id', '=', 'parent_companies.id')
+                    ->select('companies.*')
+                    ->orderBy('parent_companies.name', $order);
                 break;
             default:
                 $companies = $companies->orderBy($column_sort, $order);
@@ -106,10 +113,13 @@ class CompaniesController extends Controller
     {
         $this->authorize('create', Company::class);
         $company = new Company;
-        $company->fill($request->all());
+        $this->fillCompany($company, $request);
         $company = $request->handleImages($company);
 
         if ($company->save()) {
+            Company::ensureTenantAssignment($company);
+            $this->handleBrandingUploads($request, $company);
+
             return response()->json(Helper::formatStandardApiResponse('success', (new CompaniesTransformer)->transformCompany($company), trans('admin/companies/message.create.success')));
         }
 
@@ -150,10 +160,13 @@ class CompaniesController extends Controller
         $this->authorize('update', Company::class);
         $company = Company::findOrFail($id);
         $this->authorize('update', $company);
-        $company->fill($request->all());
+        $this->fillCompany($company, $request);
         $company = $request->handleImages($company);
 
         if ($company->save()) {
+            Company::ensureTenantAssignment($company);
+            $this->handleBrandingUploads($request, $company);
+
             return response()
                 ->json(Helper::formatStandardApiResponse('success', (new CompaniesTransformer)->transformCompany($company), trans('admin/companies/message.update.success')));
         }
@@ -176,6 +189,11 @@ class CompaniesController extends Controller
         $this->authorize('delete', Company::class);
         $company = Company::findOrFail($id);
         $this->authorize('delete', $company);
+
+        if ($company->isTenantRoot()) {
+            return response()
+                ->json(Helper::formatStandardApiResponse('error', null, trans('admin/companies/message.assoc_users')));
+        }
 
         if (! $company->isDeletable()) {
             return response()
@@ -201,6 +219,7 @@ class CompaniesController extends Controller
         $companies = Company::select([
             'companies.id',
             'companies.name',
+            'companies.parent_id',
             'companies.email',
             'companies.image',
             'companies.tag_color',
@@ -220,5 +239,40 @@ class CompaniesController extends Controller
         }
 
         return (new SelectlistTransformer)->transformSelectlist($companies);
+    }
+
+    private function fillCompany(Company $company, Request $request): void
+    {
+        $company->fill($request->all());
+        $company->brand = $request->input('brand');
+        $company->header_color = $request->input('header_color');
+        $company->nav_link_color = $request->input('nav_link_color');
+        $company->link_light_color = $request->input('link_light_color');
+        $company->link_dark_color = $request->input('link_dark_color');
+        $company->footer_text = $request->input('footer_text');
+        $company->privacy_policy_link = $request->input('privacy_policy_link');
+        $company->custom_css = $request->input('custom_css');
+    }
+
+    private function handleBrandingUploads(ImageUploadRequest $request, Company $company): void
+    {
+        if (! $company->isTenantRoot()) {
+            return;
+        }
+
+        foreach (['brand_logo', 'favicon'] as $field) {
+            $company = $request->handleImages($company, 600, $field, 'companies/branding', $field);
+
+            if ($company->{$field} && ! str_contains($company->{$field}, '/')) {
+                $company->{$field} = 'companies/branding/'.$company->{$field};
+            }
+
+            if ($request->boolean('clear_'.$field)) {
+                $company = $request->deleteExistingImage($company, null, $field);
+                $company->{$field} = null;
+            }
+        }
+
+        $company->saveQuietly();
     }
 }

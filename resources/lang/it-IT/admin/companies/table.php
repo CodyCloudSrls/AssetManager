@@ -8,5 +8,6 @@ return [
     'phone' => 'Telefono Ditta',
     'update' => 'Aggiorna Azienda',
     'name' => 'Nome Azienda',
+    'parent' => 'Azienda padre',
     'id' => 'ID',
 ];

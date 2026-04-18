@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CustomFieldRequest;
 use App\Http\Transformers\CustomFieldsTransformer;
+use App\Models\Company;
 use App\Models\CustomField;
 use App\Models\CustomFieldset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class CustomFieldsController extends Controller
 {
@@ -25,7 +26,7 @@ class CustomFieldsController extends Controller
     public function index(): array
     {
         $this->authorize('index', CustomField::class);
-        $fields = CustomField::get();
+        $fields = CustomField::with('company', 'fieldset')->get();
 
         return (new CustomFieldsTransformer)->transformCustomFields($fields, $fields->count());
     }
@@ -43,6 +44,7 @@ class CustomFieldsController extends Controller
     {
         $this->authorize('view', CustomField::class);
         if ($field = CustomField::find($id)) {
+            $this->authorize('view', $field);
             return (new CustomFieldsTransformer)->transformCustomField($field);
         }
 
@@ -58,10 +60,10 @@ class CustomFieldsController extends Controller
      *
      * @param  int  $id
      */
-    public function update(Request $request, $id): JsonResponse
+    public function update(CustomFieldRequest $request, $id): JsonResponse
     {
-        $this->authorize('update', CustomField::class);
         $field = CustomField::findOrFail($id);
+        $this->authorize('update', $field);
 
         /**
          * Updated values for the field,
@@ -69,16 +71,13 @@ class CustomFieldsController extends Controller
          *
          * @var array
          */
-        $data = $request->except(['field_encrypted']);
-
-        $validator = Validator::make($data, $field->validationRules());
-        if ($validator->fails()) {
-            return response()->json(Helper::formatStandardApiResponse('error', null, $validator->errors()));
-        }
+        $data = $request->except(['field_encrypted', 'associate_fieldsets']);
 
         $field->fill($data);
 
         if ($field->save()) {
+            $field->fieldset()->sync($request->associatedFieldsetIds());
+
             return response()->json(Helper::formatStandardApiResponse('success', $field, trans('admin/custom_fields/message.field.update.success')));
         }
 
@@ -92,26 +91,15 @@ class CustomFieldsController extends Controller
      *
      * @since [v4.1.10]
      */
-    public function store(Request $request): JsonResponse
+    public function store(CustomFieldRequest $request): JsonResponse
     {
         $this->authorize('create', CustomField::class);
         $field = new CustomField;
-
-        $data = $request->all();
-        $regex_format = null;
-
-        if ((array_key_exists('format', $data)) && (str_contains($data['format'], 'regex:'))) {
-            $regex_format = $data['format'];
-        }
-
-        $validator = Validator::make($data, $field->validationRules($regex_format));
-
-        if ($validator->fails()) {
-            return response()->json(Helper::formatStandardApiResponse('error', null, $validator->errors()));
-        }
-        $field->fill($data);
+        $field->fill($request->except(['associate_fieldsets']));
 
         if ($field->save()) {
+            $field->fieldset()->sync($request->associatedFieldsetIds());
+
             return response()->json(Helper::formatStandardApiResponse('success', $field, trans('admin/custom_fields/message.field.create.success')));
         }
 
@@ -142,9 +130,8 @@ class CustomFieldsController extends Controller
 
     public function associate(Request $request, $field_id): JsonResponse
     {
-        $this->authorize('update', CustomFieldset::class);
-
         $field = CustomField::findOrFail($field_id);
+        $this->authorize('update', $field);
 
         $fieldset_id = $request->input('fieldset_id');
         foreach ($field->fieldset as $fieldset) {
@@ -154,6 +141,12 @@ class CustomFieldsController extends Controller
         }
 
         $fieldset = CustomFieldset::findOrFail($fieldset_id);
+        $this->authorize('update', $fieldset);
+
+        if (! Company::templateCanBeAppliedToCompany($field, $fieldset->company_id)) {
+            return response()->json(Helper::formatStandardApiResponse('error', null, trans('validation.exists')), 422);
+        }
+
         $fieldset->fields()->attach($field->id, ['required' => ($request->input('required') == 'on'), 'order' => $request->input('order', $fieldset->fields->count())]);
 
         return response()->json(Helper::formatStandardApiResponse('success', $fieldset, trans('admin/custom_fields/message.fieldset.update.success')));
@@ -161,18 +154,20 @@ class CustomFieldsController extends Controller
 
     public function disassociate(Request $request, $field_id): JsonResponse
     {
-        $this->authorize('update', CustomFieldset::class);
         $field = CustomField::findOrFail($field_id);
+        $this->authorize('update', $field);
 
         $fieldset_id = $request->input('fieldset_id');
         foreach ($field->fieldset as $fieldset) {
             if ($fieldset->id == $fieldset_id) {
+                $this->authorize('update', $fieldset);
                 $fieldset->fields()->detach($field->id);
 
                 return response()->json(Helper::formatStandardApiResponse('success', $fieldset, trans('admin/custom_fields/message.fieldset.update.success')));
             }
         }
         $fieldset = CustomFieldset::findOrFail($fieldset_id);
+        $this->authorize('update', $fieldset);
 
         return response()->json(Helper::formatStandardApiResponse('success', $fieldset, trans('admin/custom_fields/message.fieldset.update.success')));
     }

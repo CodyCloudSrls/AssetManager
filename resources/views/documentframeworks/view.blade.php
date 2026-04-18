@@ -19,6 +19,10 @@
                         <dd>{{ $documentframework->is_active ? trans('general.yes') : trans('general.no') }}</dd>
                         <dt>{{ trans('admin/documentframeworks/table.sort_order') }}</dt>
                         <dd>{{ $documentframework->sort_order }}</dd>
+                        <dt>{{ trans('general.company') }}</dt>
+                        <dd>{{ $documentframework->company?->name ?? trans('general.na') }}</dd>
+                        <dt>{{ trans('general.template_visibility.label') }}</dt>
+                        <dd>{{ $documentframework->visibility_label }}</dd>
                         <dt>{{ trans('general.documents') }}</dt>
                         <dd>{{ $documentframework->documents_count }}</dd>
                         @if ($documentframework->description)

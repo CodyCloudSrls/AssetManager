@@ -439,6 +439,21 @@ class Helper
         return $colors[$index];
     }
 
+    public static function clampPaginationOffset($requestedOffset, int $total, int $limit): int
+    {
+        $offset = abs((int) $requestedOffset);
+
+        if ($total <= 0 || $limit <= 0) {
+            return 0;
+        }
+
+        if ($offset >= $total) {
+            return (int) (floor(($total - 1) / $limit) * $limit);
+        }
+
+        return $offset;
+    }
+
     /**
      * Check if a string has any RTL characters
      *

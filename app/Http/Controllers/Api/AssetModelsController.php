@@ -78,16 +78,18 @@ class AssetModelsController extends Controller
             'models.created_by',
             'models.requestable',
             'models.notes',
-            'models.created_at',
-            'models.category_id',
-            'models.manufacturer_id',
-            'models.depreciation_id',
-            'models.fieldset_id',
-            'models.deleted_at',
-            'models.updated_at',
-            'models.require_serial',
-        ])
-            ->with('category', 'depreciation', 'manufacturer', 'fieldset.fields.defaultValues', 'adminuser')
+                'models.created_at',
+                'models.category_id',
+                'models.company_id',
+                'models.manufacturer_id',
+                'models.depreciation_id',
+                'models.fieldset_id',
+                'models.visibility_type',
+                'models.deleted_at',
+                'models.updated_at',
+                'models.require_serial',
+            ])
+            ->with('category', 'company', 'depreciation', 'manufacturer', 'fieldset.fields.defaultValues', 'adminuser')
             ->withCount('assets as assets_count')
             ->withCount('availableAssets as remaining')
             ->withCount('assignedAssets as assets_assigned_count')
@@ -133,8 +135,8 @@ class AssetModelsController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $assetmodels->count()) ? $assetmodels->count() : abs($request->input('offset'));
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $assetmodels->count(), $limit);
 
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sort = in_array($request->input('sort'), $allowed_columns) ? $request->input('sort') : 'models.created_at';
@@ -175,6 +177,8 @@ class AssetModelsController extends Controller
         $this->authorize('create', AssetModel::class);
         $assetmodel = new AssetModel;
         $assetmodel->fill($request->all());
+        $assetmodel->company_id = $request->input('company_id');
+        $assetmodel->visibility_type = $request->input('visibility_type');
         $assetmodel = $request->handleImages($assetmodel);
 
         if ($assetmodel->save()) {
@@ -198,6 +202,7 @@ class AssetModelsController extends Controller
     {
         $this->authorize('view', AssetModel::class);
         $assetmodel = AssetModel::withCount('assets as assets_count')->findOrFail($id);
+        $this->authorize('view', $assetmodel);
 
         return (new AssetModelsTransformer)->transformAssetModel($assetmodel);
     }
@@ -214,6 +219,8 @@ class AssetModelsController extends Controller
     public function assets($id): array
     {
         $this->authorize('view', AssetModel::class);
+        $assetmodel = AssetModel::findOrFail($id);
+        $this->authorize('view', $assetmodel);
         $assets = Asset::where('model_id', '=', $id)->get();
 
         return (new AssetsTransformer)->transformAssets($assets, $assets->count());
@@ -232,9 +239,11 @@ class AssetModelsController extends Controller
      */
     public function update(StoreAssetModelRequest $request, $id): JsonResponse
     {
-        $this->authorize('update', AssetModel::class);
         $assetmodel = AssetModel::findOrFail($id);
+        $this->authorize('update', $assetmodel);
         $assetmodel->fill($request->all());
+        $assetmodel->company_id = $request->input('company_id');
+        $assetmodel->visibility_type = $request->input('visibility_type');
         $assetmodel = $request->handleImages($assetmodel);
 
         /**
@@ -267,7 +276,6 @@ class AssetModelsController extends Controller
      */
     public function destroy($id): JsonResponse
     {
-        $this->authorize('delete', AssetModel::class);
         $assetmodel = AssetModel::findOrFail($id);
         $this->authorize('delete', $assetmodel);
 
@@ -345,8 +353,8 @@ class AssetModelsController extends Controller
         $this->authorize('history', $model);
         $history = $model->getHistory($request);
         $total = $model->getHistory($request)->count();
-        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $total, $limit);
         $history = $history->skip($offset)->take($limit)->get();
 
         return response()->json((new ActionlogsTransformer)->transformActionlogs($history, $total), 200, ['Content-Type' => 'application/json;charset=utf8'], JSON_UNESCAPED_UNICODE);

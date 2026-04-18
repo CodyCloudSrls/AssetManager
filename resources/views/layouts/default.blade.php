@@ -1254,6 +1254,14 @@
                                     </a>
                                 </li>
                             @endcan
+                            @can('index', \App\Models\Ticket::class)
+                                <li aria-hidden="true"{!! (request()->is('tickets*') ? ' class="active"' : '') !!}>
+                                    <a href="{{ route('tickets.index') }}" tabindex="-1" data-tooltip="true" data-placement="bottom" data-title="{{ trans('general.tickets') }}">
+                                        <x-icon type="tickets" class="fa-fw" />
+                                        <span class="sr-only">{{ trans('general.tickets') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
 
                             @can('index', \App\Models\User::class)
                                 <li aria-hidden="true"{!! (request()->is('users*') ? ' class="active"' : '') !!}>
@@ -1263,6 +1271,49 @@
                                     </a>
                                 </li>
                             @endcan
+
+                            @if (auth()->check() && (($navbarCanSwitchTenants ?? false) || ($navbarCanAccessTenantAdminArea ?? false)))
+                                <li class="dropdown user-menu" aria-hidden="true">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" tabindex="-1">
+                                        <i class="fas fa-building fa-fw" aria-hidden="true"></i>
+                                        <span class="hidden-sm hidden-xs">
+                                            {{ $navbarActiveTenant?->display_name ?? $navbarCurrentTenant?->display_name ?? trans('general.all_tenants') }}
+                                        </span>
+                                        <strong class="caret"></strong>
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        @if ($navbarCanSwitchTenants ?? false)
+                                            <li class="dropdown-header">{{ trans('general.select_tenant') }}</li>
+                                        @endif
+                                        @if (($navbarCanSwitchTenants ?? false) && ($navbarShowGlobalTenantContextOption ?? false))
+                                            <li class="{{ is_null($navbarActiveTenant ?? null) ? 'active' : '' }}">
+                                                <form action="{{ route('tenants.switch-context') }}" method="POST" style="margin: 0;">
+                                                    @csrf
+                                                    <input type="hidden" name="tenant_id" value="">
+                                                    <input type="hidden" name="redirect_to" value="{{ request()->fullUrl() }}">
+                                                    <button type="submit" class="btn btn-link btn-block text-left" style="color: inherit; text-decoration: none; padding: 8px 20px;">
+                                                        {{ trans('general.all_tenants') }}
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        @endif
+                                        @if ($navbarCanSwitchTenants ?? false)
+                                            @foreach (($navbarSwitchableTenants ?? collect()) as $switchableTenant)
+                                                <li class="{{ (($navbarActiveTenant?->id ?? null) === $switchableTenant->id) ? 'active' : '' }}">
+                                                    <form action="{{ route('tenants.switch-context') }}" method="POST" style="margin: 0;">
+                                                        @csrf
+                                                        <input type="hidden" name="tenant_id" value="{{ $switchableTenant->id }}">
+                                                        <input type="hidden" name="redirect_to" value="{{ request()->fullUrl() }}">
+                                                        <button type="submit" class="btn btn-link btn-block text-left" style="color: inherit; text-decoration: none; padding: 8px 20px;">
+                                                            {{ $switchableTenant->display_name }}
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            @endforeach
+                                        @endif
+                                    </ul>
+                                </li>
+                            @endif
 
                             @can('index', \App\Models\Asset::class)
                                 <li>
@@ -1328,6 +1379,14 @@
                                                 <a href="{{ route('documents.create') }}" tabindex="-1">
                                                     <x-icon type="documents" class="fa-fw" />
                                                     {{ trans('general.document') }}
+                                                </a>
+                                            </li>
+                                        @endcan
+                                        @can('create', \App\Models\Ticket::class)
+                                            <li {!! (request()->is('tickets/create') ? 'class="active"' : '') !!}>
+                                                <a href="{{ route('tickets.create') }}" tabindex="-1">
+                                                    <x-icon type="tickets" class="fa-fw" />
+                                                    {{ trans('general.ticket') }}
                                                 </a>
                                             </li>
                                         @endcan
@@ -1696,6 +1755,45 @@
                                             <x-icon type="delete" class="text-red fa-fw"/>
                                             {{ trans('general.deleted') }}
                                             <span class="badge">{{ $total_documents_deleted ?? '' }}</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        @endcan
+                        @can('index', \App\Models\Ticket::class)
+                            <li class="treeview{{ (request()->is('tickets*') ? ' active' : '') }}">
+                                <a href="#">
+                                    <x-icon type="tickets" class="fa-fw" />
+                                    <span>{{ trans('general.tickets') }}</span>
+                                    <x-icon type="angle-left" class="pull-right fa-fw"/>
+                                </a>
+                                <ul class="treeview-menu">
+                                    <li{!! (!request()->query('queue') && !request()->query('ticket_status_id') && request()->is('tickets') ? ' class="active"' : '') !!}>
+                                        <a href="{{ route('tickets.index') }}">
+                                            <x-icon type="circle" class="text-grey fa-fw"/>
+                                            {{ trans('general.list_all') }}
+                                            <span class="badge">{{ $total_tickets ?? '' }}</span>
+                                        </a>
+                                    </li>
+                                    <li{!! (request()->query('queue') == 'open' ? ' class="active"' : '') !!}>
+                                        <a href="{{ route('tickets.index', ['queue' => 'open']) }}">
+                                            <x-icon type="circle" class="text-green fa-fw"/>
+                                            {{ trans('admin/tickets/general.open_queue') }}
+                                            <span class="badge">{{ $total_tickets_open ?? '' }}</span>
+                                        </a>
+                                    </li>
+                                    <li{!! (request()->query('assignee_id') == 'me' ? ' class="active"' : '') !!}>
+                                        <a href="{{ route('tickets.index', ['assignee_id' => 'me']) }}">
+                                            <x-icon type="users" class="text-blue fa-fw"/>
+                                            {{ trans('admin/tickets/general.my_queue') }}
+                                            <span class="badge">{{ $total_tickets_my_queue ?? '' }}</span>
+                                        </a>
+                                    </li>
+                                    <li{!! (request()->boolean('unassigned') ? ' class="active"' : '') !!}>
+                                        <a href="{{ route('tickets.index', ['unassigned' => 1]) }}">
+                                            <x-icon type="warning" class="text-orange fa-fw"/>
+                                            {{ trans('admin/tickets/general.unassigned_queue') }}
+                                            <span class="badge">{{ $total_tickets_unassigned ?? '' }}</span>
                                         </a>
                                     </li>
                                 </ul>

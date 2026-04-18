@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Helpers\Helper;
-use App\Http\Traits\TwoColumnUniqueUndeletedTrait;
+use App\Models\Traits\TenantTemplateTrait;
 use App\Models\Traits\Searchable;
 use App\Presenters\CategoryPresenter;
 use App\Presenters\Presentable;
@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Watson\Validating\ValidatingTrait;
 
 /**
@@ -26,6 +27,7 @@ use Watson\Validating\ValidatingTrait;
 class Category extends SnipeModel
 {
     use HasFactory;
+    use TenantTemplateTrait;
 
     protected $presenter = CategoryPresenter::class;
 
@@ -39,17 +41,7 @@ class Category extends SnipeModel
     protected $casts = [
         'alert_on_response' => 'boolean',
         'created_by' => 'integer',
-    ];
-
-    /**
-     * Category validation rules
-     */
-    public $rules = [
-        'created_by' => 'numeric|nullable',
-        'name' => 'required|min:1|max:255|two_column_unique_undeleted:category_type',
-        'require_acceptance' => 'boolean',
-        'use_default_eula' => 'boolean',
-        'category_type' => 'required|in:asset,accessory,consumable,component,license',
+        'company_id' => 'integer',
     ];
 
     /**
@@ -61,7 +53,6 @@ class Category extends SnipeModel
      */
     protected $injectUniqueIdentifier = true;
 
-    use TwoColumnUniqueUndeletedTrait;
     use ValidatingTrait;
 
     /**
@@ -78,6 +69,8 @@ class Category extends SnipeModel
         'alert_on_response',
         'use_default_eula',
         'created_by',
+        'company_id',
+        'visibility_type',
         'tag_color',
         'notes',
     ];
@@ -95,6 +88,7 @@ class Category extends SnipeModel
         'notes',
         'eula_text',
         'created_at',
+        'visibility_type',
     ];
 
     /**
@@ -103,6 +97,7 @@ class Category extends SnipeModel
      * @var array
      */
     protected $searchableRelations = [
+        'company' => ['name'],
         'adminuser' => ['first_name', 'last_name', 'display_name'],
     ];
 
@@ -113,6 +108,35 @@ class Category extends SnipeModel
         'licenses_count',
         'models_count',
     ];
+
+    public function getRules()
+    {
+        return [
+            'created_by' => 'numeric|nullable',
+            'name' => [
+                'required',
+                'min:1',
+                'max:255',
+                Rule::unique('categories', 'name')
+                    ->ignore($this->getKey())
+                    ->where(function ($query) {
+                        $query->where('category_type', $this->category_type ?: 'asset')
+                            ->whereNull('deleted_at');
+
+                        if (is_null($this->company_id)) {
+                            $query->whereNull('company_id');
+                        } else {
+                            $query->where('company_id', $this->company_id);
+                        }
+                    }),
+            ],
+            'require_acceptance' => 'boolean',
+            'use_default_eula' => 'boolean',
+            'category_type' => 'required|in:asset,accessory,consumable,component,license',
+            'company_id' => 'nullable|integer|exists:companies,id',
+            'visibility_type' => 'required|string|in:private,descendants,global',
+        ];
+    }
 
     /**
      * Checks if category can be deleted

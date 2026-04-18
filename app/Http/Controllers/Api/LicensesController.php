@@ -108,8 +108,8 @@ class LicensesController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $licenses->count()) ? $licenses->count() : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $licenses->count(), $limit);
 
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
 
@@ -284,8 +284,8 @@ class LicensesController extends Controller
         $this->authorize('history', $license);
         $history = $license->getHistory($request);
         $total = $license->getHistory($request)->count();
-        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
+        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $total, $limit);
         $history = $history->skip($offset)->take($limit)->get();
 
         return response()->json((new ActionlogsTransformer)->transformActionlogs($history, $total), 200, ['Content-Type' => 'application/json;charset=utf8'], JSON_UNESCAPED_UNICODE);

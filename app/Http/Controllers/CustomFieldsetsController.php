@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCustomFieldsetRequest;
 use App\Models\AssetModel;
+use App\Models\Company;
 use App\Models\CustomField;
 use App\Models\CustomFieldset;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -49,7 +51,10 @@ class CustomFieldsetsController extends Controller
         $this->authorize('view', $cfset);
 
         if ($cfset) {
-            $custom_fields_list = ['' => 'Add New Field to Fieldset'] + CustomField::pluck('name', 'id')->toArray();
+            $custom_fields_list = ['' => 'Add New Field to Fieldset'] + CustomField::get()
+                ->filter(fn (CustomField $field) => Company::templateCanBeAppliedToCompany($field, $cfset->company_id))
+                ->pluck('name', 'id')
+                ->toArray();
 
             $maxid = 0;
             foreach ($cfset->fields as $field) {
@@ -91,22 +96,25 @@ class CustomFieldsetsController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreCustomFieldsetRequest $request): RedirectResponse
     {
         $this->authorize('create', CustomField::class);
 
         $fieldset = new CustomFieldset([
             'name' => $request->input('name'),
+            'company_id' => $request->input('company_id'),
+            'visibility_type' => $request->input('visibility_type'),
             'created_by' => auth()->id(),
         ]);
 
-        $validator = Validator::make($request->all(), $fieldset->rules);
+        $validator = Validator::make($request->all(), $request->rules());
 
         if ($validator->passes()) {
             $fieldset->save();
 
             // Sync fieldset with auto_add_to_fieldsets
-            $fields = CustomField::select('id')->where('auto_add_to_fieldsets', '=', '1')->get();
+            $fields = CustomField::where('auto_add_to_fieldsets', '=', '1')->get()
+                ->filter(fn (CustomField $field) => Company::templateCanBeAppliedToCompany($field, $fieldset->company_id));
             if ($fields->count() > 0) {
                 foreach ($fields as $field) {
                     $field_ids[] = $field->id;
@@ -133,7 +141,7 @@ class CustomFieldsetsController extends Controller
      */
     public function edit(CustomFieldset $fieldset): View|RedirectResponse
     {
-        $this->authorize('create', CustomField::class);
+        $this->authorize('update', $fieldset);
 
         return view('custom_fields.fieldsets.view')->with('custom_fieldset', $fieldset);
     }
@@ -147,11 +155,13 @@ class CustomFieldsetsController extends Controller
      *
      * @since [v6.0.14]
      */
-    public function update(Request $request, CustomFieldset $fieldset): RedirectResponse
+    public function update(StoreCustomFieldsetRequest $request, CustomFieldset $fieldset): RedirectResponse
     {
-        $this->authorize('create', CustomField::class);
+        $this->authorize('update', $fieldset);
 
         $fieldset->name = $request->input('name');
+        $fieldset->company_id = $request->input('company_id');
+        $fieldset->visibility_type = $request->input('visibility_type');
 
         if ($fieldset->save()) {
             return redirect()->route('fields.index')->with('success', trans('admin/custom_fields/general.fieldset_updated'));
@@ -204,8 +214,15 @@ class CustomFieldsetsController extends Controller
         $this->authorize('update', $set);
 
         if ($request->filled('field_id')) {
-            foreach ($set->fields as $field) {
-                if ($field->id == $request->input('field_id')) {
+            $field = CustomField::findOrFail($request->input('field_id'));
+            $this->authorize('view', $field);
+
+            if (! Company::templateCanBeAppliedToCompany($field, $set->company_id)) {
+                return redirect()->route('fieldsets.show', [$id])->withInput()->withErrors(['field_id' => trans('validation.exists')]);
+            }
+
+            foreach ($set->fields as $existingField) {
+                if ($existingField->id == $request->input('field_id')) {
                     return redirect()->route('fieldsets.show', [$id])->withInput()->withErrors(['field_id' => trans('admin/custom_fields/message.field.already_added')]);
                 }
             }
@@ -227,9 +244,10 @@ class CustomFieldsetsController extends Controller
      */
     public function makeFieldRequired($fieldset_id, $field_id): RedirectResponse
     {
-        $this->authorize('update', CustomField::class);
         $field = CustomField::findOrFail($field_id);
         $fieldset = CustomFieldset::findOrFail($fieldset_id);
+        $this->authorize('update', $field);
+        $this->authorize('update', $fieldset);
         $fields[$field->id] = ['required' => 1];
         $fieldset->fields()->syncWithoutDetaching($fields);
 
@@ -246,9 +264,10 @@ class CustomFieldsetsController extends Controller
      */
     public function makeFieldOptional($fieldset_id, $field_id): RedirectResponse
     {
-        $this->authorize('update', CustomField::class);
         $field = CustomField::findOrFail($field_id);
         $fieldset = CustomFieldset::findOrFail($fieldset_id);
+        $this->authorize('update', $field);
+        $this->authorize('update', $fieldset);
         $fields[$field->id] = ['required' => 0];
         $fieldset->fields()->syncWithoutDetaching($fields);
 

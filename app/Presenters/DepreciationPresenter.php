@@ -48,6 +48,21 @@ class DepreciationPresenter extends Presenter
                 'visible' => true,
             ],
             [
+                'field' => 'company',
+                'searchable' => false,
+                'sortable' => false,
+                'title' => trans('general.company'),
+                'visible' => true,
+                'formatter' => 'companiesLinkObjFormatter',
+            ],
+            [
+                'field' => 'visibility_label',
+                'searchable' => true,
+                'sortable' => false,
+                'title' => trans('general.template_visibility.label'),
+                'visible' => true,
+            ],
+            [
                 'field' => 'assets_count',
                 'searchable' => false,
                 'sortable' => true,
