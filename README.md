@@ -102,9 +102,15 @@ The production baseline on `asset.codycloud.it` keeps the existing CodyCloud cat
 The repository seeds production-oriented baseline groups that can be reused or adapted per tenant:
 
 - `Default - Helpdesk Operator`
+- `Default - Service Desk Manager`
+- `Default - Inventory Operator`
 - `Default - Asset Manager`
+- `Default - Procurement And Catalog Manager`
+- `Default - Document Controller`
 - `Default - Compliance Manager`
+- `Default - Executive Read Only`
 - `Default - Read Only Auditor`
+- `Default - Tenant Operations Admin`
 
 ## Security
 

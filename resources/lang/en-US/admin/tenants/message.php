@@ -5,6 +5,10 @@ return [
         'success' => 'Tenant created successfully.',
         'error' => 'Tenant could not be created.',
     ],
+    'delete' => [
+        'success' => 'Tenant deleted successfully.',
+        'not_deletable' => 'This tenant cannot be deleted because it still contains operational data or tenant memberships.',
+    ],
     'membership' => [
         'create' => [
             'success' => 'Tenant user assigned successfully.',

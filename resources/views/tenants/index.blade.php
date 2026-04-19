@@ -41,9 +41,40 @@
                             <td>{{ $row->users_count }}</td>
                             <td>{{ $row->assets_count }}</td>
                             <td>
-                                <a href="{{ route('tenants.show', $row->tenant) }}" class="btn btn-sm btn-primary">
-                                    <x-icon type="more-info" />
+                                <a href="{{ route('tenants.show', $row->tenant) }}"
+                                   class="btn btn-sm btn-warning"
+                                   data-tooltip="true"
+                                   data-placement="top"
+                                   title="{{ trans('general.update') }}">
+                                    <x-icon type="edit" class="fa-fw" />
                                 </a>
+
+                                @if (auth()->user()->isSuperUser())
+                                    @if ($row->tenant->isDeletable())
+                                        <form method="POST"
+                                              action="{{ route('tenants.destroy', $row->tenant) }}"
+                                              style="display: inline;"
+                                              onsubmit="return confirm('{{ trans('general.are_you_sure') }}');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-danger"
+                                                    data-tooltip="true"
+                                                    data-placement="top"
+                                                    title="{{ trans('general.delete') }}">
+                                                <x-icon type="delete" class="fa-fw" />
+                                            </button>
+                                        </form>
+                                    @else
+                                        <button type="button"
+                                                class="btn btn-sm btn-danger disabled"
+                                                data-tooltip="true"
+                                                data-placement="top"
+                                                title="{{ trans('admin/tenants/message.delete.not_deletable') }}">
+                                            <x-icon type="delete" class="fa-fw" />
+                                        </button>
+                                    @endif
+                                @endif
                             </td>
                         </tr>
                     @endforeach
