@@ -143,6 +143,8 @@ return [
     'ticket' => 'Ticket',
     'document_framework' => 'Framework documentale',
     'document_frameworks' => 'Framework documentali',
+    'document_framework_requirement' => 'Requisito framework',
+    'document_framework_requirements' => 'Requisiti framework',
     'document_type' => 'Tipologia documento',
     'document_types' => 'Tipologie documento',
     'documents' => 'Documenti',

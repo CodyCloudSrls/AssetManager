@@ -30,6 +30,18 @@
                                 <x-data-row :label="trans('admin/documents/form.document_number')">{{ $document->document_number }}</x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.document_type')">{{ $document->type?->name }}</x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.framework')">{{ $document->framework?->name }}</x-data-row>
+                                <x-data-row :label="trans('admin/documents/form.framework_requirements')">
+                                    @if ($document->frameworkRequirements->count() > 0)
+                                        <ul style="padding-left: 18px; margin-bottom: 0;">
+                                            @foreach ($document->frameworkRequirements as $requirement)
+                                                <li>
+                                                    <a href="{{ route('documentframeworkrequirements.show', $requirement) }}">{{ $requirement->code }} - {{ $requirement->title }}</a>
+                                                    <span class="text-muted">({{ \App\Models\Document::coverageRoleOptions()[$requirement->pivot->coverage_role] ?? $requirement->pivot->coverage_role }})</span>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    @endif
+                                </x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.reference')">{{ $document->reference }}</x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.version')">{{ $document->version }}</x-data-row>
                                 <x-data-row :label="trans('general.status')">{{ \App\Models\Document::getStatusOptions()[$document->status] ?? $document->status }}</x-data-row>

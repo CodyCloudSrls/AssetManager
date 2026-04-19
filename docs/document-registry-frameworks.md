@@ -16,6 +16,67 @@ Core reference tables:
 - `documents`
 - `document_types`
 - `document_frameworks`
+- `document_framework_requirements`
+- `document_framework_requirement_document`
+
+## Framework Governance Model
+
+Frameworks are now production-governed objects, not simple labels.
+
+Each framework can carry:
+
+- authority / issuing body
+- framework code
+- framework type
+- jurisdiction
+- version
+- valid-from and valid-to dates
+- owner
+- review cadence
+- status (`draft`, `active`, `superseded`, `archived`)
+- external reference URL
+
+This allows one tenant to maintain both external obligations and internal governance frameworks in the same catalog without collapsing everything into free-text metadata.
+
+## Framework Requirements
+
+Each framework can now define an explicit requirement library.
+
+Typical metadata per requirement:
+
+- requirement code
+- title
+- domain
+- parent requirement
+- owner
+- preferred document type
+- review cadence
+- evidence guidance
+- applicability notes
+- active / mandatory flags
+
+This is the minimum structure needed to answer real production questions such as:
+
+- which obligations are still uncovered
+- which obligations are covered only by supporting evidence
+- which obligations are at risk because their primary evidence is obsolete or overdue
+- which obligations are fully covered by active governed documents
+
+## Coverage Mapping
+
+Documents can now map to one or many framework requirements with explicit coverage roles:
+
+- `primary`
+- `supporting`
+
+Coverage is derived from these mappings rather than typed manually.
+
+Current coverage states are:
+
+- `missing`
+- `supporting_only`
+- `at_risk`
+- `covered`
 
 ## Core Metadata
 
@@ -189,6 +250,9 @@ At the time of this document, the repository includes:
 
 - dedicated web and API CRUD for documents
 - dedicated web and API CRUD for document types and frameworks
+- dedicated web and API CRUD for framework requirements
 - sidebar filters for document status and review windows
 - quick-create modals for document types and frameworks from the document form
+- requirement-to-document mapping directly from the document form
+- framework coverage summaries and requirement views
 - locale coverage seeded across the available language folders so the module does not fall back to missing keys

@@ -22,10 +22,13 @@ class DocumentFrameworksController extends Controller
             'id',
             'name',
             'slug',
+            'framework_code',
+            'status',
             'description',
             'sort_order',
             'is_active',
             'documents_count',
+            'requirements_count',
             'created_at',
             'updated_at',
         ];
@@ -34,6 +37,17 @@ class DocumentFrameworksController extends Controller
             'id',
             'name',
             'slug',
+            'authority_name',
+            'framework_code',
+            'framework_type',
+            'jurisdiction',
+            'version',
+            'effective_from',
+            'effective_to',
+            'owner_id',
+            'review_cadence_months',
+            'status',
+            'external_reference_url',
             'description',
             'sort_order',
             'is_active',
@@ -44,8 +58,8 @@ class DocumentFrameworksController extends Controller
             'updated_at',
             'deleted_at',
         ])
-            ->with('adminuser', 'company')
-            ->withCount('documents as documents_count');
+            ->with('adminuser', 'company', 'owner')
+            ->withCount(['documents as documents_count', 'requirements as requirements_count']);
 
         if ($request->input('deleted') == 'true' || $request->input('status') == 'deleted') {
             $documentFrameworks->onlyTrashed();
@@ -84,6 +98,7 @@ class DocumentFrameworksController extends Controller
         $documentFramework = new DocumentFramework;
         $documentFramework->fill($request->all());
         $documentFramework->created_by = auth()->id();
+        $documentFramework->status = $request->input('status', 'active');
         $documentFramework->is_active = $request->boolean('is_active', true);
 
         if ($documentFramework->save()) {
@@ -97,7 +112,7 @@ class DocumentFrameworksController extends Controller
     {
         $this->authorize('view', $documentframework);
 
-        $documentframework->load('adminuser')->loadCount('documents');
+        $documentframework->load('adminuser', 'owner')->loadCount(['documents', 'requirements']);
 
         return (new DocumentFrameworksTransformer)->transformDocumentFramework($documentframework);
     }
@@ -107,6 +122,7 @@ class DocumentFrameworksController extends Controller
         $this->authorize('update', $documentframework);
 
         $documentframework->fill($request->all());
+        $documentframework->status = $request->input('status', 'active');
         $documentframework->is_active = $request->boolean('is_active');
 
         if ($documentframework->save()) {

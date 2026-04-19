@@ -1526,6 +1526,7 @@
         'consumables',
         'departments',
         'documentframeworks',
+        'documentframeworkrequirements',
         'documenttypes',
         'documents',
         'tickets',

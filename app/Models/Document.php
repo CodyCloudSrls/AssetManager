@@ -57,6 +57,9 @@ class Document extends SnipeModel
         'notes',
     ];
 
+    public const COVERAGE_PRIMARY = 'primary';
+    public const COVERAGE_SUPPORTING = 'supporting';
+
     protected $casts = [
         'company_id' => 'integer',
         'owner_id' => 'integer',
@@ -140,6 +143,13 @@ class Document extends SnipeModel
     public function framework()
     {
         return $this->belongsTo(DocumentFramework::class, 'document_framework_id');
+    }
+
+    public function frameworkRequirements()
+    {
+        return $this->belongsToMany(DocumentFrameworkRequirement::class, 'document_framework_requirement_document')
+            ->withPivot(['coverage_role', 'notes', 'covered_at', 'created_by'])
+            ->withTimestamps();
     }
 
     public function journal()
@@ -262,5 +272,13 @@ class Document extends SnipeModel
         return $query->leftJoin('document_types as types_sort', 'documents.document_type_id', '=', 'types_sort.id')
             ->select('documents.*')
             ->orderBy('types_sort.name', $order);
+    }
+
+    public static function coverageRoleOptions(): array
+    {
+        return [
+            self::COVERAGE_PRIMARY => trans('admin/documents/general.coverage_roles.primary'),
+            self::COVERAGE_SUPPORTING => trans('admin/documents/general.coverage_roles.supporting'),
+        ];
     }
 }

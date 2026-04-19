@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\Company;
 use App\Models\Document;
 use App\Models\DocumentFramework;
+use App\Models\DocumentFrameworkRequirement;
 use App\Models\DocumentType;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
@@ -44,6 +45,10 @@ class StoreDocumentRequest extends FormRequest
             'control_url' => 'nullable|url|max:2048',
             'summary' => 'nullable|string|max:65535',
             'notes' => 'nullable|string|max:65535',
+            'primary_requirement_ids' => 'nullable|array',
+            'primary_requirement_ids.*' => 'integer',
+            'supporting_requirement_ids' => 'nullable|array',
+            'supporting_requirement_ids.*' => 'integer',
         ];
     }
 
@@ -60,6 +65,29 @@ class StoreDocumentRequest extends FormRequest
 
             if ($this->filled('document_framework_id') && ! DocumentFramework::find($this->input('document_framework_id'))) {
                 $validator->errors()->add('document_framework_id', trans('validation.exists', ['attribute' => 'document framework']));
+            }
+
+            $frameworkId = $this->filled('document_framework_id') ? (int) $this->input('document_framework_id') : null;
+            $requirementIds = collect($this->input('primary_requirement_ids', []))
+                ->merge($this->input('supporting_requirement_ids', []))
+                ->filter(fn ($id) => $id !== null && $id !== '')
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values();
+
+            if ($requirementIds->count() > 0 && ! $frameworkId) {
+                $validator->errors()->add('document_framework_id', trans('admin/documents/message.framework_required_for_requirements'));
+            }
+
+            if ($frameworkId && $requirementIds->count() > 0) {
+                $validCount = DocumentFrameworkRequirement::query()
+                    ->whereIn('id', $requirementIds->all())
+                    ->where('document_framework_id', $frameworkId)
+                    ->count();
+
+                if ($validCount !== $requirementIds->count()) {
+                    $validator->errors()->add('primary_requirement_ids', trans('admin/documents/message.invalid_requirements_for_framework'));
+                }
             }
         });
     }

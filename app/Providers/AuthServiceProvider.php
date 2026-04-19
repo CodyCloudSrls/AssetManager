@@ -15,6 +15,7 @@ use App\Models\Department;
 use App\Models\Depreciation;
 use App\Models\Document;
 use App\Models\DocumentFramework;
+use App\Models\DocumentFrameworkRequirement;
 use App\Models\DocumentType;
 use App\Models\License;
 use App\Models\Location;
@@ -37,6 +38,7 @@ use App\Policies\DepartmentPolicy;
 use App\Policies\DepreciationPolicy;
 use App\Policies\DocumentPolicy;
 use App\Policies\DocumentFrameworkPolicy;
+use App\Policies\DocumentFrameworkRequirementPolicy;
 use App\Policies\DocumentTypePolicy;
 use App\Policies\LicensePolicy;
 use App\Policies\LocationPolicy;
@@ -76,6 +78,7 @@ class AuthServiceProvider extends ServiceProvider
         Depreciation::class => DepreciationPolicy::class,
         Document::class => DocumentPolicy::class,
         DocumentFramework::class => DocumentFrameworkPolicy::class,
+        DocumentFrameworkRequirement::class => DocumentFrameworkRequirementPolicy::class,
         DocumentType::class => DocumentTypePolicy::class,
         License::class => LicensePolicy::class,
         Location::class => LocationPolicy::class,

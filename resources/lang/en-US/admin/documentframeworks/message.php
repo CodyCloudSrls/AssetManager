@@ -9,7 +9,7 @@ return [
     ],
     'delete' => [
         'success' => 'Document framework deleted successfully.',
-        'associated_documents' => 'This document framework is still assigned to one or more documents and cannot be deleted.',
+        'associated_documents' => 'This document framework is still linked to one or more documents or requirements and cannot be deleted.',
     ],
     'restore' => [
         'success' => 'Document framework restored successfully.',

@@ -176,6 +176,13 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
         ])->name('api.documentframeworks.restore');
     });
 
+    Route::group(['prefix' => 'documentframeworkrequirements'], function () {
+        Route::post('{id}/restore', [
+            Api\DocumentFrameworkRequirementsController::class,
+            'restore',
+        ])->name('api.documentframeworkrequirements.restore');
+    });
+
     Route::resource('documentframeworks',
         Api\DocumentFrameworksController::class,
         ['names' => [
@@ -187,6 +194,20 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
         ],
             'except' => ['create', 'edit'],
             'parameters' => ['documentframeworks' => 'documentframework'],
+        ]
+    );
+
+    Route::resource('documentframeworkrequirements',
+        Api\DocumentFrameworkRequirementsController::class,
+        ['names' => [
+            'index' => 'api.documentframeworkrequirements.index',
+            'show' => 'api.documentframeworkrequirements.show',
+            'update' => 'api.documentframeworkrequirements.update',
+            'store' => 'api.documentframeworkrequirements.store',
+            'destroy' => 'api.documentframeworkrequirements.destroy',
+        ],
+            'except' => ['create', 'edit'],
+            'parameters' => ['documentframeworkrequirements' => 'documentframeworkrequirement'],
         ]
     );
 

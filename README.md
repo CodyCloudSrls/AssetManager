@@ -48,6 +48,13 @@ Document governance settings are managed through:
 - `Settings > Document Types`
 - `Settings > Document Frameworks`
 
+Document frameworks are no longer simple tags. The production model now supports:
+
+- governance metadata on each framework, including authority, code, type, version, validity, owner, and review cadence
+- framework requirements with parent-child structure, domains, evidence guidance, and preferred document types
+- direct mapping between requirements and documents with `primary` vs `supporting` coverage roles
+- derived coverage views for missing, supporting-only, at-risk, and covered requirements
+
 The reference taxonomy and implementation notes for the compliance-oriented registry live in [docs/document-registry-frameworks.md](docs/document-registry-frameworks.md).
 
 ## Tickets And Helpdesk
