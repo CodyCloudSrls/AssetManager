@@ -171,6 +171,45 @@ class TenantsController extends Controller
         return view('tenants.show', compact('tenant', 'rootCompany', 'companies', 'members', 'canManageTenant', 'publicTicketTypes'));
     }
 
+    public function destroy(Tenant $tenant): RedirectResponse
+    {
+        abort_unless(auth()->user()->isSuperUser(), 403);
+
+        if (! $tenant->isDeletable()) {
+            return redirect()->route('tenants.index')->with('error', trans('admin/tenants/message.delete.not_deletable'));
+        }
+
+        DB::transaction(function () use ($tenant) {
+            $companyIds = Company::withoutGlobalScopes()
+                ->where('tenant_id', $tenant->id)
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            $tenant->helpdeskTicketTypes()->detach();
+            $tenant->members()->detach();
+
+            if (count($companyIds) > 0) {
+                Company::withoutGlobalScopes()
+                    ->whereIn('id', $companyIds)
+                    ->get()
+                    ->each
+                    ->forceDelete();
+            }
+
+            $tenant->delete();
+        });
+
+        if ((int) (Tenant::activeTenantId() ?? 0) === (int) $tenant->id) {
+            session()->forget(Tenant::ACTIVE_TENANT_SESSION_KEY);
+        }
+
+        Company::flushHierarchyCache();
+        Tenant::clearCurrentUserTenantRoleCache();
+
+        return redirect()->route('tenants.index')->with('success', trans('admin/tenants/message.delete.success'));
+    }
+
     public function storeMember(Request $request, Tenant $tenant): RedirectResponse
     {
         abort_unless(auth()->user()->canManageTenant($tenant), 403);

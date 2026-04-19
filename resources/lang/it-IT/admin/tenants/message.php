@@ -5,6 +5,10 @@ return [
         'success' => 'Tenant creato correttamente.',
         'error' => 'Impossibile creare il tenant.',
     ],
+    'delete' => [
+        'success' => 'Tenant eliminato correttamente.',
+        'not_deletable' => 'Questo tenant non può essere eliminato perché contiene ancora dati operativi o membership tenant.',
+    ],
     'membership' => [
         'create' => [
             'success' => 'Utente tenant assegnato correttamente.',

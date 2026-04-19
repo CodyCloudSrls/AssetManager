@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class Tenant extends Model
@@ -69,6 +70,44 @@ class Tenant extends Model
             ->pluck('id')
             ->map(fn ($id) => (int) $id)
             ->all();
+    }
+
+    public function isDeletable(): bool
+    {
+        $companyIds = $this->activeCompanyIds();
+
+        if (count($companyIds) === 0) {
+            return true;
+        }
+
+        if ($this->members()->exists()) {
+            return false;
+        }
+
+        $scopedTables = [
+            'users' => 'company_id',
+            'assets' => 'company_id',
+            'licenses' => 'company_id',
+            'accessories' => 'company_id',
+            'consumables' => 'company_id',
+            'components' => 'company_id',
+            'documents' => 'company_id',
+            'tickets' => 'company_id',
+            'locations' => 'company_id',
+            'departments' => 'company_id',
+        ];
+
+        foreach ($scopedTables as $table => $column) {
+            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, $column)) {
+                continue;
+            }
+
+            if (DB::table($table)->whereIn($column, $companyIds)->exists()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function getDisplayNameAttribute(): string
