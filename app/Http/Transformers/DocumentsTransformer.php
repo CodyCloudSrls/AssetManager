@@ -28,6 +28,15 @@ class DocumentsTransformer
             'document_number' => e($document->document_number),
             'document_type' => e($document->type?->name),
             'framework' => e($document->framework?->name),
+            'requirement_count' => (int) ($document->frameworkRequirements?->count() ?? 0),
+            'requirements' => $document->frameworkRequirements ? $document->frameworkRequirements->map(function ($requirement) {
+                return [
+                    'id' => (int) $requirement->id,
+                    'code' => e($requirement->code),
+                    'title' => e($requirement->title),
+                    'coverage_role' => e(Document::coverageRoleOptions()[$requirement->pivot->coverage_role] ?? $requirement->pivot->coverage_role),
+                ];
+            })->values()->all() : [],
             'reference' => e($document->reference),
             'version' => e($document->version),
             'status' => e(Document::getStatusOptions()[$document->status] ?? $document->status),

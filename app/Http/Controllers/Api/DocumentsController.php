@@ -19,7 +19,7 @@ class DocumentsController extends Controller
         $this->authorize('index', Document::class);
 
         $documents = Document::select('documents.*')
-            ->with('company', 'owner', 'framework', 'type', 'adminuser');
+            ->with('company', 'owner', 'framework', 'type', 'adminuser', 'frameworkRequirements');
 
         if ($request->filled('filter') || $request->filled('search')) {
             $documents->TextSearch($request->input('filter') ?: $request->input('search'));
@@ -55,6 +55,12 @@ class DocumentsController extends Controller
 
         if ($request->filled('document_framework_id')) {
             $documents->where('documents.document_framework_id', '=', $request->input('document_framework_id'));
+        }
+
+        if ($request->filled('document_framework_requirement_id')) {
+            $documents->whereHas('frameworkRequirements', function ($query) use ($request) {
+                $query->where('document_framework_requirements.id', '=', (int) $request->input('document_framework_requirement_id'));
+            });
         }
 
         $allowedColumns = [
@@ -120,6 +126,7 @@ class DocumentsController extends Controller
         $document->created_by = auth()->id();
 
         if ($document->save()) {
+            $this->syncRequirementMappings($document, $request);
             return response()->json(Helper::formatStandardApiResponse('success', (new DocumentsTransformer)->transformDocument($document), trans('admin/documents/message.create.success')));
         }
 
@@ -133,6 +140,7 @@ class DocumentsController extends Controller
         $document->fill($request->all());
 
         if ($document->save()) {
+            $this->syncRequirementMappings($document, $request);
             return response()->json(Helper::formatStandardApiResponse('success', (new DocumentsTransformer)->transformDocument($document), trans('admin/documents/message.update.success')));
         }
 
@@ -157,5 +165,30 @@ class DocumentsController extends Controller
         $history = $history->skip(app('api_offset_value'))->take(app('api_limit_value'))->get();
 
         return response()->json((new ActionlogsTransformer)->transformActionlogs($history, $total), 200, ['Content-Type' => 'application/json;charset=utf8'], JSON_UNESCAPED_UNICODE);
+    }
+
+    private function syncRequirementMappings(Document $document, StoreDocumentRequest $request): void
+    {
+        $syncData = [];
+
+        foreach (collect($request->input('primary_requirement_ids', []))->filter() as $requirementId) {
+            $syncData[(int) $requirementId] = [
+                'coverage_role' => Document::COVERAGE_PRIMARY,
+                'notes' => null,
+                'covered_at' => now(),
+                'created_by' => auth()->id(),
+            ];
+        }
+
+        foreach (collect($request->input('supporting_requirement_ids', []))->filter() as $requirementId) {
+            $syncData[(int) $requirementId] = [
+                'coverage_role' => Document::COVERAGE_SUPPORTING,
+                'notes' => null,
+                'covered_at' => now(),
+                'created_by' => auth()->id(),
+            ];
+        }
+
+        $document->frameworkRequirements()->sync($syncData);
     }
 }

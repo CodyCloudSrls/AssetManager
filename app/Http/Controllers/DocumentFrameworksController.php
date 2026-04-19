@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDocumentFrameworkRequest;
 use App\Models\DocumentFramework;
+use App\Models\DocumentFrameworkRequirement;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -20,7 +21,10 @@ class DocumentFrameworksController extends Controller
     {
         $this->authorize('create', DocumentFramework::class);
 
-        return view('documentframeworks.edit')->with('item', new DocumentFramework);
+        return view('documentframeworks.edit', $this->formData(new DocumentFramework([
+            'status' => 'active',
+            'is_active' => true,
+        ])));
     }
 
     public function store(StoreDocumentFrameworkRequest $request): RedirectResponse
@@ -30,6 +34,7 @@ class DocumentFrameworksController extends Controller
         $documentFramework = new DocumentFramework;
         $documentFramework->fill($request->all());
         $documentFramework->created_by = auth()->id();
+        $documentFramework->status = $request->input('status', 'active');
         $documentFramework->is_active = $request->boolean('is_active', true);
 
         if ($documentFramework->save()) {
@@ -43,7 +48,25 @@ class DocumentFrameworksController extends Controller
     {
         $this->authorize('view', $documentframework);
 
-        $documentframework->loadCount('documents');
+        $documentframework->loadCount(['documents', 'requirements']);
+
+        $requirements = DocumentFrameworkRequirement::query()
+            ->forFramework($documentframework->id)
+            ->with(['owner', 'defaultDocumentType'])
+            ->withCount([
+                'documents',
+                'primaryDocuments as primary_documents_count',
+                'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query
+                    ->where('documents.status', \App\Models\Document::STATUS_ACTIVE)
+                    ->where(function ($nested) {
+                        $nested->whereNull('documents.next_review_at')
+                            ->orWhereDate('documents.next_review_at', '>=', now()->toDateString());
+                    }),
+            ])
+            ->ordered()
+            ->get();
+
+        $documentframework->setRelation('requirements', $requirements);
 
         return view('documentframeworks.view', compact('documentframework'));
     }
@@ -52,7 +75,7 @@ class DocumentFrameworksController extends Controller
     {
         $this->authorize('update', $documentframework);
 
-        return view('documentframeworks.edit')->with('item', $documentframework);
+        return view('documentframeworks.edit', $this->formData($documentframework));
     }
 
     public function update(StoreDocumentFrameworkRequest $request, DocumentFramework $documentframework): RedirectResponse
@@ -60,6 +83,7 @@ class DocumentFrameworksController extends Controller
         $this->authorize('update', $documentframework);
 
         $documentframework->fill($request->all());
+        $documentframework->status = $request->input('status', 'active');
         $documentframework->is_active = $request->boolean('is_active');
 
         if ($documentframework->save()) {
@@ -94,5 +118,14 @@ class DocumentFrameworksController extends Controller
         }
 
         return redirect()->route('documentframeworks.index')->with('error', trans('general.could_not_restore', ['item_type' => trans('general.document_framework'), 'error' => $documentframework->getErrors()->first()]));
+    }
+
+    private function formData(DocumentFramework $item): array
+    {
+        return [
+            'item' => $item,
+            'statusOptions' => DocumentFramework::getStatusOptions(),
+            'frameworkTypeOptions' => DocumentFramework::getFrameworkTypeOptions(),
+        ];
     }
 }

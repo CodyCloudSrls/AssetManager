@@ -21,6 +21,47 @@
     @include ('partials.forms.edit.document-type-select', ['translated_name' => trans('admin/documents/form.document_type'), 'fieldname' => 'document_type_id', 'item' => $document, 'required' => 'false'])
     @include ('partials.forms.edit.document-framework-select', ['translated_name' => trans('admin/documents/form.framework'), 'fieldname' => 'document_framework_id', 'item' => $document, 'required' => 'false'])
 
+    <div class="col-md-12 col-sm-12">
+        <fieldset name="document-framework-coverage">
+            <x-form.legend>
+                <a id="document_framework_requirements_toggle">
+                    <x-icon type="caret-right" class="fa-fw" id="document_framework_requirements_icon" />
+                    {{ trans('admin/documents/form.framework_requirements_section') }}
+                </a>
+            </x-form.legend>
+
+            <div id="document_framework_requirements_details" class="col-md-12" style="display:none">
+                <div class="form-group">
+                    <label for="primary_requirement_ids" class="col-md-3 control-label">{{ trans('admin/documents/form.primary_requirements') }}</label>
+                    <div class="col-md-7">
+                        <select class="form-control select2" multiple name="primary_requirement_ids[]" id="primary_requirement_ids" aria-label="primary_requirement_ids">
+                            @foreach ($frameworkRequirements as $requirement)
+                                <option value="{{ $requirement->id }}" @selected(in_array($requirement->id, old('primary_requirement_ids', $selectedPrimaryRequirementIds), true))>
+                                    {{ $requirement->code }} - {{ $requirement->title }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="help-block">{{ trans('admin/documents/form.primary_requirements_help') }}</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="supporting_requirement_ids" class="col-md-3 control-label">{{ trans('admin/documents/form.supporting_requirements') }}</label>
+                    <div class="col-md-7">
+                        <select class="form-control select2" multiple name="supporting_requirement_ids[]" id="supporting_requirement_ids" aria-label="supporting_requirement_ids">
+                            @foreach ($frameworkRequirements as $requirement)
+                                <option value="{{ $requirement->id }}" @selected(in_array($requirement->id, old('supporting_requirement_ids', $selectedSupportingRequirementIds), true))>
+                                    {{ $requirement->code }} - {{ $requirement->title }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="help-block">{{ trans('admin/documents/form.supporting_requirements_help') }}</p>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
     <div class="form-group {{ $errors->has('document_number') ? ' has-error' : '' }}">
         <label for="document_number" class="col-md-3 control-label">{{ trans('admin/documents/form.document_number') }}</label>
         <div class="col-md-4">
@@ -171,10 +212,40 @@
 
         bindToggle('#document_governance_toggle', '#document_governance_details', '#document_governance_icon');
         bindToggle('#document_content_toggle', '#document_content_details', '#document_content_icon');
+        bindToggle('#document_framework_requirements_toggle', '#document_framework_requirements_details', '#document_framework_requirements_icon');
+
+        const requirementMap = @json($frameworkRequirementOptionsByFramework);
+        const primarySelect = $('#primary_requirement_ids');
+        const supportingSelect = $('#supporting_requirement_ids');
+        const selectedPrimary = (@json(old('primary_requirement_ids', $selectedPrimaryRequirementIds)) || []).map(String);
+        const selectedSupporting = (@json(old('supporting_requirement_ids', $selectedSupportingRequirementIds)) || []).map(String);
+
+        function populateRequirementOptions(frameworkId) {
+            const options = requirementMap[String(frameworkId || '')] || [];
+
+            primarySelect.empty();
+            supportingSelect.empty();
+
+            $.each(options, function (_, requirement) {
+                const label = requirement.code + ' - ' + requirement.title;
+                const optionValue = String(requirement.id);
+                primarySelect.append(new Option(label, optionValue, false, selectedPrimary.includes(optionValue)));
+                supportingSelect.append(new Option(label, optionValue, false, selectedSupporting.includes(optionValue)));
+            });
+
+            primarySelect.trigger('change.select2');
+            supportingSelect.trigger('change.select2');
+        }
+
+        populateRequirementOptions($('#document_framework_id_select').val());
+
+        $('#document_framework_id_select').on('change', function () {
+            populateRequirementOptions($(this).val());
+        });
 
         @if ($errors->any())
-            $('#document_governance_details, #document_content_details').show();
-            $('#document_governance_icon, #document_content_icon').removeClass('fa-caret-right').addClass('fa-caret-down');
+            $('#document_governance_details, #document_content_details, #document_framework_requirements_details').show();
+            $('#document_governance_icon, #document_content_icon, #document_framework_requirements_icon').removeClass('fa-caret-right').addClass('fa-caret-down');
         @endif
     });
 </script>

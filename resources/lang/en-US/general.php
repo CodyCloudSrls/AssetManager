@@ -143,6 +143,8 @@ return [
     'ticket' => 'Ticket',
     'document_framework' => 'Document Framework',
     'document_frameworks' => 'Document Frameworks',
+    'document_framework_requirement' => 'Framework Requirement',
+    'document_framework_requirements' => 'Framework Requirements',
     'document_type' => 'Document Type',
     'document_types' => 'Document Types',
     'documents' => 'Documents',

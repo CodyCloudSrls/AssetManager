@@ -14,6 +14,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentsController;
 use App\Http\Controllers\DepreciationsController;
 use App\Http\Controllers\DocumentFrameworksController;
+use App\Http\Controllers\DocumentFrameworkRequirementsController;
 use App\Http\Controllers\DocumentTypesController;
 use App\Http\Controllers\GroupsController;
 use App\Http\Controllers\HealthController;
@@ -72,9 +73,15 @@ Route::group(['middleware' => 'auth'], function () {
     */
     Route::group(['prefix' => 'documentframeworks', 'middleware' => ['auth']], function () {
         Route::post('{id}/restore', [DocumentFrameworksController::class, 'restore'])->name('documentframeworks.restore');
+        Route::get('{documentframework}/requirements/create', [DocumentFrameworkRequirementsController::class, 'create'])->name('documentframeworkrequirements.create');
+        Route::post('{documentframework}/requirements', [DocumentFrameworkRequirementsController::class, 'store'])->name('documentframeworkrequirements.store');
     });
 
     Route::resource('documentframeworks', DocumentFrameworksController::class);
+    Route::group(['prefix' => 'documentframeworkrequirements', 'middleware' => ['auth']], function () {
+        Route::post('{id}/restore', [DocumentFrameworkRequirementsController::class, 'restore'])->name('documentframeworkrequirements.restore');
+    });
+    Route::resource('documentframeworkrequirements', DocumentFrameworkRequirementsController::class)->except(['index', 'create', 'store']);
 
     /*
     * Labels

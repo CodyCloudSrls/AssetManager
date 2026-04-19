@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\Searchable;
 use App\Models\Traits\TenantTemplateTrait;
 use App\Presenters\Presentable;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Gate;
@@ -28,6 +29,17 @@ class DocumentFramework extends SnipeModel
         'name' => 'required|string|max:255',
         'slug' => 'nullable|string|max:255',
         'description' => 'nullable|string|max:65535',
+        'authority_name' => 'nullable|string|max:255',
+        'framework_code' => 'nullable|string|max:80',
+        'framework_type' => 'nullable|string|max:40',
+        'jurisdiction' => 'nullable|string|max:80',
+        'version' => 'nullable|string|max:80',
+        'effective_from' => 'nullable|date',
+        'effective_to' => 'nullable|date',
+        'owner_id' => 'nullable|integer|exists:users,id',
+        'review_cadence_months' => 'nullable|integer|min:1|max:120',
+        'status' => 'required|string|in:draft,active,superseded,archived',
+        'external_reference_url' => 'nullable|url|max:2048',
         'sort_order' => 'nullable|integer|min:0|max:65535',
         'is_active' => 'boolean',
         'company_id' => 'nullable|integer|exists:companies,id',
@@ -40,6 +52,17 @@ class DocumentFramework extends SnipeModel
         'name',
         'slug',
         'description',
+        'authority_name',
+        'framework_code',
+        'framework_type',
+        'jurisdiction',
+        'version',
+        'effective_from',
+        'effective_to',
+        'owner_id',
+        'review_cadence_months',
+        'status',
+        'external_reference_url',
         'sort_order',
         'is_active',
         'created_by',
@@ -52,33 +75,121 @@ class DocumentFramework extends SnipeModel
         'is_active' => 'boolean',
         'created_by' => 'integer',
         'company_id' => 'integer',
+        'owner_id' => 'integer',
+        'review_cadence_months' => 'integer',
+        'effective_from' => 'date',
+        'effective_to' => 'date',
     ];
 
     protected $searchableAttributes = [
         'name',
         'slug',
         'description',
+        'authority_name',
+        'framework_code',
+        'framework_type',
+        'jurisdiction',
+        'version',
+        'status',
         'visibility_type',
     ];
 
     protected $searchableRelations = [
         'company' => ['name'],
         'adminuser' => ['first_name', 'last_name', 'display_name'],
+        'owner' => ['first_name', 'last_name', 'display_name', 'username'],
     ];
 
     protected $searchableCounts = [
         'documents_count',
+        'requirements_count',
     ];
+
+    public static function getFrameworkTypeOptions(): array
+    {
+        return [
+            'law' => trans('admin/documentframeworks/general.types.law'),
+            'regulation' => trans('admin/documentframeworks/general.types.regulation'),
+            'standard' => trans('admin/documentframeworks/general.types.standard'),
+            'policy' => trans('admin/documentframeworks/general.types.policy'),
+            'internal' => trans('admin/documentframeworks/general.types.internal'),
+            'custom' => trans('admin/documentframeworks/general.types.custom'),
+        ];
+    }
+
+    public static function getStatusOptions(): array
+    {
+        return [
+            'draft' => trans('admin/documentframeworks/general.statuses.draft'),
+            'active' => trans('admin/documentframeworks/general.statuses.active'),
+            'superseded' => trans('admin/documentframeworks/general.statuses.superseded'),
+            'archived' => trans('admin/documentframeworks/general.statuses.archived'),
+        ];
+    }
 
     public function documents()
     {
         return $this->hasMany(Document::class, 'document_framework_id');
     }
 
+    public function requirements()
+    {
+        return $this->hasMany(DocumentFrameworkRequirement::class, 'document_framework_id');
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'owner_id')->withTrashed();
+    }
+
+    public function activeRequirements()
+    {
+        return $this->requirements()->where('is_active', true)->whereNull('deleted_at');
+    }
+
+    public function getCoverageSummaryAttribute(): array
+    {
+        $requirements = $this->relationLoaded('requirements')
+            ? $this->requirements
+            : $this->requirements()
+                ->withCount('documents')
+                ->get();
+
+        $total = $requirements->count();
+        $covered = 0;
+        $atRisk = 0;
+        $supportingOnly = 0;
+        $missing = 0;
+
+        foreach ($requirements as $requirement) {
+            $status = $requirement->coverage_status;
+
+            if ($status === DocumentFrameworkRequirement::COVERAGE_COVERED) {
+                $covered++;
+            } elseif ($status === DocumentFrameworkRequirement::COVERAGE_AT_RISK) {
+                $atRisk++;
+            } elseif ($status === DocumentFrameworkRequirement::COVERAGE_SUPPORTING_ONLY) {
+                $supportingOnly++;
+            } else {
+                $missing++;
+            }
+        }
+
+        return [
+            'total' => $total,
+            'covered' => $covered,
+            'at_risk' => $atRisk,
+            'supporting_only' => $supportingOnly,
+            'missing' => $missing,
+            'coverage_percent' => $total > 0 ? (int) floor(($covered / $total) * 100) : 0,
+        ];
+    }
+
     public function isDeletable()
     {
         return Gate::allows('delete', $this)
             && (($this->documents_count ?? $this->documents()->count()) === 0)
+            && (($this->requirements_count ?? $this->requirements()->count()) === 0)
             && ($this->deleted_at == '');
     }
 
@@ -113,5 +224,32 @@ class DocumentFramework extends SnipeModel
         if (! array_key_exists('slug', $this->attributes) || blank($this->attributes['slug'])) {
             $this->attributes['slug'] = $value ? Str::slug($value) : null;
         }
+    }
+
+    public function setEffectiveFromAttribute($value)
+    {
+        $this->attributes['effective_from'] = ($value === '' ? null : $value);
+    }
+
+    public function setEffectiveToAttribute($value)
+    {
+        $this->attributes['effective_to'] = ($value === '' ? null : $value);
+    }
+
+    public function setExternalReferenceUrlAttribute($value)
+    {
+        $this->attributes['external_reference_url'] = ($value === '' ? null : $value);
+    }
+
+    public function setDescriptionAttribute($value)
+    {
+        $this->attributes['description'] = ($value === '' ? null : $value);
+    }
+
+    public function isCurrent(): bool
+    {
+        return $this->status === 'active'
+            && ($this->effective_from === null || $this->effective_from->lte(Carbon::today()))
+            && ($this->effective_to === null || $this->effective_to->gte(Carbon::today()));
     }
 }
