@@ -69,6 +69,15 @@
                         count="{{ $asset->audits()->count() }}"
                         tooltip="{{ trans('general.audits') }}"
                     />
+                    @can('view', \App\Models\Document::class)
+                        <x-tabs.nav-item
+                            name="documents"
+                            icon="fa-regular fa-file-lines fa-fw"
+                            label="{{ trans('general.documents') }}"
+                            count="{{ $asset->documentAssignments->count() }}"
+                            tooltip="{{ trans('general.documents') }}"
+                        />
+                    @endcan
                     <x-tabs.note-tab :item="$asset" count="{{ $asset->journal->count() }}"/>
                     <x-tabs.files-tab :item="$asset" count="{{ $asset->uploads()->count() }}"/>
                     <x-tabs.model-files-tab count="{{ $asset->model?->uploads()->count() }}"/>
@@ -317,6 +326,16 @@
                     <x-tabs.pane name="licenses" :count="$asset->licenses->count()">
                         <x-table.licenses show_search="false" :route="route('api.assets.licenselist', $asset)" :presenter="\App\Presenters\LicensePresenter::dataTableLayoutSeatsCheckedOutToAssets()"/>
                     </x-tabs.pane>
+
+                    @can('view', \App\Models\Document::class)
+                        <x-tabs.pane name="documents">
+                            @include('documents.partials.assignments-table', [
+                                'assignments' => $asset->documentAssignments,
+                                'showDocumentColumn' => true,
+                                'showTargetColumn' => false,
+                            ])
+                        </x-tabs.pane>
+                    @endcan
 
                     <x-tabs.pane name="assets" :count="$asset->assignedAssets()->AssetsForShow()->count()">
                         <x-table.assets :route="route('api.assets.index',['assigned_to' => $asset->id, 'assigned_type' => 'App\Models\Asset'])"/>

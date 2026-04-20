@@ -33,6 +33,15 @@
                     <x-tabs.license-tab count="{{ $user->licenses()->count() }}"/>
                     <x-tabs.accessory-tab count="{{ $user->accessories()->count() }}"/>
                     <x-tabs.consumable-tab count="{{ $user->consumables()->count() }}"/>
+                    @can('view', \App\Models\Document::class)
+                        <x-tabs.nav-item
+                            name="documents"
+                            icon="fa-regular fa-file-lines fa-fw"
+                            label="{{ trans('general.documents') }}"
+                            count="{{ $user->documentAssignments->count() }}"
+                            tooltip="{{ trans('general.documents') }}"
+                        />
+                    @endcan
                     <x-tabs.files-tab :item="$user" count="{{ $user->uploads()->count() }}"/>
                     <x-tabs.eula-tab count="{{ $user->eulas()->count() }}"/>
                     <x-tabs.location-tab count="{{ $user->managedLocations()->count() }}"/>
@@ -442,6 +451,16 @@
               }'>
                         </table>
                     </x-tabs.pane>
+
+                    @can('view', \App\Models\Document::class)
+                        <x-tabs.pane name="documents">
+                            @include('documents.partials.assignments-table', [
+                                'assignments' => $user->documentAssignments,
+                                'showDocumentColumn' => true,
+                                'showTargetColumn' => false,
+                            ])
+                        </x-tabs.pane>
+                    @endcan
 
 
                     <x-tabs.pane name="files" :count="$user->uploads()->count()">

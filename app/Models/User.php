@@ -657,6 +657,13 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         return $this->hasMany(Location::class, 'manager_id');
     }
 
+    public function documentAssignments()
+    {
+        return $this->morphMany(DocumentAssignment::class, 'assignable')
+            ->orderBy('effective_at')
+            ->orderBy('created_at');
+    }
+
     /**
      * Establishes the user -> groups relationship
      *

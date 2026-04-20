@@ -149,13 +149,19 @@ final class Company extends SnipeModel
 
     public static function getIdFromInput($unescaped_input)
     {
-        $escaped_input = e($unescaped_input);
-
-        if (($escaped_input === null) || (trim((string) $escaped_input) === '') || ($escaped_input == '0')) {
+        if (is_null($unescaped_input)) {
             return null;
-        } else {
-            return is_numeric($escaped_input) ? (int) $escaped_input : $escaped_input;
         }
+
+        $normalizedInput = trim((string) $unescaped_input);
+        $normalizedInput = html_entity_decode($normalizedInput, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $normalizedInput = trim($normalizedInput, " \t\n\r\0\x0B\"'");
+
+        if (($normalizedInput === '') || ($normalizedInput == '0')) {
+            return null;
+        }
+
+        return is_numeric($normalizedInput) ? (int) $normalizedInput : $normalizedInput;
     }
 
     public static function generateUniqueHelpdeskSlug(?string $seed, ?int $ignoreCompanyId = null): string

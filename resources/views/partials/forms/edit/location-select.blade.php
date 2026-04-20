@@ -3,6 +3,7 @@
     @php
         $locationCompanyId = $company_id
             ?? old('company_id', (isset($item) && isset($item->company_id) ? $item->company_id : (\App\Models\Company::preferredCompanySelectionId() ?? '')));
+        $selectedLocationId = old($fieldname, $selected_id ?? ((isset($item) && isset($item->{$fieldname})) ? $item->{$fieldname} : ''));
     @endphp
 
     <label for="{{ $fieldname }}" class="col-md-3 control-label">{{ $translated_name }}</label>
@@ -15,7 +16,7 @@
                     </option>
                 @endforeach
             @endisset
-            @if ($location_id = old($fieldname, (isset($item)) ? $item->{$fieldname} : ''))
+            @if ($location_id = $selectedLocationId)
                 <option value="{{ $location_id }}" selected="selected" role="option" aria-selected="true"  role="option">
                     {{ (\App\Models\Location::find($location_id)) ? \App\Models\Location::find($location_id)->name : '' }}
                 </option>
@@ -56,5 +57,4 @@
     @endif
 
 </div>
-
 

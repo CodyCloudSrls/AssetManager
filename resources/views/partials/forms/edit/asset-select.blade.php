@@ -1,6 +1,9 @@
 <!-- Asset -->
 <div id="{{ $asset_selector_div_id ?? "assigned_asset" }}"
      class="form-group{{ $errors->has($fieldname) ? ' has-error' : '' }}"{!!  (isset($style)) ? ' style="'.e($style).'"' : ''  !!}>
+    @php
+        $selectedAssetId = old($fieldname, $selected_id ?? (isset($asset) ? $asset->id : (isset($item) && isset($item->{$fieldname}) ? $item->{$fieldname} : '')));
+    @endphp
     <label for="{{ $fieldname }}" class="col-md-3 control-label">{{ $translated_name }}</label>
     <div class="col-md-7">
         <select class="js-data-ajax select2"
@@ -16,7 +19,7 @@
                 {{  ((isset($required) && ($required =='true'))) ?  ' required' : '' }}
         >
 
-            @if ((!isset($unselect)) && ($asset_id = old($fieldname, (isset($asset) ? $asset->id  : (isset($item) ? $item->{$fieldname} : '')))))
+            @if ((!isset($unselect)) && ($asset_id = $selectedAssetId))
                 <option value="{{ $asset_id }}" selected="selected" role="option" aria-selected="true"  role="option">
                     {{ (\App\Models\Asset::find($asset_id)) ? \App\Models\Asset::find($asset_id)->present()->fullName : '' }}
                 </option>

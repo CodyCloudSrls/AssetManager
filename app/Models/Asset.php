@@ -750,6 +750,13 @@ class Asset extends Depreciable
         return $this->morphMany(self::class, 'assigned', 'assigned_type', 'assigned_to')->withTrashed();
     }
 
+    public function documentAssignments()
+    {
+        return $this->morphMany(DocumentAssignment::class, 'assignable')
+            ->orderBy('effective_at')
+            ->orderBy('created_at');
+    }
+
     /**
      * Establishes the accessory -> asset assignment relationship
      *
