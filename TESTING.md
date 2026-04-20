@@ -2,7 +2,7 @@
 
 This document is targeted at developers looking to make modifications to this application's code base and want to run the existing test suite.
 
-Before starting, follow the [instructions](README.md#installation) for installing the application locally and ensure you can load it in a browser properly.
+Before starting, follow the [local development instructions](README.md#local-development) and ensure you can load the application in a browser properly.
 
 ## Unit and Feature Tests
 
