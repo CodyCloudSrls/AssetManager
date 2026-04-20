@@ -5,6 +5,7 @@
     'label',
     'name',
     'selected',
+    'companyId' => null,
     'required' => false,
     'multiple' => false,
     'helpText' => null,
@@ -33,6 +34,9 @@
             class="js-data-ajax"
             data-endpoint="locations"
             data-placeholder="{{ trans('general.select_location') }}"
+            @if($companyId)
+                data-company-id="{{ $companyId }}"
+            @endif
             name="{{ $name }}"
             style="width: 100%"
             id="{{ $id }}"

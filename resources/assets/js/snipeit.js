@@ -211,6 +211,7 @@ $(function () {
                         page: params.page || 1,
                         statusType: link.data("asset-status-type"),
                         companyId: link.data("company-id"),
+                        company_id: link.data("company-id"),
                     };
                     return data;
                 },
@@ -234,6 +235,18 @@ $(function () {
             //templateSelection: formatDataSelection
         });
 
+    });
+
+    $('select[name="company_id"]').on('change', function () {
+        var companyId = $(this).val() || '';
+        var form = $(this).closest('form');
+
+        form.find('.js-data-ajax[data-endpoint="locations"]').each(function () {
+            $(this)
+                .attr('data-company-id', companyId)
+                .val(null)
+                .trigger('change');
+        });
     });
 
 	function getSelect2Value(element) {

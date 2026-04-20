@@ -71,6 +71,8 @@ $(function () {
                             search: params.term,
                             page: params.page || 1,
                             statusType: link.data("asset-status-type"),
+                            companyId: link.data("company-id"),
+                            company_id: link.data("company-id"),
                         };
                         return data;
                     },

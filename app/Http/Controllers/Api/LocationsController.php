@@ -415,6 +415,18 @@ class LocationsController extends Controller
             $locations = $locations->where('locations.name', 'LIKE', '%'.$request->input('search').'%');
         }
 
+        $companyId = $request->input('company_id', $request->input('companyId'));
+
+        if (filled($companyId)) {
+            $companyId = Company::getIdForCurrentUser($companyId);
+
+            if (is_null($companyId)) {
+                $locations->whereRaw('1 = 0');
+            } else {
+                $locations->where('locations.company_id', '=', $companyId);
+            }
+        }
+
         $locations = $locations->orderBy('name', 'ASC')->get();
 
         $locations_with_children = [];

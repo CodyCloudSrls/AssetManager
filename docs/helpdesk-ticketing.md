@@ -104,9 +104,15 @@ Suggested operational categories already present in the module:
 The fork seeds a baseline set of production-ready permission groups:
 
 - `Default - Helpdesk Operator`
+- `Default - Service Desk Manager`
+- `Default - Inventory Operator`
 - `Default - Asset Manager`
+- `Default - Procurement And Catalog Manager`
+- `Default - Document Controller`
 - `Default - Compliance Manager`
+- `Default - Executive Read Only`
 - `Default - Read Only Auditor`
+- `Default - Tenant Operations Admin`
 
 These are intended as safe starting points, not hard constraints. Tenants can clone or adapt them to their own operating model.
 
