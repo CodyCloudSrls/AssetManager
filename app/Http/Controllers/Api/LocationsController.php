@@ -423,7 +423,7 @@ class LocationsController extends Controller
             if (is_null($companyId)) {
                 $locations->whereRaw('1 = 0');
             } else {
-                $locations->where('locations.company_id', '=', $companyId);
+                $locations->whereIn('locations.company_id', Company::descendantCompanyIds($companyId));
             }
         }
 

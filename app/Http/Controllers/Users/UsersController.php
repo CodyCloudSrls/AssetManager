@@ -436,6 +436,9 @@ class UsersController extends Controller
             'accessories',
             'licenses',
             'userloc',
+            'documentAssignments.document.framework',
+            'documentAssignments.document.type',
+            'documentAssignments.issuer',
         ])
             ->withTrashed()
             ->find($user->id);

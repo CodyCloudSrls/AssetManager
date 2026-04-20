@@ -338,6 +338,11 @@ class AssetsController extends Controller
     {
         $this->authorize('view', $asset);
         $settings = Setting::getSettings();
+        $asset->load([
+            'documentAssignments.document.framework',
+            'documentAssignments.document.type',
+            'documentAssignments.issuer',
+        ]);
 
         if (isset($asset)) {
             $audit_log = Actionlog::where('action_type', '=', 'audit')

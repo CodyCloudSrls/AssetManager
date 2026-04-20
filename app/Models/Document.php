@@ -152,6 +152,11 @@ class Document extends SnipeModel
             ->withTimestamps();
     }
 
+    public function documentAssignments()
+    {
+        return $this->hasMany(DocumentAssignment::class, 'document_id')->orderBy('effective_at')->orderBy('created_at');
+    }
+
     public function journal()
     {
         return $this->assetlog()

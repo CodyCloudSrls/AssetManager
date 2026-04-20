@@ -53,6 +53,8 @@ Document frameworks are no longer simple tags. The production model now supports
 - governance metadata on each framework, including authority, code, type, version, validity, owner, and review cadence
 - framework requirements with parent-child structure, domains, evidence guidance, and preferred document types
 - direct mapping between requirements and documents with `primary` vs `supporting` coverage roles
+- assignment of governed documents to users, assets, and locations without asset-style checkout/checkin semantics
+- assignment lifecycle metadata such as relation type, issuer, effective date, expiry, renewal due date, completion, and revocation
 - derived coverage views for missing, supporting-only, at-risk, and covered requirements
 
 The reference taxonomy and implementation notes for the compliance-oriented registry live in [docs/document-registry-frameworks.md](docs/document-registry-frameworks.md).
@@ -111,6 +113,14 @@ The repository seeds production-oriented baseline groups that can be reused or a
 - `Default - Executive Read Only`
 - `Default - Read Only Auditor`
 - `Default - Tenant Operations Admin`
+
+## Localization
+
+The newer tenant, ticket/helpdesk, and document-governance modules now ship with translation files across the bundled locale tree.
+
+- `en-US` and `it-IT` are the primary maintained copies for CodyCloud-specific features
+- all other shipped locales include the same keyset for these newer modules, with safe English fallback strings where a native translation has not been authored yet
+- this prevents missing-key regressions in production when tenants switch the UI language outside the primary maintained locales
 
 ## Security
 

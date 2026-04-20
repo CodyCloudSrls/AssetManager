@@ -98,6 +98,16 @@
 
                   <x-tabs.consumable-tab count="{{ $location->consumables()->count() }}"/>
 
+                  @can('view', \App\Models\Document::class)
+                      <x-tabs.nav-item
+                          name="documents"
+                          icon="fa-regular fa-file-lines fa-fw"
+                          label="{{ trans('general.documents') }}"
+                          count="{{ $location->documentAssignments->count() }}"
+                          tooltip="{{ trans('general.documents') }}"
+                      />
+                  @endcan
+
                   <x-tabs.nav-item
                           name="child_locations"
                           icon="fa-solid fa-city fa-fw"
@@ -180,6 +190,16 @@
                   </x-tabs.pane>
                   @endcan
                   <!-- end consumables tab pane -->
+
+                  @can('view', \App\Models\Document::class)
+                      <x-tabs.pane name="documents">
+                          @include('documents.partials.assignments-table', [
+                              'assignments' => $location->documentAssignments,
+                              'showDocumentColumn' => true,
+                              'showTargetColumn' => false,
+                          ])
+                      </x-tabs.pane>
+                  @endcan
 
                   <!-- start child locations tab pane -->
                   <x-tabs.pane name="child_locations">

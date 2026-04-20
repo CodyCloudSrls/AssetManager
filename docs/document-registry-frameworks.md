@@ -14,6 +14,7 @@ These settings have dedicated CRUD screens, API endpoints, select lists for the 
 Core reference tables:
 
 - `documents`
+- `document_assignments`
 - `document_types`
 - `document_frameworks`
 - `document_framework_requirements`
@@ -244,6 +245,27 @@ Recommended naming convention:
 
 This keeps the registry usable both for inventory and for audit evidence collection without overloading the asset domain.
 
+## Assignment Model
+
+Production document registers also need an explicit applicability layer.
+
+This fork now supports document assignments to:
+
+- users, for example attestati, abilitazioni, lettere di incarico, acknowledgements, certifications
+- assets, for example maintenance certificates, declarations, conformity evidence, test records
+- locations, for example site procedures, evacuation plans, permits, inspection evidence
+
+Assignments are not implemented as checkout/checkin flows. They are persistent relationships with their own metadata:
+
+- relationship type, such as `issued_to`, `applies_to`, `required_for`, `evidence_for`
+- operational status, such as `planned`, `required`, `active`, `completed`, `expired`, `revoked`
+- issuer
+- assignment reference
+- issue, effective, expiry, renewal, completion, and revocation dates
+- notes
+
+This is the production baseline needed to manage real certification and compliance evidence without polluting the asset lifecycle model.
+
 ## Implementation Status
 
 At the time of this document, the repository includes:
@@ -254,5 +276,6 @@ At the time of this document, the repository includes:
 - sidebar filters for document status and review windows
 - quick-create modals for document types and frameworks from the document form
 - requirement-to-document mapping directly from the document form
+- document-to-user, document-to-asset, and document-to-location assignments with dedicated lifecycle metadata
 - framework coverage summaries and requirement views
 - locale coverage seeded across the available language folders so the module does not fall back to missing keys

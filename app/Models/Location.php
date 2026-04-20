@@ -316,6 +316,13 @@ class Location extends SnipeModel
         return $this->morphMany(Asset::class, 'assigned', 'assigned_type', 'assigned_to')->AssetsForShow()->withTrashed();
     }
 
+    public function documentAssignments()
+    {
+        return $this->morphMany(DocumentAssignment::class, 'assignable')
+            ->orderBy('effective_at')
+            ->orderBy('created_at');
+    }
+
     /**
      * Establishes the accessory -> location assignment relationship
      *

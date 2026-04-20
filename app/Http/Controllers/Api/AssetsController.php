@@ -594,7 +594,13 @@ class AssetsController extends Controller
             ->NotArchived();
 
         if ($request->filled('companyId')) {
-            $assets->where('assets.company_id', $request->input('companyId'));
+            $companyId = Company::getIdForCurrentUser($request->input('companyId'));
+
+            if (is_null($companyId)) {
+                $assets->whereRaw('1 = 0');
+            } else {
+                $assets->whereIn('assets.company_id', Company::descendantCompanyIds($companyId));
+            }
         }
 
         if ($request->filled('statusType') && $request->input('statusType') === 'RTD') {

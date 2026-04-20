@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Documents;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Models\Document;
+use App\Models\DocumentAssignment;
 use App\Models\DocumentFrameworkRequirement;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -46,6 +47,19 @@ class DocumentsController extends Controller
     public function show(Document $document): View
     {
         $this->authorize('view', $document);
+
+        $document->load([
+            'company',
+            'owner',
+            'type',
+            'framework',
+            'frameworkRequirements',
+            'adminuser',
+            'documentAssignments.assignable',
+            'documentAssignments.issuer',
+            'documentAssignments.company',
+            'documentAssignments.adminuser',
+        ]);
 
         return view('documents.view', compact('document'));
     }
@@ -101,6 +115,15 @@ class DocumentsController extends Controller
 
     private function formData(Document $document): array
     {
+        if ($document->exists) {
+            $document->load([
+                'documentAssignments.assignable',
+                'documentAssignments.issuer',
+                'documentAssignments.company',
+                'documentAssignments.adminuser',
+            ]);
+        }
+
         $allFrameworkRequirements = DocumentFrameworkRequirement::query()
             ->where('is_active', true)
             ->with('framework')

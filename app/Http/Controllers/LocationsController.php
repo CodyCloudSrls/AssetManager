@@ -241,6 +241,11 @@ class LocationsController extends Controller
             ->withCount('rtd_assets as rtd_assets_count')
             ->withCount('children as children_count')
             ->withCount('users as users_count')
+            ->with([
+                'documentAssignments.document.framework',
+                'documentAssignments.document.type',
+                'documentAssignments.issuer',
+            ])
             ->withTrashed()
             ->find($location->id);
 

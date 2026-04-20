@@ -63,6 +63,27 @@ class DocumentsController extends Controller
             });
         }
 
+        if ($request->filled('assigned_user_id')) {
+            $documents->whereHas('documentAssignments', function ($query) use ($request) {
+                $query->where('assignable_type', \App\Models\User::class)
+                    ->where('assignable_id', '=', (int) $request->input('assigned_user_id'));
+            });
+        }
+
+        if ($request->filled('assigned_asset_id')) {
+            $documents->whereHas('documentAssignments', function ($query) use ($request) {
+                $query->where('assignable_type', \App\Models\Asset::class)
+                    ->where('assignable_id', '=', (int) $request->input('assigned_asset_id'));
+            });
+        }
+
+        if ($request->filled('assigned_location_id')) {
+            $documents->whereHas('documentAssignments', function ($query) use ($request) {
+                $query->where('assignable_type', \App\Models\Location::class)
+                    ->where('assignable_id', '=', (int) $request->input('assigned_location_id'));
+            });
+        }
+
         $allowedColumns = [
             'id',
             'name',

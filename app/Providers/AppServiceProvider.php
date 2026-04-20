@@ -58,6 +58,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(UrlGenerator $url)
     {
+        // PHP 8.4 emits vendor deprecation notices for a few upstream libraries we still
+        // support operationally. In production these notices add noise without changing
+        // runtime behavior, so keep them out of the main error stream until the libraries
+        // are upgraded or replaced.
+        if ($this->app->environment('production') && ! config('app.debug')) {
+            error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+        }
+
         /**
          * This is a workaround for proxies/reverse proxies that don't always pass the proper headers.
          *
