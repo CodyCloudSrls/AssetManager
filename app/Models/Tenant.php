@@ -340,7 +340,7 @@ class Tenant extends Model
 
     public static function shouldShowGlobalTenantContextOption(): bool
     {
-        return static::switchableTenantsForCurrentUser()->count() > 1;
+        return false;
     }
 
     public static function canCurrentUserSwitchToTenant(?int $tenantId): bool
@@ -350,10 +350,37 @@ class Tenant extends Model
         }
 
         if (is_null($tenantId)) {
-            return true;
+            return false;
         }
 
         return in_array($tenantId, static::switchableTenantIdsForCurrentUser(), true);
+    }
+
+    public static function defaultTenantIdForCurrentUser(): ?int
+    {
+        $authContext = Company::currentAuthContext();
+
+        if (is_null($authContext['id'])) {
+            return null;
+        }
+
+        $switchableTenantIds = static::switchableTenantIdsForCurrentUser();
+
+        if (count($switchableTenantIds) === 0) {
+            return null;
+        }
+
+        if (! is_null($authContext['company_id'])) {
+            $currentCompanyTenantId = Company::withoutGlobalScopes()
+                ->where('id', $authContext['company_id'])
+                ->value('tenant_id');
+
+            if (! is_null($currentCompanyTenantId) && in_array((int) $currentCompanyTenantId, $switchableTenantIds, true)) {
+                return (int) $currentCompanyTenantId;
+            }
+        }
+
+        return static::switchableTenantsForCurrentUser()->first()?->id;
     }
 
     public static function activeTenantId(): ?int
@@ -376,12 +403,26 @@ class Tenant extends Model
         }
 
         if (! session()->has(static::ACTIVE_TENANT_SESSION_KEY)) {
-            return null;
+            $defaultTenantId = static::defaultTenantIdForCurrentUser();
+
+            if (! is_null($defaultTenantId)) {
+                session([static::ACTIVE_TENANT_SESSION_KEY => (int) $defaultTenantId]);
+            } else {
+                return null;
+            }
         }
 
         $activeTenantId = Company::getIdFromInput(session(static::ACTIVE_TENANT_SESSION_KEY));
 
         if (is_null($activeTenantId) || ! static::canCurrentUserSwitchToTenant((int) $activeTenantId)) {
+            $defaultTenantId = static::defaultTenantIdForCurrentUser();
+
+            if (! is_null($defaultTenantId)) {
+                session([static::ACTIVE_TENANT_SESSION_KEY => (int) $defaultTenantId]);
+
+                return (int) $defaultTenantId;
+            }
+
             session()->forget(static::ACTIVE_TENANT_SESSION_KEY);
 
             return null;
@@ -404,32 +445,9 @@ class Tenant extends Model
     public static function currentTenant(): ?self
     {
         $activeTenant = static::activeTenant();
-        $authContext = Company::currentAuthContext();
 
         if ($activeTenant) {
             return $activeTenant;
-        }
-
-        $accessibleTenantIds = static::accessibleTenantIdsForCurrentUser();
-
-        if (count($accessibleTenantIds) > 1) {
-            return null;
-        }
-
-        $companyId = $authContext['company_id'];
-
-        if (! is_null($companyId)) {
-            $tenantId = Company::withoutGlobalScopes()
-                ->where('id', $companyId)
-                ->value('tenant_id');
-
-            if ($tenantId) {
-                return static::find((int) $tenantId);
-            }
-        }
-
-        if (count($accessibleTenantIds) === 1) {
-            return static::find((int) $accessibleTenantIds[0]);
         }
 
         return null;
@@ -557,7 +575,7 @@ class Tenant extends Model
         $tenantId = Company::getIdFromInput($tenantId);
 
         if (is_null($tenantId)) {
-            session()->forget(static::ACTIVE_TENANT_SESSION_KEY);
+            static::clearActiveTenantContext();
 
             return;
         }
@@ -567,6 +585,14 @@ class Tenant extends Model
 
     public static function clearActiveTenantContext(): void
     {
-        session()->forget(static::ACTIVE_TENANT_SESSION_KEY);
+        $defaultTenantId = static::defaultTenantIdForCurrentUser();
+
+        if (is_null($defaultTenantId)) {
+            session()->forget(static::ACTIVE_TENANT_SESSION_KEY);
+
+            return;
+        }
+
+        session([static::ACTIVE_TENANT_SESSION_KEY => (int) $defaultTenantId]);
     }
 }

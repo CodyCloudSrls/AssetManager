@@ -1277,25 +1277,13 @@
                                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" tabindex="-1">
                                         <i class="fas fa-building fa-fw" aria-hidden="true"></i>
                                         <span class="hidden-sm hidden-xs">
-                                            {{ $navbarActiveTenant?->display_name ?? $navbarCurrentTenant?->display_name ?? trans('general.all_tenants') }}
+                                            {{ $navbarActiveTenant?->display_name ?? $navbarCurrentTenant?->display_name ?? trans('general.select_tenant') }}
                                         </span>
                                         <strong class="caret"></strong>
                                     </a>
                                     <ul class="dropdown-menu">
                                         @if ($navbarCanSwitchTenants ?? false)
                                             <li class="dropdown-header">{{ trans('general.select_tenant') }}</li>
-                                        @endif
-                                        @if (($navbarCanSwitchTenants ?? false) && ($navbarShowGlobalTenantContextOption ?? false))
-                                            <li class="{{ is_null($navbarActiveTenant ?? null) ? 'active' : '' }}">
-                                                <form action="{{ route('tenants.switch-context') }}" method="POST" style="margin: 0;">
-                                                    @csrf
-                                                    <input type="hidden" name="tenant_id" value="">
-                                                    <input type="hidden" name="redirect_to" value="{{ request()->fullUrl() }}">
-                                                    <button type="submit" class="btn btn-link btn-block text-left" style="color: inherit; text-decoration: none; padding: 8px 20px;">
-                                                        {{ trans('general.all_tenants') }}
-                                                    </button>
-                                                </form>
-                                            </li>
                                         @endif
                                         @if ($navbarCanSwitchTenants ?? false)
                                             @foreach (($navbarSwitchableTenants ?? collect()) as $switchableTenant)

@@ -15,7 +15,7 @@ The module includes:
 
 - dedicated tables for `tickets`, `ticket_statuses`, `ticket_priorities`, `ticket_types`, and `ticket_worklogs`
 - internal web and API CRUD for tickets
-- internal comments, uploads, history and worklogs
+- internal and public messages, uploads, history and worklogs
 - tenant-aware queue filtering
 - public guest portal per tenant
 - tenant-specific public helpdesk settings
@@ -25,7 +25,7 @@ The module includes:
 The internal operator workflow is split into two permission levels:
 
 - `tickets.operate`
-  use for day-to-day support work: notes, worklogs, status, priority, type, assignee and SLA changes
+  use for day-to-day support work: messages, worklogs, status, priority, type, assignee and SLA changes
 - `tickets.edit`
   use for full post-creation ticket editing
 

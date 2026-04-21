@@ -61,11 +61,6 @@ class PublicTicketsController extends Controller
             $this->storeFiles($request, $ticket, 'public submission');
         }
 
-        $ticket->addComment($ticket->description, null, true, [
-            'visibility' => ['old' => null, 'new' => 'public'],
-            'source' => ['old' => null, 'new' => Ticket::SOURCE_PUBLIC],
-        ]);
-
         return redirect()->route('tickets.portal.show', [
             'tenantPortal' => $tenant->publicHelpdeskRouteKey(),
             'ticket' => $ticket->id,
@@ -97,7 +92,6 @@ class PublicTicketsController extends Controller
         $ticket->addComment($request->input('description'), null, true, [
             'visibility' => ['old' => null, 'new' => 'public'],
             'source' => ['old' => null, 'new' => Ticket::SOURCE_PUBLIC],
-            'guest_email' => ['old' => null, 'new' => $ticket->guest_email],
         ]);
 
         if ($request->hasFile('file')) {

@@ -8,12 +8,11 @@
 
     <div class="col-md-7">
         <select class="js-data-ajax" data-endpoint="users" data-placeholder="{{ trans('general.select_user') }}" name="{{ $fieldname }}" style="width: 100%" id="{{ $userSelectId }}" aria-label="{{ $fieldname }}"{{ !empty($company_id) ? ' data-company-id="'.e($company_id).'"' : '' }}{{  ((isset($required)) && ($required=='true')) ? ' required' : '' }}>
+            <option value="" role="option">{{ trans('general.select_user') }}</option>
             @if ($user_id = $selectedUserId)
                 <option value="{{ $user_id }}" selected="selected" role="option" aria-selected="true"  role="option">
                     {{ (\App\Models\User::find($user_id)) ? \App\Models\User::find($user_id)->present()->fullName : '' }}
                 </option>
-            @else
-                <option value=""  role="option">{{ trans('general.select_user') }}</option>
             @endif
         </select>
     </div>

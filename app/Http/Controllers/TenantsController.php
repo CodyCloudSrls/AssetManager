@@ -19,17 +19,17 @@ class TenantsController extends Controller
         abort_unless(auth()->check(), 403);
         abort_unless(Tenant::canCurrentUserSwitchTenants(), 403);
 
+        $request->validate([
+            'tenant_id' => 'required',
+        ]);
+
         $tenantId = Company::getIdFromInput($request->input('tenant_id'));
 
-        if (! is_null($tenantId) && ! Tenant::canCurrentUserSwitchToTenant((int) $tenantId)) {
+        if (is_null($tenantId) || ! Tenant::canCurrentUserSwitchToTenant((int) $tenantId)) {
             abort(403);
         }
 
-        if (is_null($tenantId)) {
-            $request->session()->forget(Tenant::ACTIVE_TENANT_SESSION_KEY);
-        } else {
-            $request->session()->put(Tenant::ACTIVE_TENANT_SESSION_KEY, (int) $tenantId);
-        }
+        $request->session()->put(Tenant::ACTIVE_TENANT_SESSION_KEY, (int) $tenantId);
 
         Company::flushHierarchyCache();
 
@@ -201,7 +201,7 @@ class TenantsController extends Controller
         });
 
         if ((int) (Tenant::activeTenantId() ?? 0) === (int) $tenant->id) {
-            session()->forget(Tenant::ACTIVE_TENANT_SESSION_KEY);
+            Tenant::clearActiveTenantContext();
         }
 
         Company::flushHierarchyCache();

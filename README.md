@@ -68,7 +68,7 @@ Implemented capabilities include:
 - internal ticket creation and lifecycle management
 - operational workflow updates with separated `operate` vs `edit` permissions
 - worklogs and time tracking
-- uploads, notes, and history
+- uploads, messages, worklogs, and history
 - links to assets, users, locations, companies, and documents
 - tenant-aware queue filtering
 - public guest ticket portal per tenant
@@ -86,8 +86,8 @@ The fork now runs in always-on multi-tenant mode. The legacy runtime flags for o
 - company hierarchy is supported through parent-child relationships
 - parent tenants can see descendant operational data in their subtree
 - the top-bar switcher operates on tenant context, not raw company context
-- the switcher exposes a global `All` context for aggregated views across authorized tenants
-- superadmins can stay in global platform context or switch into a tenant context
+- users with multi-tenant access must select an explicit tenant context in the top-bar switcher
+- superadmins can switch into any authorized tenant context without using a combined aggregate view
 - explicit tenant memberships support `tenant admin` and `tenant viewer` roles for cross-tenant users
 - tenant admins can manage their own tenant settings and cross-tenant memberships without gaining platform superadmin access
 - tenant admins and viewers do not see platform superadmins in tenant-scoped user management flows

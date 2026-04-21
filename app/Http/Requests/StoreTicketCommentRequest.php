@@ -11,10 +11,19 @@ class StoreTicketCommentRequest extends FormRequest
         return true;
     }
 
+    public function prepareForValidation(): void
+    {
+        $this->merge([
+            'message' => $this->input('message', $this->input('note')),
+            'is_public' => $this->boolean('is_public'),
+        ]);
+    }
+
     public function rules(): array
     {
         return [
-            'note' => 'required|string|max:50000',
+            'message' => 'required|string|max:50000',
+            'is_public' => 'nullable|boolean',
         ];
     }
 }

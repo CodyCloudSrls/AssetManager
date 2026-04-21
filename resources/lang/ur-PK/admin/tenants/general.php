@@ -44,5 +44,5 @@ return array (
     'public_ticket_types' => 'Publicly exposed ticket types',
     'no_ticket_types_available' => 'No public ticket types are available for this tenant.',
   ),
-  'help' => 'Create and manage SaaS tenants. Each tenant is identified by a unique ID and uses its root company for branding and scope.',
+  'help' => 'Create and manage SaaS tenants.',
 );
