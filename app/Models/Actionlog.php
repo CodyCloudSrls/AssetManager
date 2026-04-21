@@ -312,6 +312,14 @@ class Actionlog extends SnipeModel
             return $this->adminuser->display_name;
         }
 
+        if (
+            ($this->item_type === Ticket::class)
+            && ($this->item instanceof Ticket)
+            && blank($this->created_by)
+        ) {
+            return $this->item->requester_display_name;
+        }
+
         if ($this->created_by) {
             return trans('admin/tickets/general.internal_user');
         }

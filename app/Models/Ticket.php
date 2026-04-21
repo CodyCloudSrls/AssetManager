@@ -276,7 +276,8 @@ class Ticket extends SnipeModel
     public function getCreatedByDisplayNameAttribute(): ?string
     {
         return $this->adminuser?->display_name
-            ?? ($this->created_by ? trans('admin/tickets/general.internal_user') : null);
+            ?? ($this->created_by ? trans('admin/tickets/general.internal_user') : null)
+            ?? ($this->source === self::SOURCE_PUBLIC ? ($this->guest_name ?? $this->guest_email ?? trans('admin/tickets/general.public_user')) : null);
     }
 
     public function isOpen(): bool

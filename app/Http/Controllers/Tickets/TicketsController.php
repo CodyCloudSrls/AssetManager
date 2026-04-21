@@ -162,8 +162,11 @@ class TicketsController extends Controller
     {
         $this->authorize('operate', $ticket);
 
-        $ticket->addComment($request->input('note'), auth()->user(), false, [
-            'visibility' => ['old' => null, 'new' => 'internal'],
+        $isPublic = $request->boolean('is_public');
+
+        $ticket->addComment($request->input('message'), auth()->user(), $isPublic, [
+            'visibility' => ['old' => null, 'new' => $isPublic ? 'public' : 'internal'],
+            'source' => ['old' => null, 'new' => $isPublic ? Ticket::SOURCE_PUBLIC : Ticket::SOURCE_INTERNAL],
         ]);
 
         return redirect()->route('tickets.show', $ticket)
@@ -206,9 +209,12 @@ class TicketsController extends Controller
             }
 
             $ticket->addWorklog($worklog);
-        } elseif ($request->filled('notes')) {
-            $ticket->addComment($request->input('notes'), auth()->user(), false, [
-                'visibility' => ['old' => null, 'new' => 'internal'],
+        } elseif ($request->filled('message')) {
+            $isPublicMessage = $request->boolean('is_public_message');
+
+            $ticket->addComment($request->input('message'), auth()->user(), $isPublicMessage, [
+                'visibility' => ['old' => null, 'new' => $isPublicMessage ? 'public' : 'internal'],
+                'source' => ['old' => null, 'new' => $isPublicMessage ? Ticket::SOURCE_PUBLIC : Ticket::SOURCE_INTERNAL],
             ]);
         }
 

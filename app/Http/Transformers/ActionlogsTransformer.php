@@ -15,6 +15,9 @@ use App\Models\Setting;
 use App\Models\Statuslabel;
 use App\Models\Supplier;
 use App\Models\Ticket;
+use App\Models\TicketPriority;
+use App\Models\TicketStatus;
+use App\Models\TicketType;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Crypt;
@@ -58,6 +61,27 @@ class ActionlogsTransformer
             return '';
         }
 
+        if (is_string($value)) {
+            $normalizedValue = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $normalizedValue = trim($normalizedValue, "\"'");
+
+            $decodedValue = json_decode($normalizedValue, true);
+
+            if (is_array($decodedValue) && ! empty($decodedValue['date'])) {
+                try {
+                    return Helper::getFormattedDateObject(
+                        Carbon::parse((string) $decodedValue['date'], $decodedValue['timezone'] ?? null),
+                        'datetime',
+                        false
+                    );
+                } catch (\Throwable) {
+                    // Fall back to generic parsing below.
+                }
+            }
+
+            $value = $normalizedValue;
+        }
+
         try {
             return Helper::getFormattedDateObject(Carbon::parse((string) $value), 'datetime', false);
         } catch (\Throwable) {
@@ -73,6 +97,28 @@ class ActionlogsTransformer
 
         $clean_meta[$field]['old'] = $this->formatDateMetaValue($clean_meta[$field]['old']);
         $clean_meta[$field]['new'] = $this->formatDateMetaValue($clean_meta[$field]['new']);
+        $clean_meta[$label] = $clean_meta[$field];
+        unset($clean_meta[$field]);
+    }
+
+    private function formatTicketLookupMeta(array &$clean_meta, string $field, $lookup, string $label): void
+    {
+        if (! array_key_exists($field, $clean_meta)) {
+            return;
+        }
+
+        foreach (['old', 'new'] as $side) {
+            $rawValue = $clean_meta[$field][$side] ?? null;
+
+            if (($rawValue === null) || ($rawValue === '')) {
+                $clean_meta[$field][$side] = trans('general.unassigned');
+                continue;
+            }
+
+            $record = $lookup->find((int) $rawValue);
+            $clean_meta[$field][$side] = $record ? '[id: '.$rawValue.'] '.e($record->name) : '[id: '.$rawValue.'] '.trans('general.deleted');
+        }
+
         $clean_meta[$label] = $clean_meta[$field];
         unset($clean_meta[$field]);
     }
@@ -270,6 +316,9 @@ class ActionlogsTransformer
         static $model = false;
         static $status = false;
         static $company = false;
+        static $ticketStatus = false;
+        static $ticketPriority = false;
+        static $ticketType = false;
 
         if ($location === false) {
             $location = Location::select('id', 'name')->withTrashed()->get();
@@ -285,6 +334,15 @@ class ActionlogsTransformer
         }
         if ($company === false) {
             $company = Company::select('id', 'name')->get();
+        }
+        if ($ticketStatus === false) {
+            $ticketStatus = TicketStatus::select('id', 'name')->withTrashed()->get();
+        }
+        if ($ticketPriority === false) {
+            $ticketPriority = TicketPriority::select('id', 'name')->withTrashed()->get();
+        }
+        if ($ticketType === false) {
+            $ticketType = TicketType::select('id', 'name')->withTrashed()->get();
         }
 
         if (array_key_exists('rtd_location_id', $clean_meta)) {
@@ -367,6 +425,10 @@ class ActionlogsTransformer
             $clean_meta[trans('general.status_label')] = $clean_meta['status_id'];
             unset($clean_meta['status_id']);
         }
+
+        $this->formatTicketLookupMeta($clean_meta, 'ticket_status_id', $ticketStatus, trans('general.status'));
+        $this->formatTicketLookupMeta($clean_meta, 'ticket_priority_id', $ticketPriority, trans('admin/tickets/form.priority'));
+        $this->formatTicketLookupMeta($clean_meta, 'ticket_type_id', $ticketType, trans('admin/tickets/form.type'));
 
         $this->formatTicketDateMeta($clean_meta, 'first_response_due_at', trans('admin/tickets/form.first_response_due_at'));
         $this->formatTicketDateMeta($clean_meta, 'resolution_due_at', trans('admin/tickets/form.resolution_due_at'));

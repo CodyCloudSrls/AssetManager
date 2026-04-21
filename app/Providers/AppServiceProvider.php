@@ -111,7 +111,6 @@ class AppServiceProvider extends ServiceProvider
                 ->with('navbarActiveTenant', Tenant::activeTenant())
                 ->with('navbarCurrentTenant', $currentTenant)
                 ->with('navbarCanSwitchTenants', Tenant::canCurrentUserSwitchTenants())
-                ->with('navbarShowGlobalTenantContextOption', Tenant::shouldShowGlobalTenantContextOption())
                 ->with('navbarCanAccessTenantAdminArea', auth()->check() && auth()->user()->hasAccessToTenantAdminArea());
         });
     }

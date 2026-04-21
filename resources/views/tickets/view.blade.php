@@ -61,6 +61,31 @@
         .ticket-workflow-history-table {
             margin-bottom: 0;
         }
+        .ticket-message-meta {
+            align-items: center;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .ticket-message-badge {
+            border-radius: 999px;
+            display: inline-flex;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1;
+            padding: 6px 10px;
+        }
+        .ticket-message-badge-public {
+            background: rgba(41, 184, 255, 0.18);
+            border: 1px solid rgba(41, 184, 255, 0.35);
+            color: #9adfff;
+        }
+        .ticket-message-badge-internal {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: var(--color-fg);
+        }
         @media (max-width: 991px) {
             .ticket-workflow-form .ticket-billable {
                 padding-top: 0;
@@ -75,7 +100,7 @@
             <x-tabs>
                 <x-slot:tabnav>
                     <x-tabs.details-tab/>
-                    <x-tabs.nav-item name="comments" :label="trans('general.notes')" :count="$ticket->comments()->count()" icon_type="support"/>
+                    <x-tabs.nav-item name="comments" :label="trans('admin/tickets/general.messages')" :count="$ticket->comments()->count()" icon_type="support"/>
                     <x-tabs.nav-item name="worklogs" :label="trans('admin/tickets/general.worklogs')" :count="$ticket->worklogs()->count()" icon_type="history"/>
                     <x-tabs.files-tab :item="$ticket" count="{{ $ticket->uploads()->count() }}"/>
                     <x-tabs.history-tab count="{{ $ticket->history()->count() }}" :model="$ticket"/>
@@ -120,19 +145,28 @@
                                 @can('operate', $ticket)
                                     <form method="POST" action="{{ route('tickets.comments.store', $ticket) }}" class="form-horizontal" style="margin-bottom: 20px;">
                                         @csrf
-                                        <div class="form-group {{ $errors->has('note') ? ' has-error' : '' }}">
-                                            <label for="note" class="col-md-2 control-label">{{ trans('general.add_note') }}</label>
+                                        <div class="form-group {{ $errors->has('message') ? ' has-error' : '' }}">
+                                            <label for="message" class="col-md-2 control-label">{{ trans('admin/tickets/general.add_message') }}</label>
                                             <div class="col-md-8">
-                                                <textarea class="form-control" name="note" id="note" rows="4" required>{{ old('note') }}</textarea>
+                                                <textarea class="form-control" name="message" id="message" rows="4" required>{{ old('message', old('note')) }}</textarea>
+                                                <div class="ticket-message-meta">
+                                                    <label class="ticket-billable" style="padding-top: 0;">
+                                                        <input type="checkbox" name="is_public" value="1" @checked(old('is_public'))>
+                                                        <span>{{ trans('admin/tickets/general.publish_to_public') }}</span>
+                                                    </label>
+                                                </div>
                                             </div>
                                             <div class="col-md-2">
-                                                <button class="btn btn-theme btn-block">{{ trans('general.save') }}</button>
+                                                <button class="btn btn-theme btn-block">{{ trans('admin/tickets/form.save_message') }}</button>
                                             </div>
                                         </div>
                                     </form>
                                 @endcan
 
                                 @forelse ($ticket->comments()->with('adminuser')->get() as $comment)
+                                    @php
+                                        $isPublicMessage = $comment->action_type === 'ticket public reply';
+                                    @endphp
                                     <div class="box box-default">
                                         <div class="box-header with-border">
                                             <h3 class="box-title">
@@ -144,6 +178,11 @@
                                         </div>
                                         <div class="box-body">
                                             {!! \App\Helpers\Helper::parseEscapedMarkedown($comment->note) !!}
+                                            <div class="ticket-message-meta">
+                                                <span class="ticket-message-badge {{ $isPublicMessage ? 'ticket-message-badge-public' : 'ticket-message-badge-internal' }}">
+                                                    {{ $isPublicMessage ? trans('admin/tickets/general.public_message') : trans('admin/tickets/general.internal_message') }}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 @empty
@@ -244,11 +283,17 @@
                                         </div>
 
                                         <div class="ticket-workflow-card">
-                                            <h4>{{ trans('general.notes') }}</h4>
+                                            <h4>{{ trans('admin/tickets/general.messages') }}</h4>
                                             <div class="row">
-                                                <div class="col-md-10 form-group {{ $errors->has('notes') ? 'has-error' : '' }}">
-                                                    <label for="worklog_notes">{{ trans('general.notes') }}</label>
-                                                    <textarea class="form-control ticket-workflow-notes" name="notes" id="worklog_notes" rows="4">{{ old('notes') }}</textarea>
+                                                <div class="col-md-10 form-group {{ $errors->has('message') ? 'has-error' : '' }}">
+                                                    <label for="worklog_message">{{ trans('admin/tickets/form.message') }}</label>
+                                                    <textarea class="form-control ticket-workflow-notes" name="message" id="worklog_message" rows="4">{{ old('message', old('notes')) }}</textarea>
+                                                    <div class="ticket-message-meta">
+                                                        <label class="ticket-billable" style="padding-top: 0;">
+                                                            <input type="checkbox" name="is_public_message" value="1" @checked(old('is_public_message'))>
+                                                            <span>{{ trans('admin/tickets/general.publish_to_public') }}</span>
+                                                        </label>
+                                                    </div>
                                                 </div>
                                                 <div class="col-md-2 form-group ticket-workflow-actions">
                                                     <button class="btn btn-theme btn-block">{{ trans('admin/tickets/form.save_update') }}</button>

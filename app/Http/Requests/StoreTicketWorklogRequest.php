@@ -25,6 +25,8 @@ class StoreTicketWorklogRequest extends FormRequest
             'ticket_type_id' => Company::getIdFromInput($this->input('ticket_type_id')),
             'ticket_status_id' => Company::getIdFromInput($this->input('ticket_status_id')),
             'ticket_priority_id' => Company::getIdFromInput($this->input('ticket_priority_id')),
+            'message' => $this->input('message', $this->input('notes')),
+            'is_public_message' => $this->boolean('is_public_message'),
         ]);
     }
 
@@ -36,13 +38,14 @@ class StoreTicketWorklogRequest extends FormRequest
             'started_at' => 'nullable|date_format:Y-m-d\\TH:i',
             'ended_at' => 'nullable|date_format:Y-m-d\\TH:i|after_or_equal:started_at',
             'is_billable' => 'nullable|boolean',
-            'notes' => 'nullable|string|max:65535',
+            'message' => 'nullable|string|max:65535',
             'assignee_id' => 'nullable|integer',
             'ticket_type_id' => 'nullable|integer',
             'ticket_status_id' => 'nullable|integer',
             'ticket_priority_id' => 'nullable|integer',
             'first_response_due_at' => 'nullable|date_format:Y-m-d\\TH:i',
             'resolution_due_at' => 'nullable|date_format:Y-m-d\\TH:i|after_or_equal:first_response_due_at',
+            'is_public_message' => 'nullable|boolean',
         ];
     }
 
@@ -102,7 +105,7 @@ class StoreTicketWorklogRequest extends FormRequest
                 || ((string) $this->input('first_response_due_at', $currentFirstResponse) !== (string) $currentFirstResponse)
                 || ((string) $this->input('resolution_due_at', $currentResolution) !== (string) $currentResolution);
 
-            if (! $hasOperationalChange && ! $this->filled('minutes') && ! $this->filled('notes')) {
+            if (! $hasOperationalChange && ! $this->filled('minutes') && ! $this->filled('message')) {
                 $validator->errors()->add('minutes', trans('admin/tickets/message.workflow.empty'));
             }
         });

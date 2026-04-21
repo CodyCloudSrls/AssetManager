@@ -31,4 +31,6 @@ return array (
   'first_response_due_at' => 'First response due',
   'resolution_due_at' => 'Resolution due',
   'save_update' => 'Save update',
+  'message' => 'Message',
+  'save_message' => 'Save message',
 );

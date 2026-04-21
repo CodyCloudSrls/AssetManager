@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Documents;
 
+use App\Enums\ActionType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDocumentAssignmentRequest;
 use App\Models\Actionlog;
@@ -23,7 +24,7 @@ class DocumentAssignmentsController extends Controller
             return redirect()->back()->withInput()->withErrors($assignment->getErrors());
         }
 
-        $this->logAssignmentAction($document, $assignment, 'document assignment created');
+        $this->logAssignmentAction($document, $assignment, ActionType::Create);
 
         return redirect()->route('documents.show', $document)
             ->with('success', trans('admin/documents/message.assignment_create.success'));
@@ -47,7 +48,7 @@ class DocumentAssignmentsController extends Controller
             return redirect()->back()->withInput()->withErrors($documentAssignment->getErrors());
         }
 
-        $this->logAssignmentAction($document, $documentAssignment, 'document assignment updated');
+        $this->logAssignmentAction($document, $documentAssignment, ActionType::Update);
 
         return redirect()->route('documents.show', $document)
             ->with('success', trans('admin/documents/message.assignment_update.success'));
@@ -58,7 +59,7 @@ class DocumentAssignmentsController extends Controller
         $this->authorize('update', $document);
         abort_unless((int) $documentAssignment->document_id === (int) $document->id, 404);
 
-        $this->logAssignmentAction($document, $documentAssignment, 'document assignment deleted');
+        $this->logAssignmentAction($document, $documentAssignment, ActionType::Delete);
         $documentAssignment->delete();
 
         return redirect()->route('documents.show', $document)
@@ -95,7 +96,7 @@ class DocumentAssignmentsController extends Controller
         ];
     }
 
-    private function logAssignmentAction(Document $document, DocumentAssignment $assignment, string $actionType): void
+    private function logAssignmentAction(Document $document, DocumentAssignment $assignment, ActionType $actionType): void
     {
         $logAction = new Actionlog;
         $logAction->item_type = Document::class;
