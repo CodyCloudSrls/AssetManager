@@ -8,7 +8,7 @@ use App\Models\TicketPriority;
 use App\Models\TicketStatus;
 use App\Models\TicketType;
 use App\Models\TicketWorklog;
-use App\Models\User;
+use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTicketWorklogRequest extends FormRequest
@@ -59,34 +59,27 @@ class StoreTicketWorklogRequest extends FormRequest
                 return;
             }
 
-            if ($this->filled('ticket_status_id') && ! TicketStatus::find($this->integer('ticket_status_id'))) {
-                $validator->errors()->add('ticket_status_id', trans('validation.exists', ['attribute' => 'ticket_status_id']));
-            }
+            $ticketCompanyId = $ticket->company_id ? (int) $ticket->company_id : null;
+            $ticketTenantId = TenantRecordGuard::companyTenantId($ticketCompanyId);
 
-            if ($this->filled('ticket_priority_id') && ! TicketPriority::find($this->integer('ticket_priority_id'))) {
-                $validator->errors()->add('ticket_priority_id', trans('validation.exists', ['attribute' => 'ticket_priority_id']));
-            }
+            foreach ([
+                'ticket_status_id' => TicketStatus::class,
+                'ticket_priority_id' => TicketPriority::class,
+                'ticket_type_id' => TicketType::class,
+            ] as $field => $modelClass) {
+                if (! $this->filled($field)) {
+                    continue;
+                }
 
-            if ($this->filled('ticket_type_id') && ! TicketType::find($this->integer('ticket_type_id'))) {
-                $validator->errors()->add('ticket_type_id', trans('validation.exists', ['attribute' => 'ticket_type_id']));
+                $template = $modelClass::find($this->integer($field));
+                if (! TenantRecordGuard::templateCanBeAppliedToCompany($template, $ticketCompanyId)) {
+                    $validator->errors()->add($field, trans('validation.exists', ['attribute' => $field]));
+                }
             }
 
             if ($this->filled('assignee_id')) {
-                $assignee = User::withoutGlobalScopes()->whereNull('deleted_at')->find($this->integer('assignee_id'));
-
-                if (! $assignee) {
+                if (! TenantRecordGuard::userCanBeReferencedByTenant($this->integer('assignee_id'), $ticketTenantId)) {
                     $validator->errors()->add('assignee_id', trans('validation.exists', ['attribute' => 'assignee_id']));
-                } else {
-                    $ticketCompany = Company::withoutGlobalScopes()->find($ticket->company_id);
-                    $assigneeCompany = Company::withoutGlobalScopes()->find($assignee->company_id);
-
-                    if ($ticketCompany && $ticketCompany->tenant_id) {
-                        if (! $assigneeCompany || (int) $assigneeCompany->tenant_id !== (int) $ticketCompany->tenant_id) {
-                            $validator->errors()->add('assignee_id', trans('validation.exists', ['attribute' => 'assignee_id']));
-                        }
-                    } elseif ((int) ($assignee->company_id ?? 0) !== (int) ($ticket->company_id ?? 0)) {
-                        $validator->errors()->add('assignee_id', trans('validation.exists', ['attribute' => 'assignee_id']));
-                    }
                 }
             }
 

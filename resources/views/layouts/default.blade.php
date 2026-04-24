@@ -1299,6 +1299,17 @@
                                                 </li>
                                             @endforeach
                                         @endif
+                                        @if ($navbarCanAccessTenantAdminArea ?? false)
+                                            @if ($navbarCanSwitchTenants ?? false)
+                                                <li class="divider"></li>
+                                            @endif
+                                            <li>
+                                                <a href="{{ route('tenants.index') }}">
+                                                    <i class="fas fa-cog fa-fw" aria-hidden="true"></i>
+                                                    {{ trans('general.tenants') }}
+                                                </a>
+                                            </li>
+                                        @endif
                                     </ul>
                                 </li>
                             @endif

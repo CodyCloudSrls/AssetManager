@@ -24,6 +24,7 @@ class DocumentFrameworkRequirementsController extends Controller
         ];
 
         $requirements = DocumentFrameworkRequirement::query()
+            ->visibleThroughFramework()
             ->with(['framework', 'owner', 'defaultDocumentType', 'adminuser'])
             ->withCount([
                 'documents',

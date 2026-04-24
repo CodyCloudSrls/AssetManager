@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
+use App\Models\DocumentType;
+use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreDocumentFrameworkRequirementRequest extends FormRequest
@@ -70,8 +72,27 @@ class StoreDocumentFrameworkRequirementRequest extends FormRequest
                 }
             }
 
-            if ($frameworkId > 0 && ! DocumentFramework::find($frameworkId)) {
+            $framework = $frameworkId > 0 ? DocumentFramework::find($frameworkId) : null;
+
+            if ($frameworkId > 0 && ! $framework) {
                 $validator->errors()->add('document_framework_id', trans('validation.exists', ['attribute' => 'document framework']));
+            }
+
+            if ($framework) {
+                $frameworkCompanyId = $framework->company_id ? (int) $framework->company_id : null;
+                $frameworkTenantId = TenantRecordGuard::companyTenantId($frameworkCompanyId);
+
+                if ($this->filled('owner_id') && ! TenantRecordGuard::userCanBeReferencedByTenant($this->integer('owner_id'), $frameworkTenantId)) {
+                    $validator->errors()->add('owner_id', trans('validation.exists', ['attribute' => 'owner']));
+                }
+
+                if ($this->filled('default_document_type_id')) {
+                    $documentType = DocumentType::find($this->integer('default_document_type_id'));
+
+                    if (! TenantRecordGuard::templateCanBeAppliedToCompany($documentType, $frameworkCompanyId)) {
+                        $validator->errors()->add('default_document_type_id', trans('validation.exists', ['attribute' => 'document type']));
+                    }
+                }
             }
         });
     }

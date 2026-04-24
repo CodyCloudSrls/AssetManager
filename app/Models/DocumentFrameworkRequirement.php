@@ -152,6 +152,11 @@ class DocumentFrameworkRequirement extends SnipeModel
         return $query->where('document_framework_id', $frameworkId);
     }
 
+    public function scopeVisibleThroughFramework($query)
+    {
+        return $query->whereHas('framework');
+    }
+
     public function scopeOrderByFramework($query, $order)
     {
         return $query->leftJoin('document_frameworks as requirement_framework_sort', 'document_framework_requirements.document_framework_id', '=', 'requirement_framework_sort.id')

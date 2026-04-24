@@ -11,6 +11,7 @@ use App\Models\TicketPriority;
 use App\Models\TicketStatus;
 use App\Models\TicketType;
 use App\Models\User;
+use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTicketRequest extends FormRequest
@@ -50,13 +51,35 @@ class StoreTicketRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
+            $companyId = $this->integer('company_id') ?: null;
+            $tenantId = TenantRecordGuard::companyTenantId($companyId);
+
             foreach ([
                 'requester_id' => User::class,
                 'assignee_id' => User::class,
                 'related_user_id' => User::class,
+            ] as $field => $modelClass) {
+                if ($this->filled($field) && ! TenantRecordGuard::userCanBeReferencedByTenant($this->integer($field), $tenantId)) {
+                    $validator->errors()->add($field, trans('validation.exists', ['attribute' => $field]));
+                }
+            }
+
+            foreach ([
                 'ticket_type_id' => TicketType::class,
                 'ticket_status_id' => TicketStatus::class,
                 'ticket_priority_id' => TicketPriority::class,
+            ] as $field => $modelClass) {
+                if (! $this->filled($field)) {
+                    continue;
+                }
+
+                $template = $modelClass::find($this->input($field));
+                if (! TenantRecordGuard::templateCanBeAppliedToCompany($template, $companyId)) {
+                    $validator->errors()->add($field, trans('validation.exists', ['attribute' => $field]));
+                }
+            }
+
+            foreach ([
                 'asset_id' => Asset::class,
                 'document_id' => Document::class,
                 'location_id' => Location::class,
@@ -65,7 +88,8 @@ class StoreTicketRequest extends FormRequest
                     continue;
                 }
 
-                if (! $modelClass::find($this->input($field))) {
+                $record = $modelClass::find($this->input($field));
+                if (! TenantRecordGuard::recordBelongsToTenant($record, $tenantId)) {
                     $validator->errors()->add($field, trans('validation.exists', ['attribute' => $field]));
                 }
             }

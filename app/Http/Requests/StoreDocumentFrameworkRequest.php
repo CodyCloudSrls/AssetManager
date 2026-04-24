@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Company;
 use App\Models\DocumentFramework;
+use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 
@@ -79,6 +80,14 @@ class StoreDocumentFrameworkRequest extends FormRequest
 
                 if ($query->exists()) {
                     $validator->errors()->add($column, trans('validation.unique'));
+                }
+            }
+
+            if ($this->filled('owner_id')) {
+                $tenantId = TenantRecordGuard::companyTenantId($this->integer('company_id') ?: null);
+
+                if (! TenantRecordGuard::userCanBeReferencedByTenant($this->integer('owner_id'), $tenantId)) {
+                    $validator->errors()->add('owner_id', trans('validation.exists', ['attribute' => 'owner']));
                 }
             }
         });
