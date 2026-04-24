@@ -463,24 +463,11 @@
 
                     @can('view', \App\Models\Document::class)
                         <x-tabs.pane name="documents">
-                            @can('create', \App\Models\Document::class)
-                                <div class="clearfix" style="margin-bottom: 12px;">
-                                    <a
-                                        href="{{ route('documents.create', array_filter(['assigned_user_id' => $user->id, 'company_id' => $user->company_id])) }}"
-                                        class="btn btn-sm btn-warning pull-right"
-                                        data-tooltip="true"
-                                        title="{{ trans('admin/documents/form.create') }}"
-                                    >
-                                        <x-icon type="plus" class="fa-fw" />
-                                        <span class="sr-only">{{ trans('admin/documents/form.create') }}</span>
-                                    </a>
-                                </div>
-                            @endcan
-                            @include('documents.partials.assignments-table', [
-                                'assignments' => $user->documentAssignments,
-                                'showDocumentColumn' => true,
-                                'showTargetColumn' => false,
-                            ])
+                            <x-table.documents
+                                name="userDocuments_{{ $user->id }}"
+                                buttons="userDocumentButtons"
+                                :route="route('api.documents.index', ['assigned_user_id' => $user->id])"
+                            />
                         </x-tabs.pane>
                     @endcan
 
@@ -619,6 +606,27 @@
     @can('files', $user)
         @include ('modals.upload-file', ['item_type' => 'users', 'item_id' => $user->id])
     @endcan
+
+    <script nonce="{{ csrf_token() }}">
+        window.userDocumentButtons = () => ({
+            @can('create', \App\Models\Document::class)
+            btnAdd: {
+                text: '{{ trans('general.create') }}',
+                icon: 'fa fa-plus',
+                event () {
+                    window.location.href = @json(route('documents.create', array_filter(['assigned_user_id' => $user->id, 'company_id' => $user->company_id])));
+                },
+                attributes: {
+                    class: 'btn-warning',
+                    title: '{{ trans('general.create') }}',
+                    @if ($snipeSettings->shortcuts_enabled == 1)
+                    accesskey: 'n'
+                    @endif
+                }
+            },
+            @endcan
+        });
+    </script>
 
     @include ('partials.bootstrap-table', ['simple_view' => true])
 <script nonce="{{ csrf_token() }}">

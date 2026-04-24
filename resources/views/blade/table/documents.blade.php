@@ -4,6 +4,7 @@
     'presenter' => \App\Presenters\DocumentPresenter::dataTableLayout(),
     'fixed_right_number' => 1,
     'table_header' => trans('general.documents'),
+    'buttons' => 'documentButtons',
 ])
 
 @can('view', \App\Models\Document::class)
@@ -16,7 +17,7 @@
         :$fixed_right_number
         show_column_search="true"
         show_advanced_search="true"
-        buttons="documentButtons"
+        buttons="{{ $buttons }}"
         api_url="{{ $route }}"
         export_filename="export-{{ str_slug($name) }}-documents-{{ date('Y-m-d') }}"
     />
