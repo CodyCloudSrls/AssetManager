@@ -8,7 +8,9 @@ use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\DocumentType;
 use App\Models\User;
+use App\Support\Documents\DocumentAssignmentManager;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Validator;
 
 class StoreDocumentRequest extends FormRequest
 {
@@ -87,6 +89,40 @@ class StoreDocumentRequest extends FormRequest
 
                 if ($validCount !== $requirementIds->count()) {
                     $validator->errors()->add('primary_requirement_ids', trans('admin/documents/message.invalid_requirements_for_framework'));
+                }
+            }
+
+            if (DocumentAssignmentManager::submissionRequested($this)) {
+                $assignmentPayload = DocumentAssignmentManager::normalizedPayload($this);
+                $assignmentValidator = Validator::make(
+                    $assignmentPayload,
+                    DocumentAssignmentManager::rules(),
+                    [],
+                    DocumentAssignmentManager::attributes()
+                );
+
+                foreach ($assignmentValidator->errors()->getMessages() as $field => $messages) {
+                    foreach ($messages as $message) {
+                        $validator->errors()->add($field, $message);
+                    }
+                }
+
+                $document = $this->route('document');
+                $effectiveCompanyId = $this->integer('company_id') ?: ($document?->company_id);
+
+                if (! $document && ! $effectiveCompanyId) {
+                    $validator->errors()->add('assignable_type', trans('admin/documents/message.assignment_save_document_first'));
+
+                    return;
+                }
+
+                if ($assignmentValidator->errors()->isEmpty()) {
+                    DocumentAssignmentManager::validateForDocument(
+                        $validator,
+                        $document,
+                        $effectiveCompanyId,
+                        $assignmentPayload
+                    );
                 }
             }
         });

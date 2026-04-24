@@ -12,9 +12,11 @@
 @section('content')
     @php
         $hasFrameworkSelected = (bool) old('document_framework_id', $document->document_framework_id);
-        $assignmentFormActive = old('assignment_assignable_type')
-            || old('assignment_relation_type')
-            || old('assignment_status')
+        $assignmentCompanyId = old('company_id', $document->company_id);
+        $assignmentFormActive = old('save_assignment')
+            || old('assignment_assignable_user_id')
+            || old('assignment_assignable_asset_id')
+            || old('assignment_assignable_location_id')
             || old('assignment_reference_number')
             || old('assignment_issuer_id')
             || old('assignment_effective_at')
@@ -281,6 +283,35 @@
                                     </div>
                                 </fieldset>
                             </div>
+
+                            <div class="col-md-12 col-sm-12">
+                                <fieldset name="document-assignment">
+                                    <x-form.legend>
+                                        {{ trans('admin/documents/general.create_assignment') }}
+                                    </x-form.legend>
+
+                                    <div class="col-md-12">
+                                        @if ($assignmentCompanyId)
+                                            <div id="document-assignment-form" class="form-horizontal">
+                                                @include('documents.partials.assignment-fields', [
+                                                    'document' => $document,
+                                                    'documentAssignment' => new \App\Models\DocumentAssignment,
+                                                    'assignableTypeToken' => old('assignable_type', \App\Models\DocumentAssignment::ASSIGNABLE_USER),
+                                                    'assignmentCompanyId' => $assignmentCompanyId,
+                                                ])
+                                            </div>
+                                        @elseif (! $document->exists)
+                                            <div class="callout callout-info" style="margin-bottom: 0;">
+                                                {{ trans('admin/documents/message.assignment_save_document_first') }}
+                                            </div>
+                                        @else
+                                            <div class="callout callout-warning" style="margin-bottom: 0;">
+                                                {{ trans('admin/documents/message.assignment_requires_company') }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                </fieldset>
+                            </div>
                         </div>
                     </div>
 
@@ -295,63 +326,6 @@
                     />
                 </div>
             </form>
-
-            @if ($document->exists)
-                <div class="box box-default">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">{{ trans('admin/documents/general.create_assignment') }}</h3>
-                    </div>
-                    <div class="box-body">
-                        @if ($document->company_id)
-                            <form id="document-assignment-form" method="POST" action="{{ route('documents.assignments.store', $document) }}" class="form-horizontal">
-                                @csrf
-                                @include('documents.partials.assignment-fields', [
-                                    'document' => $document,
-                                    'documentAssignment' => new \App\Models\DocumentAssignment,
-                                    'assignableTypeToken' => old('assignable_type', \App\Models\DocumentAssignment::ASSIGNABLE_USER),
-                                ])
-
-                                <div class="form-group">
-                                    <div class="col-md-7 col-md-offset-3">
-                                        <button class="btn btn-success">
-                                            <x-icon type="checkmark" />
-                                            {{ trans('general.save') }}
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-                        @else
-                            <div class="callout callout-warning" style="margin-bottom: 0;">
-                                {{ trans('admin/documents/message.assignment_requires_company') }}
-                            </div>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="box box-default">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">{{ trans('admin/documents/general.assignments') }}</h3>
-                    </div>
-                    <div class="box-body">
-                        @include('documents.partials.assignments-table', [
-                            'assignments' => $document->documentAssignments,
-                            'document' => $document,
-                            'showActions' => auth()->user()->can('update', $document),
-                        ])
-                    </div>
-                </div>
-            @else
-                <div class="box box-default">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">{{ trans('admin/documents/general.assignments') }}</h3>
-                    </div>
-                    <div class="box-body">
-                        <div class="callout callout-info" style="margin-bottom: 0;">
-                            {{ trans('admin/documents/message.assignment_save_document_first') }}
-                        </div>
-                    </div>
-                </div>
-            @endif
         </div>
     </div>
 @endsection
@@ -378,6 +352,29 @@
             $('#assignable_user_wrapper').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_USER }}');
             $('#assignable_asset_wrapper').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_ASSET }}');
             $('#assignable_location_id').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_LOCATION }}');
+        }
+
+        function syncAssignmentCompanyContext(companyId) {
+            [
+                '#assignable_user_id_select',
+                '#assignable_asset_id_select',
+                '#assignment_assignable_location_id_location_select',
+                '#issuer_id_select',
+            ].forEach(function (selector) {
+                const $select = $(selector);
+
+                if (! $select.length) {
+                    return;
+                }
+
+                if (companyId) {
+                    $select.attr('data-company-id', companyId);
+                } else {
+                    $select.removeAttr('data-company-id');
+                }
+
+                $select.val(null).trigger('change');
+            });
         }
 
         function normalizeRequirementSelectWidth($select) {
@@ -437,6 +434,10 @@
 
         $('#document_framework_id_select').on('change', function () {
             populateRequirementOptions($(this).val());
+        });
+
+        $('select[name="company_id"]').on('change', function () {
+            syncAssignmentCompanyContext($(this).val());
         });
 
         $('input[name="assignment_assignable_type"]').on('change', syncAssignableSelectors);

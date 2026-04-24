@@ -19,6 +19,7 @@ The module includes:
 - tenant-aware queue filtering
 - public guest portal per tenant
 - tenant-specific public helpdesk settings
+- tenant-specific mail and notification settings on top of the central platform SMTP
 
 ## Internal Workflow
 
@@ -68,6 +69,46 @@ Public URLs support:
 - legacy UUID fallback, for example `/helpdesk/<tenant-uuid>`
 
 This keeps old links working while allowing clean branded URLs.
+
+## Tenant Mail And Notifications
+
+Tenant operational email delivery is intentionally split from SMTP transport:
+
+- the platform continues to use the central CodyCloud SMTP profile
+- each tenant can configure its own notification recipients, sender display name and reply-to
+- each tenant can decide which operational events generate email
+
+Tenant mail settings are configured from:
+
+- `Admin > Tenants > <Tenant> > Configure mail`
+
+Available tenant mail settings:
+
+- tenant notification email recipients
+- tenant reply-to email
+- tenant reply-to name
+- tenant sender display name
+- operational helpdesk email
+- document review warning window in days
+- per-event toggles for:
+  - ticket created
+  - public ticket reply
+  - ticket assigned
+  - ticket SLA alerts
+  - documents due for review
+
+This keeps mail transport centralized and supportable while still giving each tenant its own operational routing and branded identity.
+
+## Scheduled Tenant Digests
+
+Two tenant-aware digests are now scheduled daily:
+
+- `snipeit:tenant-ticket-sla-alerts`
+- `snipeit:tenant-document-review-alerts`
+
+The SLA digest groups open tickets whose first response or resolution deadlines are at risk or already breached.
+
+The document digest groups tenant documents that are due for review within the configured warning window or already overdue.
 
 ## Public Ticket Types
 

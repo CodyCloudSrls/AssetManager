@@ -18,6 +18,11 @@ class Tenant extends Model
     public const ACTIVE_TENANT_SESSION_KEY = 'active_tenant_id';
     public const ROLE_ADMIN = 'admin';
     public const ROLE_VIEWER = 'viewer';
+    public const MAIL_EVENT_TICKET_CREATED = 'ticket_created';
+    public const MAIL_EVENT_TICKET_PUBLIC_REPLY = 'ticket_public_reply';
+    public const MAIL_EVENT_TICKET_ASSIGNED = 'ticket_assigned';
+    public const MAIL_EVENT_TICKET_SLA_ALERT = 'ticket_sla_alert';
+    public const MAIL_EVENT_DOCUMENT_REVIEW_DUE = 'document_review_due';
 
     protected static ?array $currentUserTenantRolesCache = null;
 
@@ -153,6 +158,100 @@ class Tenant extends Model
     public function publicHelpdeskPrivacyNote(): ?string
     {
         return $this->rootCompany()?->helpdesk_privacy_note;
+    }
+
+    public function notificationEmail(): ?string
+    {
+        $rootCompany = $this->rootCompany();
+
+        return $rootCompany?->tenant_notification_email
+            ?: $rootCompany?->helpdesk_contact_email
+            ?: $rootCompany?->email;
+    }
+
+    public function notificationRecipients(): array
+    {
+        return collect(explode(',', (string) $this->notificationEmail()))
+            ->map(fn ($email) => trim($email))
+            ->filter(fn ($email) => $email !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public function notificationReplyToEmail(): ?string
+    {
+        $rootCompany = $this->rootCompany();
+
+        return $rootCompany?->tenant_mail_reply_to_email
+            ?: $rootCompany?->helpdesk_contact_email
+            ?: config('mail.reply_to.address');
+    }
+
+    public function notificationReplyToName(): ?string
+    {
+        $rootCompany = $this->rootCompany();
+
+        return $rootCompany?->tenant_mail_reply_to_name
+            ?: $rootCompany?->tenant_mail_from_name
+            ?: $rootCompany?->name
+            ?: config('mail.reply_to.name');
+    }
+
+    public function notificationFromName(): string
+    {
+        $rootCompany = $this->rootCompany();
+
+        return $rootCompany?->tenant_mail_from_name
+            ?: $rootCompany?->name
+            ?: config('mail.from.name')
+            ?: config('app.name');
+    }
+
+    public function documentReviewWarningDays(): int
+    {
+        return max(1, (int) ($this->rootCompany()?->tenant_document_review_warning_days ?: 30));
+    }
+
+    public function notificationEvents(): array
+    {
+        $rootCompany = $this->rootCompany();
+
+        if (is_null($rootCompany)) {
+            return [];
+        }
+
+        $configured = $rootCompany->tenant_mail_notification_events;
+
+        if (is_null($configured)) {
+            return array_keys(static::mailNotificationEventOptions());
+        }
+
+        if (! is_array($configured)) {
+            return [];
+        }
+
+        return collect($configured)
+            ->filter(fn ($event) => is_string($event) && array_key_exists($event, static::mailNotificationEventOptions()))
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public function notificationEventEnabled(string $event): bool
+    {
+        return in_array($event, $this->notificationEvents(), true);
+    }
+
+    public static function mailNotificationEventOptions(): array
+    {
+        return [
+            static::MAIL_EVENT_TICKET_CREATED => trans('admin/tenants/general.mail.events.ticket_created'),
+            static::MAIL_EVENT_TICKET_PUBLIC_REPLY => trans('admin/tenants/general.mail.events.ticket_public_reply'),
+            static::MAIL_EVENT_TICKET_ASSIGNED => trans('admin/tenants/general.mail.events.ticket_assigned'),
+            static::MAIL_EVENT_TICKET_SLA_ALERT => trans('admin/tenants/general.mail.events.ticket_sla_alert'),
+            static::MAIL_EVENT_DOCUMENT_REVIEW_DUE => trans('admin/tenants/general.mail.events.document_review_due'),
+        ];
     }
 
     public static function resolvePublicHelpdeskIdentifier(string $identifier): ?self

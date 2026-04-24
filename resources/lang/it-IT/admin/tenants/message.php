@@ -28,4 +28,9 @@ return [
         'attachments_disabled' => 'Gli allegati non sono consentiti nel portale helpdesk pubblico di questo tenant.',
         'no_public_types' => 'Se attivi il portale helpdesk devi esporre almeno una tipologia ticket pubblica.',
     ],
+    'mail' => [
+        'update' => [
+            'success' => 'Impostazioni mail tenant aggiornate correttamente.',
+        ],
+    ],
 ];

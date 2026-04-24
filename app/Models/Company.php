@@ -116,6 +116,12 @@ final class Company extends SnipeModel
         'helpdesk_slug',
         'helpdesk_contact_email',
         'helpdesk_contact_phone',
+        'tenant_notification_email',
+        'tenant_mail_reply_to_email',
+        'tenant_mail_reply_to_name',
+        'tenant_mail_from_name',
+        'tenant_mail_notification_events',
+        'tenant_document_review_warning_days',
         'helpdesk_intro',
         'helpdesk_privacy_note',
     ];
@@ -125,6 +131,8 @@ final class Company extends SnipeModel
         'tenant_id' => 'integer',
         'helpdesk_enabled' => 'boolean',
         'helpdesk_allow_attachments' => 'boolean',
+        'tenant_mail_notification_events' => 'array',
+        'tenant_document_review_warning_days' => 'integer',
     ];
 
     protected static array $descendantCompanyIdsCache = [];

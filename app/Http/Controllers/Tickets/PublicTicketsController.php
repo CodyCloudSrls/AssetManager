@@ -12,6 +12,7 @@ use App\Models\Tenant;
 use App\Models\Ticket;
 use App\Models\TicketPriority;
 use App\Models\TicketStatus;
+use App\Support\Tenants\TenantMailNotificationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -89,10 +90,12 @@ class PublicTicketsController extends Controller
         $tenant = $tenantPortal;
         abort_unless($this->canAccessTicket($tenant, $ticket, $token), 404);
 
-        $ticket->addComment($request->input('description'), null, true, [
+        $comment = $ticket->addComment($request->input('description'), null, true, [
             'visibility' => ['old' => null, 'new' => 'public'],
             'source' => ['old' => null, 'new' => Ticket::SOURCE_PUBLIC],
         ]);
+
+        app(TenantMailNotificationService::class)->sendTicketPublicReply($ticket, $comment, $ticket->guest_name ?: $ticket->guest_email);
 
         if ($request->hasFile('file')) {
             $this->storeFiles($request, $ticket, 'public reply');
