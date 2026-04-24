@@ -463,6 +463,19 @@
 
                     @can('view', \App\Models\Document::class)
                         <x-tabs.pane name="documents">
+                            @can('create', \App\Models\Document::class)
+                                <div class="clearfix" style="margin-bottom: 12px;">
+                                    <a
+                                        href="{{ route('documents.create', array_filter(['assigned_user_id' => $user->id, 'company_id' => $user->company_id])) }}"
+                                        class="btn btn-sm btn-warning pull-right"
+                                        data-tooltip="true"
+                                        title="{{ trans('admin/documents/form.create') }}"
+                                    >
+                                        <x-icon type="plus" class="fa-fw" />
+                                        <span class="sr-only">{{ trans('admin/documents/form.create') }}</span>
+                                    </a>
+                                </div>
+                            @endcan
                             @include('documents.partials.assignments-table', [
                                 'assignments' => $user->documentAssignments,
                                 'showDocumentColumn' => true,

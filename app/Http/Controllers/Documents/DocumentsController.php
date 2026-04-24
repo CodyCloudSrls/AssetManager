@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Documents;
 use App\Enums\ActionType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDocumentRequest;
+use App\Models\Company;
 use App\Models\Document;
 use App\Models\DocumentAssignment;
 use App\Models\DocumentFrameworkRequirement;
+use App\Models\User;
 use App\Support\Documents\DocumentAssignmentManager;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -23,11 +26,20 @@ class DocumentsController extends Controller
         return view('documents.index');
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         $this->authorize('create', Document::class);
 
-        return view('documents.edit', $this->formData(new Document));
+        $document = new Document;
+        $document->company_id = Company::getIdFromInput($request->input('company_id'))
+            ?: Company::preferredCompanySelectionId();
+
+        $assignedUser = $this->prefilledAssignedUser($request);
+        if ($assignedUser) {
+            $document->company_id = $assignedUser->company_id ?: $document->company_id;
+        }
+
+        return view('documents.edit', $this->formData($document));
     }
 
     public function store(StoreDocumentRequest $request): RedirectResponse
@@ -133,6 +145,15 @@ class DocumentsController extends Controller
 
     private function formData(Document $document): array
     {
+        $documentAssignment = new DocumentAssignment;
+        $assignableTypeToken = DocumentAssignment::ASSIGNABLE_USER;
+
+        if (! $document->exists && ($assignedUser = $this->prefilledAssignedUser(request()))) {
+            $documentAssignment->assignable_type = User::class;
+            $documentAssignment->assignable_id = $assignedUser->id;
+            $assignableTypeToken = DocumentAssignment::ASSIGNABLE_USER;
+        }
+
         if ($document->exists) {
             $document->load([
                 'documentAssignments.assignable',
@@ -174,7 +195,21 @@ class DocumentsController extends Controller
             'selectedSupportingRequirementIds' => $document->exists
                 ? $document->frameworkRequirements()->wherePivot('coverage_role', Document::COVERAGE_SUPPORTING)->pluck('document_framework_requirements.id')->all()
                 : [],
+            'documentAssignment' => $documentAssignment,
+            'assignableTypeToken' => $assignableTypeToken,
         ];
+    }
+
+    private function prefilledAssignedUser(Request $request): ?User
+    {
+        $userId = $request->integer('assigned_user_id')
+            ?: $request->integer('assignment_assignable_user_id');
+
+        if (! $userId) {
+            return null;
+        }
+
+        return User::whereNull('deleted_at')->find($userId);
     }
 
     private function syncRequirementMappings(Document $document, StoreDocumentRequest $request): void
