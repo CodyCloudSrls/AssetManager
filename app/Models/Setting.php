@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Watson\Validating\ValidatingTrait;
 
 /**
@@ -413,6 +414,19 @@ class Setting extends Model
             return null;
         }
 
-        return ltrim($path, '/');
+        $path = ltrim($path, '/');
+        $disk = Storage::disk('public');
+
+        if ($disk->exists($path)) {
+            return $path;
+        }
+
+        $basename = basename($path);
+
+        if ($basename !== '' && $basename !== $path && $disk->exists($basename)) {
+            return $basename;
+        }
+
+        return $path;
     }
 }
