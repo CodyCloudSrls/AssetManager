@@ -42,6 +42,15 @@
                             tooltip="{{ trans('general.documents') }}"
                         />
                     @endcan
+                    @can('view', \App\Models\Ticket::class)
+                        <x-tabs.nav-item
+                            name="tickets"
+                            icon="fa-solid fa-life-ring fa-fw"
+                            label="{{ trans('general.tickets') }}"
+                            count="{{ $user->assignedTickets()->count() }}"
+                            tooltip="{{ trans('general.tickets') }}"
+                        />
+                    @endcan
                     <x-tabs.files-tab :item="$user" count="{{ $user->uploads()->count() }}"/>
                     <x-tabs.eula-tab count="{{ $user->eulas()->count() }}"/>
                     <x-tabs.location-tab count="{{ $user->managedLocations()->count() }}"/>
@@ -459,6 +468,12 @@
                                 'showDocumentColumn' => true,
                                 'showTargetColumn' => false,
                             ])
+                        </x-tabs.pane>
+                    @endcan
+
+                    @can('view', \App\Models\Ticket::class)
+                        <x-tabs.pane name="tickets">
+                            <x-table.tickets :route="route('api.tickets.index', ['assignee_id' => $user->id])"/>
                         </x-tabs.pane>
                     @endcan
 

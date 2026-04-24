@@ -46,6 +46,8 @@ class CurrentInventory extends Notification
                 'accessories' => $this->user->accessories,
                 'licenses' => $this->user->licenses,
                 'consumables' => $this->user->consumables,
+                'documentAssignments' => $this->user->documentAssignments()->with('document.type')->get(),
+                'tickets' => $this->user->assignedTickets()->with('status', 'priority')->get(),
             ])
             ->subject(trans('mail.inventory_report'))
             ->withSymfonyMessage(function (Email $message) {

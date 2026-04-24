@@ -100,6 +100,8 @@ class UsersController extends Controller
                 'licenses as licenses_count',
                 'accessories as accessories_count',
                 'consumables as consumables_count',
+                'documentAssignments as documents_count',
+                'assignedTickets as tickets_count',
                 'managesUsers as manages_users_count',
                 'managedLocations as manages_locations_count',
             ]);
@@ -128,6 +130,8 @@ class UsersController extends Controller
                 'licenses_count',
                 'consumables_count',
                 'accessories_count',
+                'documents_count',
+                'tickets_count',
                 'manages_users_count',
                 'manages_locations_count',
                 'phone',
@@ -309,6 +313,14 @@ class UsersController extends Controller
 
         if ($request->filled('accessories_count')) {
             $users->has('accessories', '=', $request->input('accessories_count'));
+        }
+
+        if ($request->filled('documents_count')) {
+            $users->has('documentAssignments', '=', $request->input('documents_count'));
+        }
+
+        if ($request->filled('tickets_count')) {
+            $users->has('assignedTickets', '=', $request->input('tickets_count'));
         }
 
         if ($request->filled('manages_users_count')) {
@@ -527,7 +539,7 @@ class UsersController extends Controller
     {
         $this->authorize('view', User::class);
 
-        if ($user = User::withCount('assets as assets_count', 'licenses as licenses_count', 'accessories as accessories_count', 'consumables as consumables_count', 'managesUsers as manages_users_count', 'managedLocations as manages_locations_count')->find($id)) {
+        if ($user = User::withCount('assets as assets_count', 'licenses as licenses_count', 'accessories as accessories_count', 'consumables as consumables_count', 'documentAssignments as documents_count', 'assignedTickets as tickets_count', 'managesUsers as manages_users_count', 'managedLocations as manages_locations_count')->find($id)) {
             $this->authorize('view', $user);
 
             return (new UsersTransformer)->transformUser($user);

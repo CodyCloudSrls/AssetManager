@@ -654,6 +654,10 @@ class UsersController extends Controller
                 'consumables.category',
                 'consumables.manufacturer',
                 'licenses.category',
+                'documentAssignments.document.type',
+                'documentAssignments.issuer',
+                'assignedTickets.status',
+                'assignedTickets.priority',
             ])
             ->withTrashed()
             ->first();

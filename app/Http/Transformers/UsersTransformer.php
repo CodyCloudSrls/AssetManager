@@ -80,6 +80,8 @@ class UsersTransformer
             'licenses_count' => (int) $user->licenses_count,
             'accessories_count' => (int) $user->accessories_count,
             'consumables_count' => (int) $user->consumables_count,
+            'documents_count' => (int) $user->documents_count,
+            'tickets_count' => (int) $user->tickets_count,
             'manages_users_count' => (int) $user->manages_users_count,
             'manages_locations_count' => (int) $user->manages_locations_count,
             'company' => ($user->company) ? [

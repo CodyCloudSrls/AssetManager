@@ -47,7 +47,7 @@ class BulkUsersController extends Controller
             // Get the list of affected users
             $user_raw_array = request('ids');
             $users = User::whereIn('id', $user_raw_array)
-                ->with('assets', 'manager', 'userlog', 'licenses', 'consumables', 'accessories', 'managedLocations', 'uploads', 'acceptances')->get();
+                ->with('assets', 'manager', 'userlog', 'licenses', 'consumables', 'accessories', 'documentAssignments', 'assignedTickets', 'managedLocations', 'uploads', 'acceptances')->get();
 
             // bulk edit, display the bulk edit form
             if ($request->input('bulk_actions') == 'edit') {
@@ -310,6 +310,19 @@ class BulkUsersController extends Controller
             return redirect()->route('users.index')->with('error', 'No status selected');
         }
 
+        if ($request->input('delete_user') == '1') {
+            $documentsCount = $users->sum(fn (User $user) => $user->documentAssignments()->count());
+            $ticketsCount = $users->sum(fn (User $user) => $user->assignedTickets()->count());
+
+            if ($documentsCount > 0) {
+                return redirect()->route('users.index')->with('error', trans_choice('admin/users/message.error.delete_has_documents_var', $documentsCount, ['count' => $documentsCount]));
+            }
+
+            if ($ticketsCount > 0) {
+                return redirect()->route('users.index')->with('error', trans_choice('admin/users/message.error.delete_has_tickets_var', $ticketsCount, ['count' => $ticketsCount]));
+            }
+        }
+
         $this->logItemCheckinAndDelete($assets, Asset::class);
         $this->logAccessoriesCheckin($accessoryUserRows);
         $this->logItemCheckinAndDelete($licenses, License::class);
@@ -409,7 +422,7 @@ class BulkUsersController extends Controller
 
         // Get the users
         $merge_into_user = User::find($request->input('merge_into_id'));
-        $users_to_merge = User::whereIn('id', $user_ids_to_merge)->with('assets', 'manager', 'userlog', 'licenses', 'consumables', 'accessories', 'managedLocations', 'uploads', 'acceptances')->get();
+        $users_to_merge = User::whereIn('id', $user_ids_to_merge)->with('assets', 'manager', 'userlog', 'licenses', 'consumables', 'accessories', 'documentAssignments', 'assignedTickets', 'requestedTickets', 'relatedTickets', 'managedLocations', 'uploads', 'acceptances')->get();
         $admin = User::find(auth()->id());
 
         // Walk users
@@ -434,6 +447,11 @@ class BulkUsersController extends Controller
             foreach ($user_to_merge->accessories as $accessory) {
                 $user_to_merge->accessories()->updateExistingPivot($accessory->id, ['assigned_to' => $merge_into_user->id]);
             }
+
+            $user_to_merge->documentAssignments()->update(['assignable_id' => $merge_into_user->id]);
+            $user_to_merge->assignedTickets()->update(['assignee_id' => $merge_into_user->id]);
+            $user_to_merge->requestedTickets()->update(['requester_id' => $merge_into_user->id]);
+            $user_to_merge->relatedTickets()->update(['related_user_id' => $merge_into_user->id]);
 
             foreach ($user_to_merge->userlog as $log) {
                 $log->target_id = $merge_into_user->id;

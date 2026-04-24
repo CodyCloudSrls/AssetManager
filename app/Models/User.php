@@ -176,7 +176,8 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         'assets_count',
         'licenses_count',
         'consumables_count',
-        'accessories_count',
+        'documents_count',
+        'tickets_count',
         'manages_users_count',
         'manages_locations_count',
     ];
@@ -391,7 +392,8 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
             && (($this->accessories_count ?? $this->accessories()->count()) === 0)
             && (($this->licenses_count ?? $this->licenses()->count()) === 0)
             && (($this->consumables_count ?? $this->consumables()->count()) === 0)
-            && (($this->accessories_count ?? $this->accessories()->count()) === 0)
+            && (($this->documents_count ?? $this->documentAssignments()->count()) === 0)
+            && (($this->tickets_count ?? $this->assignedTickets()->count()) === 0)
             && (($this->manages_users_count ?? $this->managesUsers()->count()) === 0)
             && (($this->manages_locations_count ?? $this->managedLocations()->count()) === 0)
             && ($this->deleted_at == '');
@@ -563,8 +565,10 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         $licensesCount = $this->licenses()->count();
         $accessoriesCount = $this->accessories()->count();
         $consumablesCount = $this->consumables()->count();
+        $documentsCount = $this->documentAssignments()->count();
+        $ticketsCount = $this->assignedTickets()->count();
 
-        $totalCount = $assetsCount + $licensesCount + $accessoriesCount + $consumablesCount;
+        $totalCount = $assetsCount + $licensesCount + $accessoriesCount + $consumablesCount + $documentsCount + $ticketsCount;
 
         return (int) $totalCount;
     }
@@ -662,6 +666,21 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         return $this->morphMany(DocumentAssignment::class, 'assignable')
             ->orderBy('effective_at')
             ->orderBy('created_at');
+    }
+
+    public function assignedTickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class, 'assignee_id')->orderByDesc('updated_at');
+    }
+
+    public function requestedTickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class, 'requester_id')->orderByDesc('updated_at');
+    }
+
+    public function relatedTickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class, 'related_user_id')->orderByDesc('updated_at');
     }
 
     /**

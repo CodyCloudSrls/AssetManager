@@ -323,6 +323,11 @@ class Location extends SnipeModel
             ->orderBy('created_at');
     }
 
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class, 'location_id')->orderByDesc('updated_at');
+    }
+
     /**
      * Establishes the accessory -> location assignment relationship
      *
