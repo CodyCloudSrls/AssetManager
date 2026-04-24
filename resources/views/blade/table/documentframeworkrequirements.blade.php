@@ -12,6 +12,7 @@
     </x-slot:table_header>
 
     <x-table
+        :$name
         :$presenter
         :$fixed_right_number
         show_column_search="true"
