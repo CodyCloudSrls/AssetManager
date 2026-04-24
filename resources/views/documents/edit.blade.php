@@ -295,8 +295,8 @@
                                             <div id="document-assignment-form" class="form-horizontal">
                                                 @include('documents.partials.assignment-fields', [
                                                     'document' => $document,
-                                                    'documentAssignment' => new \App\Models\DocumentAssignment,
-                                                    'assignableTypeToken' => old('assignable_type', \App\Models\DocumentAssignment::ASSIGNABLE_USER),
+                                                    'documentAssignment' => $documentAssignment ?? new \App\Models\DocumentAssignment,
+                                                    'assignableTypeToken' => old('assignable_type', $assignableTypeToken ?? \App\Models\DocumentAssignment::ASSIGNABLE_USER),
                                                     'assignmentCompanyId' => $assignmentCompanyId,
                                                 ])
                                             </div>
