@@ -22,6 +22,7 @@
     </x-slot:bulkactions>
     
     <x-table
+        :$name
         :$presenter
         :$fixed_right_number
         show_column_search="true"

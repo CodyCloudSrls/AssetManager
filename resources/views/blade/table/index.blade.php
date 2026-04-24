@@ -1,4 +1,5 @@
 @props([
+    'name' => 'default',
     'presenter' => null,
     'buttons' => null,
     'export_filename' => 'export-'.date('Y-m-d'),
@@ -12,8 +13,6 @@
     'sort_field' => 'name',
     'nosticky' => false,
 ])
-
-@aware(['name'])
 
 <table
     role="table"
