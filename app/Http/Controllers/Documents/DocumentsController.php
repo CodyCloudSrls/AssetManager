@@ -143,6 +143,7 @@ class DocumentsController extends Controller
         }
 
         $allFrameworkRequirements = DocumentFrameworkRequirement::query()
+            ->visibleThroughFramework()
             ->where('is_active', true)
             ->with('framework')
             ->ordered()

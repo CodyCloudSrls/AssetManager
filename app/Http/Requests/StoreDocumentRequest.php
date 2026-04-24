@@ -7,8 +7,8 @@ use App\Models\Document;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\DocumentType;
-use App\Models\User;
 use App\Support\Documents\DocumentAssignmentManager;
+use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Validator;
 
@@ -57,16 +57,26 @@ class StoreDocumentRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
-            if ($this->filled('owner_id') && ! User::find($this->input('owner_id'))) {
+            $document = $this->route('document');
+            $effectiveCompanyId = $this->integer('company_id') ?: ($document?->company_id);
+            $effectiveTenantId = TenantRecordGuard::companyTenantId($effectiveCompanyId ? (int) $effectiveCompanyId : null);
+
+            if ($this->filled('owner_id') && ! TenantRecordGuard::userCanBeReferencedByTenant($this->integer('owner_id'), $effectiveTenantId)) {
                 $validator->errors()->add('owner_id', trans('validation.exists', ['attribute' => 'owner']));
             }
 
-            if ($this->filled('document_type_id') && ! DocumentType::find($this->input('document_type_id'))) {
-                $validator->errors()->add('document_type_id', trans('validation.exists', ['attribute' => 'document type']));
+            if ($this->filled('document_type_id')) {
+                $documentType = DocumentType::find($this->input('document_type_id'));
+                if (! TenantRecordGuard::templateCanBeAppliedToCompany($documentType, $effectiveCompanyId ? (int) $effectiveCompanyId : null)) {
+                    $validator->errors()->add('document_type_id', trans('validation.exists', ['attribute' => 'document type']));
+                }
             }
 
-            if ($this->filled('document_framework_id') && ! DocumentFramework::find($this->input('document_framework_id'))) {
-                $validator->errors()->add('document_framework_id', trans('validation.exists', ['attribute' => 'document framework']));
+            if ($this->filled('document_framework_id')) {
+                $documentFramework = DocumentFramework::find($this->input('document_framework_id'));
+                if (! TenantRecordGuard::templateCanBeAppliedToCompany($documentFramework, $effectiveCompanyId ? (int) $effectiveCompanyId : null)) {
+                    $validator->errors()->add('document_framework_id', trans('validation.exists', ['attribute' => 'document framework']));
+                }
             }
 
             $frameworkId = $this->filled('document_framework_id') ? (int) $this->input('document_framework_id') : null;
@@ -106,9 +116,6 @@ class StoreDocumentRequest extends FormRequest
                         $validator->errors()->add($field, $message);
                     }
                 }
-
-                $document = $this->route('document');
-                $effectiveCompanyId = $this->integer('company_id') ?: ($document?->company_id);
 
                 if (! $document && ! $effectiveCompanyId) {
                     $validator->errors()->add('assignable_type', trans('admin/documents/message.assignment_save_document_first'));
