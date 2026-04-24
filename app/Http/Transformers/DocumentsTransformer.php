@@ -4,6 +4,7 @@ namespace App\Http\Transformers;
 
 use App\Helpers\Helper;
 use App\Models\Document;
+use App\Models\DocumentAssignment;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Gate;
 
@@ -22,6 +23,8 @@ class DocumentsTransformer
 
     public function transformDocument(Document $document)
     {
+        $document->loadMissing('documentAssignments.assignable');
+
         $array = [
             'id' => (int) $document->id,
             'name' => e($document->name),
@@ -55,6 +58,12 @@ class DocumentsTransformer
                 'id' => (int) $document->owner->id,
                 'name' => e($document->owner->display_name),
             ] : null,
+            'assigned_to' => $document->relationLoaded('documentAssignments')
+                ? $document->documentAssignments->map(fn (DocumentAssignment $assignment) => $this->transformAssignment($assignment))->values()->all()
+                : [],
+            'assignments_count' => $document->relationLoaded('documentAssignments')
+                ? $document->documentAssignments->count()
+                : $document->documentAssignments()->count(),
             'created_by' => ($document->adminuser) ? [
                 'id' => (int) $document->adminuser->id,
                 'name' => e($document->adminuser->display_name),
@@ -74,5 +83,19 @@ class DocumentsTransformer
         ];
 
         return $array;
+    }
+
+    protected function transformAssignment(DocumentAssignment $assignment): array
+    {
+        return [
+            'id' => (int) $assignment->id,
+            'type' => e($assignment->assignable_type_label),
+            'name' => e($assignment->assignable_display_name),
+            'url' => $assignment->assignable_url,
+            'relation_type' => e($assignment->relation_type_label),
+            'status' => e($assignment->status_label),
+            'is_expiring' => $assignment->is_expiring,
+            'is_expired' => $assignment->is_expired,
+        ];
     }
 }

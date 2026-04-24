@@ -33,6 +33,9 @@ class DeleteUserRequest extends FormRequest
                 'assigned_assets' => $user_to_delete->assets()->count(),
                 'assigned_licenses' => $user_to_delete->licenses()->count(),
                 'assigned_accessories' => $user_to_delete->accessories()->count(),
+                'assigned_consumables' => $user_to_delete->consumables()->count(),
+                'assigned_documents' => $user_to_delete->documentAssignments()->count(),
+                'assigned_tickets' => $user_to_delete->assignedTickets()->count(),
                 'deleted_at' => $user_to_delete->deleted_at,
             ]);
         }
@@ -52,6 +55,9 @@ class DeleteUserRequest extends FormRequest
             'assigned_assets' => Rule::in([0]),
             'assigned_licenses' => Rule::in([0]),
             'assigned_accessories' => Rule::in([0]),
+            'assigned_consumables' => Rule::in([0]),
+            'assigned_documents' => Rule::in([0]),
+            'assigned_tickets' => Rule::in([0]),
             'deleted_at' => Rule::in([null]),
         ];
     }
@@ -86,6 +92,15 @@ class DeleteUserRequest extends FormRequest
 
                 // assigned accessories is not 0
                 'assigned_accessories.in' => trans_choice('admin/users/message.error.delete_has_accessories_var', $user_to_delete->accessories()->count(), ['count' => $user_to_delete->accessories()->count()]),
+
+                // assigned consumables is not 0
+                'assigned_consumables.in' => trans_choice('admin/users/message.error.delete_has_consumables_var', $user_to_delete->consumables()->count(), ['count' => $user_to_delete->consumables()->count()]),
+
+                // assigned documents is not 0
+                'assigned_documents.in' => trans_choice('admin/users/message.error.delete_has_documents_var', $user_to_delete->documentAssignments()->count(), ['count' => $user_to_delete->documentAssignments()->count()]),
+
+                // assigned tickets is not 0
+                'assigned_tickets.in' => trans_choice('admin/users/message.error.delete_has_tickets_var', $user_to_delete->assignedTickets()->count(), ['count' => $user_to_delete->assignedTickets()->count()]),
 
                 'deleted_at.in' => trans('admin/users/message.user_deleted_warning'),
 

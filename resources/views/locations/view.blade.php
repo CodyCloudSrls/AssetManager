@@ -108,6 +108,16 @@
                       />
                   @endcan
 
+                  @can('view', \App\Models\Ticket::class)
+                      <x-tabs.nav-item
+                          name="tickets"
+                          icon="fa-solid fa-life-ring fa-fw"
+                          label="{{ trans('general.tickets') }}"
+                          count="{{ $location->tickets()->count() }}"
+                          tooltip="{{ trans('general.tickets') }}"
+                      />
+                  @endcan
+
                   <x-tabs.nav-item
                           name="child_locations"
                           icon="fa-solid fa-city fa-fw"
@@ -198,6 +208,12 @@
                               'showDocumentColumn' => true,
                               'showTargetColumn' => false,
                           ])
+                      </x-tabs.pane>
+                  @endcan
+
+                  @can('view', \App\Models\Ticket::class)
+                      <x-tabs.pane name="tickets">
+                          <x-table.tickets :route="route('api.tickets.index', ['location_id' => $location->id])"/>
                       </x-tabs.pane>
                   @endcan
 

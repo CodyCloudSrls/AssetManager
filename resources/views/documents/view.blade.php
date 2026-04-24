@@ -78,6 +78,15 @@
                         count="{{ $document->documentAssignments->count() }}"
                         tooltip="{{ trans('admin/documents/general.assignments') }}"
                     />
+                    @can('view', \App\Models\Ticket::class)
+                        <x-tabs.nav-item
+                            name="tickets"
+                            icon="fa-solid fa-life-ring fa-fw"
+                            label="{{ trans('general.tickets') }}"
+                            count="{{ $document->tickets()->count() }}"
+                            tooltip="{{ trans('general.tickets') }}"
+                        />
+                    @endcan
                     <x-tabs.note-tab :item="$document" count="{{ $document->journal->count() }}"/>
                     <x-tabs.files-tab :item="$document" count="{{ $document->uploads()->count() }}"/>
                     <x-tabs.history-tab count="{{ $document->history()->count() }}" :model="$document"/>
@@ -269,6 +278,12 @@
                         </div>
                     </x-tabs.pane>
 
+                    @can('view', \App\Models\Ticket::class)
+                        <x-tabs.pane name="tickets">
+                            <x-table.tickets :route="route('api.tickets.index', ['document_id' => $document->id])"/>
+                        </x-tabs.pane>
+                    @endcan
+
                     <x-tabs.pane name="notes">
                         <x-table.history
                             :table_header="trans('general.notes')"
@@ -326,6 +341,14 @@
                             {{ $assignmentCount }} {{ trans('admin/documents/general.assignments') }}
                         </a>
                     </x-info-element>
+
+                    @can('view', \App\Models\Ticket::class)
+                        <x-info-element icon="fa-solid fa-life-ring fa-fw" :title="trans('general.tickets')">
+                            <a href="#tickets" data-toggle="tab">
+                                {{ $document->tickets()->count() }} {{ trans('general.tickets') }}
+                            </a>
+                        </x-info-element>
+                    @endcan
 
                     <x-info-element icon="fas fa-calendar-day fa-fw" :title="trans('admin/documents/form.issued_at')">
                         {{ Helper::getFormattedDateObject($document->issued_at, 'date', false) }}

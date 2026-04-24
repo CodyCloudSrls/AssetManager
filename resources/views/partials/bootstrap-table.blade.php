@@ -1610,6 +1610,31 @@
         return value.name;
     }
 
+    function documentAssignmentsFormatter(value, row) {
+        if (!value || !Array.isArray(value) || value.length === 0) {
+            return '';
+        }
+
+        var html = [];
+        var visibleAssignments = value.slice(0, 3);
+
+        for (var i = 0; i < visibleAssignments.length; i++) {
+            var assignment = visibleAssignments[i];
+            var labelClass = assignment.is_expired ? 'label-danger' : (assignment.is_expiring ? 'label-warning' : 'label-default');
+            var name = assignment.name ? assignment.name : '{{ trans('general.na') }}';
+            var target = assignment.url ? '<a href="' + assignment.url + '">' + name + '</a>' : name;
+            var title = assignment.type ? assignment.type + ' - ' + assignment.relation_type : assignment.relation_type;
+
+            html.push('<span class="label ' + labelClass + '" data-tooltip="true" title="' + title + '">' + target + '</span>');
+        }
+
+        if (value.length > visibleAssignments.length) {
+            html.push('<span class="label label-info">+' + (value.length - visibleAssignments.length) + '</span>');
+        }
+
+        return html.join(' ');
+    }
+
 
 
     // This is  gross, but necessary so that we can package the API response
@@ -2078,6 +2103,14 @@
 
     function linkNumberToUserAccessoriesFormatter(value, row) {
         return linkToUserSectionBasedOnCount(value, row.id, 'accessories');
+    }
+
+    function linkNumberToUserDocumentsFormatter(value, row) {
+        return linkToUserSectionBasedOnCount(value, row.id, 'documents');
+    }
+
+    function linkNumberToUserTicketsFormatter(value, row) {
+        return linkToUserSectionBasedOnCount(value, row.id, 'tickets');
     }
 
     function linkNumberToUserManagedUsersFormatter(value, row) {

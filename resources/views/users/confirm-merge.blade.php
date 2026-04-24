@@ -67,6 +67,14 @@
                                             <span class="sr-only">{{ trans('general.consumables') }}</span>
                                         </th>
                                         <th class="col-md-1 text-right">
+                                            <i class="fa-regular fa-file-lines fa-fw" aria-hidden="true" style="font-size: 17px;"></i>
+                                            <span class="sr-only">{{ trans('general.documents') }}</span>
+                                        </th>
+                                        <th class="col-md-1 text-right">
+                                            <i class="fa-solid fa-life-ring fa-fw" aria-hidden="true" style="font-size: 17px;"></i>
+                                            <span class="sr-only">{{ trans('general.tickets') }}</span>
+                                        </th>
+                                        <th class="col-md-1 text-right">
                                             <i class="fas fa-paperclip fa-fw" aria-hidden="true" style="font-size: 17px;"></i>
                                             <span class="sr-only">{{ trans('general.files') }}</span>
                                         </th>
@@ -107,6 +115,12 @@
                                             </td>
                                             <td class="text-right">
                                                 {{ number_format($user->consumables->count())  }}
+                                            </td>
+                                            <td class="text-right">
+                                                {{ number_format($user->documentAssignments->count())  }}
+                                            </td>
+                                            <td class="text-right">
+                                                {{ number_format($user->assignedTickets->count())  }}
                                             </td>
                                             <td class="text-right">
                                                 {{ number_format($user->uploads->count())  }}

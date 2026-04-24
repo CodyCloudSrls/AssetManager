@@ -24,6 +24,20 @@ class UserCannotSwitchCompaniesIfItemsAssigned implements ValidationRule
             if ($user_assets > 0) {
                 $fail(trans('admin/users/message.error.multi_company_items_assigned'));
             }
+
+            $user_documents = $user->documentAssignments()
+                ->where('document_assignments.company_id', '!=', $value)
+                ->count();
+            if ($user_documents > 0) {
+                $fail(trans('admin/users/message.error.multi_company_items_assigned'));
+            }
+
+            $user_tickets = $user->assignedTickets()
+                ->where('tickets.company_id', '!=', $value)
+                ->count();
+            if ($user_tickets > 0) {
+                $fail(trans('admin/users/message.error.multi_company_items_assigned'));
+            }
         }
     }
 }

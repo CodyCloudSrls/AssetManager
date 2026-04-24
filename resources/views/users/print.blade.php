@@ -399,6 +399,82 @@
         </table>
     @endif
 
+    @if ($show_user->documentAssignments->count() > 0)
+        <div id="documents-toolbar">
+            <h4>{{ $show_user->documentAssignments->count() }} {{ trans('general.documents') }}</h4>
+        </div>
+
+        <table
+            class="snipe-table table table-striped inventory"
+            id="documentsAssigned"
+            data-pagination="false"
+            data-toolbar="#documents-toolbar"
+            data-id-table="documentsAssigned"
+            data-search="false"
+            data-side-pagination="client"
+            data-sortable="true"
+            data-show-columns="true"
+            data-cookie-id-table="documentsAssigned">
+            <thead>
+            <tr>
+                <th data-sortable="false" data-switchable="false">#</th>
+                <th data-sortable="true">{{ trans('general.name') }}</th>
+                <th data-sortable="true">{{ trans('admin/documents/form.document_type') }}</th>
+                <th data-sortable="true">{{ trans('admin/documents/form.assignment_status') }}</th>
+                <th data-sortable="true">{{ trans('admin/documents/form.assignment_effective_at') }}</th>
+                <th data-sortable="true">{{ trans('admin/documents/form.assignment_expires_at') }}</th>
+            </tr>
+            </thead>
+            @foreach ($show_user->documentAssignments as $assignment)
+                <tr>
+                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $assignment->document?->name }}</td>
+                    <td>{{ $assignment->document?->type?->name }}</td>
+                    <td>{{ $assignment->status_label }}</td>
+                    <td>{{ Helper::getFormattedDateObject($assignment->effective_at, 'date', false) }}</td>
+                    <td>{{ Helper::getFormattedDateObject($assignment->expires_at, 'date', false) }}</td>
+                </tr>
+            @endforeach
+        </table>
+    @endif
+
+    @if ($show_user->assignedTickets->count() > 0)
+        <div id="tickets-toolbar">
+            <h4>{{ $show_user->assignedTickets->count() }} {{ trans('general.tickets') }}</h4>
+        </div>
+
+        <table
+            class="snipe-table table table-striped inventory"
+            id="ticketsAssigned"
+            data-pagination="false"
+            data-toolbar="#tickets-toolbar"
+            data-id-table="ticketsAssigned"
+            data-search="false"
+            data-side-pagination="client"
+            data-sortable="true"
+            data-show-columns="true"
+            data-cookie-id-table="ticketsAssigned">
+            <thead>
+            <tr>
+                <th data-sortable="false" data-switchable="false">#</th>
+                <th data-sortable="true">{{ trans('admin/tickets/form.ticket_number') }}</th>
+                <th data-sortable="true">{{ trans('general.subject') }}</th>
+                <th data-sortable="true">{{ trans('general.status') }}</th>
+                <th data-sortable="true">{{ trans('admin/tickets/form.priority') }}</th>
+            </tr>
+            </thead>
+            @foreach ($show_user->assignedTickets as $ticket)
+                <tr>
+                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $ticket->ticket_number }}</td>
+                    <td>{{ $ticket->subject }}</td>
+                    <td>{{ $ticket->status?->name }}</td>
+                    <td>{{ $ticket->priority?->name }}</td>
+                </tr>
+            @endforeach
+        </table>
+    @endif
+
     @php
         if (!empty($eulas)) $eulas = array_unique($eulas);
     @endphp

@@ -757,6 +757,11 @@ class Asset extends Depreciable
             ->orderBy('created_at');
     }
 
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class, 'asset_id')->orderByDesc('updated_at');
+    }
+
     /**
      * Establishes the accessory -> asset assignment relationship
      *

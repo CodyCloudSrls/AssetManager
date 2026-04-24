@@ -36,7 +36,7 @@
               <table class="display table table-striped">
                 <thead>
                 <tr>
-                    <td colspan="8">
+                    <td colspan="10">
                         <x-input.select
                                 name="status_id"
                                 id="status_id"
@@ -52,7 +52,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="8">
+                    <td colspan="10">
                         <label class="form-control">
                             <input type="checkbox" name="delete_user" value="1">
                             <span class="text-warning"><i class="fa fa-warning"></i> <strong>{{ trans('general.optional') }}:  {{ trans('general.bulk_soft_delete') }}</strong></span>
@@ -80,6 +80,14 @@
                     <th class="text-right">
                       <i class="fas fa-tint fa-fw" aria-hidden="true" style="font-size: 17px;"></i>
                       <span class="sr-only">{{ trans('general.consumables') }}</span>
+                    </th>
+                    <th class="text-right">
+                      <i class="fa-regular fa-file-lines fa-fw" aria-hidden="true" style="font-size: 17px;"></i>
+                      <span class="sr-only">{{ trans('general.documents') }}</span>
+                    </th>
+                    <th class="text-right">
+                      <i class="fa-solid fa-life-ring fa-fw" aria-hidden="true" style="font-size: 17px;"></i>
+                      <span class="sr-only">{{ trans('general.tickets') }}</span>
                     </th>
                     <th class="text-right">
                       <i class="fas fa-paperclip fa-fw" aria-hidden="true" style="font-size: 17px;"></i>
@@ -141,6 +149,12 @@
                     </td>
                     <td class="text-right">
                       {{ number_format($user->consumables->count())  }}
+                    </td>
+                    <td class="text-right">
+                      {{ number_format($user->documentAssignments->count())  }}
+                    </td>
+                    <td class="text-right">
+                      {{ number_format($user->assignedTickets->count())  }}
                     </td>
                     <td class="text-right">
                       {{ number_format($user->uploads->count())  }}

@@ -67,6 +67,14 @@ class DocumentPresenter extends Presenter
                 'formatter' => 'usersLinkObjFormatter',
             ],
             [
+                'field' => 'assigned_to',
+                'searchable' => false,
+                'sortable' => false,
+                'title' => trans('admin/hardware/table.assigned_to'),
+                'visible' => true,
+                'formatter' => 'documentAssignmentsFormatter',
+            ],
+            [
                 'field' => 'company',
                 'searchable' => true,
                 'sortable' => true,

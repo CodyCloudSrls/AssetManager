@@ -78,6 +78,15 @@
                             tooltip="{{ trans('general.documents') }}"
                         />
                     @endcan
+                    @can('view', \App\Models\Ticket::class)
+                        <x-tabs.nav-item
+                            name="tickets"
+                            icon="fa-solid fa-life-ring fa-fw"
+                            label="{{ trans('general.tickets') }}"
+                            count="{{ $asset->tickets()->count() }}"
+                            tooltip="{{ trans('general.tickets') }}"
+                        />
+                    @endcan
                     <x-tabs.note-tab :item="$asset" count="{{ $asset->journal->count() }}"/>
                     <x-tabs.files-tab :item="$asset" count="{{ $asset->uploads()->count() }}"/>
                     <x-tabs.model-files-tab count="{{ $asset->model?->uploads()->count() }}"/>
@@ -334,6 +343,12 @@
                                 'showDocumentColumn' => true,
                                 'showTargetColumn' => false,
                             ])
+                        </x-tabs.pane>
+                    @endcan
+
+                    @can('view', \App\Models\Ticket::class)
+                        <x-tabs.pane name="tickets">
+                            <x-table.tickets :route="route('api.tickets.index', ['asset_id' => $asset->id])"/>
                         </x-tabs.pane>
                     @endcan
 

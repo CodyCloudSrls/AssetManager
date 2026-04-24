@@ -63,6 +63,22 @@ class TicketsController extends Controller
             }
         }
 
+        if ($request->filled('related_user_id')) {
+            $tickets->where('tickets.related_user_id', $request->input('related_user_id'));
+        }
+
+        if ($request->filled('asset_id')) {
+            $tickets->where('tickets.asset_id', $request->input('asset_id'));
+        }
+
+        if ($request->filled('document_id')) {
+            $tickets->where('tickets.document_id', $request->input('document_id'));
+        }
+
+        if ($request->filled('location_id')) {
+            $tickets->where('tickets.location_id', $request->input('location_id'));
+        }
+
         if ($request->boolean('unassigned')) {
             $tickets->Unassigned();
         }

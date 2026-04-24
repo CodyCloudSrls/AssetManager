@@ -73,6 +73,37 @@
 </table>
 @endif
 
+@if ($documentAssignments->count() > 0)
+## {{ $documentAssignments->count() }} {{ trans('general.documents') }}
+
+<table width="100%">
+<tr><th align="left">{{ trans('mail.name') }} </th><th align="left">{{ trans('admin/documents/form.document_type') }}</th><th align="left">{{ trans('admin/documents/form.assignment_status') }}</th></tr>
+@foreach($documentAssignments as $assignment)
+<tr>
+<td>{{ $assignment->document?->name }}</td>
+<td>{{ $assignment->document?->type?->name }}</td>
+<td>{{ $assignment->status_label }}</td>
+</tr>
+@endforeach
+</table>
+@endif
+
+@if ($tickets->count() > 0)
+## {{ $tickets->count() }} {{ trans('general.tickets') }}
+
+<table width="100%">
+<tr><th align="left">{{ trans('admin/tickets/form.ticket_number') }} </th><th align="left">{{ trans('general.subject') }}</th><th align="left">{{ trans('general.status') }}</th><th align="left">{{ trans('admin/tickets/form.priority') }}</th></tr>
+@foreach($tickets as $ticket)
+<tr>
+<td>{{ $ticket->ticket_number }}</td>
+<td>{{ $ticket->subject }}</td>
+<td>{{ $ticket->status?->name }}</td>
+<td>{{ $ticket->priority?->name }}</td>
+</tr>
+@endforeach
+</table>
+@endif
+
 
 @endcomponent
 
