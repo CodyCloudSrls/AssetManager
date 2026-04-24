@@ -75,6 +75,18 @@
                                 </td>
                             </tr>
                             <tr>
+                                <th>{{ trans('admin/tenants/general.mail.title') }}</th>
+                                <td>
+                                    @if ($canManageTenant)
+                                        <a href="{{ route('tenants.mail.edit', $tenant) }}" class="btn btn-default btn-sm">
+                                            {{ trans('admin/tenants/general.mail.edit') }}
+                                        </a>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
                                 <th>{{ trans('admin/tenants/general.helpdesk.public_url') }}</th>
                                 <td><code>{{ $tenant->publicHelpdeskUrl() }}</code></td>
                             </tr>
@@ -143,6 +155,38 @@
                                 -
                             @endif
                         </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <hr>
+
+                <h4>{{ trans('admin/tenants/general.mail.title') }}</h4>
+                <table class="table table-striped snipe-table">
+                    <tbody>
+                    <tr>
+                        <th style="width: 220px;">{{ trans('admin/tenants/general.mail.notification_email') }}</th>
+                        <td>{{ $tenant->notificationEmail() ?: '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ trans('admin/tenants/general.mail.reply_to_email') }}</th>
+                        <td>{{ $tenant->notificationReplyToEmail() ?: '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ trans('admin/tenants/general.mail.reply_to_name') }}</th>
+                        <td>{{ $tenant->notificationReplyToName() ?: '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ trans('admin/tenants/general.mail.from_name') }}</th>
+                        <td>{{ $tenant->notificationFromName() ?: '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ trans('admin/tenants/general.mail.document_review_warning_days') }}</th>
+                        <td>{{ $tenant->documentReviewWarningDays() }} {{ trans('general.days') }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ trans('admin/tenants/general.mail.events_title') }}</th>
+                        <td>{{ collect($tenant->notificationEvents())->map(fn ($event) => \App\Models\Tenant::mailNotificationEventOptions()[$event] ?? $event)->implode(', ') ?: '-' }}</td>
                     </tr>
                     </tbody>
                 </table>

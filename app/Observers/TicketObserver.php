@@ -4,17 +4,20 @@ namespace App\Observers;
 
 use App\Enums\ActionType;
 use App\Models\Ticket;
+use App\Support\Tenants\TenantMailNotificationService;
 
 class TicketObserver
 {
     public function created(Ticket $ticket): void
     {
         $ticket->logCreate(trans('admin/tickets/message.create.success'));
+        app(TenantMailNotificationService::class)->sendTicketCreated($ticket);
     }
 
     public function updated(Ticket $ticket): void
     {
         $changes = $ticket->getChanges();
+        $previousAssigneeId = $ticket->getOriginal('assignee_id');
         unset($changes['updated_at']);
 
         if (! empty($changes)) {
@@ -33,6 +36,10 @@ class TicketObserver
                 ]];
             })->all());
             $logAction->logaction(ActionType::Update->value);
+        }
+
+        if (array_key_exists('assignee_id', $changes)) {
+            app(TenantMailNotificationService::class)->sendTicketAssigned($ticket, $previousAssigneeId ? (int) $previousAssigneeId : null);
         }
     }
 

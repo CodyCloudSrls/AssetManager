@@ -1,4 +1,5 @@
 @php
+    $assignmentCompanyId = $assignmentCompanyId ?? old('company_id', $document->company_id ?? null);
     $oldAssignableType = old('assignment_assignable_type', old('assignable_type', $assignableTypeToken ?? \App\Models\DocumentAssignment::ASSIGNABLE_USER));
     $currentAssignableType = \App\Models\DocumentAssignment::tokenForAssignableClass($oldAssignableType) ?: $oldAssignableType;
     $currentAssignableId = old('assignable_id', $documentAssignment->assignable_id ?? null);
@@ -47,7 +48,7 @@
     'selected_id' => $selectedUserId,
     'select_id' => 'assignable_user_id_select',
     'wrapper_id' => 'assignable_user_wrapper',
-    'company_id' => $document->company_id,
+    'company_id' => $assignmentCompanyId,
     'hide_new' => 'true',
     'style' => $currentAssignableType === \App\Models\DocumentAssignment::ASSIGNABLE_USER ? '' : 'display:none;',
 ])
@@ -58,7 +59,7 @@
     'selected_id' => $selectedAssetId,
     'select_id' => 'assignable_asset_id_select',
     'asset_selector_div_id' => 'assignable_asset_wrapper',
-    'company_id' => $document->company_id,
+    'company_id' => $assignmentCompanyId,
     'style' => $currentAssignableType === \App\Models\DocumentAssignment::ASSIGNABLE_ASSET ? '' : 'display:none;',
 ])
 
@@ -66,15 +67,15 @@
     'translated_name' => trans('admin/documents/form.assignable_target'),
     'fieldname' => 'assignment_assignable_location_id',
     'selected_id' => $selectedLocationId,
-    'company_id' => $document->company_id,
+    'company_id' => $assignmentCompanyId,
     'hide_new' => 'true',
     'style' => $currentAssignableType === \App\Models\DocumentAssignment::ASSIGNABLE_LOCATION ? '' : 'display:none;',
 ])
 
 <div class="form-group">
-    <label for="relation_type" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_relation') }}</label>
+    <label for="assignment_relation_type" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_relation') }}</label>
     <div class="col-md-3 {{ $errors->has('relation_type') ? ' has-error' : '' }}">
-        <select class="form-control select2" name="assignment_relation_type" id="relation_type" aria-label="relation_type" required>
+        <select class="form-control select2" name="assignment_relation_type" id="assignment_relation_type" aria-label="assignment_relation_type" required>
             @foreach (\App\Models\DocumentAssignment::relationTypeOptions() as $relationTypeValue => $relationTypeLabel)
                 <option value="{{ $relationTypeValue }}" @selected(old('assignment_relation_type', old('relation_type', $documentAssignment->relation_type ?? \App\Models\DocumentAssignment::RELATION_ISSUED_TO)) === $relationTypeValue)>{{ $relationTypeLabel }}</option>
             @endforeach
@@ -94,15 +95,15 @@
 </div>
 
 <div class="form-group">
-    <label for="reference_number" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_reference_number') }}</label>
+    <label for="assignment_reference_number" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_reference_number') }}</label>
     <div class="col-md-3 {{ $errors->has('reference_number') ? ' has-error' : '' }}">
-        <input class="form-control" type="text" name="assignment_reference_number" id="reference_number" value="{{ old('assignment_reference_number', old('reference_number', $documentAssignment->reference_number)) }}">
+        <input class="form-control" type="text" name="assignment_reference_number" id="assignment_reference_number" value="{{ old('assignment_reference_number', old('reference_number', $documentAssignment->reference_number)) }}">
         {!! $errors->first('reference_number', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
     </div>
 
     <label for="issuer_id_select" class="col-md-1 control-label">{{ trans('admin/documents/form.assignment_issuer') }}</label>
     <div class="col-md-4">
-        <select class="js-data-ajax" data-endpoint="users" data-placeholder="{{ trans('general.select_user') }}" name="assignment_issuer_id" style="width: 100%" id="issuer_id_select" aria-label="issuer_id" data-company-id="{{ $document->company_id }}">
+        <select class="js-data-ajax" data-endpoint="users" data-placeholder="{{ trans('general.select_user') }}" name="assignment_issuer_id" style="width: 100%" id="issuer_id_select" aria-label="issuer_id" data-company-id="{{ $assignmentCompanyId }}">
             @if ($issuerId = old('assignment_issuer_id', old('issuer_id', $documentAssignment->issuer_id ?? '')))
                 <option value="{{ $issuerId }}" selected="selected" role="option" aria-selected="true">
                     {{ (\App\Models\User::find($issuerId)) ? \App\Models\User::find($issuerId)->present()->fullName : '' }}
@@ -115,21 +116,25 @@
     </div>
 </div>
 
-<div class="form-group">
-    <label for="effective_at" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_effective_at') }}</label>
-    <div class="col-md-2 {{ $errors->has('effective_at') ? ' has-error' : '' }}">
+<div class="form-group {{ $errors->has('effective_at') ? ' has-error' : '' }}">
+    <label for="assignment_effective_at" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_effective_at') }}</label>
+    <div class="col-md-4">
         <x-input.datepicker name="assignment_effective_at" :value="old('assignment_effective_at', old('effective_at', optional($documentAssignment->effective_at)->format('Y-m-d')))" placeholder="{{ trans('general.select_date') }}"/>
         {!! $errors->first('effective_at', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
     </div>
+</div>
 
-    <label for="expires_at" class="col-md-2 control-label">{{ trans('admin/documents/form.assignment_expires_at') }}</label>
-    <div class="col-md-2 {{ $errors->has('expires_at') ? ' has-error' : '' }}">
+<div class="form-group {{ $errors->has('expires_at') ? ' has-error' : '' }}">
+    <label for="assignment_expires_at" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_expires_at') }}</label>
+    <div class="col-md-4">
         <x-input.datepicker name="assignment_expires_at" :value="old('assignment_expires_at', old('expires_at', optional($documentAssignment->expires_at)->format('Y-m-d')))" placeholder="{{ trans('general.select_date') }}"/>
         {!! $errors->first('expires_at', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
     </div>
+</div>
 
-    <label for="renewal_due_at" class="col-md-1 control-label">{{ trans('admin/documents/form.assignment_renewal_due_at') }}</label>
-    <div class="col-md-2 {{ $errors->has('renewal_due_at') ? ' has-error' : '' }}">
+<div class="form-group {{ $errors->has('renewal_due_at') ? ' has-error' : '' }}">
+    <label for="assignment_renewal_due_at" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_renewal_due_at') }}</label>
+    <div class="col-md-4">
         <x-input.datepicker name="assignment_renewal_due_at" :value="old('assignment_renewal_due_at', old('renewal_due_at', optional($documentAssignment->renewal_due_at)->format('Y-m-d')))" placeholder="{{ trans('general.select_date') }}"/>
         {!! $errors->first('renewal_due_at', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
     </div>
@@ -146,7 +151,7 @@
 
         <div id="document_assignment_advanced_details" class="col-md-12" style="{{ $showAssignmentAdvanced ? '' : 'display:none' }}">
             <div class="form-group {{ $errors->has('issued_at') ? ' has-error' : '' }}">
-                <label for="issued_at" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_issued_at') }}</label>
+                <label for="assignment_issued_at" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_issued_at') }}</label>
                 <div class="col-md-4">
                     <x-input.datepicker name="assignment_issued_at" :value="old('assignment_issued_at', old('issued_at', optional($documentAssignment->issued_at)->format('Y-m-d')))" placeholder="{{ trans('general.select_date') }}"/>
                     {!! $errors->first('issued_at', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
@@ -154,7 +159,7 @@
             </div>
 
             <div class="form-group {{ $errors->has('completed_at') ? ' has-error' : '' }}">
-                <label for="completed_at" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_completed_at') }}</label>
+                <label for="assignment_completed_at" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_completed_at') }}</label>
                 <div class="col-md-4">
                     <x-input.datepicker name="assignment_completed_at" :value="old('assignment_completed_at', old('completed_at', optional($documentAssignment->completed_at)->format('Y-m-d')))" placeholder="{{ trans('general.select_date') }}"/>
                     {!! $errors->first('completed_at', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
@@ -162,7 +167,7 @@
             </div>
 
             <div class="form-group {{ $errors->has('revoked_at') ? ' has-error' : '' }}">
-                <label for="revoked_at" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_revoked_at') }}</label>
+                <label for="assignment_revoked_at" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_revoked_at') }}</label>
                 <div class="col-md-4">
                     <x-input.datepicker name="assignment_revoked_at" :value="old('assignment_revoked_at', old('revoked_at', optional($documentAssignment->revoked_at)->format('Y-m-d')))" placeholder="{{ trans('general.select_date') }}"/>
                     {!! $errors->first('revoked_at', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}

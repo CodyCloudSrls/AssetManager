@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers\Documents;
 
+use App\Enums\ActionType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Models\Document;
 use App\Models\DocumentAssignment;
 use App\Models\DocumentFrameworkRequirement;
+use App\Support\Documents\DocumentAssignmentManager;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class DocumentsController extends Controller
 {
@@ -34,14 +38,21 @@ class DocumentsController extends Controller
         $this->fillDocument($document, $request);
         $document->created_by = auth()->id();
 
-        if (! $document->save()) {
-            return redirect()->back()->withInput()->withErrors($document->getErrors());
+        try {
+            $assignmentCreated = DB::transaction(function () use ($request, $document) {
+                $this->persistDocument($document);
+                $this->syncRequirementMappings($document, $request);
+
+                return $this->persistInlineAssignment($request, $document);
+            });
+        } catch (ValidationException $exception) {
+            return redirect()->back()->withInput()->withErrors($exception->errors());
         }
 
-        $this->syncRequirementMappings($document, $request);
-
         return redirect()->route('documents.show', $document)
-            ->with('success', trans('admin/documents/message.create.success'));
+            ->with('success', $assignmentCreated
+                ? trans('admin/documents/message.create.success').' '.trans('admin/documents/message.assignment_create.success')
+                : trans('admin/documents/message.create.success'));
     }
 
     public function show(Document $document): View
@@ -77,14 +88,21 @@ class DocumentsController extends Controller
 
         $this->fillDocument($document, $request);
 
-        if (! $document->save()) {
-            return redirect()->back()->withInput()->withErrors($document->getErrors());
+        try {
+            $assignmentCreated = DB::transaction(function () use ($request, $document) {
+                $this->persistDocument($document);
+                $this->syncRequirementMappings($document, $request);
+
+                return $this->persistInlineAssignment($request, $document);
+            });
+        } catch (ValidationException $exception) {
+            return redirect()->back()->withInput()->withErrors($exception->errors());
         }
 
-        $this->syncRequirementMappings($document, $request);
-
         return redirect()->route('documents.show', $document)
-            ->with('success', trans('admin/documents/message.update.success'));
+            ->with('success', $assignmentCreated
+                ? trans('admin/documents/message.update.success').' '.trans('admin/documents/message.assignment_create.success')
+                : trans('admin/documents/message.update.success'));
     }
 
     public function destroy(Document $document): RedirectResponse
@@ -181,5 +199,50 @@ class DocumentsController extends Controller
         }
 
         $document->frameworkRequirements()->sync($syncData);
+    }
+
+    private function persistDocument(Document $document): void
+    {
+        if ($document->save()) {
+            return;
+        }
+
+        throw ValidationException::withMessages($this->modelErrorMessages($document->getErrors()));
+    }
+
+    private function persistInlineAssignment(StoreDocumentRequest $request, Document $document): bool
+    {
+        if (! DocumentAssignmentManager::submissionRequested($request)) {
+            return false;
+        }
+
+        $assignment = new DocumentAssignment;
+        DocumentAssignmentManager::fillAssignment(
+            $assignment,
+            DocumentAssignmentManager::normalizedPayload($request),
+            $document
+        );
+        $assignment->created_by = auth()->id();
+
+        if (! $assignment->save()) {
+            throw ValidationException::withMessages($this->modelErrorMessages($assignment->getErrors()));
+        }
+
+        DocumentAssignmentManager::logAssignmentAction($document, $assignment, ActionType::Create);
+
+        return true;
+    }
+
+    private function modelErrorMessages($errors): array
+    {
+        if (is_array($errors)) {
+            return $errors;
+        }
+
+        if (is_object($errors) && method_exists($errors, 'toArray')) {
+            return $errors->toArray();
+        }
+
+        return ['general' => [trans('general.error')]];
     }
 }

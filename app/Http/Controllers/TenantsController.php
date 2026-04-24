@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ImageUploadRequest;
 use App\Http\Requests\StoreTenantHelpdeskSettingsRequest;
+use App\Http\Requests\StoreTenantMailSettingsRequest;
 use App\Models\Company;
 use App\Models\Tenant;
 use App\Models\User;
@@ -279,6 +280,21 @@ class TenantsController extends Controller
         ]);
     }
 
+    public function editMail(Tenant $tenant): View
+    {
+        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+
+        $rootCompany = $tenant->rootCompany();
+        abort_if(is_null($rootCompany), 404);
+
+        return view('tenants.mail', [
+            'tenant' => $tenant,
+            'rootCompany' => $rootCompany,
+            'mailEventOptions' => Tenant::mailNotificationEventOptions(),
+            'enabledEvents' => $tenant->notificationEvents(),
+        ]);
+    }
+
     public function updateHelpdesk(StoreTenantHelpdeskSettingsRequest $request, Tenant $tenant): RedirectResponse
     {
         abort_unless(auth()->user()->canManageTenant($tenant), 403);
@@ -309,6 +325,32 @@ class TenantsController extends Controller
 
         return redirect()->route('tenants.show', $tenant)
             ->with('success', trans('admin/tenants/message.helpdesk.update.success'));
+    }
+
+    public function updateMail(StoreTenantMailSettingsRequest $request, Tenant $tenant): RedirectResponse
+    {
+        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+
+        $rootCompany = $tenant->rootCompany();
+        abort_if(is_null($rootCompany), 404);
+
+        $selectedEvents = collect($request->input('tenant_mail_notification_events', []))
+            ->filter(fn ($value) => is_string($value) && $value !== '')
+            ->unique()
+            ->values()
+            ->all();
+
+        $rootCompany->tenant_notification_email = $request->input('tenant_notification_email');
+        $rootCompany->tenant_mail_reply_to_email = $request->input('tenant_mail_reply_to_email');
+        $rootCompany->tenant_mail_reply_to_name = $request->input('tenant_mail_reply_to_name');
+        $rootCompany->tenant_mail_from_name = $request->input('tenant_mail_from_name');
+        $rootCompany->helpdesk_contact_email = $request->input('helpdesk_contact_email');
+        $rootCompany->tenant_document_review_warning_days = $request->integer('tenant_document_review_warning_days', 30);
+        $rootCompany->tenant_mail_notification_events = $selectedEvents;
+        $rootCompany->save();
+
+        return redirect()->route('tenants.show', $tenant)
+            ->with('success', trans('admin/tenants/message.mail.update.success'));
     }
 
     private function resolveSwitchRedirect(Request $request): string

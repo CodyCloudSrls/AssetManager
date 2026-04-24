@@ -28,4 +28,9 @@ return [
         'attachments_disabled' => 'Attachments are disabled for this tenant public helpdesk portal.',
         'no_public_types' => 'Enable at least one public ticket type before activating the helpdesk portal.',
     ],
+    'mail' => [
+        'update' => [
+            'success' => 'Tenant mail settings updated successfully.',
+        ],
+    ],
 ];

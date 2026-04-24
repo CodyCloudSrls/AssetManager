@@ -44,5 +44,40 @@ return array (
     'public_ticket_types' => 'Publicly exposed ticket types',
     'no_ticket_types_available' => 'No public ticket types are available for this tenant.',
   ),
+  'mail' => 
+  array (
+    'title' => 'Mail & notifications',
+    'edit' => 'Configure mail',
+    'save' => 'Save mail settings',
+    'smtp_title' => 'Central SMTP',
+    'smtp_help' => 'Tenant notifications use the central CodyCloud mail server. This page controls recipients, sender naming, reply-to handling, and tenant-specific notification events.',
+    'notification_email' => 'Tenant notification email',
+    'notification_email_help' => 'One or more email addresses, separated by commas, that should receive tenant operational notifications.',
+    'reply_to_email' => 'Reply-to email',
+    'reply_to_name' => 'Reply-to name',
+    'from_name' => 'Sender display name',
+    'from_name_help' => 'Displayed as the sender name while the platform keeps using the central SMTP transport.',
+    'helpdesk_contact_email' => 'Operational helpdesk email',
+    'helpdesk_contact_email_help' => 'Shown in the public helpdesk and used as the tenant helpdesk operational contact.',
+    'document_review_warning_days' => 'Document review warning window',
+    'document_review_warning_days_help' => 'Number of days ahead used for document review reminder digests.',
+    'events_title' => 'Notification events',
+    'events' => 
+    array (
+      'ticket_created' => 'Ticket created',
+      'ticket_public_reply' => 'Public ticket reply',
+      'ticket_assigned' => 'Ticket assigned',
+      'ticket_sla_alert' => 'Ticket SLA alert',
+      'document_review_due' => 'Documents due for review',
+    ),
+    'event_descriptions' => 
+    array (
+      'ticket_created' => 'Send an email when a new ticket is opened for the tenant, including public portal submissions.',
+      'ticket_public_reply' => 'Send an email when a public-facing reply is added to a tenant ticket.',
+      'ticket_assigned' => 'Send an email when a ticket is assigned or reassigned to an operator.',
+      'ticket_sla_alert' => 'Send a daily digest for open tickets with SLA due dates that are at risk or already breached.',
+      'document_review_due' => 'Send a daily digest for documents that are due or overdue for review.',
+    ),
+  ),
   'help' => 'Create and manage SaaS tenants.',
 );

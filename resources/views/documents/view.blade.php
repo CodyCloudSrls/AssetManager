@@ -10,6 +10,63 @@
 @endsection
 
 @section('content')
+    @php
+        $assignmentCount = $document->documentAssignments->count();
+        $assignmentPreview = $document->documentAssignments->take(5);
+        $remainingAssignmentCount = max(0, $assignmentCount - $assignmentPreview->count());
+        $statusLabel = \App\Models\Document::getStatusOptions()[$document->status] ?? $document->status;
+        $statusClass = match ($document->status) {
+            \App\Models\Document::STATUS_ACTIVE => 'label label-success',
+            \App\Models\Document::STATUS_IN_REVIEW => 'label label-warning',
+            \App\Models\Document::STATUS_OBSOLETE,
+            \App\Models\Document::STATUS_ARCHIVED => 'label label-danger',
+            default => 'label label-default',
+        };
+
+        $activeAssignmentsCount = $document->documentAssignments->filter(function ($assignment) {
+            return in_array($assignment->status, [
+                \App\Models\DocumentAssignment::STATUS_PLANNED,
+                \App\Models\DocumentAssignment::STATUS_REQUIRED,
+                \App\Models\DocumentAssignment::STATUS_ACTIVE,
+            ], true);
+        })->count();
+        $renewalDueCount = $document->documentAssignments->filter(fn ($assignment) => $assignment->is_expiring)->count();
+        $expiredAssignmentsCount = $document->documentAssignments->filter(fn ($assignment) => $assignment->is_expired)->count();
+
+        $datePercent = function ($start, $end) {
+            if (! $start || ! $end) {
+                return 0;
+            }
+
+            $startDate = $start instanceof \Carbon\Carbon ? $start : \Carbon\Carbon::parse($start);
+            $endDate = $end instanceof \Carbon\Carbon ? $end : \Carbon\Carbon::parse($end);
+
+            $totalDays = max(1, $startDate->diffInDays($endDate));
+            $elapsedDays = $startDate->diffInDays(\Carbon\Carbon::now());
+
+            return min(100, max(0, ($elapsedDays / $totalDays) * 100));
+        };
+
+        $reviewStart = $document->effective_at ?: $document->issued_at ?: $document->created_at;
+        $reviewPercent = $datePercent($reviewStart, $document->next_review_at);
+        $reviewDate = $document->next_review_at ? \Carbon\Carbon::parse($document->next_review_at) : null;
+        $isReviewOverdue = $reviewDate?->isPast() ?? false;
+        $isReviewDueSoon = ! $isReviewOverdue && $reviewDate?->lte(\Carbon\Carbon::today()->addDays(30));
+
+        $nextRenewalAssignment = $document->documentAssignments
+            ->filter(fn ($assignment) => ! is_null($assignment->renewal_due_at))
+            ->sortBy('renewal_due_at')
+            ->first();
+        $renewalStart = $nextRenewalAssignment?->effective_at ?: $nextRenewalAssignment?->issued_at ?: $document->effective_at ?: $document->issued_at ?: $document->created_at;
+        $renewalPercent = $datePercent($renewalStart, $nextRenewalAssignment?->renewal_due_at);
+
+        $nextExpiryAssignment = $document->documentAssignments
+            ->filter(fn ($assignment) => ! is_null($assignment->expires_at))
+            ->sortBy('expires_at')
+            ->first();
+        $expiryStart = $nextExpiryAssignment?->effective_at ?: $nextExpiryAssignment?->issued_at ?: $document->effective_at ?: $document->issued_at ?: $document->created_at;
+        $expiryPercent = $datePercent($expiryStart, $nextExpiryAssignment?->expires_at);
+    @endphp
     <x-container columns="2">
         <x-page-column class="col-md-9 main-panel">
             <x-tabs>
@@ -31,6 +88,54 @@
                     <x-tabs.pane name="details">
                         <div class="clearfix visible-lg-block" style="padding: 6px;"></div>
 
+                        <x-page-column class="col-md-4 col-sm-12">
+                            <x-well>
+                                <span class="progress-text">{{ trans('general.status') }}</span>
+                                <div style="margin-top: 10px;">
+                                    <span class="{{ $statusClass }}">{{ $statusLabel }}</span>
+                                </div>
+                                @if ($activeAssignmentsCount > 0)
+                                    <div class="text-muted" style="margin-top: 8px;">
+                                        {{ trans('admin/documents/general.assignments') }}: {{ $activeAssignmentsCount }}
+                                    </div>
+                                @endif
+                            </x-well>
+                        </x-page-column>
+
+                        <x-page-column class="col-md-4 col-sm-12">
+                            <x-well>
+                                <x-icon type="calendar" class="fa-fw"/>
+                                <strong>{{ trans('admin/documents/form.next_review_at') }}</strong>
+                                @if ($document->next_review_at)
+                                    {{ Helper::getFormattedDateObject($document->next_review_at, 'date', false) }}
+                                    <span class="text-muted">{{ \Carbon\Carbon::parse($document->next_review_at)->diffForHumans(['parts' => 2]) }}</span>
+                                @else
+                                    {{ trans('general.na') }}
+                                @endif
+                            </x-well>
+                        </x-page-column>
+
+                        <x-page-column class="col-md-4 col-sm-12">
+                            <x-well>
+                                <x-icon type="checkout" class="fa-fw"/>
+                                <strong>{{ trans('admin/documents/general.assignments') }}</strong>
+                                @if ($assignmentCount > 0)
+                                    {{ $assignmentCount }}
+                                    <span class="text-muted">
+                                        @if ($renewalDueCount > 0)
+                                            • {{ $renewalDueCount }} {{ trans('admin/documents/general.assignment_expiring_flag') }}
+                                        @elseif ($expiredAssignmentsCount > 0)
+                                            • {{ $expiredAssignmentsCount }} {{ trans('admin/documents/general.assignment_expired_flag') }}
+                                        @endif
+                                    </span>
+                                @else
+                                    {{ trans('general.na') }}
+                                @endif
+                            </x-well>
+                        </x-page-column>
+
+                        <div class="clearfix"></div>
+
                         <x-page-column class="col-md-8 col-sm-12">
                             <x-page-data>
                                 <x-data-row :label="trans('admin/documents/form.document_number')">{{ $document->document_number }}</x-data-row>
@@ -50,7 +155,9 @@
                                 </x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.reference')">{{ $document->reference }}</x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.version')">{{ $document->version }}</x-data-row>
-                                <x-data-row :label="trans('general.status')">{{ \App\Models\Document::getStatusOptions()[$document->status] ?? $document->status }}</x-data-row>
+                                <x-data-row :label="trans('general.status')">
+                                    <span class="{{ $statusClass }}">{{ $statusLabel }}</span>
+                                </x-data-row>
                                 <x-data-row :label="trans('general.company')">{{ $document->company?->name }}</x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.owner')">{{ $document->owner?->display_name }}</x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.classification')">{{ $document->classification }}</x-data-row>
@@ -58,13 +165,37 @@
                                 <x-data-row :label="trans('admin/documents/form.scope')">{{ $document->scope }}</x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.issued_at')">{{ Helper::getFormattedDateObject($document->issued_at, 'date', false) }}</x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.effective_at')">{{ Helper::getFormattedDateObject($document->effective_at, 'date', false) }}</x-data-row>
-                                <x-data-row :label="trans('admin/documents/form.next_review_at')">{{ Helper::getFormattedDateObject($document->next_review_at, 'date', false) }}</x-data-row>
-                                <x-data-row :label="trans('admin/documents/general.assignments')">
-                                    <a href="#assignments" data-toggle="tab">
-                                        {{ trans('admin/documents/general.assignments') }}
-                                        @if ($document->documentAssignments->count() > 0)
-                                            ({{ $document->documentAssignments->count() }})
+                                <x-data-row :label="trans('admin/documents/form.next_review_at')">
+                                    {{ Helper::getFormattedDateObject($document->next_review_at, 'date', false) }}
+                                    @if ($document->next_review_at)
+                                        <span class="text-muted"> - {{ \Carbon\Carbon::parse($document->next_review_at)->diffForHumans(['parts' => 2]) }}</span>
+                                        @if ($isReviewOverdue)
+                                            <span class="text-danger"> {{ trans('admin/documents/general.review_overdue') }}</span>
+                                        @elseif ($isReviewDueSoon)
+                                            <span class="text-warning"> {{ trans('admin/documents/general.review_due') }}</span>
                                         @endif
+                                    @endif
+                                </x-data-row>
+                                <x-data-row :label="trans('admin/documents/general.assignments')">
+                                    @if ($assignmentCount > 0)
+                                        <ul style="padding-left: 18px; margin-bottom: 8px;">
+                                            @foreach ($assignmentPreview as $assignment)
+                                                <li>
+                                                    @if ($assignment->assignable_url)
+                                                        <a href="{{ $assignment->assignable_url }}">{{ $assignment->assignable_display_name }}</a>
+                                                    @else
+                                                        {{ $assignment->assignable_display_name ?: '—' }}
+                                                    @endif
+                                                    <span class="text-muted">({{ $assignment->relation_type_label }}, {{ $assignment->status_label }})</span>
+                                                </li>
+                                            @endforeach
+                                            @if ($remainingAssignmentCount > 0)
+                                                <li class="text-muted">+{{ $remainingAssignmentCount }}</li>
+                                            @endif
+                                        </ul>
+                                    @endif
+                                    <a href="#assignments" data-toggle="tab">
+                                        {{ trans('admin/documents/general.assignments') }}@if ($assignmentCount > 0) ({{ $assignmentCount }}) @endif
                                     </a>
                                 </x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.control_url')">
@@ -80,42 +211,50 @@
                                 </x-data-row>
                             </x-page-data>
                         </x-page-column>
+
+                        <x-page-column class="col-md-4 col-sm-12">
+                            @if ($document->next_review_at || $nextRenewalAssignment || $nextExpiryAssignment)
+                                <x-well class="well-sm">
+                                    @if ($document->next_review_at)
+                                        <x-progressbar use_well="false" columns="12" :text="trans('admin/documents/form.next_review_at')" :percent="$reviewPercent">
+                                            {{ Helper::getFormattedDateObject($document->next_review_at, 'date', false) }}
+                                        </x-progressbar>
+                                    @endif
+
+                                    @if ($nextRenewalAssignment)
+                                        <x-progressbar use_well="false" columns="12" :text="trans('admin/documents/form.assignment_renewal_due_at')" :percent="$renewalPercent">
+                                            {{ Helper::getFormattedDateObject($nextRenewalAssignment->renewal_due_at, 'date', false) }}
+                                        </x-progressbar>
+                                    @endif
+
+                                    @if ($nextExpiryAssignment)
+                                        <x-progressbar use_well="false" columns="12" :text="trans('admin/documents/form.assignment_expires_at')" :percent="$expiryPercent">
+                                            {{ Helper::getFormattedDateObject($nextExpiryAssignment->expires_at, 'date', false) }}
+                                        </x-progressbar>
+                                    @endif
+                                </x-well>
+                            @endif
+
+                            <x-well class="well-sm">
+                                <div class="well-display">
+                                    <x-data-row icon_type="checkout" :label="trans('admin/documents/general.assignments')">
+                                        {{ $assignmentCount }}
+                                    </x-data-row>
+                                    <x-data-row :label="trans('general.status')">
+                                        {{ $activeAssignmentsCount }}
+                                    </x-data-row>
+                                    <x-data-row :label="trans('admin/documents/general.assignment_expiring_flag')">
+                                        {{ $renewalDueCount }}
+                                    </x-data-row>
+                                    <x-data-row :label="trans('admin/documents/general.assignment_expired_flag')">
+                                        {{ $expiredAssignmentsCount }}
+                                    </x-data-row>
+                                </div>
+                            </x-well>
+                        </x-page-column>
                     </x-tabs.pane>
 
                     <x-tabs.pane name="assignments">
-                        @can('update', $document)
-                            @if ($document->company_id)
-                                <div class="box box-default">
-                                    <div class="box-header with-border">
-                                        <h3 class="box-title">{{ trans('admin/documents/general.create_assignment') }}</h3>
-                                    </div>
-                                    <div class="box-body">
-                                        <form method="POST" action="{{ route('documents.assignments.store', $document) }}" class="form-horizontal">
-                                            @csrf
-                                            @include('documents.partials.assignment-fields', [
-                                                'document' => $document,
-                                                'documentAssignment' => new \App\Models\DocumentAssignment,
-                                                'assignableTypeToken' => old('assignable_type', \App\Models\DocumentAssignment::ASSIGNABLE_USER),
-                                            ])
-
-                                            <div class="form-group">
-                                                <div class="col-md-7 col-md-offset-3">
-                                                    <button class="btn btn-success">
-                                                        <x-icon type="checkmark" />
-                                                        {{ trans('general.save') }}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            @else
-                                <div class="callout callout-warning">
-                                    {{ trans('admin/documents/message.assignment_requires_company') }}
-                                </div>
-                            @endif
-                        @endcan
-
                         <div class="box box-default">
                             <div class="box-header with-border">
                                 <h3 class="box-title">{{ trans('admin/documents/general.assignments') }}</h3>
@@ -152,34 +291,70 @@
 
         <x-page-column class="col-md-3">
             <x-box class="side-box expanded">
-                <div class="box-body">
-                    <div class="text-right" style="margin-bottom: 15px;">
+                <x-info-panel :infoPanelObj="$document">
+                    <x-slot:buttons>
                         <x-button.edit :item="$document" :route="route('documents.edit', $document)" />
-                        @can('delete', $document)
-                            @if ($document->isDeletable())
-                                <a href="{{ route('documents.destroy', $document) }}"
-                                   class="pull-right btn btn-sm btn-danger delete-asset"
-                                   style="margin-right: 8px;"
-                                   data-toggle="modal"
-                                   data-title="{{ trans('general.delete') }}"
-                                   data-content="{{ trans('general.sure_to_delete_var', ['item' => $document->name]) }}"
-                                   data-target="#dataConfirmModal"
-                                   data-tooltip="true"
-                                   data-icon="fa fa-trash"
-                                   data-placement="top"
-                                   onClick="return false;">
-                                    <x-icon type="delete" class="fa-fw" />
-                                </a>
-                            @endif
-                        @endcan
-                    </div>
+                        <x-button.delete :item="$document" />
+                    </x-slot:buttons>
 
-                    <x-page-data>
-                        <x-data-row :label="trans('general.created_by')">{{ $document->adminuser?->display_name }}</x-data-row>
-                        <x-data-row :label="trans('general.created_at')">{{ Helper::getFormattedDateObject($document->created_at, 'datetime', false) }}</x-data-row>
-                        <x-data-row :label="trans('general.updated_at')">{{ Helper::getFormattedDateObject($document->updated_at, 'datetime', false) }}</x-data-row>
-                    </x-page-data>
+                    <x-info-element icon="fa-regular fa-file-lines fa-fw" :title="trans('general.name')">
+                        <x-copy-to-clipboard class="pull-right" copy_what="document_name">{{ $document->name }}</x-copy-to-clipboard>
+                    </x-info-element>
 
+                    <x-info-element icon="fas fa-hashtag fa-fw" :title="trans('admin/documents/form.document_number')">
+                        <x-copy-to-clipboard class="pull-right" copy_what="document_number">{{ $document->document_number }}</x-copy-to-clipboard>
+                    </x-info-element>
+
+                    <x-info-element icon="fas fa-folder-open fa-fw" :title="trans('admin/documents/form.document_type')">
+                        {{ $document->type?->name }}
+                    </x-info-element>
+
+                    <x-info-element icon="fas fa-sitemap fa-fw" :title="trans('admin/documents/form.framework')">
+                        {{ $document->framework?->name }}
+                    </x-info-element>
+
+                    <x-info-element icon="fas fa-building fa-fw" :title="trans('general.company')">
+                        {{ $document->company?->name }}
+                    </x-info-element>
+
+                    <x-info-element icon="fas fa-user fa-fw" :title="trans('admin/documents/form.owner')">
+                        {{ $document->owner?->display_name }}
+                    </x-info-element>
+
+                    <x-info-element icon="fas fa-link fa-fw" :title="trans('admin/documents/general.assignments')">
+                        <a href="#assignments" data-toggle="tab">
+                            {{ $assignmentCount }} {{ trans('admin/documents/general.assignments') }}
+                        </a>
+                    </x-info-element>
+
+                    <x-info-element icon="fas fa-calendar-day fa-fw" :title="trans('admin/documents/form.issued_at')">
+                        {{ Helper::getFormattedDateObject($document->issued_at, 'date', false) }}
+                    </x-info-element>
+
+                    <x-info-element icon="fas fa-calendar-check fa-fw" :title="trans('admin/documents/form.effective_at')">
+                        {{ Helper::getFormattedDateObject($document->effective_at, 'date', false) }}
+                    </x-info-element>
+
+                    <x-info-element icon="fas fa-calendar-alt fa-fw" :title="trans('admin/documents/form.next_review_at')">
+                        {{ Helper::getFormattedDateObject($document->next_review_at, 'date', false) }}
+                    </x-info-element>
+
+                    @if ($document->control_url)
+                        <x-info-element icon="fas fa-link fa-fw" :title="trans('admin/documents/form.control_url')">
+                            <a href="{{ $document->control_url }}" target="_blank" rel="noopener noreferrer">{{ $document->control_url }}</a>
+                        </x-info-element>
+                    @endif
+
+                    <x-info-element icon="fas fa-calendar-plus fa-fw" :title="trans('general.created_at')">
+                        {{ Helper::getFormattedDateObject($document->created_at, 'datetime', false) }}
+                    </x-info-element>
+
+                    <x-info-element icon="fas fa-calendar-check fa-fw" :title="trans('general.updated_at')">
+                        {{ Helper::getFormattedDateObject($document->updated_at, 'datetime', false) }}
+                    </x-info-element>
+                </x-info-panel>
+
+                <div class="box-body">
                     <div style="margin-top: 15px;">
                         <x-button.note :item="$document" wide="true" />
                     </div>
@@ -196,34 +371,4 @@
 
     @include ('modals.add-note', ['type' => 'document', 'id' => $document->id])
     @include ('partials.bootstrap-table')
-
-    <script nonce="{{ csrf_token() }}">
-        $(function () {
-            function selectedAssignableType() {
-                return $('input[name="assignment_assignable_type"]:checked').val();
-            }
-
-            function syncAssignableSelectors() {
-                const selectedType = selectedAssignableType();
-                $('#assignable_user_wrapper').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_USER }}');
-                $('#assignable_asset_wrapper').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_ASSET }}');
-                $('#assignable_location_id').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_LOCATION }}');
-            }
-
-            $('input[name="assignment_assignable_type"]').on('change', syncAssignableSelectors);
-            $('#document_assignment_advanced_toggle').on('click', function () {
-                $('#document_assignment_advanced_details').slideToggle('fast');
-                $('#document_assignment_advanced_icon').toggleClass('fa-caret-right fa-caret-down');
-            });
-            syncAssignableSelectors();
-
-            @if ($errors->has('assignable_type') || $errors->has('assignable_id') || $errors->has('assignable_user_id') || $errors->has('assignable_asset_id') || $errors->has('assignable_location_id') || $errors->has('relation_type') || $errors->has('status') || $errors->has('issuer_id') || $errors->has('reference_number') || $errors->has('issued_at') || $errors->has('effective_at') || $errors->has('expires_at') || $errors->has('renewal_due_at') || $errors->has('completed_at') || $errors->has('revoked_at') || $errors->has('notes'))
-                $('a[href="#assignments"]').tab('show');
-            @endif
-
-            @if ($errors->has('issued_at') || $errors->has('completed_at') || $errors->has('revoked_at') || $errors->has('notes'))
-                $('#document_assignment_advanced_icon').removeClass('fa-caret-right').addClass('fa-caret-down');
-            @endif
-        });
-    </script>
 @endsection

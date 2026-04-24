@@ -141,6 +141,8 @@ Route::group(['prefix' => 'admin/tenants', 'middleware' => ['auth']], function (
     Route::delete('/{tenant}', [TenantsController::class, 'destroy'])->name('tenants.destroy');
     Route::get('/{tenant}/helpdesk', [TenantsController::class, 'editHelpdesk'])->name('tenants.helpdesk.edit');
     Route::put('/{tenant}/helpdesk', [TenantsController::class, 'updateHelpdesk'])->name('tenants.helpdesk.update');
+    Route::get('/{tenant}/mail', [TenantsController::class, 'editMail'])->name('tenants.mail.edit');
+    Route::put('/{tenant}/mail', [TenantsController::class, 'updateMail'])->name('tenants.mail.update');
     Route::post('/{tenant}/members', [TenantsController::class, 'storeMember'])->name('tenants.members.store');
     Route::put('/{tenant}/members/{user}', [TenantsController::class, 'updateMember'])->name('tenants.members.update');
     Route::delete('/{tenant}/members/{user}', [TenantsController::class, 'destroyMember'])->name('tenants.members.destroy');

@@ -44,5 +44,40 @@ return array (
     'public_ticket_types' => 'Tipologie esposte al pubblico',
     'no_ticket_types_available' => 'Nessuna tipologia ticket pubblica disponibile per questo tenant.',
   ),
+  'mail' => 
+  array (
+    'title' => 'Mail e notifiche',
+    'edit' => 'Configura mail',
+    'save' => 'Salva impostazioni mail',
+    'smtp_title' => 'SMTP centrale',
+    'smtp_help' => 'Le notifiche tenant usano il server mail centrale CodyCloud. Da qui gestisci destinatari, nome mittente, reply-to ed eventi notificabili del tenant.',
+    'notification_email' => 'Email notifiche tenant',
+    'notification_email_help' => 'Uno o più indirizzi email, separati da virgola, che devono ricevere le notifiche operative del tenant.',
+    'reply_to_email' => 'Email reply-to',
+    'reply_to_name' => 'Nome reply-to',
+    'from_name' => 'Nome mittente mostrato',
+    'from_name_help' => 'Viene mostrato come nome mittente mentre la piattaforma continua a usare il trasporto SMTP centrale.',
+    'helpdesk_contact_email' => 'Email operativa helpdesk',
+    'helpdesk_contact_email_help' => 'Viene esposta nel portale pubblico helpdesk e usata come contatto operativo del tenant.',
+    'document_review_warning_days' => 'Finestra avviso revisione documenti',
+    'document_review_warning_days_help' => 'Numero di giorni di anticipo usato per i digest dei documenti in revisione.',
+    'events_title' => 'Eventi notificabili',
+    'events' => 
+    array (
+      'ticket_created' => 'Ticket creato',
+      'ticket_public_reply' => 'Risposta pubblica ticket',
+      'ticket_assigned' => 'Ticket assegnato',
+      'ticket_sla_alert' => 'Avviso SLA ticket',
+      'document_review_due' => 'Documenti in revisione',
+    ),
+    'event_descriptions' => 
+    array (
+      'ticket_created' => 'Invia una mail quando viene aperto un nuovo ticket per il tenant, incluse le aperture dal portale pubblico.',
+      'ticket_public_reply' => 'Invia una mail quando viene aggiunta una risposta visibile lato pubblico a un ticket del tenant.',
+      'ticket_assigned' => 'Invia una mail quando un ticket viene assegnato o riassegnato a un operatore.',
+      'ticket_sla_alert' => 'Invia un digest giornaliero dei ticket aperti con SLA a rischio o già superato.',
+      'document_review_due' => 'Invia un digest giornaliero dei documenti in revisione o già scaduti.',
+    ),
+  ),
   'help' => 'Crea e gestisci i tenant SaaS.',
 );

@@ -17,6 +17,7 @@ use App\Models\TicketStatus;
 use App\Models\TicketType;
 use App\Models\TicketWorklog;
 use App\Models\User;
+use App\Support\Tenants\TenantMailNotificationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -164,10 +165,14 @@ class TicketsController extends Controller
 
         $isPublic = $request->boolean('is_public');
 
-        $ticket->addComment($request->input('message'), auth()->user(), $isPublic, [
+        $comment = $ticket->addComment($request->input('message'), auth()->user(), $isPublic, [
             'visibility' => ['old' => null, 'new' => $isPublic ? 'public' : 'internal'],
             'source' => ['old' => null, 'new' => $isPublic ? Ticket::SOURCE_PUBLIC : Ticket::SOURCE_INTERNAL],
         ]);
+
+        if ($isPublic) {
+            app(TenantMailNotificationService::class)->sendTicketPublicReply($ticket, $comment, auth()->user()?->display_name);
+        }
 
         return redirect()->route('tickets.show', $ticket)
             ->withFragment('comments')
@@ -212,10 +217,14 @@ class TicketsController extends Controller
         } elseif ($request->filled('message')) {
             $isPublicMessage = $request->boolean('is_public_message');
 
-            $ticket->addComment($request->input('message'), auth()->user(), $isPublicMessage, [
+            $comment = $ticket->addComment($request->input('message'), auth()->user(), $isPublicMessage, [
                 'visibility' => ['old' => null, 'new' => $isPublicMessage ? 'public' : 'internal'],
                 'source' => ['old' => null, 'new' => $isPublicMessage ? Ticket::SOURCE_PUBLIC : Ticket::SOURCE_INTERNAL],
             ]);
+
+            if ($isPublicMessage) {
+                app(TenantMailNotificationService::class)->sendTicketPublicReply($ticket, $comment, auth()->user()?->display_name);
+            }
         }
 
         return redirect()->route('tickets.show', $ticket)
