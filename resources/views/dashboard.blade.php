@@ -68,6 +68,41 @@
             width: 14.2857%;
         }
     }
+    .dashboard-status-chart {
+        position: relative;
+        width: 100%;
+        height: 320px;
+    }
+    .dashboard-status-chart canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+    }
+    @media (min-width: 992px) {
+        .dashboard-activity-row {
+            display: flex;
+            align-items: stretch;
+        }
+        .dashboard-activity-row > [class*="col-"] {
+            display: flex;
+        }
+        .dashboard-activity-box,
+        .dashboard-status-box {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        .dashboard-status-box .box-body {
+            display: flex;
+            flex: 1;
+            align-items: stretch;
+        }
+        .dashboard-status-chart {
+            flex: 1;
+            height: auto;
+            min-height: 0;
+        }
+    }
 </style>
 
 @if ($snipeSettings->dashboard_message!='')
@@ -289,9 +324,9 @@
 @else
 
 <!-- recent activity -->
-<div class="row">
+<div class="row dashboard-activity-row">
   <div class="col-md-8">
-    <div class="box box-default">
+    <div class="box box-default dashboard-activity-box">
       <div class="box-header with-border">
         <h2 class="box-title">{{ trans('general.recent_activity') }}</h2>
         <div class="box-tools pull-right">
@@ -339,7 +374,7 @@
     </div><!-- /.box -->
   </div>
   <div class="col-md-4">
-        <div class="box box-default">
+        <div class="box box-default dashboard-status-box">
             <div class="box-header with-border">
                 <h2 class="box-title">
                     {{ (\App\Models\Setting::getSettings()->dash_chart_type == 'name') ? trans('general.assets_by_status') : trans('general.assets_by_status_type') }}
@@ -353,13 +388,9 @@
             </div>
             <!-- /.box-header -->
             <div class="box-body">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="chart-responsive">
-                            <canvas id="statusPieChart" height="260"></canvas>
-                        </div> <!-- ./chart-responsive -->
-                    </div> <!-- /.col -->
-                </div> <!-- /.row -->
+                <div class="chart-responsive dashboard-status-chart">
+                    <canvas id="statusPieChart"></canvas>
+                </div> <!-- ./chart-responsive -->
             </div><!-- /.box-body -->
         </div> <!-- /.box -->
   </div>
@@ -585,10 +616,10 @@
 
       if (statusPieCanvas) {
       var pieOptions = {
+              responsive: true,
+              maintainAspectRatio: false,
               legend: {
                   position: 'top',
-                  responsive: true,
-                  maintainAspectRatio: true,
               },
               tooltips: {
                 callbacks: {
