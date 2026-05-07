@@ -2262,7 +2262,7 @@
 
         {{-- Javascript files --}}
         <script src="{{ url(mix('js/dist/all.js')) }}" nonce="{{ csrf_token() }}"></script>
-        <script src="{{ url('js/select2/i18n/'.Helper::mapBackToLegacyLocale(app()->getLocale()).'.js') }}"></script>
+        <script src="{{ url('js/select2/i18n/'.Helper::select2LanguageLocale().'.js') }}"></script>
 
         {{-- Page level javascript --}}
         @stack('js')

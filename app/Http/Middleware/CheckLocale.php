@@ -47,7 +47,7 @@ class CheckLocale
 
         }
 
-        app()->setLocale(Helper::mapLegacyLocale($language));
+        app()->setLocale(Helper::normalizeSupportedLocale($language));
 
         return $next($request);
     }

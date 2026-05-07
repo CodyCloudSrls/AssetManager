@@ -26,7 +26,7 @@ return array (
   'root_company_link' => 'Open root company',
   'edit_root_company' => 'Edit root company',
   'companies' => 'Tenant companies',
-  'helpdesk' => 
+  'helpdesk' =>
   array (
     'title' => 'Public helpdesk',
     'edit' => 'Configure helpdesk',
@@ -44,7 +44,7 @@ return array (
     'public_ticket_types' => 'Publicly exposed ticket types',
     'no_ticket_types_available' => 'No public ticket types are available for this tenant.',
   ),
-  'mail' => 
+  'mail' =>
   array (
     'title' => 'Mail & notifications',
     'edit' => 'Configure mail',
@@ -62,7 +62,7 @@ return array (
     'document_review_warning_days' => 'Document review warning window',
     'document_review_warning_days_help' => 'Number of days ahead used for document review reminder digests.',
     'events_title' => 'Notification events',
-    'events' => 
+    'events' =>
     array (
       'ticket_created' => 'Ticket created',
       'ticket_public_reply' => 'Public ticket reply',
@@ -70,7 +70,7 @@ return array (
       'ticket_sla_alert' => 'Ticket SLA alert',
       'document_review_due' => 'Documents due for review',
     ),
-    'event_descriptions' => 
+    'event_descriptions' =>
     array (
       'ticket_created' => 'Send an email when a new ticket is opened for the tenant, including public portal submissions.',
       'ticket_public_reply' => 'Send an email when a public-facing reply is added to a tenant ticket.',

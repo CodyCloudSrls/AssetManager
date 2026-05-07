@@ -33,9 +33,9 @@ class SnipeTranslatorTest extends TestCase
     public function test_backup_string()
     {
         $this->assertEquals(
-            'Ingen sikkerhetskopier ble gjort ennå',
-            trans('backup::notifications.no_backups_info', [], 'nb-NO'),
-            "Norwegian 'no backups info' message should be here"
+            'Non sono stati ancora effettuati backup',
+            trans('backup::notifications.no_backups_info', [], 'it-IT'),
+            "Italian 'no backups info' message should be here"
         );
     }
 
@@ -83,12 +83,11 @@ class SnipeTranslatorTest extends TestCase
         );
     }
 
-    public function test_nonlegacy_backup_locale()
+    public function test_legacy_backup_locale_mapping()
     {
-        // Spatie backup *usually* uses two-character locales, but pt-BR is an exception
         $this->assertEquals(
             'Mensagem de exceção: MESSAGE',
-            trans('backup::notifications.exception_message',['message' => 'MESSAGE'],'pt-BR')
+            trans('backup::notifications.exception_message',['message' => 'MESSAGE'],'pt-PT')
         );
     }
 }

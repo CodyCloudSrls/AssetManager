@@ -1,23 +1,23 @@
 <?php
 
 return array (
-  'create' => 
+  'create' =>
   array (
     'success' => 'Documento creato correttamente.',
   ),
-  'update' => 
+  'update' =>
   array (
     'success' => 'Documento aggiornato correttamente.',
   ),
-  'assignment_create' => 
+  'assignment_create' =>
   array (
     'success' => 'Assegnazione documento creata correttamente.',
   ),
-  'assignment_update' => 
+  'assignment_update' =>
   array (
     'success' => 'Assegnazione documento aggiornata correttamente.',
   ),
-  'assignment_delete' => 
+  'assignment_delete' =>
   array (
     'success' => 'Assegnazione documento eliminata correttamente.',
   ),
@@ -29,11 +29,11 @@ return array (
   'assignment_target_wrong_tenant' => 'Il destinatario selezionato non appartiene allo stesso tenant del documento.',
   'assignment_issuer_wrong_tenant' => 'L’utente selezionato come emittente non appartiene allo stesso tenant del documento.',
   'assignment_save_document_first' => 'Salva prima il documento. Dopo il primo salvataggio potrai collegarlo a persone, beni e sedi.',
-  'delete' => 
+  'delete' =>
   array (
     'success' => 'Documento eliminato correttamente.',
   ),
-  'restore' => 
+  'restore' =>
   array (
     'success' => 'Documento ripristinato correttamente.',
   ),

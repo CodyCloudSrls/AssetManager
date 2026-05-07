@@ -1,42 +1,42 @@
 <?php
 
 return array (
-  'create' => 
+  'create' =>
   array (
     'success' => 'Ticket created successfully.',
   ),
-  'update' => 
+  'update' =>
   array (
     'success' => 'Ticket updated successfully.',
   ),
-  'delete' => 
+  'delete' =>
   array (
     'success' => 'Ticket deleted successfully.',
   ),
-  'restore' => 
+  'restore' =>
   array (
     'success' => 'Ticket restored successfully.',
   ),
-  'comment' => 
+  'comment' =>
   array (
     'success' => 'Comment added successfully.',
   ),
-  'worklog' => 
+  'worklog' =>
   array (
     'success' => 'Worklog added successfully.',
   ),
-  'workflow' => 
+  'workflow' =>
   array (
     'success' => 'Ticket update saved successfully.',
     'empty' => 'Add an operational change, a note, or a worklog entry before saving.',
   ),
-  'public' => 
+  'public' =>
   array (
-    'create' => 
+    'create' =>
     array (
       'success' => 'Your ticket has been created. Save this page to track and reply to the ticket.',
     ),
-    'reply' => 
+    'reply' =>
     array (
       'success' => 'Your reply has been added successfully.',
     ),

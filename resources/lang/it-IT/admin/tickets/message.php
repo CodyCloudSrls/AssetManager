@@ -1,42 +1,42 @@
 <?php
 
 return array (
-  'create' => 
+  'create' =>
   array (
     'success' => 'Ticket creato correttamente.',
   ),
-  'update' => 
+  'update' =>
   array (
     'success' => 'Ticket aggiornato correttamente.',
   ),
-  'delete' => 
+  'delete' =>
   array (
     'success' => 'Ticket eliminato correttamente.',
   ),
-  'restore' => 
+  'restore' =>
   array (
     'success' => 'Ticket ripristinato correttamente.',
   ),
-  'comment' => 
+  'comment' =>
   array (
     'success' => 'Commento aggiunto correttamente.',
   ),
-  'worklog' => 
+  'worklog' =>
   array (
     'success' => 'Worklog aggiunto correttamente.',
   ),
-  'workflow' => 
+  'workflow' =>
   array (
     'success' => 'Aggiornamento ticket salvato correttamente.',
     'empty' => 'Aggiungi almeno un aggiornamento operativo, una nota oppure un worklog.',
   ),
-  'public' => 
+  'public' =>
   array (
-    'create' => 
+    'create' =>
     array (
       'success' => 'Il ticket è stato creato. Salva questa pagina per seguire e aggiornare il ticket.',
     ),
-    'reply' => 
+    'reply' =>
     array (
       'success' => 'La tua risposta è stata aggiunta correttamente.',
     ),

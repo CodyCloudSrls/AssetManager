@@ -1,23 +1,23 @@
 <?php
 
 return array (
-  'create' => 
+  'create' =>
   array (
     'success' => 'Document created successfully.',
   ),
-  'update' => 
+  'update' =>
   array (
     'success' => 'Document updated successfully.',
   ),
-  'assignment_create' => 
+  'assignment_create' =>
   array (
     'success' => 'Document assignment created successfully.',
   ),
-  'assignment_update' => 
+  'assignment_update' =>
   array (
     'success' => 'Document assignment updated successfully.',
   ),
-  'assignment_delete' => 
+  'assignment_delete' =>
   array (
     'success' => 'Document assignment deleted successfully.',
   ),
@@ -29,11 +29,11 @@ return array (
   'assignment_target_wrong_tenant' => 'The selected target does not belong to the same tenant as the document.',
   'assignment_issuer_wrong_tenant' => 'The selected issuer does not belong to the same tenant as the document.',
   'assignment_save_document_first' => 'Save the document first. After the initial save you can link it to people, assets, and locations.',
-  'delete' => 
+  'delete' =>
   array (
     'success' => 'Document deleted successfully.',
   ),
-  'restore' => 
+  'restore' =>
   array (
     'success' => 'Document restored successfully.',
   ),

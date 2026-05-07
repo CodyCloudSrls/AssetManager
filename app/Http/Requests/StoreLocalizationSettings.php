@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Helpers\Helper;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
@@ -25,7 +26,7 @@ class StoreLocalizationSettings extends FormRequest
     {
         return [
             'default_currency' => 'required',
-            'locale' => 'required',
+            'locale' => 'required|in:'.implode(',', Helper::availableLanguageLocales()),
         ];
     }
 }
