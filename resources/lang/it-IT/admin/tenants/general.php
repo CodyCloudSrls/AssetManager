@@ -26,6 +26,16 @@ return array (
   'root_company_link' => 'Apri azienda madre',
   'edit_root_company' => 'Modifica azienda madre',
   'companies' => 'Aziende del tenant',
+  'settings' =>
+  array (
+    'title' => 'Impostazioni tenant',
+    'edit' => 'Configura tenant',
+    'save' => 'Salva impostazioni tenant',
+    'default_locale' => 'Lingua predefinita tenant',
+    'default_locale_help' => 'Usata per i contenuti di bootstrap del tenant, ad esempio i framework compliance. Gli utenti possono comunque scegliere la propria lingua interfaccia.',
+    'bootstrap_compliance_frameworks' => 'Crea i framework compliance mancanti per questo tenant',
+    'bootstrap_compliance_frameworks_help' => 'Crea copie NIS2/GDPR editabili e di proprieta del tenant nella lingua predefinita del tenant. I framework tenant esistenti non vengono sovrascritti.',
+  ),
   'helpdesk' =>
   array (
     'title' => 'Helpdesk pubblico',

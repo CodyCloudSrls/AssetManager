@@ -101,7 +101,7 @@ class DocumentFrameworkRequirementsController extends Controller
         $this->authorize('update', $framework);
 
         $requirement = new DocumentFrameworkRequirement;
-        $requirement->fill($request->all());
+        $requirement->fill($request->validated());
         $requirement->created_by = auth()->id();
         $requirement->is_active = $request->boolean('is_active', true);
         $requirement->is_mandatory = $request->boolean('is_mandatory', true);
@@ -117,7 +117,7 @@ class DocumentFrameworkRequirementsController extends Controller
     {
         $this->authorize('update', $documentframeworkrequirement);
 
-        $documentframeworkrequirement->fill($request->all());
+        $documentframeworkrequirement->fill($request->validated());
         $documentframeworkrequirement->is_active = $request->boolean('is_active');
         $documentframeworkrequirement->is_mandatory = $request->boolean('is_mandatory');
 

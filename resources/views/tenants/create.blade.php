@@ -13,6 +13,35 @@
 @include ('partials.forms.edit.email')
 @include ('partials.forms.edit.image-upload', ['image_path' => app('companies_upload_path')])
 
+<fieldset name="tenant-settings">
+    <x-form.legend>{{ trans('admin/tenants/general.settings.title') }}</x-form.legend>
+
+    <div class="form-group {{ $errors->has('default_locale') ? 'error' : '' }}">
+        <label for="default_locale" class="col-md-3 control-label">{{ trans('admin/tenants/general.settings.default_locale') }}</label>
+        <div class="col-md-5">
+            <x-input.select
+                name="default_locale"
+                id="default_locale"
+                :options="trans('localizations.languages')"
+                :selected="old('default_locale', config('app.locale', 'en-US'))"
+            />
+            <p class="help-block">{{ trans('admin/tenants/general.settings.default_locale_help') }}</p>
+            {!! $errors->first('default_locale', '<span class="alert-msg">:message</span>') !!}
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('bootstrap_compliance_frameworks') ? 'error' : '' }}">
+        <div class="col-md-8 col-md-offset-3">
+            <label class="form-control">
+                <input type="checkbox" name="bootstrap_compliance_frameworks" value="1" {{ old('bootstrap_compliance_frameworks') ? 'checked="checked"' : '' }}>
+                <span>{{ trans('admin/tenants/general.settings.bootstrap_compliance_frameworks') }}</span>
+            </label>
+            <p class="help-block">{{ trans('admin/tenants/general.settings.bootstrap_compliance_frameworks_help') }}</p>
+            {!! $errors->first('bootstrap_compliance_frameworks', '<span class="alert-msg">:message</span>') !!}
+        </div>
+    </div>
+</fieldset>
+
 <fieldset name="tenant-branding">
     <x-form.legend>{{ trans('admin/tenants/general.branding') }}</x-form.legend>
 

@@ -171,7 +171,7 @@ class DocumentFrameworkRequirement extends SnipeModel
 
     public function scopeVisibleThroughFramework($query)
     {
-        return $query->whereHas('framework');
+        return $query->whereHas('framework', fn ($frameworkQuery) => $frameworkQuery->operational());
     }
 
     public function scopeOrderByFramework($query, $order)

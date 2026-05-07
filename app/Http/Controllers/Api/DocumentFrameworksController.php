@@ -32,6 +32,9 @@ class DocumentFrameworksController extends Controller
             'requirements_count',
             'created_at',
             'updated_at',
+            'is_system_template',
+            'source_pack_key',
+            'locale',
         ];
 
         $documentFrameworks = DocumentFramework::select([
@@ -54,6 +57,10 @@ class DocumentFrameworksController extends Controller
                 'compliance_objective',
                 'sort_order',
             'is_active',
+            'is_system_template',
+            'source_framework_id',
+            'source_pack_key',
+            'locale',
             'created_by',
             'company_id',
             'visibility_type',
@@ -63,6 +70,13 @@ class DocumentFrameworksController extends Controller
         ])
             ->with('adminuser', 'company', 'owner')
             ->withCount(['documents as documents_count', 'requirements as requirements_count']);
+
+        if (! $request->boolean('system_templates')) {
+            $documentFrameworks->operational();
+        } else {
+            abort_unless(auth()->user()?->isSuperUser() && is_null(\App\Models\Tenant::activeTenantId()), 403);
+            $documentFrameworks->systemTemplates();
+        }
 
         if ($request->input('deleted') == 'true' || $request->input('status') == 'deleted') {
             $documentFrameworks->onlyTrashed();
@@ -99,7 +113,7 @@ class DocumentFrameworksController extends Controller
         $this->authorize('create', DocumentFramework::class);
 
         $documentFramework = new DocumentFramework;
-        $documentFramework->fill($request->all());
+        $documentFramework->fill($request->validated());
         $documentFramework->created_by = auth()->id();
         $documentFramework->status = $request->input('status', 'active');
         $documentFramework->is_active = $request->boolean('is_active', true);
@@ -124,7 +138,7 @@ class DocumentFrameworksController extends Controller
     {
         $this->authorize('update', $documentframework);
 
-        $documentframework->fill($request->all());
+        $documentframework->fill($request->validated());
         $documentframework->status = $request->input('status', 'active');
         $documentframework->is_active = $request->boolean('is_active');
 
@@ -169,7 +183,7 @@ class DocumentFrameworksController extends Controller
         $documentFrameworks = DocumentFramework::select([
             'id',
             'name',
-        ])->active()->ordered();
+        ])->operational()->active()->ordered();
 
         if ($request->filled('search')) {
             $documentFrameworks->where('name', 'LIKE', '%'.$request->input('search').'%');

@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Helper;
 use App\Http\Requests\ImageUploadRequest;
 use App\Http\Requests\StoreTenantHelpdeskSettingsRequest;
 use App\Http\Requests\StoreTenantMailSettingsRequest;
+use App\Http\Requests\StoreTenantSettingsRequest;
 use App\Models\Company;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\Compliance\ComplianceFrameworkInstaller;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -92,6 +95,8 @@ class TenantsController extends Controller
             'link_light_color' => 'nullable|string|max:16',
             'link_dark_color' => 'nullable|string|max:16',
             'privacy_policy_link' => 'nullable|url|max:255',
+            'default_locale' => 'required|string|in:'.implode(',', Helper::availableLanguageLocales()),
+            'bootstrap_compliance_frameworks' => 'nullable|boolean',
         ]);
 
         $company = null;
@@ -99,6 +104,8 @@ class TenantsController extends Controller
         try {
             DB::transaction(function () use ($request, &$company) {
                 $tenant = Tenant::createMinimal();
+                $tenant->default_locale = $request->input('default_locale');
+                $tenant->save();
 
                 $company = new Company;
                 $company->tenant_id = $tenant->id;
@@ -134,6 +141,16 @@ class TenantsController extends Controller
                 }
 
                 $company->saveQuietly();
+
+                if ($request->boolean('bootstrap_compliance_frameworks')) {
+                    app(ComplianceFrameworkInstaller::class)->bootstrapTenant(
+                        $tenant,
+                        $tenant->defaultLocale(),
+                        null,
+                        false,
+                        auth()->id(),
+                    );
+                }
             });
         } catch (\Throwable $e) {
             report($e);
@@ -170,6 +187,47 @@ class TenantsController extends Controller
         $publicTicketTypes = $tenant->publicHelpdeskSelectedTicketTypes();
 
         return view('tenants.show', compact('tenant', 'rootCompany', 'companies', 'members', 'canManageTenant', 'publicTicketTypes'));
+    }
+
+    public function editSettings(Tenant $tenant): View
+    {
+        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+        $rootCompany = $tenant->rootCompany();
+        abort_if(is_null($rootCompany), 404);
+
+        return view('tenants.settings', [
+            'tenant' => $tenant,
+            'rootCompany' => $rootCompany,
+            'languageOptions' => trans('localizations.languages'),
+        ]);
+    }
+
+    public function updateSettings(StoreTenantSettingsRequest $request, Tenant $tenant): RedirectResponse
+    {
+        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+
+        $tenant->default_locale = $request->input('default_locale');
+        $tenant->save();
+
+        $message = trans('admin/tenants/message.settings.update.success');
+
+        if ($request->boolean('bootstrap_compliance_frameworks')) {
+            $summary = app(ComplianceFrameworkInstaller::class)->bootstrapTenant(
+                $tenant,
+                $tenant->defaultLocale(),
+                null,
+                false,
+                auth()->id(),
+            );
+
+            $message .= ' '.trans('admin/tenants/message.settings.bootstrap.success', [
+                'frameworks' => $summary['created'],
+                'requirements' => $summary['requirements_created'],
+                'locale' => $tenant->defaultLocale(),
+            ]);
+        }
+
+        return redirect()->route('tenants.show', $tenant)->with('success', $message);
     }
 
     public function destroy(Tenant $tenant): RedirectResponse

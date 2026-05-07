@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\Helper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -28,6 +29,11 @@ class Tenant extends Model
 
     protected $fillable = [
         'uuid',
+        'default_locale',
+    ];
+
+    protected $casts = [
+        'default_locale' => 'string',
     ];
 
     protected static function booted(): void
@@ -100,6 +106,7 @@ class Tenant extends Model
             'tickets' => 'company_id',
             'locations' => 'company_id',
             'departments' => 'company_id',
+            'document_frameworks' => 'company_id',
         ];
 
         foreach ($scopedTables as $table => $column) {
@@ -118,6 +125,16 @@ class Tenant extends Model
     public function getDisplayNameAttribute(): string
     {
         return $this->rootCompany()?->name ?? ('Tenant '.$this->uuid);
+    }
+
+    public function setDefaultLocaleAttribute($value): void
+    {
+        $this->attributes['default_locale'] = Helper::normalizeSupportedLocale($value);
+    }
+
+    public function defaultLocale(): string
+    {
+        return Helper::normalizeSupportedLocale($this->default_locale ?: config('app.locale', 'en-US'));
     }
 
     public function publicHelpdeskUrl(): string

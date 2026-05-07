@@ -33,4 +33,12 @@ return [
             'success' => 'Tenant mail settings updated successfully.',
         ],
     ],
+    'settings' => [
+        'update' => [
+            'success' => 'Tenant settings updated successfully.',
+        ],
+        'bootstrap' => [
+            'success' => 'Bootstrap completed for :locale: :frameworks framework(s) and :requirements requirement(s) created.',
+        ],
+    ],
 ];
