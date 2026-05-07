@@ -62,6 +62,7 @@ class Supplier extends SnipeModel
         'country',
         'zip',
         'visibility_type',
+        'nis_relevance_type',
         'nis_criticality',
         'nis_assessment_status',
         'nis_relevance_criteria',
@@ -98,6 +99,7 @@ class Supplier extends SnipeModel
         'company_id',
         'visibility_type',
         'nis_relevant',
+        'nis_relevance_type',
         'nis_criticality',
         'nis_assessment_status',
         'nis_relevance_criteria',
@@ -117,6 +119,7 @@ class Supplier extends SnipeModel
 
     protected $attributes = [
         'nis_relevant' => false,
+        'nis_relevance_type' => 'not_assessed',
         'nis_criticality' => 'not_assessed',
         'nis_assessment_status' => 'not_started',
     ];
@@ -154,6 +157,7 @@ class Supplier extends SnipeModel
             'company_id' => 'nullable|integer|exists:companies,id',
             'visibility_type' => 'required|string|in:private,descendants,global',
             'nis_relevant' => 'boolean',
+            'nis_relevance_type' => 'required|string|in:'.implode(',', array_keys(static::nisRelevanceTypeOptions())),
             'nis_criticality' => 'required|string|in:'.implode(',', array_keys(static::nisCriticalityOptions())),
             'nis_assessment_status' => 'required|string|in:'.implode(',', array_keys(static::nisAssessmentStatusOptions())),
             'nis_relevance_criteria' => 'nullable|string|max:65535',
@@ -171,6 +175,17 @@ class Supplier extends SnipeModel
             'medium' => trans('admin/suppliers/table.nis_criticality_medium'),
             'high' => trans('admin/suppliers/table.nis_criticality_high'),
             'critical' => trans('admin/suppliers/table.nis_criticality_critical'),
+        ];
+    }
+
+    public static function nisRelevanceTypeOptions(): array
+    {
+        return [
+            'not_assessed' => trans('admin/suppliers/table.nis_relevance_type_not_assessed'),
+            'ict_supply' => trans('admin/suppliers/table.nis_relevance_type_ict_supply'),
+            'non_fungible' => trans('admin/suppliers/table.nis_relevance_type_non_fungible'),
+            'ict_and_non_fungible' => trans('admin/suppliers/table.nis_relevance_type_ict_and_non_fungible'),
+            'not_relevant' => trans('admin/suppliers/table.nis_relevance_type_not_relevant'),
         ];
     }
 
@@ -194,6 +209,16 @@ class Supplier extends SnipeModel
     public function getNisAssessmentStatusLabelAttribute(): string
     {
         return static::nisAssessmentStatusOptions()[$this->nis_assessment_status] ?? ucfirst(str_replace('_', ' ', (string) $this->nis_assessment_status));
+    }
+
+    public function getNisRelevanceTypeLabelAttribute(): string
+    {
+        return static::nisRelevanceTypeOptions()[$this->nis_relevance_type] ?? ucfirst(str_replace('_', ' ', (string) $this->nis_relevance_type));
+    }
+
+    public function setNisRelevanceTypeAttribute($value): void
+    {
+        $this->attributes['nis_relevance_type'] = $value ?: 'not_assessed';
     }
 
     public function setNisCriticalityAttribute($value): void

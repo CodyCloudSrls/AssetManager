@@ -1635,6 +1635,31 @@
         return html.join(' ');
     }
 
+    function documentRequirementsFormatter(value, row) {
+        if (!value || !Array.isArray(value) || value.length === 0) {
+            return '';
+        }
+
+        var html = [];
+        var visibleRequirements = value.slice(0, 3);
+
+        for (var i = 0; i < visibleRequirements.length; i++) {
+            var requirement = visibleRequirements[i];
+            var code = requirement.code ? requirement.code : '{{ trans('general.na') }}';
+            var title = requirement.title ? requirement.title : '';
+            var role = requirement.coverage_role ? requirement.coverage_role : '';
+            var tooltip = title + (role ? ' - ' + role : '');
+
+            html.push('<span class="label label-default" data-tooltip="true" title="' + tooltip + '">' + code + '</span>');
+        }
+
+        if (value.length > visibleRequirements.length) {
+            html.push('<span class="label label-info">+' + (value.length - visibleRequirements.length) + '</span>');
+        }
+
+        return html.join(' ');
+    }
+
 
 
     // This is  gross, but necessary so that we can package the API response

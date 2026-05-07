@@ -60,6 +60,19 @@
         </div>
     </div>
 
+    <div class="form-group {{ $errors->has('nis_relevance_type') ? ' has-error' : '' }}">
+        <label for="nis_relevance_type" class="col-md-3 control-label">{{ trans('admin/suppliers/table.nis_relevance_type') }}</label>
+        <div class="col-md-4">
+            <select class="form-control select2" name="nis_relevance_type" id="nis_relevance_type" aria-label="nis_relevance_type">
+                @foreach (\App\Models\Supplier::nisRelevanceTypeOptions() as $value => $label)
+                    <option value="{{ $value }}" @selected(old('nis_relevance_type', $item->nis_relevance_type ?: 'not_assessed') === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+            <p class="help-block">{{ trans('admin/suppliers/table.nis_relevance_type_help') }}</p>
+            {!! $errors->first('nis_relevance_type', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
     <div class="form-group {{ $errors->has('nis_assessment_status') ? ' has-error' : '' }}">
         <label for="nis_assessment_status" class="col-md-3 control-label">{{ trans('admin/suppliers/table.nis_assessment_status') }}</label>
         <div class="col-md-4">
