@@ -7,8 +7,14 @@ use App\Http\Requests\ImageUploadRequest;
 use App\Http\Requests\StoreTenantHelpdeskSettingsRequest;
 use App\Http\Requests\StoreTenantMailSettingsRequest;
 use App\Http\Requests\StoreTenantSettingsRequest;
+use App\Models\Asset;
 use App\Models\Company;
+use App\Models\Document;
+use App\Models\DocumentFramework;
+use App\Models\DocumentFrameworkRequirement;
+use App\Models\Supplier;
 use App\Models\Tenant;
+use App\Models\Ticket;
 use App\Models\User;
 use App\Support\Compliance\ComplianceFrameworkInstaller;
 use Illuminate\Contracts\View\View;
@@ -185,8 +191,9 @@ class TenantsController extends Controller
 
         $canManageTenant = auth()->user()->canManageTenant($tenant);
         $publicTicketTypes = $tenant->publicHelpdeskSelectedTicketTypes();
+        $complianceSummary = $this->tenantComplianceSummary($tenant, $companies->pluck('id')->map(fn ($id) => (int) $id)->all());
 
-        return view('tenants.show', compact('tenant', 'rootCompany', 'companies', 'members', 'canManageTenant', 'publicTicketTypes'));
+        return view('tenants.show', compact('tenant', 'rootCompany', 'companies', 'members', 'canManageTenant', 'publicTicketTypes', 'complianceSummary'));
     }
 
     public function editSettings(Tenant $tenant): View
@@ -267,6 +274,141 @@ class TenantsController extends Controller
         Tenant::clearCurrentUserTenantRoleCache();
 
         return redirect()->route('tenants.index')->with('success', trans('admin/tenants/message.delete.success'));
+    }
+
+    private function tenantComplianceSummary(Tenant $tenant, array $companyIds): array
+    {
+        $reviewWarningDays = $tenant->documentReviewWarningDays();
+
+        if (count($companyIds) === 0) {
+            return [
+                'frameworks' => collect(),
+                'requirements' => [
+                    'total' => 0,
+                    'covered' => 0,
+                    'at_risk' => 0,
+                    'supporting_only' => 0,
+                    'missing' => 0,
+                ],
+                'documents' => [
+                    'total' => 0,
+                    'due' => 0,
+                    'overdue' => 0,
+                ],
+                'suppliers' => [
+                    'relevant' => 0,
+                    'review_due' => 0,
+                    'without_review_date' => 0,
+                ],
+                'assets' => [
+                    'nis_relevant' => 0,
+                    'high_impact' => 0,
+                ],
+                'tickets' => [
+                    'open' => 0,
+                    'sla_at_risk' => 0,
+                ],
+            ];
+        }
+
+        $frameworks = DocumentFramework::withoutGlobalScopes()
+            ->whereIn('company_id', $companyIds)
+            ->whereNull('deleted_at')
+            ->where('is_system_template', false)
+            ->where('is_active', true)
+            ->where('status', 'active')
+            ->with(['requirements' => function ($query) {
+                $query->whereNull('deleted_at')
+                    ->where('is_active', true)
+                    ->withCount([
+                        'documents',
+                        'primaryDocuments as primary_documents_count',
+                        'primaryDocuments as healthy_primary_documents_count' => fn ($documentsQuery) => $documentsQuery
+                            ->where('documents.status', Document::STATUS_ACTIVE)
+                            ->where(function ($nested) {
+                                $nested->whereNull('documents.next_review_at')
+                                    ->orWhereDate('documents.next_review_at', '>=', now()->toDateString());
+                            }),
+                    ])
+                    ->ordered();
+            }])
+            ->withCount(['documents', 'requirements'])
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        $requirements = $frameworks->flatMap(fn (DocumentFramework $framework) => $framework->requirements);
+        $coverageCounts = $requirements
+            ->countBy(fn (DocumentFrameworkRequirement $requirement) => $requirement->coverage_status);
+
+        $documentsBase = Document::withoutGlobalScopes()
+            ->whereIn('company_id', $companyIds)
+            ->whereNull('deleted_at');
+
+        $suppliersBase = Supplier::withoutGlobalScopes()
+            ->whereIn('company_id', $companyIds)
+            ->whereNull('deleted_at');
+
+        $assetsBase = Asset::withoutGlobalScopes()
+            ->whereIn('company_id', $companyIds)
+            ->whereNull('deleted_at');
+
+        $ticketsBase = Ticket::withoutGlobalScopes()
+            ->whereIn('company_id', $companyIds)
+            ->whereNull('deleted_at');
+
+        return [
+            'frameworks' => $frameworks
+                ->map(function (DocumentFramework $framework) {
+                    $summary = $framework->coverage_summary;
+
+                    return [
+                        'id' => $framework->id,
+                        'name' => $framework->name,
+                        'coverage_percent' => $summary['coverage_percent'],
+                        'covered' => $summary['covered'],
+                        'at_risk' => $summary['at_risk'],
+                        'missing' => $summary['missing'],
+                        'total' => $summary['total'],
+                    ];
+                })
+                ->values(),
+            'requirements' => [
+                'total' => $requirements->count(),
+                'covered' => (int) $coverageCounts->get(DocumentFrameworkRequirement::COVERAGE_COVERED, 0),
+                'at_risk' => (int) $coverageCounts->get(DocumentFrameworkRequirement::COVERAGE_AT_RISK, 0),
+                'supporting_only' => (int) $coverageCounts->get(DocumentFrameworkRequirement::COVERAGE_SUPPORTING_ONLY, 0),
+                'missing' => (int) $coverageCounts->get(DocumentFrameworkRequirement::COVERAGE_MISSING, 0),
+            ],
+            'documents' => [
+                'total' => (clone $documentsBase)->count(),
+                'due' => (clone $documentsBase)->dueForReview($reviewWarningDays)->count(),
+                'overdue' => (clone $documentsBase)->overdueForReview()->count(),
+            ],
+            'suppliers' => [
+                'relevant' => (clone $suppliersBase)->where('nis_relevant', true)->count(),
+                'review_due' => (clone $suppliersBase)
+                    ->where('nis_relevant', true)
+                    ->whereNotNull('nis_next_review_at')
+                    ->whereDate('nis_next_review_at', '<=', now()->addDays($reviewWarningDays)->toDateString())
+                    ->count(),
+                'without_review_date' => (clone $suppliersBase)
+                    ->where('nis_relevant', true)
+                    ->whereNull('nis_next_review_at')
+                    ->count(),
+            ],
+            'assets' => [
+                'nis_relevant' => (clone $assetsBase)->where('nis_relevant', true)->count(),
+                'high_impact' => (clone $assetsBase)
+                    ->where('nis_relevant', true)
+                    ->whereIn('nis_service_impact', ['high', 'critical'])
+                    ->count(),
+            ],
+            'tickets' => [
+                'open' => (clone $ticketsBase)->open()->count(),
+                'sla_at_risk' => (clone $ticketsBase)->slaAtRisk()->count(),
+            ],
+        ];
     }
 
     public function storeMember(Request $request, Tenant $tenant): RedirectResponse

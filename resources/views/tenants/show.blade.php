@@ -117,6 +117,127 @@
                     </div>
                 </div>
 
+                <hr>
+
+                <h4>{{ trans('admin/tenants/general.compliance.title') }}</h4>
+                <div class="row">
+                    <div class="col-md-3 col-sm-6">
+                        <table class="table table-striped snipe-table">
+                            <tbody>
+                            <tr>
+                                <th>{{ trans('admin/tenants/general.compliance.requirements_total') }}</th>
+                                <td>{{ number_format($complianceSummary['requirements']['total']) }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ trans('admin/documentframeworkrequirements/general.coverage.covered') }}</th>
+                                <td>{{ number_format($complianceSummary['requirements']['covered']) }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ trans('admin/documentframeworkrequirements/general.coverage.at_risk') }}</th>
+                                <td>{{ number_format($complianceSummary['requirements']['at_risk']) }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ trans('admin/documentframeworkrequirements/general.coverage.missing') }}</th>
+                                <td>{{ number_format($complianceSummary['requirements']['missing']) }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <table class="table table-striped snipe-table">
+                            <tbody>
+                            <tr>
+                                <th>{{ trans('general.documents') }}</th>
+                                <td>{{ number_format($complianceSummary['documents']['total']) }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ trans('admin/documents/general.review_due') }}</th>
+                                <td>{{ number_format($complianceSummary['documents']['due']) }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ trans('admin/documents/general.review_overdue') }}</th>
+                                <td>{{ number_format($complianceSummary['documents']['overdue']) }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ trans('admin/tenants/general.compliance.open_tickets') }}</th>
+                                <td>{{ number_format($complianceSummary['tickets']['open']) }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <table class="table table-striped snipe-table">
+                            <tbody>
+                            <tr>
+                                <th>{{ trans('admin/tenants/general.compliance.nis_suppliers') }}</th>
+                                <td>{{ number_format($complianceSummary['suppliers']['relevant']) }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ trans('admin/tenants/general.compliance.supplier_reviews_due') }}</th>
+                                <td>{{ number_format($complianceSummary['suppliers']['review_due']) }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ trans('admin/tenants/general.compliance.suppliers_without_review') }}</th>
+                                <td>{{ number_format($complianceSummary['suppliers']['without_review_date']) }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ trans('admin/tenants/general.compliance.sla_at_risk') }}</th>
+                                <td>{{ number_format($complianceSummary['tickets']['sla_at_risk']) }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <table class="table table-striped snipe-table">
+                            <tbody>
+                            <tr>
+                                <th>{{ trans('admin/tenants/general.compliance.nis_assets') }}</th>
+                                <td>{{ number_format($complianceSummary['assets']['nis_relevant']) }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ trans('admin/tenants/general.compliance.high_impact_assets') }}</th>
+                                <td>{{ number_format($complianceSummary['assets']['high_impact']) }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ trans('admin/tenants/general.compliance.frameworks') }}</th>
+                                <td>{{ number_format($complianceSummary['frameworks']->count()) }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ trans('admin/documentframeworkrequirements/general.coverage.supporting_only') }}</th>
+                                <td>{{ number_format($complianceSummary['requirements']['supporting_only']) }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <table class="table table-striped snipe-table">
+                    <thead>
+                    <tr>
+                        <th>{{ trans('general.document_framework') }}</th>
+                        <th>{{ trans('admin/documentframeworks/general.coverage.coverage_percent') }}</th>
+                        <th>{{ trans('admin/documentframeworkrequirements/general.coverage.covered') }}</th>
+                        <th>{{ trans('admin/documentframeworkrequirements/general.coverage.at_risk') }}</th>
+                        <th>{{ trans('admin/documentframeworkrequirements/general.coverage.missing') }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @forelse ($complianceSummary['frameworks'] as $frameworkSummary)
+                        <tr>
+                            <td><a href="{{ route('documentframeworks.show', $frameworkSummary['id']) }}">{{ $frameworkSummary['name'] }}</a></td>
+                            <td>{{ $frameworkSummary['coverage_percent'] }}%</td>
+                            <td>{{ number_format($frameworkSummary['covered']) }}</td>
+                            <td>{{ number_format($frameworkSummary['at_risk']) }}</td>
+                            <td>{{ number_format($frameworkSummary['missing']) }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5">{{ trans('admin/tenants/general.compliance.no_frameworks') }}</td>
+                        </tr>
+                    @endforelse
+                    </tbody>
+                </table>
+
                 @if ($canManageTenant)
                     <hr>
 

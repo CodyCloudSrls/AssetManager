@@ -90,4 +90,18 @@ return array (
     ),
   ),
   'help' => 'Create and manage SaaS tenants.',
+  'compliance' =>
+  array (
+    'title' => 'Compliance dashboard',
+    'requirements_total' => 'Requirements',
+    'open_tickets' => 'Open tickets',
+    'nis_suppliers' => 'NIS2 suppliers',
+    'supplier_reviews_due' => 'Supplier reviews due',
+    'suppliers_without_review' => 'Suppliers without review date',
+    'sla_at_risk' => 'SLA at risk',
+    'nis_assets' => 'NIS2 assets',
+    'high_impact_assets' => 'High-impact assets',
+    'frameworks' => 'Frameworks',
+    'no_frameworks' => 'No operational compliance frameworks are available for this tenant.',
+  ),
 );
