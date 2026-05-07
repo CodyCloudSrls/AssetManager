@@ -90,4 +90,18 @@ return array (
     ),
   ),
   'help' => 'Crea e gestisci i tenant SaaS.',
+  'compliance' =>
+  array (
+    'title' => 'Dashboard compliance',
+    'requirements_total' => 'Requisiti',
+    'open_tickets' => 'Ticket aperti',
+    'nis_suppliers' => 'Fornitori NIS2',
+    'supplier_reviews_due' => 'Revisioni fornitori in scadenza',
+    'suppliers_without_review' => 'Fornitori senza data revisione',
+    'sla_at_risk' => 'SLA a rischio',
+    'nis_assets' => 'Beni NIS2',
+    'high_impact_assets' => 'Beni ad alto impatto',
+    'frameworks' => 'Framework',
+    'no_frameworks' => 'Nessun framework compliance operativo disponibile per questo tenant.',
+  ),
 );
