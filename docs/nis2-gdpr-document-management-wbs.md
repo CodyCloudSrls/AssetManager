@@ -114,6 +114,7 @@ Build a document-centered compliance module that helps consultants and tenants g
 - Supplier detail shows the same structured NIS2 fields.
 - Document tables show linked framework requirements as compact labels with coverage role in the tooltip.
 - Document index exposes framework and requirement filters backed by the existing documents API.
+- Framework requirements have a work queue with framework and coverage filters backed by the existing requirements API.
 
 ### 6.3 Future UI Work
 
