@@ -130,6 +130,13 @@ class SupplierPresenter extends Presenter
                 'title' => trans('admin/suppliers/table.nis_criticality'),
                 'visible' => true,
             ], [
+                'field' => 'nis_relevance_type_label',
+                'searchable' => true,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('admin/suppliers/table.nis_relevance_type'),
+                'visible' => true,
+            ], [
                 'field' => 'nis_assessment_status_label',
                 'searchable' => true,
                 'sortable' => false,

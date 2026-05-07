@@ -42,4 +42,11 @@ return array (
   'nis_assessment_status_review_needed' => 'Review needed',
   'nis_assessment_status_approved' => 'Approved',
   'nis_assessment_status_rejected' => 'Rejected',
+  'nis_relevance_type' => 'NIS2 Relevance Criterion',
+  'nis_relevance_type_help' => 'Classify the supplier against the NIS relevance criteria before documenting CPV codes and evidence.',
+  'nis_relevance_type_not_assessed' => 'Not assessed',
+  'nis_relevance_type_ict_supply' => 'ICT supply',
+  'nis_relevance_type_non_fungible' => 'Non-fungible supply',
+  'nis_relevance_type_ict_and_non_fungible' => 'ICT and non-fungible supply',
+  'nis_relevance_type_not_relevant' => 'Not relevant',
 );

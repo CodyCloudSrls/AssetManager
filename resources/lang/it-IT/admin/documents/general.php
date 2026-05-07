@@ -26,4 +26,9 @@ return array (
     'obsolete' => 'Obsoleto',
     'archived' => 'Archiviato',
   ),
+  'coverage_roles' =>
+  array (
+    'primary' => 'Evidenza primaria',
+    'supporting' => 'Evidenza di supporto',
+  ),
 );

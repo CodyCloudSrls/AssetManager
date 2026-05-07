@@ -45,6 +45,15 @@ class DocumentPresenter extends Presenter
                 'visible' => true,
             ],
             [
+                'field' => 'requirements',
+                'searchable' => false,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('admin/documentframeworks/general.requirements_tab'),
+                'visible' => true,
+                'formatter' => 'documentRequirementsFormatter',
+            ],
+            [
                 'field' => 'status',
                 'searchable' => true,
                 'sortable' => true,

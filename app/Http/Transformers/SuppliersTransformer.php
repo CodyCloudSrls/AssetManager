@@ -45,6 +45,8 @@ class SuppliersTransformer
                 'visibility_type' => $supplier->visibility_type,
                 'visibility_label' => e($supplier->visibility_label),
                 'nis_relevant' => (bool) $supplier->nis_relevant,
+                'nis_relevance_type' => e($supplier->nis_relevance_type),
+                'nis_relevance_type_label' => e($supplier->nis_relevance_type_label),
                 'nis_criticality' => e($supplier->nis_criticality),
                 'nis_criticality_label' => e($supplier->nis_criticality_label),
                 'nis_assessment_status' => e($supplier->nis_assessment_status),

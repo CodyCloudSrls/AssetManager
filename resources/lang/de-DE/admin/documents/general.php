@@ -26,4 +26,9 @@ return array (
     'obsolete' => 'Obsolete',
     'archived' => 'Archived',
   ),
+  'coverage_roles' =>
+  array (
+    'primary' => 'Primary evidence',
+    'supporting' => 'Supporting evidence',
+  ),
 );
