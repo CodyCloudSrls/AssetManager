@@ -161,6 +161,13 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
         ]
     ); // end category API routes
 
+    Route::group(['prefix' => 'cpvcodes'], function () {
+        Route::get('selectlist', [
+            Api\CpvCodesController::class,
+            'selectlist',
+        ])->name('api.cpvcodes.selectlist');
+    });
+
     /**
      * Document frameworks API routes
      */

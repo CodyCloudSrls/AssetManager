@@ -70,6 +70,9 @@ class SuppliersController extends Controller
         $supplier->nis_relevance_type = $request->input('nis_relevance_type', 'not_assessed');
         $supplier->nis_criticality = $request->input('nis_criticality', 'not_assessed');
         $supplier->nis_assessment_status = $request->input('nis_assessment_status', 'not_started');
+        $supplier->nis_assessment_method = $request->input('nis_assessment_method', 'not_assessed');
+        $supplier->nis_assessment_outcome = $request->input('nis_assessment_outcome', 'not_assessed');
+        $supplier->nis_assessment_scope = $request->input('nis_assessment_scope');
         $supplier->nis_relevance_criteria = $request->input('nis_relevance_criteria');
         $supplier->cpv_codes = $request->input('cpv_codes');
         $supplier->nis_last_assessment_at = $request->input('nis_last_assessment_at');
@@ -128,6 +131,9 @@ class SuppliersController extends Controller
         $supplier->nis_relevance_type = $request->input('nis_relevance_type', 'not_assessed');
         $supplier->nis_criticality = $request->input('nis_criticality', 'not_assessed');
         $supplier->nis_assessment_status = $request->input('nis_assessment_status', 'not_started');
+        $supplier->nis_assessment_method = $request->input('nis_assessment_method', 'not_assessed');
+        $supplier->nis_assessment_outcome = $request->input('nis_assessment_outcome', 'not_assessed');
+        $supplier->nis_assessment_scope = $request->input('nis_assessment_scope');
         $supplier->nis_relevance_criteria = $request->input('nis_relevance_criteria');
         $supplier->cpv_codes = $request->input('cpv_codes');
         $supplier->nis_last_assessment_at = $request->input('nis_last_assessment_at');

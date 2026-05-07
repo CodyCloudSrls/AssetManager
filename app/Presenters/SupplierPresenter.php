@@ -144,6 +144,20 @@ class SupplierPresenter extends Presenter
                 'title' => trans('admin/suppliers/table.nis_assessment_status'),
                 'visible' => false,
             ], [
+                'field' => 'nis_assessment_method_label',
+                'searchable' => true,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('admin/suppliers/table.nis_assessment_method'),
+                'visible' => false,
+            ], [
+                'field' => 'nis_assessment_outcome_label',
+                'searchable' => true,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('admin/suppliers/table.nis_assessment_outcome'),
+                'visible' => false,
+            ], [
                 'field' => 'cpv_codes',
                 'searchable' => true,
                 'sortable' => true,

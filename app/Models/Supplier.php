@@ -65,6 +65,9 @@ class Supplier extends SnipeModel
         'nis_relevance_type',
         'nis_criticality',
         'nis_assessment_status',
+        'nis_assessment_method',
+        'nis_assessment_outcome',
+        'nis_assessment_scope',
         'nis_relevance_criteria',
         'cpv_codes',
     ];
@@ -102,6 +105,9 @@ class Supplier extends SnipeModel
         'nis_relevance_type',
         'nis_criticality',
         'nis_assessment_status',
+        'nis_assessment_method',
+        'nis_assessment_outcome',
+        'nis_assessment_scope',
         'nis_relevance_criteria',
         'cpv_codes',
         'nis_last_assessment_at',
@@ -122,6 +128,8 @@ class Supplier extends SnipeModel
         'nis_relevance_type' => 'not_assessed',
         'nis_criticality' => 'not_assessed',
         'nis_assessment_status' => 'not_started',
+        'nis_assessment_method' => 'not_assessed',
+        'nis_assessment_outcome' => 'not_assessed',
     ];
 
     public function getRules()
@@ -160,8 +168,19 @@ class Supplier extends SnipeModel
             'nis_relevance_type' => 'required|string|in:'.implode(',', array_keys(static::nisRelevanceTypeOptions())),
             'nis_criticality' => 'required|string|in:'.implode(',', array_keys(static::nisCriticalityOptions())),
             'nis_assessment_status' => 'required|string|in:'.implode(',', array_keys(static::nisAssessmentStatusOptions())),
+            'nis_assessment_method' => 'required|string|in:'.implode(',', array_keys(static::nisAssessmentMethodOptions())),
+            'nis_assessment_outcome' => 'required|string|in:'.implode(',', array_keys(static::nisAssessmentOutcomeOptions())),
+            'nis_assessment_scope' => 'nullable|string|max:65535',
             'nis_relevance_criteria' => 'nullable|string|max:65535',
-            'cpv_codes' => 'nullable|string|max:65535',
+            'cpv_codes' => ['nullable', 'string', 'max:65535', function ($attribute, $value, $fail) {
+                foreach (static::cpvCodesFromText($value) as $cpvCode) {
+                    if (! preg_match('/^\d{8}-\d$/', $cpvCode)) {
+                        $fail(trans('admin/suppliers/table.cpv_codes_invalid'));
+
+                        return;
+                    }
+                }
+            }],
             'nis_last_assessment_at' => 'nullable|date',
             'nis_next_review_at' => 'nullable|date',
         ];
@@ -201,6 +220,34 @@ class Supplier extends SnipeModel
         ];
     }
 
+    public static function nisAssessmentMethodOptions(): array
+    {
+        return [
+            'not_assessed' => trans('admin/suppliers/table.nis_assessment_method_not_assessed'),
+            'questionnaire' => trans('admin/suppliers/table.nis_assessment_method_questionnaire'),
+            'contract_review' => trans('admin/suppliers/table.nis_assessment_method_contract_review'),
+            'external_attestation' => trans('admin/suppliers/table.nis_assessment_method_external_attestation'),
+            'audit' => trans('admin/suppliers/table.nis_assessment_method_audit'),
+            'mixed' => trans('admin/suppliers/table.nis_assessment_method_mixed'),
+        ];
+    }
+
+    public static function nisAssessmentOutcomeOptions(): array
+    {
+        return [
+            'not_assessed' => trans('admin/suppliers/table.nis_assessment_outcome_not_assessed'),
+            'acceptable' => trans('admin/suppliers/table.nis_assessment_outcome_acceptable'),
+            'acceptable_with_actions' => trans('admin/suppliers/table.nis_assessment_outcome_acceptable_with_actions'),
+            'remediation_required' => trans('admin/suppliers/table.nis_assessment_outcome_remediation_required'),
+            'not_acceptable' => trans('admin/suppliers/table.nis_assessment_outcome_not_acceptable'),
+        ];
+    }
+
+    public static function cpvCodesFromText(?string $value): array
+    {
+        return CpvCode::codesFromText($value);
+    }
+
     public function getNisCriticalityLabelAttribute(): string
     {
         return static::nisCriticalityOptions()[$this->nis_criticality] ?? ucfirst(str_replace('_', ' ', (string) $this->nis_criticality));
@@ -209,6 +256,16 @@ class Supplier extends SnipeModel
     public function getNisAssessmentStatusLabelAttribute(): string
     {
         return static::nisAssessmentStatusOptions()[$this->nis_assessment_status] ?? ucfirst(str_replace('_', ' ', (string) $this->nis_assessment_status));
+    }
+
+    public function getNisAssessmentMethodLabelAttribute(): string
+    {
+        return static::nisAssessmentMethodOptions()[$this->nis_assessment_method] ?? ucfirst(str_replace('_', ' ', (string) $this->nis_assessment_method));
+    }
+
+    public function getNisAssessmentOutcomeLabelAttribute(): string
+    {
+        return static::nisAssessmentOutcomeOptions()[$this->nis_assessment_outcome] ?? ucfirst(str_replace('_', ' ', (string) $this->nis_assessment_outcome));
     }
 
     public function getNisRelevanceTypeLabelAttribute(): string
@@ -229,6 +286,21 @@ class Supplier extends SnipeModel
     public function setNisAssessmentStatusAttribute($value): void
     {
         $this->attributes['nis_assessment_status'] = $value ?: 'not_started';
+    }
+
+    public function setNisAssessmentMethodAttribute($value): void
+    {
+        $this->attributes['nis_assessment_method'] = $value ?: 'not_assessed';
+    }
+
+    public function setNisAssessmentOutcomeAttribute($value): void
+    {
+        $this->attributes['nis_assessment_outcome'] = $value ?: 'not_assessed';
+    }
+
+    public function setNisAssessmentScopeAttribute($value): void
+    {
+        $this->attributes['nis_assessment_scope'] = ($value === '' ? null : $value);
     }
 
     public function setNisRelevanceCriteriaAttribute($value): void

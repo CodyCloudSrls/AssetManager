@@ -29,7 +29,7 @@
                 buttons="supplierButtons"
                 fixed_right_number="1"
                 fixed_number="1"
-                api_url="{{ route('api.suppliers.index', request()->only(['tenant_id', 'nis_relevant', 'nis_relevance_type', 'nis_criticality', 'nis_assessment_status', 'nis_review_status', 'cpv_code'])) }}"
+                api_url="{{ route('api.suppliers.index', request()->only(['tenant_id', 'nis_relevant', 'nis_relevance_type', 'nis_criticality', 'nis_assessment_status', 'nis_assessment_method', 'nis_assessment_outcome', 'nis_review_status', 'cpv_code'])) }}"
                 :presenter="\App\Presenters\SupplierPresenter::dataTableLayout()"
                 export_filename="export-suppliers-{{ date('Y-m-d') }}"
             />
