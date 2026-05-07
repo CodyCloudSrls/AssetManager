@@ -55,4 +55,8 @@ return array (
   'coverage_role' => 'Ruolo copertura',
   'covered_at' => 'Data copertura',
   'evidence_notes' => 'Note evidenza',
+  'all_frameworks' => 'Tutti i framework',
+  'all_requirements' => 'Tutti i requisiti',
+  'apply_filters' => 'Applica filtri',
+  'clear_filters' => 'Pulisci filtri',
 );

@@ -113,6 +113,7 @@ Build a document-centered compliance module that helps consultants and tenants g
 - Supplier index exposes NIS2 relevance, criticality, relevance criterion, status and CPV as table columns.
 - Supplier detail shows the same structured NIS2 fields.
 - Document tables show linked framework requirements as compact labels with coverage role in the tooltip.
+- Document index exposes framework and requirement filters backed by the existing documents API.
 
 ### 6.3 Future UI Work
 
