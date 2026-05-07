@@ -85,12 +85,52 @@
         </div>
     </div>
 
+    <div class="form-group {{ $errors->has('nis_assessment_method') ? ' has-error' : '' }}">
+        <label for="nis_assessment_method" class="col-md-3 control-label">{{ trans('admin/suppliers/table.nis_assessment_method') }}</label>
+        <div class="col-md-4">
+            <select class="form-control select2" name="nis_assessment_method" id="nis_assessment_method" aria-label="nis_assessment_method">
+                @foreach (\App\Models\Supplier::nisAssessmentMethodOptions() as $value => $label)
+                    <option value="{{ $value }}" @selected(old('nis_assessment_method', $item->nis_assessment_method ?: 'not_assessed') === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+            {!! $errors->first('nis_assessment_method', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('nis_assessment_outcome') ? ' has-error' : '' }}">
+        <label for="nis_assessment_outcome" class="col-md-3 control-label">{{ trans('admin/suppliers/table.nis_assessment_outcome') }}</label>
+        <div class="col-md-4">
+            <select class="form-control select2" name="nis_assessment_outcome" id="nis_assessment_outcome" aria-label="nis_assessment_outcome">
+                @foreach (\App\Models\Supplier::nisAssessmentOutcomeOptions() as $value => $label)
+                    <option value="{{ $value }}" @selected(old('nis_assessment_outcome', $item->nis_assessment_outcome ?: 'not_assessed') === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+            {!! $errors->first('nis_assessment_outcome', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
     <div class="form-group {{ $errors->has('cpv_codes') ? ' has-error' : '' }}">
         <label for="cpv_codes" class="col-md-3 control-label">{{ trans('admin/suppliers/table.cpv_codes') }}</label>
         <div class="col-md-7">
             <textarea class="form-control" name="cpv_codes" id="cpv_codes" rows="2" placeholder="72000000-5, 72200000-7">{{ old('cpv_codes', $item->cpv_codes) }}</textarea>
             <p class="help-block">{{ trans('admin/suppliers/table.cpv_codes_help') }}</p>
             {!! $errors->first('cpv_codes', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="cpv_catalog_select" class="col-md-3 control-label">{{ trans('admin/suppliers/table.cpv_catalog_search') }}</label>
+        <div class="col-md-7">
+            <select class="form-control" id="cpv_catalog_select" style="width: 100%" aria-label="{{ trans('admin/suppliers/table.cpv_catalog_search') }}"></select>
+            <p class="help-block">{{ trans('admin/suppliers/table.cpv_catalog_search_help') }}</p>
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('nis_assessment_scope') ? ' has-error' : '' }}">
+        <label for="nis_assessment_scope" class="col-md-3 control-label">{{ trans('admin/suppliers/table.nis_assessment_scope') }}</label>
+        <div class="col-md-7">
+            <textarea class="form-control" name="nis_assessment_scope" id="nis_assessment_scope" rows="3">{{ old('nis_assessment_scope', $item->nis_assessment_scope) }}</textarea>
+            {!! $errors->first('nis_assessment_scope', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
         </div>
     </div>
 
@@ -138,4 +178,60 @@
     </div>
 </fieldset>
 
+@stop
+
+@section('moar_scripts')
+@parent
+<script nonce="{{ csrf_token() }}">
+    $(function () {
+        var $catalogSelect = $('#cpv_catalog_select');
+        var $cpvCodes = $('#cpv_codes');
+
+        if (!$catalogSelect.length || !$cpvCodes.length) {
+            return;
+        }
+
+        $catalogSelect.select2({
+            ajax: {
+                url: '{{ route('api.cpvcodes.selectlist') }}',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        search: params.term,
+                        page: params.page || 1
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.results,
+                        pagination: {
+                            more: data.pagination.more
+                        }
+                    };
+                }
+            },
+            minimumInputLength: 2,
+            placeholder: '{{ trans('admin/suppliers/table.cpv_catalog_search_placeholder') }}',
+            width: '100%'
+        });
+
+        $catalogSelect.on('select2:select', function (event) {
+            var code = event.params.data.id;
+            var currentCodes = $cpvCodes.val()
+                .split(/[,;\n]+/)
+                .map(function (value) {
+                    return value.trim();
+                })
+                .filter(Boolean);
+
+            if (currentCodes.indexOf(code) === -1) {
+                currentCodes.push(code);
+                $cpvCodes.val(currentCodes.join(', ')).trigger('change');
+            }
+
+            $catalogSelect.val(null).trigger('change');
+        });
+    });
+</script>
 @stop
