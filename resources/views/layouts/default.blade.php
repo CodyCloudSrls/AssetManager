@@ -1943,6 +1943,11 @@
                                                 {{ trans('general.document_frameworks') }}
                                             </a>
                                         </li>
+                                        <li {{!! (request()->is('documentframeworkrequirements*') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('documentframeworkrequirements.index') }}">
+                                                {{ trans('general.document_framework_requirements') }}
+                                            </a>
+                                        </li>
                                     @endcan
 
                                     @can('view', \App\Models\Manufacturer::class)

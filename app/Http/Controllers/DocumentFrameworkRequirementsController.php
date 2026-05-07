@@ -10,6 +10,22 @@ use Illuminate\Http\RedirectResponse;
 
 class DocumentFrameworkRequirementsController extends Controller
 {
+    public function index(): View
+    {
+        $this->authorize('view', DocumentFramework::class);
+
+        $frameworks = DocumentFramework::query()
+            ->operational()
+            ->active()
+            ->ordered()
+            ->get(['id', 'name']);
+
+        return view('documentframeworkrequirements.index', [
+            'frameworks' => $frameworks,
+            'coverageOptions' => DocumentFrameworkRequirement::coverageOptions(),
+        ]);
+    }
+
     public function create(DocumentFramework $documentframework): View
     {
         $this->authorize('update', $documentframework);

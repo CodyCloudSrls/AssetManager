@@ -50,4 +50,9 @@ return array (
     'high' => 'High',
     'critical' => 'Critical',
   ),
+  'work_queue' => 'Requirement Work Queue',
+  'all_frameworks' => 'All frameworks',
+  'all_coverage_statuses' => 'All coverage statuses',
+  'apply_filters' => 'Apply filters',
+  'clear_filters' => 'Clear filters',
 );

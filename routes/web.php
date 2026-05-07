@@ -81,7 +81,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::group(['prefix' => 'documentframeworkrequirements', 'middleware' => ['auth']], function () {
         Route::post('{id}/restore', [DocumentFrameworkRequirementsController::class, 'restore'])->name('documentframeworkrequirements.restore');
     });
-    Route::resource('documentframeworkrequirements', DocumentFrameworkRequirementsController::class)->except(['index', 'create', 'store']);
+    Route::resource('documentframeworkrequirements', DocumentFrameworkRequirementsController::class)->except(['create', 'store']);
 
     /*
     * Labels

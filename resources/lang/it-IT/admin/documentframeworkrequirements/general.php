@@ -45,4 +45,9 @@ return [
         'high' => 'Alto',
         'critical' => 'Critico',
     ],
+    'work_queue' => 'Coda requisiti',
+    'all_frameworks' => 'Tutti i framework',
+    'all_coverage_statuses' => 'Tutti gli stati copertura',
+    'apply_filters' => 'Applica filtri',
+    'clear_filters' => 'Pulisci filtri',
 ];
