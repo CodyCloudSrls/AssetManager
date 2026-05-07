@@ -38,6 +38,8 @@ class DocumentsTransformer
                     'code' => e($requirement->code),
                     'title' => e($requirement->title),
                     'coverage_role' => e(Document::coverageRoleOptions()[$requirement->pivot->coverage_role] ?? $requirement->pivot->coverage_role),
+                    'covered_at' => Helper::getFormattedDateObject($requirement->pivot->covered_at, 'date'),
+                    'notes' => e($requirement->pivot->notes),
                 ];
             })->values()->all() : [],
             'reference' => e($document->reference),

@@ -54,7 +54,7 @@ Build a document-centered compliance module that helps consultants and tenants g
 
 - Link documents to requirements as primary or supporting evidence.
 - Keep pivot notes and covered date available for future UI enhancement.
-- Next implementation step: expose mapping notes and covered date in the document UI.
+- Expose mapping notes and covered date in the document UI.
 
 ### 3.3 Assignments
 

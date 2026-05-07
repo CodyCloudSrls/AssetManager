@@ -50,4 +50,9 @@ return array (
   'assignment_optional_section' => 'Advanced Assignment Details',
   'select_type' => 'Select a type',
   'select_framework' => 'Select a framework',
+  'requirement_evidence' => 'Evidence Details',
+  'requirement_evidence_help' => 'Set the evidence date and short notes for the selected requirement mappings. These details are stored on the requirement-document link.',
+  'coverage_role' => 'Coverage Role',
+  'covered_at' => 'Covered At',
+  'evidence_notes' => 'Evidence Notes',
 );

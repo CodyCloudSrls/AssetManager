@@ -50,4 +50,9 @@ return array (
   'assignment_optional_section' => 'Dettagli avanzati assegnazione',
   'select_type' => 'Seleziona una tipologia',
   'select_framework' => 'Seleziona un framework',
+  'requirement_evidence' => 'Dettagli evidenza',
+  'requirement_evidence_help' => 'Imposta data evidenza e note sintetiche per i requisiti selezionati. Questi dettagli vengono salvati sul collegamento requisito-documento.',
+  'coverage_role' => 'Ruolo copertura',
+  'covered_at' => 'Data copertura',
+  'evidence_notes' => 'Note evidenza',
 );
