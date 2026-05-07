@@ -44,6 +44,19 @@
         </div>
     </div>
 
+    <div class="form-group {{ $errors->has('obligation_type') ? ' has-error' : '' }}">
+        <label for="obligation_type" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.obligation_type') }}</label>
+        <div class="col-md-4">
+            <select class="form-control select2" name="obligation_type" id="obligation_type" aria-label="obligation_type">
+                <option value="">{{ trans('general.none') }}</option>
+                @foreach ($obligationTypeOptions as $typeValue => $typeLabel)
+                    <option value="{{ $typeValue }}" @selected(old('obligation_type', $item->obligation_type) === $typeValue)>{{ $typeLabel }}</option>
+                @endforeach
+            </select>
+            {!! $errors->first('obligation_type', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
     <div class="form-group {{ $errors->has('parent_id') ? ' has-error' : '' }}">
         <label for="parent_id" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.parent') }}</label>
         <div class="col-md-5">
@@ -59,6 +72,43 @@
 
     @include ('partials.forms.edit.user-select', ['translated_name' => trans('admin/documentframeworkrequirements/table.owner'), 'fieldname' => 'owner_id', 'item' => $item, 'required' => 'false'])
     @include ('partials.forms.edit.document-type-select', ['translated_name' => trans('admin/documentframeworkrequirements/table.default_document_type'), 'fieldname' => 'default_document_type_id', 'item' => $item, 'required' => 'false', 'hide_new' => 'true'])
+
+    <div class="form-group {{ $errors->has('evidence_type') ? ' has-error' : '' }}">
+        <label for="evidence_type" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.evidence_type') }}</label>
+        <div class="col-md-4">
+            <select class="form-control select2" name="evidence_type" id="evidence_type" aria-label="evidence_type">
+                <option value="">{{ trans('general.none') }}</option>
+                @foreach ($evidenceTypeOptions as $typeValue => $typeLabel)
+                    <option value="{{ $typeValue }}" @selected(old('evidence_type', $item->evidence_type) === $typeValue)>{{ $typeLabel }}</option>
+                @endforeach
+            </select>
+            {!! $errors->first('evidence_type', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('delegation_level') ? ' has-error' : '' }}">
+        <label for="delegation_level" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.delegation_level') }}</label>
+        <div class="col-md-4">
+            <select class="form-control select2" name="delegation_level" id="delegation_level" aria-label="delegation_level">
+                @foreach ($delegationLevelOptions as $levelValue => $levelLabel)
+                    <option value="{{ $levelValue }}" @selected(old('delegation_level', $item->delegation_level ?: 'owner_review') === $levelValue)>{{ $levelLabel }}</option>
+                @endforeach
+            </select>
+            {!! $errors->first('delegation_level', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('risk_level') ? ' has-error' : '' }}">
+        <label for="risk_level" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.risk_level') }}</label>
+        <div class="col-md-4">
+            <select class="form-control select2" name="risk_level" id="risk_level" aria-label="risk_level">
+                @foreach ($riskLevelOptions as $levelValue => $levelLabel)
+                    <option value="{{ $levelValue }}" @selected(old('risk_level', $item->risk_level ?: 'medium') === $levelValue)>{{ $levelLabel }}</option>
+                @endforeach
+            </select>
+            {!! $errors->first('risk_level', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
 
     <div class="form-group {{ $errors->has('review_frequency_months') ? ' has-error' : '' }}">
         <label for="review_frequency_months" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.review_frequency_months') }}</label>
@@ -94,6 +144,22 @@
         <label for="applicability_notes" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.applicability_notes') }}</label>
         <div class="col-md-8">
             <textarea class="form-control" name="applicability_notes" id="applicability_notes" rows="4">{{ old('applicability_notes', $item->applicability_notes) }}</textarea>
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('official_reference') ? ' has-error' : '' }}">
+        <label for="official_reference" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.official_reference') }}</label>
+        <div class="col-md-7">
+            <input class="form-control" type="text" name="official_reference" id="official_reference" value="{{ old('official_reference', $item->official_reference) }}">
+            {!! $errors->first('official_reference', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('source_url') ? ' has-error' : '' }}">
+        <label for="source_url" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.source_url') }}</label>
+        <div class="col-md-7">
+            <input class="form-control" type="url" name="source_url" id="source_url" value="{{ old('source_url', $item->source_url) }}">
+            {!! $errors->first('source_url', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
         </div>
     </div>
 

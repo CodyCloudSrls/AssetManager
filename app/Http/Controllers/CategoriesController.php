@@ -74,6 +74,8 @@ class CategoriesController extends Controller
         $category->require_acceptance = $request->input('require_acceptance', '0');
         $category->alert_on_response = $request->input('alert_on_response', '0');
         $category->checkin_email = $request->input('checkin_email', '0');
+        $category->nis_inventory_required = $request->boolean('nis_inventory_required');
+        $category->nis_inventory_scope = $request->input('nis_inventory_scope');
         $category->tag_color = $request->input('tag_color');
         $category->notes = $request->input('notes');
         $category->created_by = auth()->id();
@@ -139,6 +141,8 @@ class CategoriesController extends Controller
         $category->require_acceptance = $request->input('require_acceptance', '0');
         $category->alert_on_response = $request->input('alert_on_response', '0');
         $category->checkin_email = $request->input('checkin_email', '0');
+        $category->nis_inventory_required = $request->boolean('nis_inventory_required');
+        $category->nis_inventory_scope = $request->input('nis_inventory_scope');
         $category->tag_color = $request->input('tag_color');
         $category->notes = $request->input('notes');
         [$category->company_id, $category->visibility_type] = Company::normalizeTemplateOwnership(

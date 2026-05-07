@@ -42,6 +42,11 @@ class Category extends SnipeModel
         'alert_on_response' => 'boolean',
         'created_by' => 'integer',
         'company_id' => 'integer',
+        'nis_inventory_required' => 'boolean',
+    ];
+
+    protected $attributes = [
+        'nis_inventory_required' => false,
     ];
 
     /**
@@ -71,6 +76,8 @@ class Category extends SnipeModel
         'created_by',
         'company_id',
         'visibility_type',
+        'nis_inventory_required',
+        'nis_inventory_scope',
         'tag_color',
         'notes',
     ];
@@ -89,6 +96,7 @@ class Category extends SnipeModel
         'eula_text',
         'created_at',
         'visibility_type',
+        'nis_inventory_scope',
     ];
 
     /**
@@ -135,7 +143,38 @@ class Category extends SnipeModel
             'category_type' => 'required|in:asset,accessory,consumable,component,license',
             'company_id' => 'nullable|integer|exists:companies,id',
             'visibility_type' => 'required|string|in:private,descendants,global',
+            'nis_inventory_required' => 'boolean',
+            'nis_inventory_scope' => 'nullable|string|in:'.implode(',', array_keys(static::nisInventoryScopeOptions())),
         ];
+    }
+
+    public static function nisInventoryScopeOptions(): array
+    {
+        return [
+            'network' => trans('admin/categories/general.nis_inventory_scopes.network'),
+            'server' => trans('admin/categories/general.nis_inventory_scopes.server'),
+            'endpoint' => trans('admin/categories/general.nis_inventory_scopes.endpoint'),
+            'cloud' => trans('admin/categories/general.nis_inventory_scopes.cloud'),
+            'security' => trans('admin/categories/general.nis_inventory_scopes.security'),
+            'identity' => trans('admin/categories/general.nis_inventory_scopes.identity'),
+            'backup' => trans('admin/categories/general.nis_inventory_scopes.backup'),
+            'facility' => trans('admin/categories/general.nis_inventory_scopes.facility'),
+            'other' => trans('admin/categories/general.nis_inventory_scopes.other'),
+        ];
+    }
+
+    public function getNisInventoryScopeLabelAttribute(): ?string
+    {
+        if (! $this->nis_inventory_scope) {
+            return null;
+        }
+
+        return static::nisInventoryScopeOptions()[$this->nis_inventory_scope] ?? ucfirst(str_replace('_', ' ', (string) $this->nis_inventory_scope));
+    }
+
+    public function setNisInventoryScopeAttribute($value): void
+    {
+        $this->attributes['nis_inventory_scope'] = ($value === '' ? null : $value);
     }
 
     /**

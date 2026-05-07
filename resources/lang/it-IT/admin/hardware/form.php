@@ -63,5 +63,18 @@ return [
     'processing' => 'Elaborazione... ',
     'optional_infos' => 'Informazioni Opzionali',
     'order_details' => 'Informazioni relative all\'ordine',
+    'nis_inventory_section' => 'Inventario NIS2',
+    'nis_inventory_help' => 'Collega il bene al perimetro NIS2 quando supporta servizi, reti, sistemi o processi rilevanti.',
+    'nis_relevant' => 'Rilevante ai fini NIS2',
+    'nis_inventory_scope' => 'Ambito inventario NIS2',
+    'nis_service_impact' => 'Impatto sul servizio',
+    'nis_notes' => 'Note NIS2',
+    'nis_service_impacts' => [
+        'unknown' => 'Non valutato',
+        'low' => 'Basso',
+        'medium' => 'Medio',
+        'high' => 'Alto',
+        'critical' => 'Critico',
+    ],
     'calc_eol' => 'Se viene annullata la data di EOL, usa il calcolo automatico in base alla data d\'acquisto e al tasso di EOL.',
 ];

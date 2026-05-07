@@ -20,6 +20,12 @@
             <x-tabs>
                 <x-slot:tabnav>
 
+                    <x-tabs.nav-item
+                        name="nis"
+                        icon="fa-solid fa-shield-halved fa-fw"
+                        label="NIS2"
+                        tooltip="NIS2"
+                    />
                     <x-tabs.asset-tab count="{{ $supplier->assets()->AssetsForShow()->count() }}" />
                     <x-tabs.license-tab count="{{ $supplier->licenses->count() }}" />
                     <x-tabs.accessory-tab count="{{ $supplier->accessories->count() }}" />
@@ -33,6 +39,18 @@
 
 
                 <x-slot:tabpanes>
+
+                    <x-tabs.pane name="nis">
+                        <x-page-data>
+                            <x-data-row :label="trans('admin/suppliers/table.nis_relevant')">{{ $supplier->nis_relevant ? trans('general.yes') : trans('general.no') }}</x-data-row>
+                            <x-data-row :label="trans('admin/suppliers/table.nis_criticality')">{{ $supplier->nis_criticality_label }}</x-data-row>
+                            <x-data-row :label="trans('admin/suppliers/table.nis_assessment_status')">{{ $supplier->nis_assessment_status_label }}</x-data-row>
+                            <x-data-row :label="trans('admin/suppliers/table.cpv_codes')">{{ $supplier->cpv_codes }}</x-data-row>
+                            <x-data-row :label="trans('admin/suppliers/table.nis_relevance_criteria')">{{ $supplier->nis_relevance_criteria }}</x-data-row>
+                            <x-data-row :label="trans('admin/suppliers/table.nis_last_assessment_at')">{{ Helper::getFormattedDateObject($supplier->nis_last_assessment_at, 'date', false) }}</x-data-row>
+                            <x-data-row :label="trans('admin/suppliers/table.nis_next_review_at')">{{ Helper::getFormattedDateObject($supplier->nis_next_review_at, 'date', false) }}</x-data-row>
+                        </x-page-data>
+                    </x-tabs.pane>
 
                     <!-- start assets tab pane -->
                     <x-tabs.pane name="assets">

@@ -81,6 +81,14 @@ class DocumentFrameworkPresenter extends Presenter
                 'visible' => false,
             ],
             [
+                'field' => 'compliance_domain_label',
+                'searchable' => true,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('admin/documentframeworks/table.compliance_domain'),
+                'visible' => true,
+            ],
+            [
                 'field' => 'version',
                 'searchable' => true,
                 'sortable' => false,

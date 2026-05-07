@@ -118,6 +118,9 @@ class AssetsController extends Controller
             'byod',
             'asset_eol_date',
             'requestable',
+            'nis_relevant',
+            'nis_inventory_scope',
+            'nis_service_impact',
             'jobtitle',
             // These are *relationships* so we wouldn't normally include them in this array,
             // since they would normally create a `column not found` error,
@@ -356,6 +359,18 @@ class AssetsController extends Controller
 
         if ($request->filled('byod')) {
             $assets->where('assets.byod', '=', $request->input('byod'));
+        }
+
+        if ($request->filled('nis_relevant')) {
+            $assets->where('assets.nis_relevant', '=', $request->boolean('nis_relevant'));
+        }
+
+        if ($request->filled('nis_inventory_scope')) {
+            $assets->where('assets.nis_inventory_scope', '=', $request->input('nis_inventory_scope'));
+        }
+
+        if ($request->filled('nis_service_impact')) {
+            $assets->where('assets.nis_service_impact', '=', $request->input('nis_service_impact'));
         }
 
         if ($request->filled('order_number')) {

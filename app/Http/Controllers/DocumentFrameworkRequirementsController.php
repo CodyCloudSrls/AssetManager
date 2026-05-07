@@ -16,6 +16,8 @@ class DocumentFrameworkRequirementsController extends Controller
 
         return view('documentframeworkrequirements.edit', $this->formData(new DocumentFrameworkRequirement([
             'document_framework_id' => $documentframework->id,
+            'delegation_level' => 'owner_review',
+            'risk_level' => 'medium',
         ]), $documentframework));
     }
 
@@ -127,6 +129,10 @@ class DocumentFrameworkRequirementsController extends Controller
             'item' => $requirement,
             'framework' => $framework,
             'parentOptions' => $parentOptions,
+            'obligationTypeOptions' => DocumentFrameworkRequirement::obligationTypeOptions(),
+            'evidenceTypeOptions' => DocumentFrameworkRequirement::evidenceTypeOptions(),
+            'delegationLevelOptions' => DocumentFrameworkRequirement::delegationLevelOptions(),
+            'riskLevelOptions' => DocumentFrameworkRequirement::riskLevelOptions(),
         ];
     }
 }

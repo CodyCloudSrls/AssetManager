@@ -19,8 +19,9 @@ class DocumentFrameworkRequirementsController extends Controller
         $this->authorize('view', DocumentFramework::class);
 
         $allowedColumns = [
-            'id', 'code', 'title', 'domain', 'documents_count',
-            'review_frequency_months', 'sort_order', 'is_mandatory', 'is_active', 'created_at', 'created_by',
+            'id', 'code', 'title', 'domain', 'obligation_type', 'evidence_type', 'delegation_level',
+            'risk_level', 'documents_count', 'review_frequency_months', 'sort_order', 'is_mandatory',
+            'is_active', 'created_at', 'created_by',
         ];
 
         $requirements = DocumentFrameworkRequirement::query()

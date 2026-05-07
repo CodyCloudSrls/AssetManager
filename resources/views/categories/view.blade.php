@@ -18,6 +18,12 @@
         <x-page-column class="col-md-9 main-panel">
             <x-tabs>
                 <x-slot:tabnav>
+                    <x-tabs.nav-item
+                        name="nis"
+                        icon="fa-solid fa-shield-halved fa-fw"
+                        label="NIS2"
+                        tooltip="NIS2"
+                    />
                     @if ($category->category_type=='asset')
                         <x-tabs.asset-tab count="{{ $category->showableAssets()->count() }}"/>
                         <x-tabs.model-tab count="{{ $category->models->count() }}"/>
@@ -32,6 +38,13 @@
                 </x-slot:tabnav>
 
                 <x-slot:tabpanes>
+
+                    <x-tabs.pane name="nis">
+                        <x-page-data>
+                            <x-data-row :label="trans('admin/categories/general.nis_inventory_required')">{{ $category->nis_inventory_required ? trans('general.yes') : trans('general.no') }}</x-data-row>
+                            <x-data-row :label="trans('admin/categories/general.nis_inventory_scope')">{{ $category->nis_inventory_scope_label }}</x-data-row>
+                        </x-page-data>
+                    </x-tabs.pane>
 
                     <!-- start assets tab pane -->
                     @if ($category->category_type=='asset')

@@ -32,14 +32,18 @@
                                 <x-data-row :label="trans('admin/documentframeworkrequirements/table.code')">{{ $requirement->code }}</x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworkrequirements/table.title')">{{ $requirement->title }}</x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworkrequirements/table.domain')">{{ $requirement->domain }}</x-data-row>
+                                <x-data-row :label="trans('admin/documentframeworkrequirements/table.obligation_type')">{{ $requirement->obligation_type_label }}</x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworkrequirements/table.parent')">
                                     @if ($requirement->parent)
                                         <a href="{{ route('documentframeworkrequirements.show', $requirement->parent) }}">{{ $requirement->parent->code }} - {{ $requirement->parent->title }}</a>
                                     @endif
                                 </x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworkrequirements/table.coverage')">{{ $requirement->coverage_label }}</x-data-row>
+                                <x-data-row :label="trans('admin/documentframeworkrequirements/table.risk_level')">{{ $requirement->risk_level_label }}</x-data-row>
+                                <x-data-row :label="trans('admin/documentframeworkrequirements/table.delegation_level')">{{ $requirement->delegation_level_label }}</x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworkrequirements/table.owner')">{{ $requirement->owner?->display_name }}</x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworkrequirements/table.default_document_type')">{{ $requirement->defaultDocumentType?->name }}</x-data-row>
+                                <x-data-row :label="trans('admin/documentframeworkrequirements/table.evidence_type')">{{ $requirement->evidence_type_label }}</x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworkrequirements/table.review_frequency_months')">
                                     @if ($requirement->review_frequency_months)
                                         {{ trans('admin/documentframeworks/general.months_interval', ['count' => $requirement->review_frequency_months]) }}
@@ -48,6 +52,12 @@
                                 <x-data-row :label="trans('admin/documentframeworkrequirements/table.description')">{{ $requirement->description }}</x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworkrequirements/table.evidence_guidance')">{{ $requirement->evidence_guidance }}</x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworkrequirements/table.applicability_notes')">{{ $requirement->applicability_notes }}</x-data-row>
+                                <x-data-row :label="trans('admin/documentframeworkrequirements/table.official_reference')">{{ $requirement->official_reference }}</x-data-row>
+                                <x-data-row :label="trans('admin/documentframeworkrequirements/table.source_url')">
+                                    @if ($requirement->source_url)
+                                        <a href="{{ $requirement->source_url }}" target="_blank" rel="noopener noreferrer">{{ $requirement->source_url }}</a>
+                                    @endif
+                                </x-data-row>
                             </x-page-data>
                         </x-page-column>
                     </x-tabs.pane>

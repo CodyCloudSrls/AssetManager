@@ -106,6 +106,12 @@ class Asset extends Depreciable
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'nis_relevant' => 'boolean',
+    ];
+
+    protected $attributes = [
+        'nis_relevant' => false,
+        'nis_service_impact' => 'unknown',
     ];
 
     protected $rules = [
@@ -134,6 +140,10 @@ class Asset extends Depreciable
         'assigned_to' => ['nullable', 'integer', 'required_with:assigned_type'],
         'assigned_type' => ['nullable', 'required_with:assigned_to', 'in:'.User::class.','.Location::class.','.Asset::class],
         'requestable' => ['nullable', 'boolean'],
+        'nis_relevant' => ['nullable', 'boolean'],
+        'nis_inventory_scope' => ['nullable', 'string', 'in:network,server,endpoint,cloud,security,identity,backup,facility,other'],
+        'nis_service_impact' => ['nullable', 'string', 'in:unknown,low,medium,high,critical'],
+        'nis_notes' => ['nullable', 'string', 'max:65535'],
         'assigned_user' => ['integer', 'nullable', 'exists:users,id,deleted_at,NULL'],
         'assigned_location' => ['integer', 'nullable', 'scoped_exists:App\Models\Location', 'fmcs_location'],
         'assigned_asset' => ['integer', 'nullable', 'scoped_exists:App\Models\Asset'],
@@ -163,6 +173,10 @@ class Asset extends Depreciable
         'supplier_id',
         'warranty_months',
         'requestable',
+        'nis_relevant',
+        'nis_inventory_scope',
+        'nis_service_impact',
+        'nis_notes',
         'last_checkout',
         'expected_checkin',
         'byod',
@@ -197,7 +211,50 @@ class Asset extends Depreciable
         'last_checkin',
         'last_checkout',
         'asset_eol_date',
+        'nis_inventory_scope',
+        'nis_service_impact',
+        'nis_notes',
     ];
+
+    public static function nisServiceImpactOptions(): array
+    {
+        return [
+            'unknown' => trans('admin/hardware/form.nis_service_impacts.unknown'),
+            'low' => trans('admin/hardware/form.nis_service_impacts.low'),
+            'medium' => trans('admin/hardware/form.nis_service_impacts.medium'),
+            'high' => trans('admin/hardware/form.nis_service_impacts.high'),
+            'critical' => trans('admin/hardware/form.nis_service_impacts.critical'),
+        ];
+    }
+
+    public function getNisInventoryScopeLabelAttribute(): ?string
+    {
+        if (! $this->nis_inventory_scope) {
+            return null;
+        }
+
+        return Category::nisInventoryScopeOptions()[$this->nis_inventory_scope] ?? ucfirst(str_replace('_', ' ', (string) $this->nis_inventory_scope));
+    }
+
+    public function getNisServiceImpactLabelAttribute(): string
+    {
+        return static::nisServiceImpactOptions()[$this->nis_service_impact] ?? ucfirst(str_replace('_', ' ', (string) $this->nis_service_impact));
+    }
+
+    public function setNisInventoryScopeAttribute($value): void
+    {
+        $this->attributes['nis_inventory_scope'] = ($value === '' ? null : $value);
+    }
+
+    public function setNisServiceImpactAttribute($value): void
+    {
+        $this->attributes['nis_service_impact'] = $value ?: 'unknown';
+    }
+
+    public function setNisNotesAttribute($value): void
+    {
+        $this->attributes['nis_notes'] = ($value === '' ? null : $value);
+    }
 
     /**
      * The relations and their attributes that should be included when searching the model.

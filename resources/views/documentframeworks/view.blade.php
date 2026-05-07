@@ -120,6 +120,9 @@
                                 <x-data-row :label="trans('admin/documentframeworks/table.framework_type')">
                                     {{ \App\Models\DocumentFramework::getFrameworkTypeOptions()[$documentframework->framework_type] ?? $documentframework->framework_type }}
                                 </x-data-row>
+                                <x-data-row :label="trans('admin/documentframeworks/table.compliance_domain')">
+                                    {{ \App\Models\DocumentFramework::complianceDomainOptions()[$documentframework->compliance_domain] ?? $documentframework->compliance_domain }}
+                                </x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworks/table.jurisdiction')">{{ $documentframework->jurisdiction }}</x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworks/table.version')">{{ $documentframework->version }}</x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworks/table.status')">
@@ -139,6 +142,7 @@
                                     @endif
                                 </x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworks/table.description')">{{ $documentframework->description }}</x-data-row>
+                                <x-data-row :label="trans('admin/documentframeworks/table.compliance_objective')">{{ $documentframework->compliance_objective }}</x-data-row>
                             </x-page-data>
                         </x-page-column>
                     </x-tabs.pane>

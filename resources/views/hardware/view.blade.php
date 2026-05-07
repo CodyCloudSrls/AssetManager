@@ -189,6 +189,22 @@
                                     {!!  $asset->defaultLoc?->present()->formattedNameLink !!}
                                 </x-data-row>
 
+                                <x-data-row :label="trans('admin/hardware/form.nis_relevant')">
+                                    {{ $asset->nis_relevant ? trans('general.yes') : trans('general.no') }}
+                                </x-data-row>
+
+                                <x-data-row :label="trans('admin/hardware/form.nis_inventory_scope')">
+                                    {{ $asset->nis_inventory_scope_label }}
+                                </x-data-row>
+
+                                <x-data-row :label="trans('admin/hardware/form.nis_service_impact')">
+                                    {{ $asset->nis_service_impact_label }}
+                                </x-data-row>
+
+                                <x-data-row :label="trans('admin/hardware/form.nis_notes')">
+                                    {{ $asset->nis_notes }}
+                                </x-data-row>
+
                                 @if ($asset->asset_eol_date)
                                     <x-data-row :label="trans('general.device_eol')" copy_what="eol_date">
                                         @if ($asset->asset_eol_date)

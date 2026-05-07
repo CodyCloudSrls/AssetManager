@@ -39,6 +39,35 @@
     </div>
 </div>
 
+<fieldset name="nis-inventory">
+    <x-form.legend help_text="{{ trans('admin/categories/general.nis_inventory_required_help') }}">
+        {{ trans('admin/categories/general.nis_inventory_section') }}
+    </x-form.legend>
+
+    <div class="form-group">
+        <div class="col-md-7 col-md-offset-3">
+            <label class="form-control">
+                <input type="hidden" name="nis_inventory_required" value="0">
+                <input type="checkbox" value="1" name="nis_inventory_required" {{ old('nis_inventory_required', $item->nis_inventory_required) ? ' checked="checked"' : '' }} aria-label="nis_inventory_required">
+                {{ trans('admin/categories/general.nis_inventory_required') }}
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('nis_inventory_scope') ? ' has-error' : '' }}">
+        <label for="nis_inventory_scope" class="col-md-3 control-label">{{ trans('admin/categories/general.nis_inventory_scope') }}</label>
+        <div class="col-md-4">
+            <select class="form-control select2" name="nis_inventory_scope" id="nis_inventory_scope" aria-label="nis_inventory_scope">
+                <option value="">{{ trans('general.none') }}</option>
+                @foreach (\App\Models\Category::nisInventoryScopeOptions() as $value => $label)
+                    <option value="{{ $value }}" @selected(old('nis_inventory_scope', $item->nis_inventory_scope) === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+            {!! $errors->first('nis_inventory_scope', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+</fieldset>
+
 <livewire:category-edit-form
     :alert-on-response="(bool) old('alert_on_response', $item->alert_on_response)"
     :default-eula-text="$snipeSettings->default_eula_text"

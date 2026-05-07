@@ -227,6 +227,25 @@ class AssetPresenter extends Presenter
                 'formatter' => 'trueFalseFormatter',
 
             ], [
+                'field' => 'nis_relevant',
+                'searchable' => false,
+                'sortable' => true,
+                'visible' => false,
+                'title' => trans('admin/hardware/form.nis_relevant'),
+                'formatter' => 'trueFalseFormatter',
+            ], [
+                'field' => 'nis_inventory_scope_label',
+                'searchable' => true,
+                'sortable' => false,
+                'visible' => false,
+                'title' => trans('admin/hardware/form.nis_inventory_scope'),
+            ], [
+                'field' => 'nis_service_impact_label',
+                'searchable' => true,
+                'sortable' => false,
+                'visible' => false,
+                'title' => trans('admin/hardware/form.nis_service_impact'),
+            ], [
                 'field' => 'notes',
                 'searchable' => true,
                 'sortable' => true,

@@ -64,6 +64,19 @@ class CategoryPresenter extends Presenter
                 'title' => trans('general.template_visibility.label'),
                 'visible' => true,
             ], [
+                'field' => 'nis_inventory_required',
+                'searchable' => false,
+                'sortable' => true,
+                'title' => trans('admin/categories/general.nis_inventory_required'),
+                'visible' => false,
+                'formatter' => 'trueFalseFormatter',
+            ], [
+                'field' => 'nis_inventory_scope_label',
+                'searchable' => true,
+                'sortable' => false,
+                'title' => trans('admin/categories/general.nis_inventory_scope'),
+                'visible' => false,
+            ], [
                 'field' => 'item_count',
                 'searchable' => false,
                 'sortable' => true,
