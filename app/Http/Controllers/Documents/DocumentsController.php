@@ -8,6 +8,7 @@ use App\Http\Requests\StoreDocumentRequest;
 use App\Models\Company;
 use App\Models\Document;
 use App\Models\DocumentAssignment;
+use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\User;
 use App\Support\Documents\DocumentAssignmentManager;
@@ -23,7 +24,28 @@ class DocumentsController extends Controller
     {
         $this->authorize('index', Document::class);
 
-        return view('documents.index');
+        $frameworks = DocumentFramework::query()
+            ->operational()
+            ->active()
+            ->ordered()
+            ->get(['id', 'name']);
+
+        $requirements = DocumentFrameworkRequirement::query()
+            ->visibleThroughFramework()
+            ->active()
+            ->with('framework')
+            ->ordered()
+            ->get(['id', 'document_framework_id', 'code', 'title']);
+
+        $selectedRequirement = request('document_framework_requirement_id')
+            ? $requirements->firstWhere('id', (int) request('document_framework_requirement_id'))
+            : null;
+
+        return view('documents.index', [
+            'frameworks' => $frameworks,
+            'requirements' => $requirements,
+            'selectedRequirement' => $selectedRequirement,
+        ]);
     }
 
     public function create(Request $request): View

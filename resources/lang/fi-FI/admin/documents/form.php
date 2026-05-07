@@ -55,4 +55,8 @@ return array (
   'coverage_role' => 'Coverage Role',
   'covered_at' => 'Covered At',
   'evidence_notes' => 'Evidence Notes',
+  'all_frameworks' => 'All frameworks',
+  'all_requirements' => 'All requirements',
+  'apply_filters' => 'Apply filters',
+  'clear_filters' => 'Clear filters',
 );
