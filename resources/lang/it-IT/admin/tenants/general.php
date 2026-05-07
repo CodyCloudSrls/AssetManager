@@ -26,7 +26,7 @@ return array (
   'root_company_link' => 'Apri azienda madre',
   'edit_root_company' => 'Modifica azienda madre',
   'companies' => 'Aziende del tenant',
-  'helpdesk' => 
+  'helpdesk' =>
   array (
     'title' => 'Helpdesk pubblico',
     'edit' => 'Configura helpdesk',
@@ -44,7 +44,7 @@ return array (
     'public_ticket_types' => 'Tipologie esposte al pubblico',
     'no_ticket_types_available' => 'Nessuna tipologia ticket pubblica disponibile per questo tenant.',
   ),
-  'mail' => 
+  'mail' =>
   array (
     'title' => 'Mail e notifiche',
     'edit' => 'Configura mail',
@@ -62,7 +62,7 @@ return array (
     'document_review_warning_days' => 'Finestra avviso revisione documenti',
     'document_review_warning_days_help' => 'Numero di giorni di anticipo usato per i digest dei documenti in revisione.',
     'events_title' => 'Eventi notificabili',
-    'events' => 
+    'events' =>
     array (
       'ticket_created' => 'Ticket creato',
       'ticket_public_reply' => 'Risposta pubblica ticket',
@@ -70,7 +70,7 @@ return array (
       'ticket_sla_alert' => 'Avviso SLA ticket',
       'document_review_due' => 'Documenti in revisione',
     ),
-    'event_descriptions' => 
+    'event_descriptions' =>
     array (
       'ticket_created' => 'Invia una mail quando viene aperto un nuovo ticket per il tenant, incluse le aperture dal portale pubblico.',
       'ticket_public_reply' => 'Invia una mail quando viene aggiunta una risposta visibile lato pubblico a un ticket del tenant.',

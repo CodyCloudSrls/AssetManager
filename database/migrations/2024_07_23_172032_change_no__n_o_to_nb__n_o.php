@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\Helper;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
@@ -11,8 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Setting::where('locale', 'no-NO')->update(['locale' => 'nb-NO']);
-        User::where('locale', 'no-NO')->update(['locale' => 'nb-NO']);
+        $supportedLocales = Helper::availableLanguageLocales();
+
+        Setting::whereNotNull('locale')
+            ->whereNotIn('locale', $supportedLocales)
+            ->update(['locale' => Helper::normalizeSupportedLocale(config('app.fallback_locale', 'en-US'))]);
+
+        User::whereNotNull('locale')
+            ->whereNotIn('locale', $supportedLocales)
+            ->update(['locale' => null]);
 
     }
 

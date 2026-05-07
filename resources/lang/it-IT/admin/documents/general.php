@@ -9,7 +9,7 @@ return array (
   'assignment_expired_flag' => 'Scaduta',
   'review_due' => 'Revisione in scadenza',
   'review_overdue' => 'Revisione scaduta',
-  'assignment_statuses' => 
+  'assignment_statuses' =>
   array (
     'planned' => 'Pianificata',
     'required' => 'Richiesta',
@@ -18,7 +18,7 @@ return array (
     'expired' => 'Scaduta',
     'revoked' => 'Revocata',
   ),
-  'statuses' => 
+  'statuses' =>
   array (
     'draft' => 'Bozza',
     'active' => 'Attivo',

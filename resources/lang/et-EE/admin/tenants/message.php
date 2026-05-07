@@ -1,0 +1,46 @@
+<?php
+
+return array (
+  'create' =>
+  array (
+    'success' => 'Tenant created successfully.',
+    'error' => 'Tenant could not be created.',
+  ),
+  'delete' =>
+  array (
+    'success' => 'Tenant deleted successfully.',
+    'not_deletable' => 'This tenant cannot be deleted because it still contains operational data or tenant memberships.',
+  ),
+  'membership' =>
+  array (
+    'create' =>
+    array (
+      'success' => 'Tenant user assigned successfully.',
+    ),
+    'update' =>
+    array (
+      'success' => 'Tenant role updated successfully.',
+    ),
+    'delete' =>
+    array (
+      'success' => 'Tenant user removed successfully.',
+    ),
+  ),
+  'helpdesk' =>
+  array (
+    'update' =>
+    array (
+      'success' => 'Helpdesk configuration updated successfully.',
+    ),
+    'disabled' => 'The public helpdesk portal is not enabled for this tenant.',
+    'attachments_disabled' => 'Attachments are disabled for this tenant public helpdesk portal.',
+    'no_public_types' => 'Enable at least one public ticket type before activating the helpdesk portal.',
+  ),
+  'mail' =>
+  array (
+    'update' =>
+    array (
+      'success' => 'Tenant mail settings updated successfully.',
+    ),
+  ),
+);

@@ -30,55 +30,67 @@ class Helper
      * in resources/en-US/localizations.php.
      */
     public static $language_map = [
-        'af' => 'af-ZA', // Afrikaans
-        'am' => 'am-ET', // Amharic
-        'ar' => 'ar-SA', // Arabic
         'bg' => 'bg-BG', // Bulgarian
         'ca' => 'ca-ES', // Catalan
         'cs' => 'cs-CZ', // Czech
-        'cy' => 'cy-GB', // Welsh
         'da' => 'da-DK', // Danish
-        'de-i' => 'de-if', // German informal
         'de' => 'de-DE', // German
         'el' => 'el-GR', // Greek
         'en' => 'en-US', // English
         'et' => 'et-EE', // Estonian
-        'fa' => 'fa-IR', // Persian
         'fi' => 'fi-FI', // Finnish
-        'fil' => 'fil-PH', // Filipino
         'fr' => 'fr-FR', // French
-        'he' => 'he-IL', // Hebrew
+        'ga' => 'ga-IE', // Irish
         'hr' => 'hr-HR', // Croatian
         'hu' => 'hu-HU', // Hungarian
-        'id' => 'id-ID', // Indonesian
-        'is' => 'is-IS', // Icelandic
         'it' => 'it-IT', // Italian
-        'iu' => 'iu-NU', // Inuktitut
-        'ja' => 'ja-JP', // Japanese
-        'ko' => 'ko-KR', // Korean
         'lt' => 'lt-LT', // Lithuanian
         'lv' => 'lv-LV', // Latvian
-        'mi' => 'mi-NZ', // Maori
-        'mk' => 'mk-MK', // Macedonian
-        'mn' => 'mn-MN', // Mongolian
-        'ms' => 'ms-MY', // Malay
         'nl' => 'nl-NL', // Dutch
-        'no' => 'nb-NO', // Norwegian Bokmål
         'pl' => 'pl-PL', // Polish
         'pt' => 'pt-PT', // Portuguese
         'ro' => 'ro-RO', // Romanian
-        'ru' => 'ru-RU', // Russian
         'sk' => 'sk-SK', // Slovak
         'sl' => 'sl-SI', // Slovenian
-        'so' => 'so-SO', // Somali
-        'ta' => 'ta-IN', // Tamil
-        'th' => 'th-TH', // Thai
-        'tl' => 'tl-PH', // Tagalog
-        'tr' => 'tr-TR', // Turkish
-        'uk' => 'uk-UA', // Ukrainian
-        'vi' => 'vi-VN', // Vietnamese
-        'zu' => 'zu-ZA', // Zulu
+        'es' => 'es-ES', // Spanish
+        'sv' => 'sv-SE', // Swedish
     ];
+
+    public static function availableLanguageLocales(): array
+    {
+        static $locales = null;
+
+        if ($locales !== null) {
+            return $locales;
+        }
+
+        $locales = array_values(array_filter(array_map('basename', glob(resource_path('lang/*'), GLOB_ONLYDIR) ?: [])));
+        sort($locales);
+
+        return $locales;
+    }
+
+    public static function isSupportedLocale(?string $locale): bool
+    {
+        return $locale !== null && in_array($locale, self::availableLanguageLocales(), true);
+    }
+
+    public static function normalizeSupportedLocale(?string $locale): string
+    {
+        if ($locale === null || $locale === '') {
+            return 'en-US';
+        }
+
+        $locale = self::mapLegacyLocale($locale);
+
+        if (self::isSupportedLocale($locale)) {
+            return $locale;
+        }
+
+        $fallback = self::mapLegacyLocale(config('app.fallback_locale', 'en-US'));
+
+        return self::isSupportedLocale($fallback) ? $fallback : 'en-US';
+    }
 
     /**
      * Simple helper to invoke the markdown parser
@@ -1565,6 +1577,10 @@ class Helper
     public static function mapLegacyLocale($language_code = null)
     {
 
+        if ($language_code === null || $language_code === '') {
+            return 'en-US';
+        }
+
         if (strlen($language_code) > 4) {
             return $language_code;
         }
@@ -1582,6 +1598,10 @@ class Helper
     public static function mapBackToLegacyLocale($new_locale = null)
     {
 
+        if ($new_locale === null || $new_locale === '') {
+            return 'en';
+        }
+
         if (strlen($new_locale) <= 4) {
             return $new_locale; // "new locale" apparently wasn't quite so new
         }
@@ -1596,14 +1616,16 @@ class Helper
         return $new_locale; // better that you have some weird locale that doesn't fit into our mappings anywhere than 'void'
     }
 
+    public static function select2LanguageLocale(): string
+    {
+        $locale = self::mapBackToLegacyLocale(app()->getLocale());
+
+        return file_exists(public_path('js/select2/i18n/'.$locale.'.js')) ? $locale : 'en';
+    }
+
     public static function determineLanguageDirection()
     {
-        return in_array(app()->getLocale(),
-            [
-                'ar-SA',
-                'fa-IR',
-                'he-IL',
-            ]) ? 'rtl' : 'ltr';
+        return 'ltr';
     }
 
     public static function getRedirectOption($request, $id, $table, $item_id = null): RedirectResponse

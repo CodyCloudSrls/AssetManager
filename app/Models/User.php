@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\Helper;
 use App\Http\Traits\UniqueUndeletedTrait;
 use App\Models\Traits\CompanyableTrait;
 use App\Models\Traits\HasUploads;
@@ -131,6 +132,11 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         'remote' => 'boolean',
         'activated' => 'boolean',
     ];
+
+    public function setLocaleAttribute($value): void
+    {
+        $this->attributes['locale'] = ($value === null || $value === '') ? null : Helper::normalizeSupportedLocale($value);
+    }
 
     /**
      * The attributes that should be included when searching the model.

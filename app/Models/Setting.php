@@ -71,6 +71,11 @@ class Setting extends Model
         'manager_view_enabled' => 'boolean',
     ];
 
+    public function setLocaleAttribute($value): void
+    {
+        $this->attributes['locale'] = Helper::normalizeSupportedLocale($value);
+    }
+
     /**
      * Get the app settings.
      *  Cache is expired on Setting model saved in EventServiceProvider.

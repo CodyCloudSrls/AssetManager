@@ -24,13 +24,13 @@ return array (
   'public_open' => 'Apri un ticket di supporto',
   'public_submit' => 'Invia ticket',
   'public_reply' => 'Aggiungi una risposta pubblica',
-  'sources' => 
+  'sources' =>
   array (
     'internal' => 'Interno',
     'public' => 'Portale pubblico',
     'email' => 'Email',
   ),
-  'worklog_categories' => 
+  'worklog_categories' =>
   array (
     'analysis' => 'Analisi',
     'remote_support' => 'Supporto remoto',
