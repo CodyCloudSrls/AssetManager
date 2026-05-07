@@ -33,4 +33,12 @@ return [
             'success' => 'Impostazioni mail tenant aggiornate correttamente.',
         ],
     ],
+    'settings' => [
+        'update' => [
+            'success' => 'Impostazioni tenant aggiornate correttamente.',
+        ],
+        'bootstrap' => [
+            'success' => 'Bootstrap completato per :locale: creati :frameworks framework e :requirements requisiti.',
+        ],
+    ],
 ];

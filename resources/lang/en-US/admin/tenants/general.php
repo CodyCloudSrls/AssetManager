@@ -26,6 +26,16 @@ return array (
   'root_company_link' => 'Open root company',
   'edit_root_company' => 'Edit root company',
   'companies' => 'Tenant companies',
+  'settings' =>
+  array (
+    'title' => 'Tenant settings',
+    'edit' => 'Configure tenant',
+    'save' => 'Save tenant settings',
+    'default_locale' => 'Tenant default language',
+    'default_locale_help' => 'Used for tenant bootstrap content such as compliance frameworks. Users can still choose their own interface language.',
+    'bootstrap_compliance_frameworks' => 'Create missing compliance frameworks for this tenant',
+    'bootstrap_compliance_frameworks_help' => 'Creates editable tenant-owned NIS2/GDPR framework copies in the tenant default language. Existing tenant frameworks are not overwritten.',
+  ),
   'helpdesk' =>
   array (
     'title' => 'Public helpdesk',

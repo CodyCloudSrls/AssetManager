@@ -74,7 +74,11 @@ class StoreDocumentRequest extends FormRequest
 
             if ($this->filled('document_framework_id')) {
                 $documentFramework = DocumentFramework::find($this->input('document_framework_id'));
-                if (! TenantRecordGuard::templateCanBeAppliedToCompany($documentFramework, $effectiveCompanyId ? (int) $effectiveCompanyId : null)) {
+                if (
+                    ! $documentFramework
+                    || $documentFramework->isSystemTemplate()
+                    || ! TenantRecordGuard::templateCanBeAppliedToCompany($documentFramework, $effectiveCompanyId ? (int) $effectiveCompanyId : null)
+                ) {
                     $validator->errors()->add('document_framework_id', trans('validation.exists', ['attribute' => 'document framework']));
                 }
             }

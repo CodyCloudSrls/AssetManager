@@ -43,4 +43,15 @@ return array (
       'success' => 'Tenant mail settings updated successfully.',
     ),
   ),
+  'settings' =>
+  array (
+    'update' =>
+    array (
+      'success' => 'Tenant settings updated successfully.',
+    ),
+    'bootstrap' =>
+    array (
+      'success' => 'Bootstrap completed for :locale: :frameworks framework(s) and :requirements requirement(s) created.',
+    ),
+  ),
 );

@@ -14,7 +14,7 @@ class DocumentFrameworksController extends Controller
     {
         $this->authorize('index', DocumentFramework::class);
 
-        return view('documentframeworks.index')->with('document_framework_count', DocumentFramework::withTrashed()->count());
+        return view('documentframeworks.index')->with('document_framework_count', DocumentFramework::withTrashed()->operational()->count());
     }
 
     public function create(): View
@@ -32,7 +32,7 @@ class DocumentFrameworksController extends Controller
         $this->authorize('create', DocumentFramework::class);
 
         $documentFramework = new DocumentFramework;
-        $documentFramework->fill($request->all());
+        $documentFramework->fill($request->validated());
         $documentFramework->created_by = auth()->id();
         $documentFramework->status = $request->input('status', 'active');
         $documentFramework->is_active = $request->boolean('is_active', true);
@@ -82,7 +82,7 @@ class DocumentFrameworksController extends Controller
     {
         $this->authorize('update', $documentframework);
 
-        $documentframework->fill($request->all());
+        $documentframework->fill($request->validated());
         $documentframework->status = $request->input('status', 'active');
         $documentframework->is_active = $request->boolean('is_active');
 

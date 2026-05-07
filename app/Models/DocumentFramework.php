@@ -46,6 +46,10 @@ class DocumentFramework extends SnipeModel
         'is_active' => 'boolean',
         'company_id' => 'nullable|integer|exists:companies,id',
         'visibility_type' => 'required|string|in:private,descendants,global',
+        'is_system_template' => 'boolean',
+        'source_framework_id' => 'nullable|integer|exists:document_frameworks,id',
+        'source_pack_key' => 'nullable|string|max:80',
+        'locale' => 'nullable|string|max:20',
     ];
 
     protected $injectUniqueIdentifier = true;
@@ -72,6 +76,10 @@ class DocumentFramework extends SnipeModel
         'created_by',
         'company_id',
         'visibility_type',
+        'is_system_template',
+        'source_framework_id',
+        'source_pack_key',
+        'locale',
     ];
 
     protected $casts = [
@@ -79,6 +87,8 @@ class DocumentFramework extends SnipeModel
         'is_active' => 'boolean',
         'created_by' => 'integer',
         'company_id' => 'integer',
+        'is_system_template' => 'boolean',
+        'source_framework_id' => 'integer',
         'owner_id' => 'integer',
         'review_cadence_months' => 'integer',
         'effective_from' => 'date',
@@ -97,6 +107,8 @@ class DocumentFramework extends SnipeModel
         'version',
         'status',
         'visibility_type',
+        'source_pack_key',
+        'locale',
     ];
 
     protected $searchableRelations = [
@@ -152,6 +164,11 @@ class DocumentFramework extends SnipeModel
     public function requirements()
     {
         return $this->hasMany(DocumentFrameworkRequirement::class, 'document_framework_id');
+    }
+
+    public function sourceFramework()
+    {
+        return $this->belongsTo(self::class, 'source_framework_id')->withTrashed();
     }
 
     public function owner()
@@ -220,6 +237,16 @@ class DocumentFramework extends SnipeModel
         return $query->orderBy('sort_order')->orderBy('name');
     }
 
+    public function scopeOperational($query)
+    {
+        return $query->where('is_system_template', false);
+    }
+
+    public function scopeSystemTemplates($query)
+    {
+        return $query->where('is_system_template', true);
+    }
+
     public function scopeOrderByCreatedBy($query, $order)
     {
         return $query->leftJoin('users as admin_sort', 'document_frameworks.created_by', '=', 'admin_sort.id')
@@ -273,5 +300,10 @@ class DocumentFramework extends SnipeModel
         return $this->status === 'active'
             && ($this->effective_from === null || $this->effective_from->lte(Carbon::today()))
             && ($this->effective_to === null || $this->effective_to->gte(Carbon::today()));
+    }
+
+    public function isSystemTemplate(): bool
+    {
+        return (bool) $this->is_system_template;
     }
 }

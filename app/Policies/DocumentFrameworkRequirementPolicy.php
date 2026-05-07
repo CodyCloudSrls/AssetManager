@@ -23,6 +23,7 @@ class DocumentFrameworkRequirementPolicy extends SnipePermissionsPolicy
     {
         return parent::update($user, $item)
             && $item?->framework
+            && ! $item->framework->isSystemTemplate()
             && Company::canCurrentUserManageTemplate($item->framework);
     }
 
@@ -30,6 +31,7 @@ class DocumentFrameworkRequirementPolicy extends SnipePermissionsPolicy
     {
         return parent::delete($user, $item)
             && $item?->framework
+            && ! $item->framework->isSystemTemplate()
             && Company::canCurrentUserManageTemplate($item->framework);
     }
 }

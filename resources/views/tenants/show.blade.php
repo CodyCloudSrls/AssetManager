@@ -52,6 +52,10 @@
                                 <td>{{ $members->count() }}</td>
                             </tr>
                             <tr>
+                                <th>{{ trans('admin/tenants/general.settings.default_locale') }}</th>
+                                <td>{{ trans('localizations.languages')[$tenant->defaultLocale()] ?? $tenant->defaultLocale() }}</td>
+                            </tr>
+                            <tr>
                                 <th>{{ trans('admin/tenants/general.root_company_link') }}</th>
                                 <td>
                                     @if ($rootCompany)
@@ -80,6 +84,18 @@
                                     @if ($canManageTenant)
                                         <a href="{{ route('tenants.mail.edit', $tenant) }}" class="btn btn-default btn-sm">
                                             {{ trans('admin/tenants/general.mail.edit') }}
+                                        </a>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>{{ trans('admin/tenants/general.settings.title') }}</th>
+                                <td>
+                                    @if ($canManageTenant)
+                                        <a href="{{ route('tenants.settings.edit', $tenant) }}" class="btn btn-default btn-sm">
+                                            {{ trans('admin/tenants/general.settings.edit') }}
                                         </a>
                                     @else
                                         -

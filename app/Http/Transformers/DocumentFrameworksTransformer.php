@@ -39,6 +39,9 @@ class DocumentFrameworksTransformer
             'compliance_objective' => e($documentFramework->compliance_objective),
             'sort_order' => (int) $documentFramework->sort_order,
             'is_active' => (bool) $documentFramework->is_active,
+            'is_system_template' => (bool) $documentFramework->is_system_template,
+            'source_pack_key' => e($documentFramework->source_pack_key),
+            'locale' => e($documentFramework->locale),
             'company' => ($documentFramework->company) ? [
                 'id' => (int) $documentFramework->company->id,
                 'name' => e($documentFramework->company->name),
