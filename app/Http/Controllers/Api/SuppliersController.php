@@ -10,6 +10,7 @@ use App\Exceptions\ItemStillHasConsumables;
 use App\Exceptions\ItemStillHasLicenses;
 use App\Exceptions\ItemStillHasMaintenances;
 use App\Helpers\Helper;
+use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FilterRequest;
 use App\Http\Requests\ImageUploadRequest;
@@ -24,6 +25,8 @@ use Illuminate\Support\Facades\Storage;
 
 class SuppliersController extends Controller
 {
+    use AppliesTenantCompanyFilter;
+
     /**
      * Display a listing of the resource.
      *
@@ -138,9 +141,24 @@ class SuppliersController extends Controller
             $suppliers->where('nis_assessment_status', '=', $request->input('nis_assessment_status'));
         }
 
+        if ($request->filled('nis_review_status')) {
+            if ($request->input('nis_review_status') === 'due') {
+                $reviewWarningDays = $this->tenantFromRequest($request)?->documentReviewWarningDays() ?? 0;
+
+                $suppliers->whereNotNull('nis_next_review_at')
+                    ->whereDate('nis_next_review_at', '<=', now()->addDays($reviewWarningDays)->toDateString());
+            }
+
+            if ($request->input('nis_review_status') === 'missing') {
+                $suppliers->whereNull('nis_next_review_at');
+            }
+        }
+
         if ($request->filled('cpv_code')) {
             $suppliers->where('cpv_codes', 'LIKE', '%'.$request->input('cpv_code').'%');
         }
+
+        $this->applyTenantCompanyFilter($suppliers, $request, 'company_id');
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
         $limit = app('api_limit_value');

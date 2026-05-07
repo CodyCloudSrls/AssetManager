@@ -14,6 +14,24 @@
         \App\Models\Tenant::ROLE_ADMIN => trans('admin/tenants/general.role_admin'),
         \App\Models\Tenant::ROLE_VIEWER => trans('admin/tenants/general.role_viewer'),
     ];
+    $tenantDrilldowns = [
+        'requirements_total' => route('documentframeworkrequirements.index', ['tenant_id' => $tenant->id]),
+        'requirements_covered' => route('documentframeworkrequirements.index', ['tenant_id' => $tenant->id, 'coverage_status' => \App\Models\DocumentFrameworkRequirement::COVERAGE_COVERED]),
+        'requirements_at_risk' => route('documentframeworkrequirements.index', ['tenant_id' => $tenant->id, 'coverage_status' => \App\Models\DocumentFrameworkRequirement::COVERAGE_AT_RISK]),
+        'requirements_missing' => route('documentframeworkrequirements.index', ['tenant_id' => $tenant->id, 'coverage_status' => \App\Models\DocumentFrameworkRequirement::COVERAGE_MISSING]),
+        'requirements_supporting_only' => route('documentframeworkrequirements.index', ['tenant_id' => $tenant->id, 'coverage_status' => \App\Models\DocumentFrameworkRequirement::COVERAGE_SUPPORTING_ONLY]),
+        'documents_total' => route('documents.index', ['tenant_id' => $tenant->id]),
+        'documents_due' => route('documents.index', ['tenant_id' => $tenant->id, 'review_status' => 'due']),
+        'documents_overdue' => route('documents.index', ['tenant_id' => $tenant->id, 'review_status' => 'overdue']),
+        'tickets_open' => route('tickets.index', ['tenant_id' => $tenant->id, 'queue' => 'open']),
+        'tickets_sla_at_risk' => route('tickets.index', ['tenant_id' => $tenant->id, 'queue' => 'sla_at_risk']),
+        'suppliers_relevant' => route('suppliers.index', ['tenant_id' => $tenant->id, 'nis_relevant' => 1]),
+        'suppliers_review_due' => route('suppliers.index', ['tenant_id' => $tenant->id, 'nis_relevant' => 1, 'nis_review_status' => 'due']),
+        'suppliers_without_review_date' => route('suppliers.index', ['tenant_id' => $tenant->id, 'nis_relevant' => 1, 'nis_review_status' => 'missing']),
+        'assets_nis_relevant' => route('hardware.index', ['tenant_id' => $tenant->id, 'nis_relevant' => 1]),
+        'assets_high_impact' => route('hardware.index', ['tenant_id' => $tenant->id, 'nis_relevant' => 1, 'nis_service_impact' => ['high', 'critical']]),
+        'frameworks' => route('documentframeworks.index', ['tenant_id' => $tenant->id, 'status' => 'active', 'is_active' => 1]),
+    ];
 @endphp
 
 @section('content')
@@ -126,19 +144,19 @@
                             <tbody>
                             <tr>
                                 <th>{{ trans('admin/tenants/general.compliance.requirements_total') }}</th>
-                                <td>{{ number_format($complianceSummary['requirements']['total']) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['requirements_total'] }}">{{ number_format($complianceSummary['requirements']['total']) }}</a></td>
                             </tr>
                             <tr>
                                 <th>{{ trans('admin/documentframeworkrequirements/general.coverage.covered') }}</th>
-                                <td>{{ number_format($complianceSummary['requirements']['covered']) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['requirements_covered'] }}">{{ number_format($complianceSummary['requirements']['covered']) }}</a></td>
                             </tr>
                             <tr>
                                 <th>{{ trans('admin/documentframeworkrequirements/general.coverage.at_risk') }}</th>
-                                <td>{{ number_format($complianceSummary['requirements']['at_risk']) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['requirements_at_risk'] }}">{{ number_format($complianceSummary['requirements']['at_risk']) }}</a></td>
                             </tr>
                             <tr>
                                 <th>{{ trans('admin/documentframeworkrequirements/general.coverage.missing') }}</th>
-                                <td>{{ number_format($complianceSummary['requirements']['missing']) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['requirements_missing'] }}">{{ number_format($complianceSummary['requirements']['missing']) }}</a></td>
                             </tr>
                             </tbody>
                         </table>
@@ -148,19 +166,19 @@
                             <tbody>
                             <tr>
                                 <th>{{ trans('general.documents') }}</th>
-                                <td>{{ number_format($complianceSummary['documents']['total']) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['documents_total'] }}">{{ number_format($complianceSummary['documents']['total']) }}</a></td>
                             </tr>
                             <tr>
                                 <th>{{ trans('admin/documents/general.review_due') }}</th>
-                                <td>{{ number_format($complianceSummary['documents']['due']) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['documents_due'] }}">{{ number_format($complianceSummary['documents']['due']) }}</a></td>
                             </tr>
                             <tr>
                                 <th>{{ trans('admin/documents/general.review_overdue') }}</th>
-                                <td>{{ number_format($complianceSummary['documents']['overdue']) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['documents_overdue'] }}">{{ number_format($complianceSummary['documents']['overdue']) }}</a></td>
                             </tr>
                             <tr>
                                 <th>{{ trans('admin/tenants/general.compliance.open_tickets') }}</th>
-                                <td>{{ number_format($complianceSummary['tickets']['open']) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['tickets_open'] }}">{{ number_format($complianceSummary['tickets']['open']) }}</a></td>
                             </tr>
                             </tbody>
                         </table>
@@ -170,19 +188,19 @@
                             <tbody>
                             <tr>
                                 <th>{{ trans('admin/tenants/general.compliance.nis_suppliers') }}</th>
-                                <td>{{ number_format($complianceSummary['suppliers']['relevant']) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['suppliers_relevant'] }}">{{ number_format($complianceSummary['suppliers']['relevant']) }}</a></td>
                             </tr>
                             <tr>
                                 <th>{{ trans('admin/tenants/general.compliance.supplier_reviews_due') }}</th>
-                                <td>{{ number_format($complianceSummary['suppliers']['review_due']) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['suppliers_review_due'] }}">{{ number_format($complianceSummary['suppliers']['review_due']) }}</a></td>
                             </tr>
                             <tr>
                                 <th>{{ trans('admin/tenants/general.compliance.suppliers_without_review') }}</th>
-                                <td>{{ number_format($complianceSummary['suppliers']['without_review_date']) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['suppliers_without_review_date'] }}">{{ number_format($complianceSummary['suppliers']['without_review_date']) }}</a></td>
                             </tr>
                             <tr>
                                 <th>{{ trans('admin/tenants/general.compliance.sla_at_risk') }}</th>
-                                <td>{{ number_format($complianceSummary['tickets']['sla_at_risk']) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['tickets_sla_at_risk'] }}">{{ number_format($complianceSummary['tickets']['sla_at_risk']) }}</a></td>
                             </tr>
                             </tbody>
                         </table>
@@ -192,19 +210,19 @@
                             <tbody>
                             <tr>
                                 <th>{{ trans('admin/tenants/general.compliance.nis_assets') }}</th>
-                                <td>{{ number_format($complianceSummary['assets']['nis_relevant']) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['assets_nis_relevant'] }}">{{ number_format($complianceSummary['assets']['nis_relevant']) }}</a></td>
                             </tr>
                             <tr>
                                 <th>{{ trans('admin/tenants/general.compliance.high_impact_assets') }}</th>
-                                <td>{{ number_format($complianceSummary['assets']['high_impact']) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['assets_high_impact'] }}">{{ number_format($complianceSummary['assets']['high_impact']) }}</a></td>
                             </tr>
                             <tr>
                                 <th>{{ trans('admin/tenants/general.compliance.frameworks') }}</th>
-                                <td>{{ number_format($complianceSummary['frameworks']->count()) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['frameworks'] }}">{{ number_format($complianceSummary['frameworks']->count()) }}</a></td>
                             </tr>
                             <tr>
                                 <th>{{ trans('admin/documentframeworkrequirements/general.coverage.supporting_only') }}</th>
-                                <td>{{ number_format($complianceSummary['requirements']['supporting_only']) }}</td>
+                                <td><a href="{{ $tenantDrilldowns['requirements_supporting_only'] }}">{{ number_format($complianceSummary['requirements']['supporting_only']) }}</a></td>
                             </tr>
                             </tbody>
                         </table>
@@ -226,9 +244,9 @@
                         <tr>
                             <td><a href="{{ route('documentframeworks.show', $frameworkSummary['id']) }}">{{ $frameworkSummary['name'] }}</a></td>
                             <td>{{ $frameworkSummary['coverage_percent'] }}%</td>
-                            <td>{{ number_format($frameworkSummary['covered']) }}</td>
-                            <td>{{ number_format($frameworkSummary['at_risk']) }}</td>
-                            <td>{{ number_format($frameworkSummary['missing']) }}</td>
+                            <td><a href="{{ route('documentframeworkrequirements.index', ['tenant_id' => $tenant->id, 'document_framework_id' => $frameworkSummary['id'], 'coverage_status' => \App\Models\DocumentFrameworkRequirement::COVERAGE_COVERED]) }}">{{ number_format($frameworkSummary['covered']) }}</a></td>
+                            <td><a href="{{ route('documentframeworkrequirements.index', ['tenant_id' => $tenant->id, 'document_framework_id' => $frameworkSummary['id'], 'coverage_status' => \App\Models\DocumentFrameworkRequirement::COVERAGE_AT_RISK]) }}">{{ number_format($frameworkSummary['at_risk']) }}</a></td>
+                            <td><a href="{{ route('documentframeworkrequirements.index', ['tenant_id' => $tenant->id, 'document_framework_id' => $frameworkSummary['id'], 'coverage_status' => \App\Models\DocumentFrameworkRequirement::COVERAGE_MISSING]) }}">{{ number_format($frameworkSummary['missing']) }}</a></td>
                         </tr>
                     @empty
                         <tr>

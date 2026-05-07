@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
 use App\Http\Requests\StoreDocumentFrameworkRequirementRequest;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
@@ -10,13 +11,20 @@ use Illuminate\Http\RedirectResponse;
 
 class DocumentFrameworkRequirementsController extends Controller
 {
+    use AppliesTenantCompanyFilter;
+
     public function index(): View
     {
         $this->authorize('view', DocumentFramework::class);
 
+        $tenantCompanyIds = $this->tenantCompanyIdsFromRequest(request());
+
         $frameworks = DocumentFramework::query()
             ->operational()
             ->active()
+            ->when(! is_null($tenantCompanyIds), fn ($query) => count($tenantCompanyIds) === 0
+                ? $query->whereRaw('1 = 0')
+                : $query->whereIn('company_id', $tenantCompanyIds))
             ->ordered()
             ->get(['id', 'name']);
 

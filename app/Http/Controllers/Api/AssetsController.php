@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Events\CheckoutableCheckedIn;
 use App\Helpers\Helper;
+use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AssetCheckoutRequest;
 use App\Http\Requests\FilterRequest;
@@ -50,6 +51,7 @@ use Illuminate\Support\Facades\Storage;
  */
 class AssetsController extends Controller
 {
+    use AppliesTenantCompanyFilter;
     use MigratesLegacyAssetLocations;
 
     /**
@@ -349,6 +351,8 @@ class AssetsController extends Controller
             $assets->where('assets.company_id', '=', $request->input('company_id'));
         }
 
+        $this->applyTenantCompanyFilter($assets, $request, 'assets.company_id');
+
         if ($request->filled('manufacturer_id')) {
             $assets->ByManufacturer($request->input('manufacturer_id'));
         }
@@ -370,7 +374,13 @@ class AssetsController extends Controller
         }
 
         if ($request->filled('nis_service_impact')) {
-            $assets->where('assets.nis_service_impact', '=', $request->input('nis_service_impact'));
+            $serviceImpact = $request->input('nis_service_impact');
+
+            if (is_array($serviceImpact)) {
+                $assets->whereIn('assets.nis_service_impact', $serviceImpact);
+            } else {
+                $assets->where('assets.nis_service_impact', '=', $serviceImpact);
+            }
         }
 
         if ($request->filled('order_number')) {

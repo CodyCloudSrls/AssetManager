@@ -24,7 +24,7 @@
             <div class="row" style="margin-bottom: 15px;">
                 <div class="col-md-12">
                     <form method="get" action="{{ route('documents.index') }}" class="form-inline" role="search">
-                        @foreach (request()->only(['status', 'review_status', 'status_type', 'company_id', 'owner_id', 'document_type_id']) as $filterName => $filterValue)
+                        @foreach (request()->only(['status', 'review_status', 'status_type', 'company_id', 'tenant_id', 'owner_id', 'document_type_id']) as $filterName => $filterValue)
                             <input type="hidden" name="{{ $filterName }}" value="{{ $filterValue }}">
                         @endforeach
 
@@ -62,7 +62,7 @@
                 </div>
             </div>
 
-            <x-table.documents :route="route('api.documents.index', request()->only(['status', 'review_status', 'status_type', 'company_id', 'owner_id', 'document_type_id', 'document_framework_id', 'document_framework_requirement_id']))"/>
+            <x-table.documents :route="route('api.documents.index', request()->only(['status', 'review_status', 'status_type', 'company_id', 'tenant_id', 'owner_id', 'document_type_id', 'document_framework_id', 'document_framework_requirement_id']))"/>
         </x-box>
     </x-container>
 @stop

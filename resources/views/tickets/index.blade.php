@@ -51,7 +51,7 @@
                         </a>
                     @endforeach
                 </div>
-                <x-table.tickets :route="route('api.tickets.index', request()->only(['queue', 'ticket_status_id', 'ticket_priority_id', 'ticket_type_id', 'assignee_id', 'requester_id', 'company_id', 'source', 'unassigned', 'status_type']))"/>
+                <x-table.tickets :route="route('api.tickets.index', request()->only(['queue', 'ticket_status_id', 'ticket_priority_id', 'ticket_type_id', 'assignee_id', 'requester_id', 'company_id', 'tenant_id', 'source', 'unassigned', 'status_type']))"/>
             </div>
         </div>
     </div>

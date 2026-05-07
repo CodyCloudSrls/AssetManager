@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tickets;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
 use App\Http\Controllers\Concerns\LoadsTicketOperators;
 use App\Http\Requests\StoreTicketCommentRequest;
 use App\Http\Requests\StoreTicketRequest;
@@ -23,6 +24,7 @@ use Illuminate\Http\RedirectResponse;
 
 class TicketsController extends Controller
 {
+    use AppliesTenantCompanyFilter;
     use LoadsTicketOperators;
 
     public function index(): View
@@ -30,6 +32,7 @@ class TicketsController extends Controller
         $this->authorize('index', Ticket::class);
 
         $baseQuery = Ticket::query();
+        $this->applyTenantCompanyFilter($baseQuery, request(), 'tickets.company_id');
 
         return view('tickets.index', [
             'queueCounts' => [

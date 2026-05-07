@@ -55,11 +55,7 @@
 @section('content')
     <x-container>
         <x-box name="assets">
-            <x-table.assets :route="route('api.assets.index',
-                array('status_type' => e($requestStatusType),
-                'order_number'=>e(strval($requestOrderNumber)),
-                'company_id'=>e($requestCompanyId),
-                'status_id'=>e($requestStatusTypeId)))"/>
+            <x-table.assets :route="route('api.assets.index', request()->only(['status_type', 'order_number', 'company_id', 'tenant_id', 'status_id', 'nis_relevant', 'nis_inventory_scope', 'nis_service_impact']))"/>
         </x-box>
     </x-container>
 @stop

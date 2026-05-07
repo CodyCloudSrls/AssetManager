@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Helpers\Helper;
+use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FilterRequest;
 use App\Http\Requests\StoreDocumentFrameworkRequest;
@@ -14,6 +15,8 @@ use Illuminate\Http\Request;
 
 class DocumentFrameworksController extends Controller
 {
+    use AppliesTenantCompanyFilter;
+
     public function index(FilterRequest $request): array
     {
         $this->authorize('view', DocumentFramework::class);
@@ -80,6 +83,8 @@ class DocumentFrameworksController extends Controller
 
         if ($request->input('deleted') == 'true' || $request->input('status') == 'deleted') {
             $documentFrameworks->onlyTrashed();
+        } elseif ($request->filled('status')) {
+            $documentFrameworks->where('status', '=', $request->input('status'));
         }
 
         if ($request->filled('filter') || $request->filled('search')) {
@@ -89,6 +94,8 @@ class DocumentFrameworksController extends Controller
         if ($request->filled('is_active')) {
             $documentFrameworks->where('is_active', '=', $request->boolean('is_active'));
         }
+
+        $this->applyTenantCompanyFilter($documentFrameworks, $request, 'company_id');
 
         $limit = app('api_limit_value');
         $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $documentFrameworks->count(), $limit);
