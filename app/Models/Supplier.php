@@ -47,7 +47,26 @@ class Supplier extends SnipeModel
      *
      * @var array
      */
-    protected $searchableAttributes = ['name', 'notes', 'phone', 'fax', 'url', 'email', 'contact', 'address', 'address2', 'city', 'state', 'country', 'zip', 'visibility_type'];
+    protected $searchableAttributes = [
+        'name',
+        'notes',
+        'phone',
+        'fax',
+        'url',
+        'email',
+        'contact',
+        'address',
+        'address2',
+        'city',
+        'state',
+        'country',
+        'zip',
+        'visibility_type',
+        'nis_criticality',
+        'nis_assessment_status',
+        'nis_relevance_criteria',
+        'cpv_codes',
+    ];
 
     /**
      * The relations and their attributes that should be included when searching the model.
@@ -63,10 +82,43 @@ class Supplier extends SnipeModel
      *
      * @var array
      */
-    protected $fillable = ['name', 'address', 'address2', 'city', 'state', 'country', 'zip', 'phone', 'fax', 'email', 'contact', 'url', 'company_id', 'visibility_type', 'tag_color', 'notes'];
+    protected $fillable = [
+        'name',
+        'address',
+        'address2',
+        'city',
+        'state',
+        'country',
+        'zip',
+        'phone',
+        'fax',
+        'email',
+        'contact',
+        'url',
+        'company_id',
+        'visibility_type',
+        'nis_relevant',
+        'nis_criticality',
+        'nis_assessment_status',
+        'nis_relevance_criteria',
+        'cpv_codes',
+        'nis_last_assessment_at',
+        'nis_next_review_at',
+        'tag_color',
+        'notes',
+    ];
 
     protected $casts = [
         'company_id' => 'integer',
+        'nis_relevant' => 'boolean',
+        'nis_last_assessment_at' => 'date',
+        'nis_next_review_at' => 'date',
+    ];
+
+    protected $attributes = [
+        'nis_relevant' => false,
+        'nis_criticality' => 'not_assessed',
+        'nis_assessment_status' => 'not_started',
     ];
 
     public function getRules()
@@ -101,7 +153,67 @@ class Supplier extends SnipeModel
             'url' => 'sometimes|url|nullable|string|max:250',
             'company_id' => 'nullable|integer|exists:companies,id',
             'visibility_type' => 'required|string|in:private,descendants,global',
+            'nis_relevant' => 'boolean',
+            'nis_criticality' => 'required|string|in:'.implode(',', array_keys(static::nisCriticalityOptions())),
+            'nis_assessment_status' => 'required|string|in:'.implode(',', array_keys(static::nisAssessmentStatusOptions())),
+            'nis_relevance_criteria' => 'nullable|string|max:65535',
+            'cpv_codes' => 'nullable|string|max:65535',
+            'nis_last_assessment_at' => 'nullable|date',
+            'nis_next_review_at' => 'nullable|date',
         ];
+    }
+
+    public static function nisCriticalityOptions(): array
+    {
+        return [
+            'not_assessed' => trans('admin/suppliers/table.nis_criticality_not_assessed'),
+            'low' => trans('admin/suppliers/table.nis_criticality_low'),
+            'medium' => trans('admin/suppliers/table.nis_criticality_medium'),
+            'high' => trans('admin/suppliers/table.nis_criticality_high'),
+            'critical' => trans('admin/suppliers/table.nis_criticality_critical'),
+        ];
+    }
+
+    public static function nisAssessmentStatusOptions(): array
+    {
+        return [
+            'not_started' => trans('admin/suppliers/table.nis_assessment_status_not_started'),
+            'in_progress' => trans('admin/suppliers/table.nis_assessment_status_in_progress'),
+            'evidence_requested' => trans('admin/suppliers/table.nis_assessment_status_evidence_requested'),
+            'review_needed' => trans('admin/suppliers/table.nis_assessment_status_review_needed'),
+            'approved' => trans('admin/suppliers/table.nis_assessment_status_approved'),
+            'rejected' => trans('admin/suppliers/table.nis_assessment_status_rejected'),
+        ];
+    }
+
+    public function getNisCriticalityLabelAttribute(): string
+    {
+        return static::nisCriticalityOptions()[$this->nis_criticality] ?? ucfirst(str_replace('_', ' ', (string) $this->nis_criticality));
+    }
+
+    public function getNisAssessmentStatusLabelAttribute(): string
+    {
+        return static::nisAssessmentStatusOptions()[$this->nis_assessment_status] ?? ucfirst(str_replace('_', ' ', (string) $this->nis_assessment_status));
+    }
+
+    public function setNisCriticalityAttribute($value): void
+    {
+        $this->attributes['nis_criticality'] = $value ?: 'not_assessed';
+    }
+
+    public function setNisAssessmentStatusAttribute($value): void
+    {
+        $this->attributes['nis_assessment_status'] = $value ?: 'not_started';
+    }
+
+    public function setNisRelevanceCriteriaAttribute($value): void
+    {
+        $this->attributes['nis_relevance_criteria'] = ($value === '' ? null : $value);
+    }
+
+    public function setCpvCodesAttribute($value): void
+    {
+        $this->attributes['cpv_codes'] = ($value === '' ? null : $value);
     }
 
     public function isDeletable()

@@ -57,13 +57,18 @@ class SuppliersController extends Controller
             'consumables_count',
             'company_id',
             'visibility_type',
+            'nis_relevant',
+            'nis_criticality',
+            'nis_assessment_status',
+            'cpv_codes',
+            'nis_next_review_at',
             'tag_color',
             'url',
             'notes',
         ];
 
         $suppliers = Supplier::select(
-            ['id', 'name', 'address', 'address2', 'city', 'state', 'country', 'fax', 'phone', 'email', 'contact', 'created_at', 'created_by', 'updated_at', 'deleted_at', 'image', 'notes', 'url', 'zip', 'tag_color', 'company_id', 'visibility_type'])
+            ['id', 'name', 'address', 'address2', 'city', 'state', 'country', 'fax', 'phone', 'email', 'contact', 'created_at', 'created_by', 'updated_at', 'deleted_at', 'image', 'notes', 'url', 'zip', 'tag_color', 'company_id', 'visibility_type', 'nis_relevant', 'nis_criticality', 'nis_assessment_status', 'nis_relevance_criteria', 'cpv_codes', 'nis_last_assessment_at', 'nis_next_review_at'])
             ->withCount('assets as assets_count')
             ->withCount('licenses as licenses_count')
             ->withCount('accessories as accessories_count')
@@ -114,6 +119,22 @@ class SuppliersController extends Controller
 
         if ($request->filled('notes')) {
             $suppliers->where('notes', '=', $request->input('notes'));
+        }
+
+        if ($request->filled('nis_relevant')) {
+            $suppliers->where('nis_relevant', '=', $request->boolean('nis_relevant'));
+        }
+
+        if ($request->filled('nis_criticality')) {
+            $suppliers->where('nis_criticality', '=', $request->input('nis_criticality'));
+        }
+
+        if ($request->filled('nis_assessment_status')) {
+            $suppliers->where('nis_assessment_status', '=', $request->input('nis_assessment_status'));
+        }
+
+        if ($request->filled('cpv_code')) {
+            $suppliers->where('cpv_codes', 'LIKE', '%'.$request->input('cpv_code').'%');
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits

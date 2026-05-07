@@ -170,6 +170,10 @@ class AssetsController extends Controller
                 $asset->assigned_to = request('assigned_to', null);
                 $asset->supplier_id = request('supplier_id', null);
                 $asset->requestable = request('requestable', 0);
+                $asset->nis_relevant = $request->boolean('nis_relevant');
+                $asset->nis_inventory_scope = $request->input('nis_inventory_scope');
+                $asset->nis_service_impact = $request->input('nis_service_impact', 'unknown');
+                $asset->nis_notes = $request->input('nis_notes');
                 $asset->rtd_location_id = request('rtd_location_id', null);
                 $asset->byod = request('byod', 0);
 
@@ -414,6 +418,10 @@ class AssetsController extends Controller
         $asset->supplier_id = $request->input('supplier_id', null);
         $asset->expected_checkin = $request->input('expected_checkin', null);
         $asset->requestable = $request->input('requestable', 0);
+        $asset->nis_relevant = $request->boolean('nis_relevant');
+        $asset->nis_inventory_scope = $request->input('nis_inventory_scope');
+        $asset->nis_service_impact = $request->input('nis_service_impact', 'unknown');
+        $asset->nis_notes = $request->input('nis_notes');
         $asset->rtd_location_id = $request->input('rtd_location_id', null);
         $asset->byod = $request->input('byod', 0);
 

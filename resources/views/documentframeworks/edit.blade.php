@@ -44,6 +44,19 @@
                 </div>
             </div>
 
+            <div class="form-group {{ $errors->has('compliance_domain') ? ' has-error' : '' }}">
+                <label for="compliance_domain" class="col-md-3 control-label">{{ trans('admin/documentframeworks/table.compliance_domain') }}</label>
+                <div class="col-md-4">
+                    <select class="form-control select2" name="compliance_domain" id="compliance_domain" aria-label="compliance_domain">
+                        <option value="">{{ trans('general.none') }}</option>
+                        @foreach ($complianceDomainOptions as $domainValue => $domainLabel)
+                            <option value="{{ $domainValue }}" @selected(old('compliance_domain', $item->compliance_domain) === $domainValue)>{{ $domainLabel }}</option>
+                        @endforeach
+                    </select>
+                    {!! $errors->first('compliance_domain', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+                </div>
+            </div>
+
             <div class="form-group {{ $errors->has('jurisdiction') ? ' has-error' : '' }}">
                 <label for="jurisdiction" class="col-md-3 control-label">{{ trans('admin/documentframeworks/table.jurisdiction') }}</label>
                 <div class="col-md-4">
@@ -125,6 +138,14 @@
                 <div class="col-md-9">
                     <textarea class="form-control" name="description" id="description" rows="4">{{ old('description', $item->description) }}</textarea>
                     {!! $errors->first('description', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+                </div>
+            </div>
+
+            <div class="form-group {{ $errors->has('compliance_objective') ? ' has-error' : '' }}">
+                <label for="compliance_objective" class="col-md-3 control-label">{{ trans('admin/documentframeworks/table.compliance_objective') }}</label>
+                <div class="col-md-9">
+                    <textarea class="form-control" name="compliance_objective" id="compliance_objective" rows="3">{{ old('compliance_objective', $item->compliance_objective) }}</textarea>
+                    {!! $errors->first('compliance_objective', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
                 </div>
             </div>
 

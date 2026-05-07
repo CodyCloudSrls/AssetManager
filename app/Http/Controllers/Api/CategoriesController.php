@@ -44,6 +44,8 @@ class CategoriesController extends Controller
             'image',
             'company_id',
             'visibility_type',
+            'nis_inventory_required',
+            'nis_inventory_scope',
             'licenses_count',
             'name',
             'notes',
@@ -63,6 +65,8 @@ class CategoriesController extends Controller
             'image',
             'company_id',
             'visibility_type',
+            'nis_inventory_required',
+            'nis_inventory_scope',
             'name',
             'notes',
             'require_acceptance',
@@ -109,6 +113,14 @@ class CategoriesController extends Controller
 
         if ($request->filled('checkin_email')) {
             $categories->where('checkin_email', '=', $request->input('checkin_email'));
+        }
+
+        if ($request->filled('nis_inventory_required')) {
+            $categories->where('nis_inventory_required', '=', $request->boolean('nis_inventory_required'));
+        }
+
+        if ($request->filled('nis_inventory_scope')) {
+            $categories->where('nis_inventory_scope', '=', $request->input('nis_inventory_scope'));
         }
 
         if ($request->filled('created_by')) {

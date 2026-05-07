@@ -109,6 +109,55 @@
     @include ('partials.forms.edit.location-select', ['translated_name' => trans('admin/hardware/form.default_location'), 'fieldname' => 'rtd_location_id', 'help_text' => trans('general.rtd_location_help')])
     @include ('partials.forms.edit.requestable', ['requestable_text' => trans('admin/hardware/general.requestable')])
 
+    <fieldset name="nis-inventory-asset">
+        <x-form.legend help_text="{{ trans('admin/hardware/form.nis_inventory_help') }}">
+            {{ trans('admin/hardware/form.nis_inventory_section') }}
+        </x-form.legend>
+
+        <div class="form-group">
+            <div class="col-md-7 col-md-offset-3">
+                <label class="form-control">
+                    <input type="hidden" name="nis_relevant" value="0">
+                    <input type="checkbox" value="1" name="nis_relevant" {{ old('nis_relevant', $item->nis_relevant) ? ' checked="checked"' : '' }} aria-label="nis_relevant">
+                    {{ trans('admin/hardware/form.nis_relevant') }}
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group {{ $errors->has('nis_inventory_scope') ? ' has-error' : '' }}">
+            <label for="nis_inventory_scope" class="col-md-3 control-label">{{ trans('admin/hardware/form.nis_inventory_scope') }}</label>
+            <div class="col-md-4">
+                <select class="form-control select2" name="nis_inventory_scope" id="nis_inventory_scope" aria-label="nis_inventory_scope">
+                    <option value="">{{ trans('general.none') }}</option>
+                    @foreach (\App\Models\Category::nisInventoryScopeOptions() as $value => $label)
+                        <option value="{{ $value }}" @selected(old('nis_inventory_scope', $item->nis_inventory_scope) === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                {!! $errors->first('nis_inventory_scope', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
+            </div>
+        </div>
+
+        <div class="form-group {{ $errors->has('nis_service_impact') ? ' has-error' : '' }}">
+            <label for="nis_service_impact" class="col-md-3 control-label">{{ trans('admin/hardware/form.nis_service_impact') }}</label>
+            <div class="col-md-4">
+                <select class="form-control select2" name="nis_service_impact" id="nis_service_impact" aria-label="nis_service_impact">
+                    @foreach (\App\Models\Asset::nisServiceImpactOptions() as $value => $label)
+                        <option value="{{ $value }}" @selected(old('nis_service_impact', $item->nis_service_impact ?: 'unknown') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                {!! $errors->first('nis_service_impact', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
+            </div>
+        </div>
+
+        <div class="form-group {{ $errors->has('nis_notes') ? ' has-error' : '' }}">
+            <label for="nis_notes" class="col-md-3 control-label">{{ trans('admin/hardware/form.nis_notes') }}</label>
+            <div class="col-md-7">
+                <textarea class="form-control" name="nis_notes" id="nis_notes" rows="3">{{ old('nis_notes', $item->nis_notes) }}</textarea>
+                {!! $errors->first('nis_notes', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
+            </div>
+        </div>
+    </fieldset>
+
 
 
     @include ('partials.forms.edit.image-upload', ['image_path' => app('assets_upload_path')])

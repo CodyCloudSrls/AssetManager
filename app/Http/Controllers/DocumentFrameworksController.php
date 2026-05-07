@@ -126,6 +126,7 @@ class DocumentFrameworksController extends Controller
             'item' => $item,
             'statusOptions' => DocumentFramework::getStatusOptions(),
             'frameworkTypeOptions' => DocumentFramework::getFrameworkTypeOptions(),
+            'complianceDomainOptions' => DocumentFramework::complianceDomainOptions(),
         ];
     }
 }

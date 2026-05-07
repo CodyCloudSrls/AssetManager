@@ -6,6 +6,8 @@ return array (
   'authority_name' => 'Authority',
   'framework_code' => 'Framework Code',
   'framework_type' => 'Framework Type',
+  'compliance_domain' => 'Compliance Domain',
+  'compliance_objective' => 'Compliance Objective',
   'jurisdiction' => 'Jurisdiction',
   'version' => 'Version',
   'status' => 'Status',

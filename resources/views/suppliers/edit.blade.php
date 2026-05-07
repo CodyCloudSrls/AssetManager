@@ -35,6 +35,77 @@
     </div>
 </div>
 
+<fieldset name="nis-supplier">
+    <x-form.legend>{{ trans('admin/suppliers/table.nis_section') }}</x-form.legend>
+
+    <div class="form-group">
+        <div class="col-md-7 col-md-offset-3">
+            <label class="form-control">
+                <input type="hidden" name="nis_relevant" value="0">
+                <input type="checkbox" value="1" name="nis_relevant" {{ old('nis_relevant', $item->nis_relevant) ? ' checked="checked"' : '' }} aria-label="nis_relevant">
+                {{ trans('admin/suppliers/table.nis_relevant') }}
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('nis_criticality') ? ' has-error' : '' }}">
+        <label for="nis_criticality" class="col-md-3 control-label">{{ trans('admin/suppliers/table.nis_criticality') }}</label>
+        <div class="col-md-4">
+            <select class="form-control select2" name="nis_criticality" id="nis_criticality" aria-label="nis_criticality">
+                @foreach (\App\Models\Supplier::nisCriticalityOptions() as $value => $label)
+                    <option value="{{ $value }}" @selected(old('nis_criticality', $item->nis_criticality ?: 'not_assessed') === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+            {!! $errors->first('nis_criticality', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('nis_assessment_status') ? ' has-error' : '' }}">
+        <label for="nis_assessment_status" class="col-md-3 control-label">{{ trans('admin/suppliers/table.nis_assessment_status') }}</label>
+        <div class="col-md-4">
+            <select class="form-control select2" name="nis_assessment_status" id="nis_assessment_status" aria-label="nis_assessment_status">
+                @foreach (\App\Models\Supplier::nisAssessmentStatusOptions() as $value => $label)
+                    <option value="{{ $value }}" @selected(old('nis_assessment_status', $item->nis_assessment_status ?: 'not_started') === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+            {!! $errors->first('nis_assessment_status', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('cpv_codes') ? ' has-error' : '' }}">
+        <label for="cpv_codes" class="col-md-3 control-label">{{ trans('admin/suppliers/table.cpv_codes') }}</label>
+        <div class="col-md-7">
+            <textarea class="form-control" name="cpv_codes" id="cpv_codes" rows="2" placeholder="72000000-5, 72200000-7">{{ old('cpv_codes', $item->cpv_codes) }}</textarea>
+            <p class="help-block">{{ trans('admin/suppliers/table.cpv_codes_help') }}</p>
+            {!! $errors->first('cpv_codes', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('nis_relevance_criteria') ? ' has-error' : '' }}">
+        <label for="nis_relevance_criteria" class="col-md-3 control-label">{{ trans('admin/suppliers/table.nis_relevance_criteria') }}</label>
+        <div class="col-md-7">
+            <textarea class="form-control" name="nis_relevance_criteria" id="nis_relevance_criteria" rows="3">{{ old('nis_relevance_criteria', $item->nis_relevance_criteria) }}</textarea>
+            {!! $errors->first('nis_relevance_criteria', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('nis_last_assessment_at') ? ' has-error' : '' }}">
+        <label for="nis_last_assessment_at" class="col-md-3 control-label">{{ trans('admin/suppliers/table.nis_last_assessment_at') }}</label>
+        <div class="col-md-4">
+            <x-input.datepicker name="nis_last_assessment_at" :value="old('nis_last_assessment_at', optional($item->nis_last_assessment_at)->format('Y-m-d'))" placeholder="{{ trans('general.select_date') }}"/>
+            {!! $errors->first('nis_last_assessment_at', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+
+    <div class="form-group {{ $errors->has('nis_next_review_at') ? ' has-error' : '' }}">
+        <label for="nis_next_review_at" class="col-md-3 control-label">{{ trans('admin/suppliers/table.nis_next_review_at') }}</label>
+        <div class="col-md-4">
+            <x-input.datepicker name="nis_next_review_at" :value="old('nis_next_review_at', optional($item->nis_next_review_at)->format('Y-m-d'))" placeholder="{{ trans('general.select_date') }}"/>
+            {!! $errors->first('nis_next_review_at', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        </div>
+    </div>
+</fieldset>
+
 @include ('partials.forms.edit.notes')
 @include ('partials.forms.edit.image-upload', ['image_path' => app('suppliers_upload_path')])
 

@@ -32,6 +32,7 @@ class DocumentFramework extends SnipeModel
         'authority_name' => 'nullable|string|max:255',
         'framework_code' => 'nullable|string|max:80',
         'framework_type' => 'nullable|string|max:40',
+        'compliance_domain' => 'nullable|string|max:40',
         'jurisdiction' => 'nullable|string|max:80',
         'version' => 'nullable|string|max:80',
         'effective_from' => 'nullable|date',
@@ -40,6 +41,7 @@ class DocumentFramework extends SnipeModel
         'review_cadence_months' => 'nullable|integer|min:1|max:120',
         'status' => 'required|string|in:draft,active,superseded,archived',
         'external_reference_url' => 'nullable|url|max:2048',
+        'compliance_objective' => 'nullable|string|max:65535',
         'sort_order' => 'nullable|integer|min:0|max:65535',
         'is_active' => 'boolean',
         'company_id' => 'nullable|integer|exists:companies,id',
@@ -55,6 +57,7 @@ class DocumentFramework extends SnipeModel
         'authority_name',
         'framework_code',
         'framework_type',
+        'compliance_domain',
         'jurisdiction',
         'version',
         'effective_from',
@@ -63,6 +66,7 @@ class DocumentFramework extends SnipeModel
         'review_cadence_months',
         'status',
         'external_reference_url',
+        'compliance_objective',
         'sort_order',
         'is_active',
         'created_by',
@@ -88,6 +92,7 @@ class DocumentFramework extends SnipeModel
         'authority_name',
         'framework_code',
         'framework_type',
+        'compliance_domain',
         'jurisdiction',
         'version',
         'status',
@@ -114,6 +119,18 @@ class DocumentFramework extends SnipeModel
             'policy' => trans('admin/documentframeworks/general.types.policy'),
             'internal' => trans('admin/documentframeworks/general.types.internal'),
             'custom' => trans('admin/documentframeworks/general.types.custom'),
+        ];
+    }
+
+    public static function complianceDomainOptions(): array
+    {
+        return [
+            'nis2' => trans('admin/documentframeworks/general.compliance_domains.nis2'),
+            'gdpr' => trans('admin/documentframeworks/general.compliance_domains.gdpr'),
+            'iso27001' => trans('admin/documentframeworks/general.compliance_domains.iso27001'),
+            'supplier_risk' => trans('admin/documentframeworks/general.compliance_domains.supplier_risk'),
+            'internal' => trans('admin/documentframeworks/general.compliance_domains.internal'),
+            'custom' => trans('admin/documentframeworks/general.compliance_domains.custom'),
         ];
     }
 
@@ -244,6 +261,11 @@ class DocumentFramework extends SnipeModel
     public function setDescriptionAttribute($value)
     {
         $this->attributes['description'] = ($value === '' ? null : $value);
+    }
+
+    public function setComplianceObjectiveAttribute($value)
+    {
+        $this->attributes['compliance_objective'] = ($value === '' ? null : $value);
     }
 
     public function isCurrent(): bool

@@ -6,6 +6,8 @@ return array (
   'authority_name' => 'Ente emittente',
   'framework_code' => 'Codice framework',
   'framework_type' => 'Tipo framework',
+  'compliance_domain' => 'Ambito compliance',
+  'compliance_objective' => 'Obiettivo compliance',
   'jurisdiction' => 'Giurisdizione',
   'version' => 'Versione',
   'status' => 'Stato',

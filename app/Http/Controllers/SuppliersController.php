@@ -66,6 +66,13 @@ class SuppliersController extends Controller
         $supplier->phone = request('phone');
         $supplier->fax = request('fax');
         $supplier->email = request('email');
+        $supplier->nis_relevant = $request->boolean('nis_relevant');
+        $supplier->nis_criticality = $request->input('nis_criticality', 'not_assessed');
+        $supplier->nis_assessment_status = $request->input('nis_assessment_status', 'not_started');
+        $supplier->nis_relevance_criteria = $request->input('nis_relevance_criteria');
+        $supplier->cpv_codes = $request->input('cpv_codes');
+        $supplier->nis_last_assessment_at = $request->input('nis_last_assessment_at');
+        $supplier->nis_next_review_at = $request->input('nis_next_review_at');
         $supplier->tag_color = $request->input('tag_color');
         $supplier->notes = request('notes');
         $supplier->url = $supplier->addhttp(request('url'));
@@ -116,6 +123,13 @@ class SuppliersController extends Controller
         $supplier->fax = request('fax');
         $supplier->email = request('email');
         $supplier->url = $supplier->addhttp(request('url'));
+        $supplier->nis_relevant = $request->boolean('nis_relevant');
+        $supplier->nis_criticality = $request->input('nis_criticality', 'not_assessed');
+        $supplier->nis_assessment_status = $request->input('nis_assessment_status', 'not_started');
+        $supplier->nis_relevance_criteria = $request->input('nis_relevance_criteria');
+        $supplier->cpv_codes = $request->input('cpv_codes');
+        $supplier->nis_last_assessment_at = $request->input('nis_last_assessment_at');
+        $supplier->nis_next_review_at = $request->input('nis_next_review_at');
         $supplier->tag_color = $request->input('tag_color');
         $supplier->notes = request('notes');
         $supplier = $request->handleImages($supplier);

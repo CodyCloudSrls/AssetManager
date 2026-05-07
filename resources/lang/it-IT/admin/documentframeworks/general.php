@@ -29,4 +29,13 @@ return array (
     'internal' => 'Governance interna',
     'custom' => 'Framework personalizzato',
   ),
+  'compliance_domains' =>
+  array (
+    'nis2' => 'NIS2',
+    'gdpr' => 'GDPR',
+    'iso27001' => 'ISO 27001',
+    'supplier_risk' => 'Rischio fornitori',
+    'internal' => 'Interno',
+    'custom' => 'Personalizzato',
+  ),
 );

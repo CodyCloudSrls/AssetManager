@@ -34,10 +34,16 @@ class DocumentFrameworkRequirement extends SnipeModel
         'code',
         'title',
         'domain',
+        'obligation_type',
         'is_mandatory',
         'is_active',
         'owner_id',
         'default_document_type_id',
+        'evidence_type',
+        'delegation_level',
+        'risk_level',
+        'official_reference',
+        'source_url',
         'review_frequency_months',
         'sort_order',
         'description',
@@ -64,10 +70,16 @@ class DocumentFrameworkRequirement extends SnipeModel
         'code' => 'required|string|max:100',
         'title' => 'required|string|max:255',
         'domain' => 'nullable|string|max:120',
+        'obligation_type' => 'nullable|string|max:60',
         'is_mandatory' => 'boolean',
         'is_active' => 'boolean',
         'owner_id' => 'nullable|integer|exists:users,id',
         'default_document_type_id' => 'nullable|integer|exists:document_types,id',
+        'evidence_type' => 'nullable|string|max:60',
+        'delegation_level' => 'required|string|in:owner_review,delegable,external_evidence,consultant_only',
+        'risk_level' => 'required|string|in:low,medium,high,critical',
+        'official_reference' => 'nullable|string|max:255',
+        'source_url' => 'nullable|url|max:2048',
         'review_frequency_months' => 'nullable|integer|min:1|max:120',
         'sort_order' => 'nullable|integer|min:0|max:65535',
         'description' => 'nullable|string|max:65535',
@@ -79,6 +91,11 @@ class DocumentFrameworkRequirement extends SnipeModel
         'code',
         'title',
         'domain',
+        'obligation_type',
+        'evidence_type',
+        'delegation_level',
+        'risk_level',
+        'official_reference',
         'description',
         'evidence_guidance',
         'applicability_notes',
@@ -190,6 +207,78 @@ class DocumentFrameworkRequirement extends SnipeModel
         ];
     }
 
+    public static function obligationTypeOptions(): array
+    {
+        return [
+            'governance' => trans('admin/documentframeworkrequirements/general.obligation_types.governance'),
+            'registration' => trans('admin/documentframeworkrequirements/general.obligation_types.registration'),
+            'risk_management' => trans('admin/documentframeworkrequirements/general.obligation_types.risk_management'),
+            'incident_reporting' => trans('admin/documentframeworkrequirements/general.obligation_types.incident_reporting'),
+            'supply_chain' => trans('admin/documentframeworkrequirements/general.obligation_types.supply_chain'),
+            'asset_inventory' => trans('admin/documentframeworkrequirements/general.obligation_types.asset_inventory'),
+            'business_continuity' => trans('admin/documentframeworkrequirements/general.obligation_types.business_continuity'),
+            'training' => trans('admin/documentframeworkrequirements/general.obligation_types.training'),
+            'privacy_governance' => trans('admin/documentframeworkrequirements/general.obligation_types.privacy_governance'),
+            'custom' => trans('admin/documentframeworkrequirements/general.obligation_types.custom'),
+        ];
+    }
+
+    public static function evidenceTypeOptions(): array
+    {
+        return [
+            'policy' => trans('admin/documentframeworkrequirements/general.evidence_types.policy'),
+            'procedure' => trans('admin/documentframeworkrequirements/general.evidence_types.procedure'),
+            'register' => trans('admin/documentframeworkrequirements/general.evidence_types.register'),
+            'assessment' => trans('admin/documentframeworkrequirements/general.evidence_types.assessment'),
+            'contract' => trans('admin/documentframeworkrequirements/general.evidence_types.contract'),
+            'technical_report' => trans('admin/documentframeworkrequirements/general.evidence_types.technical_report'),
+            'incident_record' => trans('admin/documentframeworkrequirements/general.evidence_types.incident_record'),
+            'training_record' => trans('admin/documentframeworkrequirements/general.evidence_types.training_record'),
+            'attestation' => trans('admin/documentframeworkrequirements/general.evidence_types.attestation'),
+            'other' => trans('admin/documentframeworkrequirements/general.evidence_types.other'),
+        ];
+    }
+
+    public static function delegationLevelOptions(): array
+    {
+        return [
+            'owner_review' => trans('admin/documentframeworkrequirements/general.delegation_levels.owner_review'),
+            'delegable' => trans('admin/documentframeworkrequirements/general.delegation_levels.delegable'),
+            'external_evidence' => trans('admin/documentframeworkrequirements/general.delegation_levels.external_evidence'),
+            'consultant_only' => trans('admin/documentframeworkrequirements/general.delegation_levels.consultant_only'),
+        ];
+    }
+
+    public static function riskLevelOptions(): array
+    {
+        return [
+            'low' => trans('admin/documentframeworkrequirements/general.risk_levels.low'),
+            'medium' => trans('admin/documentframeworkrequirements/general.risk_levels.medium'),
+            'high' => trans('admin/documentframeworkrequirements/general.risk_levels.high'),
+            'critical' => trans('admin/documentframeworkrequirements/general.risk_levels.critical'),
+        ];
+    }
+
+    public function getObligationTypeLabelAttribute(): string
+    {
+        return static::obligationTypeOptions()[$this->obligation_type] ?? ucfirst(str_replace('_', ' ', (string) $this->obligation_type));
+    }
+
+    public function getEvidenceTypeLabelAttribute(): string
+    {
+        return static::evidenceTypeOptions()[$this->evidence_type] ?? ucfirst(str_replace('_', ' ', (string) $this->evidence_type));
+    }
+
+    public function getDelegationLevelLabelAttribute(): string
+    {
+        return static::delegationLevelOptions()[$this->delegation_level] ?? ucfirst(str_replace('_', ' ', (string) $this->delegation_level));
+    }
+
+    public function getRiskLevelLabelAttribute(): string
+    {
+        return static::riskLevelOptions()[$this->risk_level] ?? ucfirst(str_replace('_', ' ', (string) $this->risk_level));
+    }
+
     public function getCoverageStatusAttribute(): string
     {
         $documentsCount = (int) ($this->documents_count ?? $this->documents()->count());
@@ -231,5 +320,15 @@ class DocumentFrameworkRequirement extends SnipeModel
                 $query->whereNull('documents.next_review_at')
                     ->orWhereDate('documents.next_review_at', '>=', Carbon::today());
             });
+    }
+
+    public function setSourceUrlAttribute($value)
+    {
+        $this->attributes['source_url'] = ($value === '' ? null : $value);
+    }
+
+    public function setOfficialReferenceAttribute($value)
+    {
+        $this->attributes['official_reference'] = ($value === '' ? null : $value);
     }
 }
