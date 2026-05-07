@@ -116,6 +116,7 @@ Build a document-centered compliance module that helps consultants and tenants g
 - Document index exposes framework and requirement filters backed by the existing documents API.
 - Framework requirements have a work queue with framework and coverage filters backed by the existing requirements API.
 - Tenant detail includes a read-only compliance dashboard for framework coverage, document reviews, NIS2 suppliers, NIS2 assets and open tickets.
+- Tenant compliance dashboard counters drill down to existing tenant-filtered requirement, document, supplier, asset, framework and ticket work queues.
 
 ### 6.3 Future UI Work
 

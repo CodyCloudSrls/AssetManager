@@ -11,6 +11,10 @@
             <div class="row" style="margin-bottom: 15px;">
                 <div class="col-md-12">
                     <form method="get" action="{{ route('documentframeworkrequirements.index') }}" class="form-inline" role="search">
+                        @foreach (request()->only(['tenant_id']) as $filterName => $filterValue)
+                            <input type="hidden" name="{{ $filterName }}" value="{{ $filterValue }}">
+                        @endforeach
+
                         <div class="form-group">
                             <label for="document_framework_filter" class="sr-only">{{ trans('admin/documentframeworkrequirements/table.framework') }}</label>
                             <select class="form-control select2" name="document_framework_id" id="document_framework_filter" aria-label="{{ trans('admin/documentframeworkrequirements/table.framework') }}" style="min-width: 260px;">
@@ -44,7 +48,7 @@
             </div>
 
             <x-table.documentframeworkrequirements
-                :route="route('api.documentframeworkrequirements.index', request()->only(['document_framework_id', 'coverage_status']))"
+                :route="route('api.documentframeworkrequirements.index', request()->only(['tenant_id', 'document_framework_id', 'coverage_status']))"
                 table_header="{{ trans('admin/documentframeworkrequirements/general.work_queue') }}"
             />
         </x-box>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Helpers\Helper;
+use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FilterRequest;
 use App\Http\Requests\StoreTicketRequest;
@@ -16,6 +17,8 @@ use Illuminate\Http\Request;
 
 class TicketsController extends Controller
 {
+    use AppliesTenantCompanyFilter;
+
     public function index(FilterRequest $request): JsonResponse|array
     {
         $this->authorize('index', Ticket::class);
@@ -34,6 +37,8 @@ class TicketsController extends Controller
         if ($request->filled('company_id')) {
             $tickets->where('tickets.company_id', $request->input('company_id'));
         }
+
+        $this->applyTenantCompanyFilter($tickets, $request, 'tickets.company_id');
 
         if ($request->filled('ticket_status_id')) {
             $tickets->where('tickets.ticket_status_id', $request->input('ticket_status_id'));

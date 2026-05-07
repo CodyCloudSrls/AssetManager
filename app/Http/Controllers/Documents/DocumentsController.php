@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Documents;
 
 use App\Enums\ActionType;
+use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Models\Company;
@@ -20,19 +21,29 @@ use Illuminate\Validation\ValidationException;
 
 class DocumentsController extends Controller
 {
+    use AppliesTenantCompanyFilter;
+
     public function index(): View
     {
         $this->authorize('index', Document::class);
 
+        $tenantCompanyIds = $this->tenantCompanyIdsFromRequest(request());
+
         $frameworks = DocumentFramework::query()
             ->operational()
             ->active()
+            ->when(! is_null($tenantCompanyIds), fn ($query) => count($tenantCompanyIds) === 0
+                ? $query->whereRaw('1 = 0')
+                : $query->whereIn('company_id', $tenantCompanyIds))
             ->ordered()
             ->get(['id', 'name']);
 
         $requirements = DocumentFrameworkRequirement::query()
             ->visibleThroughFramework()
             ->active()
+            ->when(! is_null($tenantCompanyIds), fn ($query) => count($tenantCompanyIds) === 0
+                ? $query->whereRaw('1 = 0')
+                : $query->whereHas('framework', fn ($frameworkQuery) => $frameworkQuery->whereIn('company_id', $tenantCompanyIds)))
             ->with('framework')
             ->ordered()
             ->get(['id', 'document_framework_id', 'code', 'title']);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Helpers\Helper;
+use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FilterRequest;
 use App\Http\Requests\StoreDocumentFrameworkRequirementRequest;
@@ -14,6 +15,8 @@ use Illuminate\Http\JsonResponse;
 
 class DocumentFrameworkRequirementsController extends Controller
 {
+    use AppliesTenantCompanyFilter;
+
     public function index(FilterRequest $request): array
     {
         $this->authorize('view', DocumentFramework::class);
@@ -44,6 +47,16 @@ class DocumentFrameworkRequirementsController extends Controller
 
         if ($request->filled('document_framework_id')) {
             $requirements->where('document_framework_id', (int) $request->input('document_framework_id'));
+        }
+
+        $tenantCompanyIds = $this->tenantCompanyIdsFromRequest($request);
+
+        if (! is_null($tenantCompanyIds)) {
+            if (count($tenantCompanyIds) === 0) {
+                $requirements->whereRaw('1 = 0');
+            } else {
+                $requirements->whereHas('framework', fn ($query) => $query->whereIn('company_id', $tenantCompanyIds));
+            }
         }
 
         if ($request->filled('filter') || $request->filled('search')) {

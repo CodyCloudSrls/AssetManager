@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Helpers\Helper;
+use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FilterRequest;
 use App\Http\Requests\StoreDocumentRequest;
@@ -14,6 +15,8 @@ use Illuminate\Http\Request;
 
 class DocumentsController extends Controller
 {
+    use AppliesTenantCompanyFilter;
+
     public function index(FilterRequest $request): JsonResponse|array
     {
         $this->authorize('index', Document::class);
@@ -33,7 +36,7 @@ class DocumentsController extends Controller
 
         if ($request->filled('review_status')) {
             if ($request->input('review_status') === 'due') {
-                $documents->DueForReview();
+                $documents->DueForReview($this->tenantFromRequest($request)?->documentReviewWarningDays() ?? 30);
             }
 
             if ($request->input('review_status') === 'overdue') {
@@ -44,6 +47,8 @@ class DocumentsController extends Controller
         if ($request->filled('company_id')) {
             $documents->where('documents.company_id', '=', $request->input('company_id'));
         }
+
+        $this->applyTenantCompanyFilter($documents, $request, 'documents.company_id');
 
         if ($request->filled('owner_id')) {
             $documents->where('documents.owner_id', '=', $request->input('owner_id'));
