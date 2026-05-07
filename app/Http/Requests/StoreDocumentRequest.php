@@ -51,6 +51,9 @@ class StoreDocumentRequest extends FormRequest
             'primary_requirement_ids.*' => 'integer',
             'supporting_requirement_ids' => 'nullable|array',
             'supporting_requirement_ids.*' => 'integer',
+            'requirement_evidence' => 'nullable|array',
+            'requirement_evidence.*.covered_at' => 'nullable|date_format:Y-m-d',
+            'requirement_evidence.*.notes' => 'nullable|string|max:65535',
         ];
     }
 

@@ -191,21 +191,24 @@ class DocumentsController extends Controller
     private function syncRequirementMappings(Document $document, StoreDocumentRequest $request): void
     {
         $syncData = [];
+        $evidence = collect($request->input('requirement_evidence', []));
 
         foreach (collect($request->input('primary_requirement_ids', []))->filter() as $requirementId) {
+            $evidenceData = collect($evidence->get((string) $requirementId, $evidence->get((int) $requirementId, [])));
             $syncData[(int) $requirementId] = [
                 'coverage_role' => Document::COVERAGE_PRIMARY,
-                'notes' => null,
-                'covered_at' => now(),
+                'notes' => $evidenceData->get('notes') ?: null,
+                'covered_at' => $evidenceData->get('covered_at') ?: now(),
                 'created_by' => auth()->id(),
             ];
         }
 
         foreach (collect($request->input('supporting_requirement_ids', []))->filter() as $requirementId) {
+            $evidenceData = collect($evidence->get((string) $requirementId, $evidence->get((int) $requirementId, [])));
             $syncData[(int) $requirementId] = [
                 'coverage_role' => Document::COVERAGE_SUPPORTING,
-                'notes' => null,
-                'covered_at' => now(),
+                'notes' => $evidenceData->get('notes') ?: null,
+                'covered_at' => $evidenceData->get('covered_at') ?: now(),
                 'created_by' => auth()->id(),
             ];
         }

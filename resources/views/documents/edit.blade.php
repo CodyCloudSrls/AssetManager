@@ -61,6 +61,13 @@
             margin-bottom: 12px;
             margin-top: -4px;
         }
+        .document-requirement-evidence-table {
+            margin-bottom: 0;
+        }
+        .document-requirement-evidence-table textarea {
+            min-height: 40px;
+            resize: vertical;
+        }
     </style>
     <div class="row">
         <div class="col-lg-10 col-lg-offset-1 col-md-12 col-md-offset-0 col-sm-12 col-sm-offset-0">
@@ -172,6 +179,27 @@
                                                     @endforeach
                                                 </select>
                                                 <p class="help-block">{{ trans('admin/documents/form.supporting_requirements_help') }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div id="requirement_evidence_wrapper" class="form-group" style="display:none;">
+                                            <label class="col-md-3 control-label">{{ trans('admin/documents/form.requirement_evidence') }}</label>
+                                            <div class="col-md-9">
+                                                <div class="table-responsive">
+                                                    <table class="table table-condensed document-requirement-evidence-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>{{ trans('admin/documentframeworkrequirements/table.code') }}</th>
+                                                                <th>{{ trans('admin/documents/form.coverage_role') }}</th>
+                                                                <th>{{ trans('admin/documents/form.covered_at') }}</th>
+                                                                <th>{{ trans('admin/documents/form.evidence_notes') }}</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="requirement_evidence_rows"></tbody>
+                                                    </table>
+                                                </div>
+                                                <p class="help-block">{{ trans('admin/documents/form.requirement_evidence_help') }}</p>
+                                                {!! $errors->first('requirement_evidence', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
                                             </div>
                                         </div>
                                     </div>
@@ -409,6 +437,83 @@
         const supportingSelect = $('#supporting_requirement_ids');
         const selectedPrimary = (@json(old('primary_requirement_ids', $selectedPrimaryRequirementIds)) || []).map(String);
         const selectedSupporting = (@json(old('supporting_requirement_ids', $selectedSupportingRequirementIds)) || []).map(String);
+        const roleLabels = @json(\App\Models\Document::coverageRoleOptions());
+        const evidenceLabels = {
+            coveredAt: @json(trans('admin/documents/form.covered_at')),
+            notes: @json(trans('admin/documents/form.evidence_notes')),
+        };
+        const today = @json(now()->format('Y-m-d'));
+        let evidenceState = @json(old('requirement_evidence', $selectedRequirementEvidence));
+
+        function escapeHtml(value) {
+            return $('<div>').text(value || '').html();
+        }
+
+        function rememberEvidenceState() {
+            $('#requirement_evidence_rows tr').each(function () {
+                const requirementId = String($(this).data('requirement-id'));
+                evidenceState[requirementId] = {
+                    covered_at: $(this).find('[data-evidence-field="covered_at"]').val(),
+                    notes: $(this).find('[data-evidence-field="notes"]').val(),
+                };
+            });
+        }
+
+        function requirementById(requirementId) {
+            const frameworkId = String($('#document_framework_id_select').val() || '');
+            const options = requirementMap[frameworkId] || [];
+            requirementId = String(requirementId);
+
+            for (let i = 0; i < options.length; i++) {
+                if (String(options[i].id) === requirementId) {
+                    return options[i];
+                }
+            }
+
+            return null;
+        }
+
+        function renderRequirementEvidenceRows() {
+            rememberEvidenceState();
+
+            const selected = {};
+            const selectedPrimaryValues = primarySelect.val() || [];
+            const selectedSupportingValues = supportingSelect.val() || [];
+
+            selectedPrimaryValues.forEach(function (requirementId) {
+                selected[String(requirementId)] = '{{ \App\Models\Document::COVERAGE_PRIMARY }}';
+            });
+            selectedSupportingValues.forEach(function (requirementId) {
+                selected[String(requirementId)] = '{{ \App\Models\Document::COVERAGE_SUPPORTING }}';
+            });
+
+            const selectedIds = Object.keys(selected);
+            const $rows = $('#requirement_evidence_rows');
+            $rows.empty();
+            $('#requirement_evidence_wrapper').toggle(selectedIds.length > 0);
+
+            selectedIds.forEach(function (requirementId) {
+                const requirement = requirementById(requirementId);
+                if (!requirement) {
+                    return;
+                }
+
+                const role = selected[requirementId];
+                const state = evidenceState[requirementId] || {};
+                const coveredAt = state.covered_at || today;
+                const notes = state.notes || '';
+                const label = requirement.code + ' - ' + requirement.title;
+
+                $rows.append(
+                    '<tr data-requirement-id="' + escapeHtml(requirementId) + '">' +
+                        '<td><strong>' + escapeHtml(requirement.code) + '</strong><br><span class="text-muted">' + escapeHtml(requirement.title) + '</span></td>' +
+                        '<td>' + escapeHtml(roleLabels[role] || role) + '</td>' +
+                        '<td><input class="form-control input-sm" type="text" maxlength="10" inputmode="numeric" data-evidence-field="covered_at" name="requirement_evidence[' + escapeHtml(requirementId) + '][covered_at]" value="' + escapeHtml(coveredAt) + '" aria-label="' + escapeHtml(evidenceLabels.coveredAt + ' ' + label) + '"></td>' +
+                        '<td><textarea class="form-control input-sm" rows="1" data-evidence-field="notes" name="requirement_evidence[' + escapeHtml(requirementId) + '][notes]" aria-label="' + escapeHtml(evidenceLabels.notes + ' ' + label) + '">' + escapeHtml(notes) + '</textarea></td>' +
+                    '</tr>'
+                );
+            });
+        }
 
         function populateRequirementOptions(frameworkId) {
             const options = requirementMap[String(frameworkId || '')] || [];
@@ -426,6 +531,7 @@
             primarySelect.trigger('change.select2');
             supportingSelect.trigger('change.select2');
             syncRequirementAvailability(frameworkId);
+            renderRequirementEvidenceRows();
         }
 
         populateRequirementOptions($('#document_framework_id_select').val());
@@ -435,6 +541,9 @@
         $('#document_framework_id_select').on('change', function () {
             populateRequirementOptions($(this).val());
         });
+
+        primarySelect.on('change', renderRequirementEvidenceRows);
+        supportingSelect.on('change', renderRequirementEvidenceRows);
 
         $('select[name="company_id"]').on('change', function () {
             syncAssignmentCompanyContext($(this).val());
