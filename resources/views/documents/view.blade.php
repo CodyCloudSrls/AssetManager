@@ -274,6 +274,11 @@
                                     'document' => $document,
                                     'showActions' => auth()->user()->can('update', $document),
                                 ])
+
+                                <h3>{{ trans('admin/documents/general.assignment_audit_events') }}</h3>
+                                @include('documents.partials.assignment-events-table', [
+                                    'events' => $document->documentAssignmentEvents,
+                                ])
                             </div>
                         </div>
                     </x-tabs.pane>

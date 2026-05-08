@@ -37,4 +37,23 @@ return array (
     'primary' => 'Evidenza primaria',
     'supporting' => 'Evidenza di supporto',
   ),
+  'all_approval_statuses' => 'Tutti gli stati approvazione',
+  'assignment_audit_events' => 'Eventi audit assegnazione',
+  'assignment_event_changes' => 'Modifiche',
+  'no_assignment_events' => 'Nessun evento audit assegnazione trovato.',
+  'assignment_approval_statuses' =>
+  array (
+    'pending' => 'In attesa',
+    'submitted' => 'Inviata',
+    'in_review' => 'In revisione',
+    'approved' => 'Approvata',
+    'rejected' => 'Respinta',
+  ),
+  'assignment_event_types' =>
+  array (
+    'created' => 'Assegnazione creata',
+    'updated' => 'Assegnazione aggiornata',
+    'deleted' => 'Assegnazione eliminata',
+    'approval_status_changed' => 'Stato approvazione modificato',
+  ),
 );

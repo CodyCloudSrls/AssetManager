@@ -35,6 +35,12 @@ class DocumentAssignment extends SnipeModel
     public const STATUS_EXPIRED = 'expired';
     public const STATUS_REVOKED = 'revoked';
 
+    public const APPROVAL_PENDING = 'pending';
+    public const APPROVAL_SUBMITTED = 'submitted';
+    public const APPROVAL_IN_REVIEW = 'in_review';
+    public const APPROVAL_APPROVED = 'approved';
+    public const APPROVAL_REJECTED = 'rejected';
+
     protected $table = 'document_assignments';
 
     protected $fillable = [
@@ -44,7 +50,9 @@ class DocumentAssignment extends SnipeModel
         'assignable_id',
         'relation_type',
         'status',
+        'approval_status',
         'issuer_id',
+        'reviewer_id',
         'reference_number',
         'issued_at',
         'effective_at',
@@ -52,7 +60,9 @@ class DocumentAssignment extends SnipeModel
         'renewal_due_at',
         'completed_at',
         'revoked_at',
+        'reviewed_at',
         'notes',
+        'review_notes',
     ];
 
     protected $casts = [
@@ -60,6 +70,7 @@ class DocumentAssignment extends SnipeModel
         'company_id' => 'integer',
         'assignable_id' => 'integer',
         'issuer_id' => 'integer',
+        'reviewer_id' => 'integer',
         'created_by' => 'integer',
         'issued_at' => 'date',
         'effective_at' => 'date',
@@ -67,6 +78,7 @@ class DocumentAssignment extends SnipeModel
         'renewal_due_at' => 'date',
         'completed_at' => 'date',
         'revoked_at' => 'date',
+        'reviewed_at' => 'datetime',
     ];
 
     protected $rules = [
@@ -76,20 +88,26 @@ class DocumentAssignment extends SnipeModel
         'assignable_id' => 'required|integer',
         'relation_type' => 'required|string',
         'status' => 'required|string',
+        'approval_status' => 'required|string',
         'issuer_id' => 'nullable|integer|exists:users,id',
+        'reviewer_id' => 'nullable|integer|exists:users,id',
         'reference_number' => 'nullable|string|max:100',
         'notes' => 'nullable|string|max:65535',
+        'review_notes' => 'nullable|string|max:65535',
     ];
 
     protected $searchableAttributes = [
         'relation_type',
         'status',
+        'approval_status',
         'reference_number',
         'notes',
+        'review_notes',
         'issued_at',
         'effective_at',
         'expires_at',
         'renewal_due_at',
+        'reviewed_at',
     ];
 
     protected $searchableRelations = [
@@ -97,6 +115,7 @@ class DocumentAssignment extends SnipeModel
         'document.type' => ['name'],
         'company' => ['name'],
         'issuer' => ['first_name', 'last_name', 'display_name', 'username', 'email'],
+        'reviewer' => ['first_name', 'last_name', 'display_name', 'username', 'email'],
     ];
 
     protected $searchableRelationAliases = [
@@ -123,6 +142,17 @@ class DocumentAssignment extends SnipeModel
             self::STATUS_COMPLETED => trans('admin/documents/general.assignment_statuses.completed'),
             self::STATUS_EXPIRED => trans('admin/documents/general.assignment_statuses.expired'),
             self::STATUS_REVOKED => trans('admin/documents/general.assignment_statuses.revoked'),
+        ];
+    }
+
+    public static function approvalStatusOptions(): array
+    {
+        return [
+            self::APPROVAL_PENDING => trans('admin/documents/general.assignment_approval_statuses.pending'),
+            self::APPROVAL_SUBMITTED => trans('admin/documents/general.assignment_approval_statuses.submitted'),
+            self::APPROVAL_IN_REVIEW => trans('admin/documents/general.assignment_approval_statuses.in_review'),
+            self::APPROVAL_APPROVED => trans('admin/documents/general.assignment_approval_statuses.approved'),
+            self::APPROVAL_REJECTED => trans('admin/documents/general.assignment_approval_statuses.rejected'),
         ];
     }
 
@@ -179,9 +209,19 @@ class DocumentAssignment extends SnipeModel
         return $this->belongsTo(User::class, 'issuer_id')->withTrashed();
     }
 
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewer_id')->withTrashed();
+    }
+
     public function adminuser()
     {
         return $this->belongsTo(User::class, 'created_by')->withTrashed();
+    }
+
+    public function events()
+    {
+        return $this->hasMany(DocumentAssignmentEvent::class, 'document_assignment_id')->orderByDesc('created_at')->orderByDesc('id');
     }
 
     public function assignable(): MorphTo
@@ -202,6 +242,22 @@ class DocumentAssignment extends SnipeModel
     public function getStatusLabelAttribute(): string
     {
         return self::statusOptions()[$this->status] ?? $this->status;
+    }
+
+    public function getApprovalStatusLabelAttribute(): string
+    {
+        return self::approvalStatusOptions()[$this->approval_status] ?? (string) $this->approval_status;
+    }
+
+    public function getApprovalStatusClassAttribute(): string
+    {
+        return match ($this->approval_status) {
+            self::APPROVAL_SUBMITTED,
+            self::APPROVAL_IN_REVIEW => 'label label-warning',
+            self::APPROVAL_APPROVED => 'label label-success',
+            self::APPROVAL_REJECTED => 'label label-danger',
+            default => 'label label-default',
+        };
     }
 
     public function getAssignableDisplayNameAttribute(): ?string

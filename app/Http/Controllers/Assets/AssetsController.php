@@ -346,6 +346,7 @@ class AssetsController extends Controller
             'documentAssignments.document.framework',
             'documentAssignments.document.type',
             'documentAssignments.issuer',
+            'documentAssignments.reviewer',
         ]);
 
         if (isset($asset)) {

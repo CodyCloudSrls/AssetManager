@@ -245,6 +245,7 @@ class LocationsController extends Controller
                 'documentAssignments.document.framework',
                 'documentAssignments.document.type',
                 'documentAssignments.issuer',
+                'documentAssignments.reviewer',
             ])
             ->withTrashed()
             ->find($location->id);

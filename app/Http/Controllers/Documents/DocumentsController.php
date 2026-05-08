@@ -9,6 +9,7 @@ use App\Http\Requests\StoreDocumentRequest;
 use App\Models\Company;
 use App\Models\Document;
 use App\Models\DocumentAssignment;
+use App\Models\DocumentAssignmentEvent;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\User;
@@ -113,8 +114,12 @@ class DocumentsController extends Controller
             'adminuser',
             'documentAssignments.assignable',
             'documentAssignments.issuer',
+            'documentAssignments.reviewer',
             'documentAssignments.company',
             'documentAssignments.adminuser',
+            'documentAssignments.events.actor',
+            'documentAssignmentEvents.actor',
+            'documentAssignmentEvents.documentAssignment.assignable',
         ]);
 
         return view('documents.view', compact('document'));
@@ -191,8 +196,10 @@ class DocumentsController extends Controller
             $document->load([
                 'documentAssignments.assignable',
                 'documentAssignments.issuer',
+                'documentAssignments.reviewer',
                 'documentAssignments.company',
                 'documentAssignments.adminuser',
+                'documentAssignments.events.actor',
             ]);
         }
 
@@ -314,6 +321,13 @@ class DocumentsController extends Controller
             throw ValidationException::withMessages($this->modelErrorMessages($assignment->getErrors()));
         }
 
+        DocumentAssignmentManager::logAssignmentEvent(
+            $document,
+            $assignment,
+            DocumentAssignmentEvent::EVENT_CREATED,
+            [],
+            DocumentAssignmentManager::auditSnapshot($assignment)
+        );
         DocumentAssignmentManager::logAssignmentAction($document, $assignment, ActionType::Create);
 
         return true;
