@@ -147,7 +147,7 @@ Only supported European locales plus general English are allowed in code-level U
 
 - Some non-English locale files currently contain English fallback text.
 - Default permission group names remain hardcoded in English.
-- Compliance packs currently exist only for `it-IT` and `en-US`; other tenant locales bootstrap from English.
+- Compliance packs now include tenant bootstrap keys for every supported locale. Italian keeps the ACN-oriented pack; other non-English locales use the EU baseline pack text until expert local translations are approved.
 
 ## 8. Verification Plan
 
@@ -198,6 +198,6 @@ The local PHP test runner is currently incomplete: `php artisan test` fails beca
 
 ### Phase 6 - Advanced Compliance Packs
 
-- Expand official framework packs by jurisdiction/language.
+- Expand official framework packs by jurisdiction/language. Completed with Italian ACN packs plus EU baseline NIS2/GDPR pack keys for every supported tenant locale, preserving existing pack keys.
 - Add pack versioning and tenant diff/merge tooling.
 - Add import/export for Word/Excel-based consultant frameworks.

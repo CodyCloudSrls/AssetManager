@@ -1,7 +1,6 @@
 <?php
 
-return [
-    'packs' => [
+$packs = [
         'nis2_it' => [
             'locale' => 'it-IT',
             'framework' => [
@@ -308,5 +307,82 @@ return [
                 ],
             ],
         ],
-    ],
+    ];
+
+$euLocalePackLabels = [
+    'bg-BG' => 'Bulgarian',
+    'ca-ES' => 'Catalan',
+    'cs-CZ' => 'Czech',
+    'da-DK' => 'Danish',
+    'de-DE' => 'German',
+    'el-GR' => 'Greek',
+    'es-ES' => 'Spanish',
+    'et-EE' => 'Estonian',
+    'fi-FI' => 'Finnish',
+    'fr-FR' => 'French',
+    'ga-IE' => 'Irish',
+    'hr-HR' => 'Croatian',
+    'hu-HU' => 'Hungarian',
+    'lt-LT' => 'Lithuanian',
+    'lv-LV' => 'Latvian',
+    'nl-NL' => 'Dutch',
+    'pl-PL' => 'Polish',
+    'pt-PT' => 'Portuguese',
+    'ro-RO' => 'Romanian',
+    'sk-SK' => 'Slovak',
+    'sl-SI' => 'Slovenian',
+    'sv-SE' => 'Swedish',
+];
+
+foreach ($euLocalePackLabels as $locale => $languageName) {
+    $localeSlug = strtolower($locale);
+    $localeKey = str_replace('-', '_', $localeSlug);
+
+    $packs["nis2_{$localeKey}"] = [
+        'locale' => $locale,
+        'framework' => [
+            'name' => "NIS2 EU - Self-assessment matrix ({$languageName})",
+            'slug' => "nis2-{$localeSlug}-self-assessment",
+            'description' => 'EU baseline starter matrix for tenant bootstrap. Content is tenant-editable and should be reviewed against the applicable national NIS authority guidance.',
+            'compliance_objective' => 'Structure NIS2 self-assessment into traceable requirements, document evidence, responsibilities and review deadlines using the EU baseline source.',
+            'authority_name' => 'European Union / National authority',
+            'framework_code' => 'NIS2',
+            'framework_type' => 'law',
+            'compliance_domain' => 'nis2',
+            'jurisdiction' => 'EU',
+            'version' => '2026',
+            'status' => 'active',
+            'review_cadence_months' => 12,
+            'external_reference_url' => 'https://eur-lex.europa.eu/eli/dir/2022/2555/oj',
+            'sort_order' => 10,
+            'is_active' => true,
+        ],
+        'requirements' => $packs['nis2_en']['requirements'],
+    ];
+
+    $packs["gdpr_{$localeKey}"] = [
+        'locale' => $locale,
+        'framework' => [
+            'name' => "GDPR EU - Document evidence ({$languageName})",
+            'slug' => "gdpr-{$localeSlug}-evidence",
+            'description' => 'EU baseline framework for linking privacy documents, records and review evidence. Content is tenant-editable and should be reviewed by the responsible consultant.',
+            'compliance_objective' => 'Make records, notices, DPIAs, responsibilities and privacy reviews traceable using the EU GDPR source.',
+            'authority_name' => 'European Union',
+            'framework_code' => 'GDPR',
+            'framework_type' => 'regulation',
+            'compliance_domain' => 'gdpr',
+            'jurisdiction' => 'EU',
+            'version' => '2016/679',
+            'status' => 'active',
+            'review_cadence_months' => 12,
+            'external_reference_url' => 'https://eur-lex.europa.eu/eli/reg/2016/679/oj',
+            'sort_order' => 20,
+            'is_active' => true,
+        ],
+        'requirements' => $packs['gdpr_en']['requirements'],
+    ];
+}
+
+return [
+    'packs' => $packs,
 ];
