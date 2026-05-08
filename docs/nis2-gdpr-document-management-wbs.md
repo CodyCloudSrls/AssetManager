@@ -119,6 +119,7 @@ Build a document-centered compliance module that helps consultants and tenants g
 - Tenant compliance dashboard counters drill down to existing tenant-filtered requirement, document, supplier, asset, framework and ticket work queues.
 - Supplier qualification includes CPV catalog search and structured NIS2 assessment method, outcome and scope fields while preserving the free-form CPV field.
 - Supplier detail includes a NIS2 evidence checklist and assigned-document review table for supplier evidence.
+- Supplier index includes an ACN-oriented CSV export for NIS2 supplier data preparation.
 
 ### 6.3 Future UI Work
 

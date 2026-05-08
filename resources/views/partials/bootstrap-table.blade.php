@@ -763,9 +763,9 @@
     });
     @endcan
 
-    @can('create', \App\Models\Supplier::class)
-    // Consumable table buttons
+    // Supplier table buttons
     window.supplierButtons = () => ({
+        @can('create', \App\Models\Supplier::class)
         btnAdd: {
             text: '{{ trans('general.create') }}',
             icon: 'fa fa-plus',
@@ -780,8 +780,19 @@
                 @endif
             }
         },
+        @endcan
+
+        btnExport: {
+            text: '{{ trans('admin/suppliers/table.acn_export') }}',
+            icon: 'fa-solid fa-file-csv',
+            event () {
+                window.location.href = @json(route('suppliers.acn_export', array_merge(array_filter(request()->only(['tenant_id', 'nis_relevant', 'nis_relevance_type', 'nis_criticality', 'nis_assessment_status', 'nis_assessment_method', 'nis_assessment_outcome', 'nis_review_status', 'cpv_code', 'search', 'filter']), static fn ($value) => ! is_null($value) && $value !== ''), ['nis_relevant' => request()->input('nis_relevant', 1)])));
+            },
+            attributes: {
+                title: '{{ trans('admin/suppliers/table.acn_export') }}',
+            }
+        },
     });
-    @endcan
 
     @can('create', \App\Models\Department::class)
     // Department table buttons

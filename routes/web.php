@@ -113,6 +113,7 @@ Route::group(['middleware' => 'auth'], function () {
     /*
     * Suppliers
     */
+    Route::get('suppliers/acn-export', [SuppliersController::class, 'exportAcnCsv'])->name('suppliers.acn_export');
     Route::resource('suppliers', SuppliersController::class);
 
     Route::post('suppliers/bulk/delete', [BulkSuppliersController::class, 'destroy'])->name('suppliers.bulk.delete');
