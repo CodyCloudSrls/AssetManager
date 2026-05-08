@@ -122,6 +122,7 @@ Build a document-centered compliance module that helps consultants and tenants g
 - Supplier index includes an ACN-oriented CSV export for NIS2 supplier data preparation.
 - Document section includes a delegated evidence request queue for open user/supplier evidence assignments.
 - Document assignments include approval/review states and append-only assignment audit events.
+- Delegated document evidence assignments send tenant reminder/escalation digests while leaving approval sign-off to reviewers.
 
 ### 6.3 Future UI Work
 
@@ -193,7 +194,7 @@ The local PHP test runner is currently incomplete: `php artisan test` fails beca
 
 - Add delegated evidence requests tied to users/suppliers. Completed as an operational queue over existing document assignments.
 - Add approval/review states and immutable audit events. Completed with assignment approval status fields and append-only audit event records.
-- Add reminders and escalation while preserving expert sign-off.
+- Add reminders and escalation while preserving expert sign-off. Completed with tenant daily digests for delegated evidence assignments due soon or overdue, without automatic approval changes.
 
 ### Phase 6 - Advanced Compliance Packs
 

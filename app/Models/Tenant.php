@@ -24,6 +24,7 @@ class Tenant extends Model
     public const MAIL_EVENT_TICKET_ASSIGNED = 'ticket_assigned';
     public const MAIL_EVENT_TICKET_SLA_ALERT = 'ticket_sla_alert';
     public const MAIL_EVENT_DOCUMENT_REVIEW_DUE = 'document_review_due';
+    public const MAIL_EVENT_DOCUMENT_ASSIGNMENT_REMINDER = 'document_assignment_reminder';
 
     protected static ?array $currentUserTenantRolesCache = null;
 
@@ -268,6 +269,7 @@ class Tenant extends Model
             static::MAIL_EVENT_TICKET_ASSIGNED => trans('admin/tenants/general.mail.events.ticket_assigned'),
             static::MAIL_EVENT_TICKET_SLA_ALERT => trans('admin/tenants/general.mail.events.ticket_sla_alert'),
             static::MAIL_EVENT_DOCUMENT_REVIEW_DUE => trans('admin/tenants/general.mail.events.document_review_due'),
+            static::MAIL_EVENT_DOCUMENT_ASSIGNMENT_REMINDER => trans('admin/tenants/general.mail.events.document_assignment_reminder'),
         ];
     }
 

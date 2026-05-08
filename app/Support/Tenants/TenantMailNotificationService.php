@@ -2,14 +2,18 @@
 
 namespace App\Support\Tenants;
 
+use App\Mail\TenantDocumentAssignmentReminderDigestMail;
 use App\Mail\TenantDocumentReviewDigestMail;
 use App\Mail\TenantTicketNotificationMail;
 use App\Mail\TenantTicketSlaDigestMail;
 use App\Models\Actionlog;
 use App\Models\Company;
 use App\Models\Document;
+use App\Models\DocumentAssignment;
+use App\Models\Supplier;
 use App\Models\Tenant;
 use App\Models\Ticket;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Mail;
@@ -187,6 +191,64 @@ class TenantMailNotificationService
             $tenant,
             $dueDocuments,
             $overdueDocuments,
+            $warningDays
+        ));
+
+        return $total;
+    }
+
+    public function sendDocumentAssignmentReminderDigest(Tenant $tenant): int
+    {
+        if (! $tenant->notificationEventEnabled(Tenant::MAIL_EVENT_DOCUMENT_ASSIGNMENT_REMINDER)) {
+            return 0;
+        }
+
+        $companyIds = $tenant->activeCompanyIds();
+
+        if (count($companyIds) === 0) {
+            return 0;
+        }
+
+        $warningDays = $tenant->documentReviewWarningDays();
+        $today = Carbon::today();
+        $warningLimit = $today->copy()->addDays($warningDays);
+        $baseQuery = DocumentAssignment::query()
+            ->whereIn('company_id', $companyIds)
+            ->whereIn('assignable_type', [User::class, Supplier::class])
+            ->whereIn('relation_type', [
+                DocumentAssignment::RELATION_REQUIRED_FOR,
+                DocumentAssignment::RELATION_EVIDENCE_FOR,
+            ])
+            ->whereHas('document', fn ($query) => $query->whereNull('documents.deleted_at'))
+            ->where('status', '!=', DocumentAssignment::STATUS_REVOKED)
+            ->where('approval_status', '!=', DocumentAssignment::APPROVAL_APPROVED)
+            ->with(['document.type', 'company', 'issuer', 'reviewer', 'assignable']);
+
+        $dueAssignments = (clone $baseQuery)
+            ->whereNotNull('renewal_due_at')
+            ->whereDate('renewal_due_at', '>=', $today->toDateString())
+            ->whereDate('renewal_due_at', '<=', $warningLimit->toDateString())
+            ->orderBy('renewal_due_at')
+            ->get();
+
+        $overdueAssignments = (clone $baseQuery)
+            ->where(function ($query) use ($today) {
+                $query->whereDate('expires_at', '<', $today->toDateString())
+                    ->orWhereDate('renewal_due_at', '<', $today->toDateString());
+            })
+            ->orderByRaw('COALESCE(renewal_due_at, expires_at) asc')
+            ->get();
+
+        $total = $dueAssignments->count() + $overdueAssignments->count();
+
+        if ($total === 0) {
+            return 0;
+        }
+
+        $this->sendToTenant($tenant, new TenantDocumentAssignmentReminderDigestMail(
+            $tenant,
+            $dueAssignments,
+            $overdueAssignments,
             $warningDays
         ));
 

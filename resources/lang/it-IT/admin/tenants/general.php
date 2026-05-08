@@ -79,6 +79,7 @@ return array (
       'ticket_assigned' => 'Ticket assegnato',
       'ticket_sla_alert' => 'Avviso SLA ticket',
       'document_review_due' => 'Documenti in revisione',
+      'document_assignment_reminder' => 'Promemoria evidenze delegate',
     ),
     'event_descriptions' =>
     array (
@@ -87,6 +88,7 @@ return array (
       'ticket_assigned' => 'Invia una mail quando un ticket viene assegnato o riassegnato a un operatore.',
       'ticket_sla_alert' => 'Invia un digest giornaliero dei ticket aperti con SLA a rischio o già superato.',
       'document_review_due' => 'Invia un digest giornaliero dei documenti in revisione o già scaduti.',
+      'document_assignment_reminder' => 'Invia un digest giornaliero delle assegnazioni di evidenze documentali delegate in scadenza o scadute. L\'approvazione resta a carico del reviewer.',
     ),
   ),
   'help' => 'Crea e gestisci i tenant SaaS.',

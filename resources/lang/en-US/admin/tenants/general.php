@@ -79,6 +79,7 @@ return array (
       'ticket_assigned' => 'Ticket assigned',
       'ticket_sla_alert' => 'Ticket SLA alert',
       'document_review_due' => 'Documents due for review',
+      'document_assignment_reminder' => 'Delegated evidence reminders',
     ),
     'event_descriptions' =>
     array (
@@ -87,6 +88,7 @@ return array (
       'ticket_assigned' => 'Send an email when a ticket is assigned or reassigned to an operator.',
       'ticket_sla_alert' => 'Send a daily digest for open tickets with SLA due dates that are at risk or already breached.',
       'document_review_due' => 'Send a daily digest for documents that are due or overdue for review.',
+      'document_assignment_reminder' => 'Send a daily digest for delegated document evidence assignments that are due soon or overdue. Approval still requires reviewer sign-off.',
     ),
   ),
   'help' => 'Create and manage SaaS tenants.',
