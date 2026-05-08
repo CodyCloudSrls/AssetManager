@@ -31,4 +31,10 @@ return array (
     'primary' => 'Primary evidence',
     'supporting' => 'Supporting evidence',
   ),
+  'delegated_evidence_requests' => 'Delegated Evidence Requests',
+  'delegated_evidence_requests_help' => 'Open requests are document assignments required from users or suppliers as NIS/GDPR evidence. They reuse the document assignment lifecycle and review dates.',
+  'all_delegated_targets' => 'All delegated targets',
+  'all_evidence_relations' => 'All evidence relations',
+  'open_evidence_requests' => 'Open requests',
+  'all_review_statuses' => 'All review statuses',
 );

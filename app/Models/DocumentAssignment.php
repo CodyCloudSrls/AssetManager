@@ -92,6 +92,18 @@ class DocumentAssignment extends SnipeModel
         'renewal_due_at',
     ];
 
+    protected $searchableRelations = [
+        'document' => ['name', 'document_number', 'reference'],
+        'document.type' => ['name'],
+        'company' => ['name'],
+        'issuer' => ['first_name', 'last_name', 'display_name', 'username', 'email'],
+    ];
+
+    protected $searchableRelationAliases = [
+        'document_number' => 'document',
+        'document_type' => 'document.type',
+    ];
+
     public static function relationTypeOptions(): array
     {
         return [

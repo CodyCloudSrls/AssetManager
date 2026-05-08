@@ -12,6 +12,9 @@ Route::group(
         'middleware' => ['auth'],
     ],
     function () {
+        Route::get('evidence-requests', [DocumentAssignmentsController::class, 'index'])
+            ->name('documents.evidence_requests.index');
+
         Route::post('{document}/restore', [DocumentsController::class, 'restore'])
             ->name('documents.restore')
             ->withTrashed();

@@ -1646,6 +1646,59 @@
         return html.join(' ');
     }
 
+    function documentAssignmentTargetFormatter(value, row) {
+        if (!value || !value.name) {
+            return '';
+        }
+
+        var label = value.type ? '<span class="text-muted">' + value.type + '</span> ' : '';
+        var target = value.url ? '<a href="' + value.url + '">' + value.name + '</a>' : value.name;
+
+        return label + target;
+    }
+
+    function documentAssignmentStatusFormatter(value, row) {
+        if (!value) {
+            return '';
+        }
+
+        var labelClass = 'label-default';
+
+        if (row.status === '{{ \App\Models\DocumentAssignment::STATUS_REQUIRED }}') {
+            labelClass = 'label-warning';
+        } else if (row.status === '{{ \App\Models\DocumentAssignment::STATUS_COMPLETED }}' || row.status === '{{ \App\Models\DocumentAssignment::STATUS_ACTIVE }}') {
+            labelClass = 'label-success';
+        } else if (row.status === '{{ \App\Models\DocumentAssignment::STATUS_EXPIRED }}' || row.status === '{{ \App\Models\DocumentAssignment::STATUS_REVOKED }}' || row.is_expired) {
+            labelClass = 'label-danger';
+        }
+
+        var status = '<span class="label ' + labelClass + '">' + value + '</span>';
+
+        if (row.is_expired) {
+            status += '<div class="text-danger">{{ trans('admin/documents/general.assignment_expired_flag') }}</div>';
+        } else if (row.is_expiring) {
+            status += '<div class="text-warning">{{ trans('admin/documents/general.assignment_expiring_flag') }}</div>';
+        }
+
+        return status;
+    }
+
+    function documentAssignmentActionsFormatter(value, row) {
+        var actions = '<nobr>';
+
+        if (row.document && row.available_actions && row.available_actions.view === true) {
+            actions += '<a href="{{ config('app.url') }}/documents/' + row.document.id + '" class="actions btn btn-sm btn-info hidden-print" data-tooltip="true" title="{{ trans('general.view') }}"><i class="far fa-eye fa-fw" aria-hidden="true"></i><span class="sr-only">{{ trans('general.view') }}</span></a>&nbsp;';
+        }
+
+        if (row.document && row.available_actions && row.available_actions.update === true) {
+            actions += '<a href="{{ config('app.url') }}/documents/' + row.document.id + '/assignments/' + row.id + '/edit" class="actions btn btn-sm btn-warning hidden-print" data-tooltip="true" title="{{ trans('general.update') }}"><x-icon type="edit" class="fa-fw" /><span class="sr-only">{{ trans('general.update') }}</span></a>&nbsp;';
+        }
+
+        actions += '</nobr>';
+
+        return actions;
+    }
+
     function documentRequirementsFormatter(value, row) {
         if (!value || !Array.isArray(value) || value.length === 0) {
             return '';

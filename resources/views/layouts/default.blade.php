@@ -1700,6 +1700,12 @@
                                             <span class="badge">{{ $total_documents ?? '' }}</span>
                                         </a>
                                     </li>
+                                    <li{!! (request()->routeIs('documents.evidence_requests.index') ? ' class="active"' : '') !!}>
+                                        <a href="{{ route('documents.evidence_requests.index') }}">
+                                            <x-icon type="requests" class="text-yellow fa-fw"/>
+                                            {{ trans('admin/documents/general.delegated_evidence_requests') }}
+                                        </a>
+                                    </li>
                                     <li{!! (request()->query('status') == 'active' ? ' class="active"' : '') !!}>
                                         <a href="{{ route('documents.index', ['status' => 'active']) }}">
                                             <x-icon type="circle" class="text-green fa-fw"/>

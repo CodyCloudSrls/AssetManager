@@ -9,6 +9,12 @@ return array (
   'assignment_expired_flag' => 'Scaduta',
   'review_due' => 'Revisione in scadenza',
   'review_overdue' => 'Revisione scaduta',
+  'delegated_evidence_requests' => 'Richieste evidenze delegate',
+  'delegated_evidence_requests_help' => 'Le richieste aperte sono assegnazioni documentali richieste a utenti o fornitori come evidenza NIS/GDPR. Riutilizzano ciclo di vita e date di revisione delle assegnazioni documenti.',
+  'all_delegated_targets' => 'Tutti i destinatari delegati',
+  'all_evidence_relations' => 'Tutte le relazioni evidenza',
+  'open_evidence_requests' => 'Richieste aperte',
+  'all_review_statuses' => 'Tutti gli stati revisione',
   'assignment_statuses' =>
   array (
     'planned' => 'Pianificata',
