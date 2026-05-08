@@ -6,6 +6,7 @@
     $selectedUserId = $currentAssignableType === \App\Models\DocumentAssignment::ASSIGNABLE_USER ? $currentAssignableId : null;
     $selectedAssetId = $currentAssignableType === \App\Models\DocumentAssignment::ASSIGNABLE_ASSET ? $currentAssignableId : null;
     $selectedLocationId = $currentAssignableType === \App\Models\DocumentAssignment::ASSIGNABLE_LOCATION ? $currentAssignableId : null;
+    $selectedSupplierId = $currentAssignableType === \App\Models\DocumentAssignment::ASSIGNABLE_SUPPLIER ? $currentAssignableId : null;
     $showAssignmentAdvanced = $showAssignmentAdvanced
         ?? $errors->has('issued_at')
         || $errors->has('completed_at')
@@ -31,8 +32,10 @@
                         <x-icon type="user" />
                     @elseif ($assignableTypeValue === \App\Models\DocumentAssignment::ASSIGNABLE_ASSET)
                         <x-icon type="asset" />
-                    @else
+                    @elseif ($assignableTypeValue === \App\Models\DocumentAssignment::ASSIGNABLE_LOCATION)
                         <x-icon type="location" />
+                    @else
+                        <x-icon type="supplier" />
                     @endif
                     {{ $assignableTypeLabel }}
                 </label>
@@ -70,6 +73,17 @@
     'company_id' => $assignmentCompanyId,
     'hide_new' => 'true',
     'style' => $currentAssignableType === \App\Models\DocumentAssignment::ASSIGNABLE_LOCATION ? '' : 'display:none;',
+])
+
+@include('partials.forms.edit.supplier-select', [
+    'translated_name' => trans('admin/documents/form.assignable_target'),
+    'fieldname' => 'assignment_assignable_supplier_id',
+    'selected_id' => $selectedSupplierId,
+    'select_id' => 'assignable_supplier_id_select',
+    'wrapper_id' => 'assignable_supplier_wrapper',
+    'company_id' => $assignmentCompanyId,
+    'hide_new' => 'true',
+    'style' => $currentAssignableType === \App\Models\DocumentAssignment::ASSIGNABLE_SUPPLIER ? '' : 'display:none;',
 ])
 
 <div class="form-group">

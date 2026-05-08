@@ -25,7 +25,7 @@
                 <th>{{ trans('admin/documents/form.assignment_expires_at') }}</th>
                 <th>{{ trans('admin/documents/form.assignment_renewal_due_at') }}</th>
                 <th>{{ trans('admin/documents/form.assignment_notes') }}</th>
-                @if ($showActions && $document)
+                @if ($showActions)
                     <th class="text-right">{{ trans('table.actions') }}</th>
                 @endif
             </tr>
@@ -41,6 +41,11 @@
                         \App\Models\DocumentAssignment::STATUS_REVOKED => 'label label-danger',
                         default => 'label label-default',
                     };
+                    $actionDocument = $document ?: $assignment->document;
+                    $canManageAssignment = $showActions
+                        && $actionDocument
+                        && auth()->user()
+                        && auth()->user()->can('update', $actionDocument);
                 @endphp
                 <tr>
                     @if ($showDocumentColumn)
@@ -75,32 +80,34 @@
                     <td>{{ \App\Helpers\Helper::getFormattedDateObject($assignment->expires_at, 'date', false) }}</td>
                     <td>{{ \App\Helpers\Helper::getFormattedDateObject($assignment->renewal_due_at, 'date', false) }}</td>
                     <td>{{ \Illuminate\Support\Str::limit(trim(strip_tags((string) $assignment->notes)), 120) }}</td>
-                    @if ($showActions && $document)
+                    @if ($showActions)
                         <td class="text-right">
-                            <a href="{{ route('documents.assignments.edit', [$document, $assignment]) }}"
-                               class="btn btn-sm btn-warning"
-                               data-tooltip="true"
-                               title="{{ trans('general.edit') }}">
-                                <x-icon type="edit" class="fa-fw" />
-                            </a>
-                            <a href="{{ route('documents.assignments.destroy', [$document, $assignment]) }}"
-                               class="btn btn-sm btn-danger delete-asset"
-                               data-toggle="modal"
-                               data-title="{{ trans('general.delete') }}"
-                               data-content="{{ trans('general.delete_confirm', ['item' => $assignment->assignable_display_name ?: trans('general.document')]) }}"
-                               data-target="#dataConfirmModal"
-                               data-tooltip="true"
-                               data-icon="fa fa-trash"
-                               data-placement="top"
-                               onClick="return false;">
-                                <x-icon type="delete" class="fa-fw" />
-                            </a>
+                            @if ($canManageAssignment)
+                                <a href="{{ route('documents.assignments.edit', [$actionDocument, $assignment]) }}"
+                                   class="btn btn-sm btn-warning"
+                                   data-tooltip="true"
+                                   title="{{ trans('general.edit') }}">
+                                    <x-icon type="edit" class="fa-fw" />
+                                </a>
+                                <a href="{{ route('documents.assignments.destroy', [$actionDocument, $assignment]) }}"
+                                   class="btn btn-sm btn-danger delete-asset"
+                                   data-toggle="modal"
+                                   data-title="{{ trans('general.delete') }}"
+                                   data-content="{{ trans('general.delete_confirm', ['item' => $assignment->assignable_display_name ?: trans('general.document')]) }}"
+                                   data-target="#dataConfirmModal"
+                                   data-tooltip="true"
+                                   data-icon="fa fa-trash"
+                                   data-placement="top"
+                                   onClick="return false;">
+                                    <x-icon type="delete" class="fa-fw" />
+                                </a>
+                            @endif
                         </td>
                     @endif
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ ($showDocumentColumn ? 1 : 0) + ($showTargetColumn ? 2 : 0) + 8 + ($showActions && $document ? 1 : 0) }}" class="text-muted">
+                    <td colspan="{{ ($showDocumentColumn ? 1 : 0) + ($showTargetColumn ? 2 : 0) + 8 + ($showActions ? 1 : 0) }}" class="text-muted">
                         {{ trans('general.no_results') }}
                     </td>
                 </tr>

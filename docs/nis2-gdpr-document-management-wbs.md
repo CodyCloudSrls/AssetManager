@@ -84,7 +84,7 @@ Build a document-centered compliance module that helps consultants and tenants g
 ### 4.3 Supplier Evidence
 
 - Link supplier records to documents through document assignments and requirement mappings.
-- Future step: add supplier-specific evidence dashboard: questionnaires, contracts, SLAs, attestations and improvement plans.
+- Supplier-specific evidence dashboard shows questionnaires, contracts, SLAs, attestations and improvement plans from assigned documents and their review status.
 
 ## 5. NIS2 Inventory Link
 
@@ -118,6 +118,7 @@ Build a document-centered compliance module that helps consultants and tenants g
 - Tenant detail includes a read-only compliance dashboard for framework coverage, document reviews, NIS2 suppliers, NIS2 assets and open tickets.
 - Tenant compliance dashboard counters drill down to existing tenant-filtered requirement, document, supplier, asset, framework and ticket work queues.
 - Supplier qualification includes CPV catalog search and structured NIS2 assessment method, outcome and scope fields while preserving the free-form CPV field.
+- Supplier detail includes a NIS2 evidence checklist and assigned-document review table for supplier evidence.
 
 ### 6.3 Future UI Work
 

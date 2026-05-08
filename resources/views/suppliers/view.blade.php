@@ -41,6 +41,9 @@
                 <x-slot:tabpanes>
 
                     <x-tabs.pane name="nis">
+                        @php
+                            $supplierEvidenceChecklist = $supplier->nisEvidenceChecklist();
+                        @endphp
                         <x-page-data>
                             <x-data-row :label="trans('admin/suppliers/table.nis_relevant')">{{ $supplier->nis_relevant ? trans('general.yes') : trans('general.no') }}</x-data-row>
                             <x-data-row :label="trans('admin/suppliers/table.nis_criticality')">{{ $supplier->nis_criticality_label }}</x-data-row>
@@ -54,6 +57,37 @@
                             <x-data-row :label="trans('admin/suppliers/table.nis_last_assessment_at')">{{ Helper::getFormattedDateObject($supplier->nis_last_assessment_at, 'date', false) }}</x-data-row>
                             <x-data-row :label="trans('admin/suppliers/table.nis_next_review_at')">{{ Helper::getFormattedDateObject($supplier->nis_next_review_at, 'date', false) }}</x-data-row>
                         </x-page-data>
+
+                        <h3>{{ trans('admin/suppliers/table.supplier_evidence_checklist') }}</h3>
+                        <p class="help-block">{{ trans('admin/suppliers/table.supplier_evidence_checklist_help') }}</p>
+                        <div class="table-responsive">
+                            <table class="table table-striped snipe-table">
+                                <thead>
+                                    <tr>
+                                        <th>{{ trans('admin/suppliers/table.supplier_evidence_category') }}</th>
+                                        <th>{{ trans('admin/suppliers/table.supplier_evidence_linked') }}</th>
+                                        <th>{{ trans('admin/suppliers/table.supplier_evidence_review_status') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($supplierEvidenceChecklist as $evidenceItem)
+                                        <tr>
+                                            <td>{{ $evidenceItem['label'] }}</td>
+                                            <td>{{ $evidenceItem['count'] }}</td>
+                                            <td><span class="{{ $evidenceItem['status_class'] }}">{{ $evidenceItem['status_label'] }}</span></td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h3>{{ trans('admin/suppliers/table.supplier_evidence_documents') }}</h3>
+                        @include('documents.partials.assignments-table', [
+                            'assignments' => $supplier->documentAssignments,
+                            'showDocumentColumn' => true,
+                            'showTargetColumn' => false,
+                            'showActions' => true,
+                        ])
                     </x-tabs.pane>
 
                     <!-- start assets tab pane -->
