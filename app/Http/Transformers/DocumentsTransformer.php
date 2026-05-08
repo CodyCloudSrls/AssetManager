@@ -23,7 +23,7 @@ class DocumentsTransformer
 
     public function transformDocument(Document $document)
     {
-        $document->loadMissing('documentAssignments.assignable');
+        $document->loadMissing('documentAssignments.assignable', 'documentAssignments.reviewer');
 
         $array = [
             'id' => (int) $document->id,
@@ -96,6 +96,7 @@ class DocumentsTransformer
             'url' => $assignment->assignable_url,
             'relation_type' => e($assignment->relation_type_label),
             'status' => e($assignment->status_label),
+            'approval_status' => e($assignment->approval_status_label),
             'is_expiring' => $assignment->is_expiring,
             'is_expired' => $assignment->is_expired,
         ];

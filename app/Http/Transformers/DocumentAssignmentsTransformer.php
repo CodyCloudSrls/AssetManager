@@ -23,7 +23,7 @@ class DocumentAssignmentsTransformer
 
     public function transformDocumentAssignment(DocumentAssignment $assignment): array
     {
-        $assignment->loadMissing('document', 'document.type', 'company', 'issuer', 'assignable');
+        $assignment->loadMissing('document', 'document.type', 'company', 'issuer', 'reviewer', 'assignable');
 
         return [
             'id' => (int) $assignment->id,
@@ -45,6 +45,8 @@ class DocumentAssignmentsTransformer
             'relation_type_label' => e($assignment->relation_type_label),
             'status' => e($assignment->status),
             'status_label' => e($assignment->status_label),
+            'approval_status' => e($assignment->approval_status),
+            'approval_status_label' => e($assignment->approval_status_label),
             'company' => $assignment->company ? [
                 'id' => (int) $assignment->company->id,
                 'name' => e($assignment->company->name),
@@ -54,12 +56,18 @@ class DocumentAssignmentsTransformer
                 'id' => (int) $assignment->issuer->id,
                 'name' => e($assignment->issuer->display_name),
             ] : null,
+            'reviewer' => $assignment->reviewer ? [
+                'id' => (int) $assignment->reviewer->id,
+                'name' => e($assignment->reviewer->display_name),
+            ] : null,
             'reference_number' => e($assignment->reference_number),
             'effective_at' => Helper::getFormattedDateObject($assignment->effective_at, 'date'),
             'expires_at' => Helper::getFormattedDateObject($assignment->expires_at, 'date'),
             'renewal_due_at' => Helper::getFormattedDateObject($assignment->renewal_due_at, 'date'),
             'completed_at' => Helper::getFormattedDateObject($assignment->completed_at, 'date'),
+            'reviewed_at' => Helper::getFormattedDateObject($assignment->reviewed_at, 'datetime'),
             'notes' => e(Str::limit(trim(strip_tags((string) $assignment->notes)), 160)),
+            'review_notes' => e(Str::limit(trim(strip_tags((string) $assignment->review_notes)), 160)),
             'is_expiring' => $assignment->is_expiring,
             'is_expired' => $assignment->is_expired,
             'created_at' => Helper::getFormattedDateObject($assignment->created_at, 'datetime'),

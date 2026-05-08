@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDocumentAssignmentRequest;
 use App\Models\Document;
 use App\Models\DocumentAssignment;
+use App\Models\DocumentAssignmentEvent;
 use App\Support\Documents\DocumentAssignmentManager;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -35,6 +36,13 @@ class DocumentAssignmentsController extends Controller
             return redirect()->back()->withInput()->withErrors($assignment->getErrors());
         }
 
+        DocumentAssignmentManager::logAssignmentEvent(
+            $document,
+            $assignment,
+            DocumentAssignmentEvent::EVENT_CREATED,
+            [],
+            DocumentAssignmentManager::auditSnapshot($assignment)
+        );
         DocumentAssignmentManager::logAssignmentAction($document, $assignment, ActionType::Create);
 
         return redirect()->route('documents.show', $document)
@@ -54,6 +62,8 @@ class DocumentAssignmentsController extends Controller
         $this->authorize('update', $document);
         abort_unless((int) $documentAssignment->document_id === (int) $document->id, 404);
 
+        $before = DocumentAssignmentManager::auditSnapshot($documentAssignment);
+
         DocumentAssignmentManager::fillAssignment(
             $documentAssignment,
             $request->only(array_keys(DocumentAssignmentManager::rules())),
@@ -63,6 +73,15 @@ class DocumentAssignmentsController extends Controller
             return redirect()->back()->withInput()->withErrors($documentAssignment->getErrors());
         }
 
+        $after = DocumentAssignmentManager::auditSnapshot($documentAssignment);
+        [$oldValues, $newValues] = DocumentAssignmentManager::auditChanges($before, $after);
+        $eventType = array_key_exists('approval_status', $newValues)
+            ? DocumentAssignmentEvent::EVENT_APPROVAL_STATUS_CHANGED
+            : DocumentAssignmentEvent::EVENT_UPDATED;
+
+        if ($oldValues || $newValues) {
+            DocumentAssignmentManager::logAssignmentEvent($document, $documentAssignment, $eventType, $oldValues, $newValues);
+        }
         DocumentAssignmentManager::logAssignmentAction($document, $documentAssignment, ActionType::Update);
 
         return redirect()->route('documents.show', $document)
@@ -74,6 +93,13 @@ class DocumentAssignmentsController extends Controller
         $this->authorize('update', $document);
         abort_unless((int) $documentAssignment->document_id === (int) $document->id, 404);
 
+        DocumentAssignmentManager::logAssignmentEvent(
+            $document,
+            $documentAssignment,
+            DocumentAssignmentEvent::EVENT_DELETED,
+            DocumentAssignmentManager::auditSnapshot($documentAssignment),
+            []
+        );
         DocumentAssignmentManager::logAssignmentAction($document, $documentAssignment, ActionType::Delete);
         $documentAssignment->delete();
 
@@ -82,6 +108,8 @@ class DocumentAssignmentsController extends Controller
     }
     private function formData(Document $document, DocumentAssignment $documentAssignment): array
     {
+        $documentAssignment->load('events.actor');
+
         return [
             'document' => $document,
             'documentAssignment' => $documentAssignment,

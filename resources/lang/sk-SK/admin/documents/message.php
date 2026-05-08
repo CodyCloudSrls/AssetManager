@@ -24,11 +24,11 @@ return array (
   'framework_required_for_requirements' => 'Select a framework before mapping requirements to this document.',
   'invalid_requirements_for_framework' => 'One or more selected requirements do not belong to the chosen framework.',
   'assignment_document_missing' => 'The source document for this assignment could not be resolved.',
-  'assignment_requires_company' => 'Assign the document to a tenant company before linking it to people, assets, or locations.',
-  'assignment_target_invalid' => 'Select a valid person, asset, or location.',
+  'assignment_requires_company' => 'Assign the document to a tenant company before linking it to people, assets, locations, or suppliers.',
+  'assignment_target_invalid' => 'Select a valid person, asset, location, or supplier.',
   'assignment_target_wrong_tenant' => 'The selected target does not belong to the same tenant as the document.',
   'assignment_issuer_wrong_tenant' => 'The selected issuer does not belong to the same tenant as the document.',
-  'assignment_save_document_first' => 'Save the document first. After the initial save you can link it to people, assets, and locations.',
+  'assignment_save_document_first' => 'Save the document first. After the initial save you can link it to people, assets, locations, and suppliers.',
   'delete' =>
   array (
     'success' => 'Document deleted successfully.',
@@ -37,4 +37,5 @@ return array (
   array (
     'success' => 'Document restored successfully.',
   ),
+  'assignment_reviewer_wrong_tenant' => 'The selected reviewer does not belong to the same tenant as the document.',
 );

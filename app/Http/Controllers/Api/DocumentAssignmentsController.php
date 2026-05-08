@@ -20,7 +20,7 @@ class DocumentAssignmentsController extends Controller
         $this->authorize('index', Document::class);
 
         $assignments = DocumentAssignment::select('document_assignments.*')
-            ->with('document.type', 'company', 'issuer', 'assignable');
+            ->with('document.type', 'company', 'issuer', 'reviewer', 'assignable');
 
         if ($request->filled('filter') || $request->filled('search')) {
             $assignments->TextSearch($request->input('filter') ?: $request->input('search'));
@@ -59,6 +59,10 @@ class DocumentAssignmentsController extends Controller
 
         if ($request->filled('status')) {
             $assignments->where('status', '=', $request->input('status'));
+        }
+
+        if ($request->filled('approval_status')) {
+            $assignments->where('approval_status', '=', $request->input('approval_status'));
         }
 
         if ($request->filled('relation_type')) {
@@ -100,10 +104,12 @@ class DocumentAssignmentsController extends Controller
             'id',
             'relation_type',
             'status',
+            'approval_status',
             'reference_number',
             'effective_at',
             'expires_at',
             'renewal_due_at',
+            'reviewed_at',
             'created_at',
             'updated_at',
         ];

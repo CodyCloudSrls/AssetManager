@@ -240,6 +240,7 @@ class SuppliersController extends Controller
             'documentAssignments.document.framework',
             'documentAssignments.document.frameworkRequirements',
             'documentAssignments.issuer',
+            'documentAssignments.reviewer',
         ]);
 
         return view('suppliers/view', compact('supplier'));
@@ -252,6 +253,7 @@ class SuppliersController extends Controller
                 'company',
                 'documentAssignments.document.type',
                 'documentAssignments.issuer',
+                'documentAssignments.reviewer',
             ])
             ->withCount('assets as assets_count')
             ->withCount('licenses as licenses_count')

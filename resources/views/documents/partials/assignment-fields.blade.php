@@ -11,7 +11,9 @@
         ?? $errors->has('issued_at')
         || $errors->has('completed_at')
         || $errors->has('revoked_at')
-        || $errors->has('notes');
+        || $errors->has('reviewed_at')
+        || $errors->has('notes')
+        || $errors->has('review_notes');
 @endphp
 
 <div class="form-group {{ $errors->has('assignable_type') ? ' has-error' : '' }}">
@@ -109,6 +111,32 @@
 </div>
 
 <div class="form-group">
+    <label for="assignment_approval_status" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_approval_status') }}</label>
+    <div class="col-md-3 {{ $errors->has('approval_status') ? ' has-error' : '' }}">
+        <select class="form-control select2" name="assignment_approval_status" id="assignment_approval_status" aria-label="{{ trans('admin/documents/form.assignment_approval_status') }}" required>
+            @foreach (\App\Models\DocumentAssignment::approvalStatusOptions() as $approvalStatusValue => $approvalStatusLabel)
+                <option value="{{ $approvalStatusValue }}" @selected(old('assignment_approval_status', old('approval_status', $documentAssignment->approval_status ?? \App\Models\DocumentAssignment::APPROVAL_PENDING)) === $approvalStatusValue)>{{ $approvalStatusLabel }}</option>
+            @endforeach
+        </select>
+        {!! $errors->first('approval_status', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+    </div>
+
+    <label for="reviewer_id_select" class="col-md-1 control-label">{{ trans('admin/documents/form.assignment_reviewer') }}</label>
+    <div class="col-md-4 {{ $errors->has('reviewer_id') ? ' has-error' : '' }}">
+        <select class="js-data-ajax" data-endpoint="users" data-placeholder="{{ trans('general.select_user') }}" name="assignment_reviewer_id" style="width: 100%" id="reviewer_id_select" aria-label="{{ trans('admin/documents/form.assignment_reviewer') }}" data-company-id="{{ $assignmentCompanyId }}">
+            @if ($reviewerId = old('assignment_reviewer_id', old('reviewer_id', $documentAssignment->reviewer_id ?? '')))
+                <option value="{{ $reviewerId }}" selected="selected" role="option" aria-selected="true">
+                    {{ (\App\Models\User::find($reviewerId)) ? \App\Models\User::find($reviewerId)->present()->fullName : '' }}
+                </option>
+            @else
+                <option value="" role="option">{{ trans('general.select_user') }}</option>
+            @endif
+        </select>
+        {!! $errors->first('reviewer_id', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+    </div>
+</div>
+
+<div class="form-group">
     <label for="assignment_reference_number" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_reference_number') }}</label>
     <div class="col-md-3 {{ $errors->has('reference_number') ? ' has-error' : '' }}">
         <input class="form-control" type="text" name="assignment_reference_number" id="assignment_reference_number" value="{{ old('assignment_reference_number', old('reference_number', $documentAssignment->reference_number)) }}">
@@ -188,12 +216,29 @@
                 </div>
             </div>
 
+            <div class="form-group {{ $errors->has('reviewed_at') ? ' has-error' : '' }}">
+                <label for="assignment_reviewed_at" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_reviewed_at') }}</label>
+                <div class="col-md-4">
+                    <x-input.datepicker name="assignment_reviewed_at" :value="old('assignment_reviewed_at', old('reviewed_at', optional($documentAssignment->reviewed_at)->format('Y-m-d')))" placeholder="{{ trans('general.select_date') }}"/>
+                    {!! $errors->first('reviewed_at', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+                </div>
+            </div>
+
             <div class="form-group {{ $errors->has('notes') ? ' has-error' : '' }}">
                 <label for="assignment_notes" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_notes') }}</label>
                 <div class="col-md-7">
                     <textarea class="form-control" name="assignment_notes" id="assignment_notes" rows="4">{{ old('assignment_notes', old('notes', $documentAssignment->notes)) }}</textarea>
                     <p class="help-block">{!! trans('general.markdown') !!}</p>
                     {!! $errors->first('notes', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+                </div>
+            </div>
+
+            <div class="form-group {{ $errors->has('review_notes') ? ' has-error' : '' }}">
+                <label for="assignment_review_notes" class="col-md-3 control-label">{{ trans('admin/documents/form.assignment_review_notes') }}</label>
+                <div class="col-md-7">
+                    <textarea class="form-control" name="assignment_review_notes" id="assignment_review_notes" rows="4">{{ old('assignment_review_notes', old('review_notes', $documentAssignment->review_notes)) }}</textarea>
+                    <p class="help-block">{!! trans('general.markdown') !!}</p>
+                    {!! $errors->first('review_notes', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
                 </div>
             </div>
         </div>

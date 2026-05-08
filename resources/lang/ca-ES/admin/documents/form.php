@@ -59,4 +59,8 @@ return array (
   'all_requirements' => 'All requirements',
   'apply_filters' => 'Apply filters',
   'clear_filters' => 'Clear filters',
+  'assignment_approval_status' => 'Approval Status',
+  'assignment_reviewer' => 'Reviewed By',
+  'assignment_reviewed_at' => 'Reviewed At',
+  'assignment_review_notes' => 'Review Notes',
 );

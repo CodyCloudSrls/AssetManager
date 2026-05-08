@@ -22,7 +22,7 @@ class DocumentsController extends Controller
         $this->authorize('index', Document::class);
 
         $documents = Document::select('documents.*')
-            ->with('company', 'owner', 'framework', 'type', 'adminuser', 'frameworkRequirements', 'documentAssignments.assignable');
+            ->with('company', 'owner', 'framework', 'type', 'adminuser', 'frameworkRequirements', 'documentAssignments.assignable', 'documentAssignments.reviewer');
 
         if ($request->filled('filter') || $request->filled('search')) {
             $documents->TextSearch($request->input('filter') ?: $request->input('search'));

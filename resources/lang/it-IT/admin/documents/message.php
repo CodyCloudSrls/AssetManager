@@ -25,10 +25,10 @@ return array (
   'invalid_requirements_for_framework' => 'Uno o più requisiti selezionati non appartengono al framework scelto.',
   'assignment_document_missing' => 'Documento non trovato per questa assegnazione.',
   'assignment_requires_company' => 'Per assegnare un documento devi prima associarlo a un’azienda del tenant.',
-  'assignment_target_invalid' => 'Seleziona una persona, un bene o una sede validi.',
+  'assignment_target_invalid' => 'Seleziona una persona, un bene, una sede o un fornitore validi.',
   'assignment_target_wrong_tenant' => 'Il destinatario selezionato non appartiene allo stesso tenant del documento.',
   'assignment_issuer_wrong_tenant' => 'L’utente selezionato come emittente non appartiene allo stesso tenant del documento.',
-  'assignment_save_document_first' => 'Salva prima il documento. Dopo il primo salvataggio potrai collegarlo a persone, beni e sedi.',
+  'assignment_save_document_first' => 'Salva prima il documento. Dopo il primo salvataggio potrai collegarlo a persone, beni, sedi e fornitori.',
   'delete' =>
   array (
     'success' => 'Documento eliminato correttamente.',
@@ -37,4 +37,5 @@ return array (
   array (
     'success' => 'Documento ripristinato correttamente.',
   ),
+  'assignment_reviewer_wrong_tenant' => 'L’utente selezionato come revisore non appartiene allo stesso tenant del documento.',
 );

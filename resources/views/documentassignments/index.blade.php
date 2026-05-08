@@ -7,7 +7,7 @@
 
 @section('content')
     @php
-        $apiFilters = array_filter(request()->only(['tenant_id', 'company_id', 'target_type', 'status', 'relation_type', 'review_status']), fn ($value) => ! is_null($value) && $value !== '');
+        $apiFilters = array_filter(request()->only(['tenant_id', 'company_id', 'target_type', 'status', 'approval_status', 'relation_type', 'review_status']), fn ($value) => ! is_null($value) && $value !== '');
         $apiFilters['delegated_evidence'] = 1;
     @endphp
 
@@ -46,6 +46,16 @@
                                 <option value="">{{ trans('admin/documents/general.open_evidence_requests') }}</option>
                                 @foreach (\App\Models\DocumentAssignment::statusOptions() as $statusValue => $statusLabel)
                                     <option value="{{ $statusValue }}" @selected(request('status') === $statusValue)>{{ $statusLabel }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="evidence_request_approval_status" class="sr-only">{{ trans('admin/documents/form.assignment_approval_status') }}</label>
+                            <select class="form-control select2" name="approval_status" id="evidence_request_approval_status" aria-label="{{ trans('admin/documents/form.assignment_approval_status') }}" style="min-width: 190px;">
+                                <option value="">{{ trans('admin/documents/general.all_approval_statuses') }}</option>
+                                @foreach (\App\Models\DocumentAssignment::approvalStatusOptions() as $approvalStatusValue => $approvalStatusLabel)
+                                    <option value="{{ $approvalStatusValue }}" @selected(request('approval_status') === $approvalStatusValue)>{{ $approvalStatusLabel }}</option>
                                 @endforeach
                             </select>
                         </div>

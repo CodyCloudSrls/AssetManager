@@ -43,6 +43,18 @@
                                 <hr>
                             </div>
 
+                            <div class="col-md-12">
+                                <h3>{{ trans('admin/documents/general.assignment_audit_events') }}</h3>
+                                @include('documents.partials.assignment-events-table', [
+                                    'assignment' => $documentAssignment,
+                                    'events' => $documentAssignment->events,
+                                ])
+                            </div>
+
+                            <div class="col-md-12">
+                                <hr>
+                            </div>
+
                             <div class="form-group">
                                 <div class="col-md-7 col-md-offset-3">
                                     <a href="{{ route('documents.show', $document) }}" class="btn btn-default">
@@ -84,7 +96,7 @@
             });
             syncAssignableSelectors();
 
-            @if ($errors->has('issued_at') || $errors->has('completed_at') || $errors->has('revoked_at') || $errors->has('notes'))
+            @if ($errors->has('issued_at') || $errors->has('completed_at') || $errors->has('revoked_at') || $errors->has('reviewed_at') || $errors->has('notes') || $errors->has('review_notes'))
                 $('#document_assignment_advanced_icon').removeClass('fa-caret-right').addClass('fa-caret-down');
             @endif
         });

@@ -157,6 +157,11 @@ class Document extends SnipeModel
         return $this->hasMany(DocumentAssignment::class, 'document_id')->orderBy('effective_at')->orderBy('created_at');
     }
 
+    public function documentAssignmentEvents()
+    {
+        return $this->hasMany(DocumentAssignmentEvent::class, 'document_id')->orderByDesc('created_at')->orderByDesc('id');
+    }
+
     public function tickets()
     {
         return $this->hasMany(Ticket::class, 'document_id')->orderByDesc('updated_at');

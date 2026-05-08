@@ -786,7 +786,22 @@
             text: '{{ trans('admin/suppliers/table.acn_export') }}',
             icon: 'fa-solid fa-file-csv',
             event () {
-                window.location.href = @json(route('suppliers.acn_export', array_merge(array_filter(request()->only(['tenant_id', 'nis_relevant', 'nis_relevance_type', 'nis_criticality', 'nis_assessment_status', 'nis_assessment_method', 'nis_assessment_outcome', 'nis_review_status', 'cpv_code', 'search', 'filter']), static fn ($value) => ! is_null($value) && $value !== ''), ['nis_relevant' => request()->input('nis_relevant', 1)])));
+                window.location.href = @json(route('suppliers.acn_export', array_merge(
+                    array_filter(request()->only([
+                        'tenant_id',
+                        'nis_relevant',
+                        'nis_relevance_type',
+                        'nis_criticality',
+                        'nis_assessment_status',
+                        'nis_assessment_method',
+                        'nis_assessment_outcome',
+                        'nis_review_status',
+                        'cpv_code',
+                        'search',
+                        'filter',
+                    ]), static fn ($value) => ! is_null($value) && $value !== ''),
+                    ['nis_relevant' => request()->input('nis_relevant', 1)]
+                )));
             },
             attributes: {
                 title: '{{ trans('admin/suppliers/table.acn_export') }}',
@@ -1636,6 +1651,10 @@
             var target = assignment.url ? '<a href="' + assignment.url + '">' + name + '</a>' : name;
             var title = assignment.type ? assignment.type + ' - ' + assignment.relation_type : assignment.relation_type;
 
+            if (assignment.approval_status) {
+                title += ' - ' + assignment.approval_status;
+            }
+
             html.push('<span class="label ' + labelClass + '" data-tooltip="true" title="' + title + '">' + target + '</span>');
         }
 
@@ -1681,6 +1700,24 @@
         }
 
         return status;
+    }
+
+    function documentAssignmentApprovalFormatter(value, row) {
+        if (!value) {
+            return '';
+        }
+
+        var labelClass = 'label-default';
+
+        if (row.approval_status === '{{ \App\Models\DocumentAssignment::APPROVAL_SUBMITTED }}' || row.approval_status === '{{ \App\Models\DocumentAssignment::APPROVAL_IN_REVIEW }}') {
+            labelClass = 'label-warning';
+        } else if (row.approval_status === '{{ \App\Models\DocumentAssignment::APPROVAL_APPROVED }}') {
+            labelClass = 'label-success';
+        } else if (row.approval_status === '{{ \App\Models\DocumentAssignment::APPROVAL_REJECTED }}') {
+            labelClass = 'label-danger';
+        }
+
+        return '<span class="label ' + labelClass + '">' + value + '</span>';
     }
 
     function documentAssignmentActionsFormatter(value, row) {

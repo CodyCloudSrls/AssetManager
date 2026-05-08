@@ -19,11 +19,14 @@
                 @endif
                 <th>{{ trans('admin/documents/form.assignment_relation') }}</th>
                 <th>{{ trans('admin/documents/form.assignment_status') }}</th>
+                <th>{{ trans('admin/documents/form.assignment_approval_status') }}</th>
                 <th>{{ trans('admin/documents/form.assignment_reference_number') }}</th>
                 <th>{{ trans('admin/documents/form.assignment_issuer') }}</th>
+                <th>{{ trans('admin/documents/form.assignment_reviewer') }}</th>
                 <th>{{ trans('admin/documents/form.assignment_effective_at') }}</th>
                 <th>{{ trans('admin/documents/form.assignment_expires_at') }}</th>
                 <th>{{ trans('admin/documents/form.assignment_renewal_due_at') }}</th>
+                <th>{{ trans('admin/documents/form.assignment_reviewed_at') }}</th>
                 <th>{{ trans('admin/documents/form.assignment_notes') }}</th>
                 @if ($showActions)
                     <th class="text-right">{{ trans('table.actions') }}</th>
@@ -74,11 +77,14 @@
                             <div class="text-warning" style="margin-top: 4px;">{{ trans('admin/documents/general.assignment_expiring_flag') }}</div>
                         @endif
                     </td>
+                    <td><span class="{{ $assignment->approval_status_class }}">{{ $assignment->approval_status_label }}</span></td>
                     <td>{{ $assignment->reference_number }}</td>
                     <td>{{ $assignment->issuer?->display_name }}</td>
+                    <td>{{ $assignment->reviewer?->display_name }}</td>
                     <td>{{ \App\Helpers\Helper::getFormattedDateObject($assignment->effective_at, 'date', false) }}</td>
                     <td>{{ \App\Helpers\Helper::getFormattedDateObject($assignment->expires_at, 'date', false) }}</td>
                     <td>{{ \App\Helpers\Helper::getFormattedDateObject($assignment->renewal_due_at, 'date', false) }}</td>
+                    <td>{{ \App\Helpers\Helper::getFormattedDateObject($assignment->reviewed_at, 'datetime', false) }}</td>
                     <td>{{ \Illuminate\Support\Str::limit(trim(strip_tags((string) $assignment->notes)), 120) }}</td>
                     @if ($showActions)
                         <td class="text-right">
@@ -107,7 +113,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ ($showDocumentColumn ? 1 : 0) + ($showTargetColumn ? 2 : 0) + 8 + ($showActions ? 1 : 0) }}" class="text-muted">
+                    <td colspan="{{ ($showDocumentColumn ? 1 : 0) + ($showTargetColumn ? 2 : 0) + 11 + ($showActions ? 1 : 0) }}" class="text-muted">
                         {{ trans('general.no_results') }}
                     </td>
                 </tr>

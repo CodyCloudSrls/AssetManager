@@ -59,4 +59,8 @@ return array (
   'all_requirements' => 'Tutti i requisiti',
   'apply_filters' => 'Applica filtri',
   'clear_filters' => 'Pulisci filtri',
+  'assignment_approval_status' => 'Stato approvazione',
+  'assignment_reviewer' => 'Revisionato da',
+  'assignment_reviewed_at' => 'Revisionato il',
+  'assignment_review_notes' => 'Note revisione',
 );

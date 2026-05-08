@@ -439,6 +439,7 @@ class UsersController extends Controller
             'documentAssignments.document.framework',
             'documentAssignments.document.type',
             'documentAssignments.issuer',
+            'documentAssignments.reviewer',
         ])
             ->withTrashed()
             ->find($user->id);
@@ -656,6 +657,7 @@ class UsersController extends Controller
                 'licenses.category',
                 'documentAssignments.document.type',
                 'documentAssignments.issuer',
+                'documentAssignments.reviewer',
                 'assignedTickets.status',
                 'assignedTickets.priority',
             ])

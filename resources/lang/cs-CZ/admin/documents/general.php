@@ -37,4 +37,23 @@ return array (
   'all_evidence_relations' => 'All evidence relations',
   'open_evidence_requests' => 'Open requests',
   'all_review_statuses' => 'All review statuses',
+  'all_approval_statuses' => 'All approval statuses',
+  'assignment_audit_events' => 'Assignment Audit Events',
+  'assignment_event_changes' => 'Changes',
+  'no_assignment_events' => 'No assignment audit events found.',
+  'assignment_approval_statuses' =>
+  array (
+    'pending' => 'Pending',
+    'submitted' => 'Submitted',
+    'in_review' => 'In Review',
+    'approved' => 'Approved',
+    'rejected' => 'Rejected',
+  ),
+  'assignment_event_types' =>
+  array (
+    'created' => 'Assignment created',
+    'updated' => 'Assignment updated',
+    'deleted' => 'Assignment deleted',
+    'approval_status_changed' => 'Approval status changed',
+  ),
 );
