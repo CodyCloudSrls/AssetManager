@@ -9,12 +9,15 @@ use App\Exceptions\ItemStillHasComponents;
 use App\Exceptions\ItemStillHasConsumables;
 use App\Exceptions\ItemStillHasLicenses;
 use App\Exceptions\ItemStillHasMaintenances;
+use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
 use App\Http\Requests\ImageUploadRequest;
 use App\Models\Company;
 use App\Models\Supplier;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * This controller handles all actions related to Suppliers for
@@ -24,6 +27,8 @@ use Illuminate\Http\RedirectResponse;
  */
 class SuppliersController extends Controller
 {
+    use AppliesTenantCompanyFilter;
+
     /**
      * Show a list of all suppliers
      *
@@ -196,6 +201,30 @@ class SuppliersController extends Controller
         return redirect()->route('suppliers.index')->with('success', trans('admin/suppliers/message.delete.success'));
     }
 
+    public function exportAcnCsv(Request $request): StreamedResponse
+    {
+        $this->authorize('view', Supplier::class);
+        $this->disableDebugbar();
+
+        $response = new StreamedResponse(function () use ($request) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, $this->acnExportHeaders());
+
+            $this->acnExportQuery($request)->chunkById(200, function ($suppliers) use ($handle) {
+                foreach ($suppliers as $supplier) {
+                    fputcsv($handle, $this->acnExportRow($supplier));
+                }
+            }, 'suppliers.id', 'id');
+
+            fclose($handle);
+        }, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="acn-supplier-preparation-'.date('Y-m-d-His').'.csv"',
+        ]);
+
+        return $response;
+    }
+
     /**
      *  Get the asset information to present to the supplier view page
      *
@@ -214,5 +243,149 @@ class SuppliersController extends Controller
         ]);
 
         return view('suppliers/view', compact('supplier'));
+    }
+
+    private function acnExportQuery(Request $request)
+    {
+        $suppliers = Supplier::query()
+            ->with([
+                'company',
+                'documentAssignments.document.type',
+                'documentAssignments.issuer',
+            ])
+            ->withCount('assets as assets_count')
+            ->withCount('licenses as licenses_count')
+            ->withCount('accessories as accessories_count')
+            ->withCount('components as components_count')
+            ->withCount('consumables as consumables_count');
+
+        Company::scopeCompanyables($suppliers);
+        $this->applyTenantCompanyFilter($suppliers, $request, 'suppliers.company_id');
+
+        if ($request->filled('filter') || $request->filled('search')) {
+            $suppliers->TextSearch($request->input('filter') ?: $request->input('search'));
+        }
+
+        if ($request->filled('nis_relevant')) {
+            $suppliers->where('nis_relevant', '=', $request->boolean('nis_relevant'));
+        } else {
+            $suppliers->where('nis_relevant', '=', true);
+        }
+
+        foreach ([
+            'nis_relevance_type',
+            'nis_criticality',
+            'nis_assessment_status',
+            'nis_assessment_method',
+            'nis_assessment_outcome',
+        ] as $filterField) {
+            if ($request->filled($filterField)) {
+                $suppliers->where($filterField, '=', $request->input($filterField));
+            }
+        }
+
+        if ($request->filled('nis_review_status')) {
+            if ($request->input('nis_review_status') === 'due') {
+                $reviewWarningDays = $this->tenantFromRequest($request)?->documentReviewWarningDays() ?? 0;
+
+                $suppliers->whereNotNull('nis_next_review_at')
+                    ->whereDate('nis_next_review_at', '<=', now()->addDays($reviewWarningDays)->toDateString());
+            }
+
+            if ($request->input('nis_review_status') === 'missing') {
+                $suppliers->whereNull('nis_next_review_at');
+            }
+        }
+
+        if ($request->filled('cpv_code')) {
+            $suppliers->where('cpv_codes', 'LIKE', '%'.$request->input('cpv_code').'%');
+        }
+
+        return $suppliers->orderBy('suppliers.id');
+    }
+
+    private function acnExportHeaders(): array
+    {
+        $headers = [
+            strtolower(trans('general.id')),
+            trans('general.company'),
+            trans('general.name'),
+            trans('admin/suppliers/table.nis_relevant'),
+            trans('admin/suppliers/table.nis_relevance_type'),
+            trans('admin/suppliers/table.nis_criticality'),
+            trans('admin/suppliers/table.nis_assessment_status'),
+            trans('admin/suppliers/table.nis_assessment_method'),
+            trans('admin/suppliers/table.nis_assessment_outcome'),
+            trans('admin/suppliers/table.cpv_codes'),
+            trans('admin/suppliers/table.nis_relevance_criteria'),
+            trans('admin/suppliers/table.nis_assessment_scope'),
+            trans('admin/suppliers/table.nis_last_assessment_at'),
+            trans('admin/suppliers/table.nis_next_review_at'),
+            trans('admin/suppliers/table.supplier_evidence_documents'),
+        ];
+
+        foreach (Supplier::nisEvidenceCategories() as $category) {
+            $headers[] = $category['label'].' - '.trans('admin/suppliers/table.supplier_evidence_linked');
+            $headers[] = $category['label'].' - '.trans('admin/suppliers/table.supplier_evidence_review_status');
+        }
+
+        return array_merge($headers, [
+            trans('general.assets'),
+            trans('general.licenses'),
+            trans('general.accessories'),
+            trans('general.components'),
+            trans('general.consumables'),
+            trans('admin/suppliers/table.contact'),
+            trans('admin/suppliers/table.email'),
+            trans('admin/suppliers/table.phone'),
+            trans('general.url'),
+            trans('general.notes'),
+        ]);
+    }
+
+    private function acnExportRow(Supplier $supplier): array
+    {
+        $evidenceChecklist = $supplier->nisEvidenceChecklist()->keyBy('key');
+        $row = [
+            $supplier->id,
+            $supplier->company?->name,
+            $supplier->name,
+            $supplier->nis_relevant ? trans('general.yes') : trans('general.no'),
+            $supplier->nis_relevance_type_label,
+            $supplier->nis_criticality_label,
+            $supplier->nis_assessment_status_label,
+            $supplier->nis_assessment_method_label,
+            $supplier->nis_assessment_outcome_label,
+            $supplier->cpv_codes,
+            $supplier->nis_relevance_criteria,
+            $supplier->nis_assessment_scope,
+            $this->exportDate($supplier->nis_last_assessment_at),
+            $this->exportDate($supplier->nis_next_review_at),
+            $supplier->documentAssignments->count(),
+        ];
+
+        foreach (Supplier::nisEvidenceCategories() as $categoryKey => $category) {
+            $evidenceItem = $evidenceChecklist->get($categoryKey);
+            $row[] = $evidenceItem['count'] ?? 0;
+            $row[] = $evidenceItem['status_label'] ?? trans('admin/suppliers/table.supplier_evidence_status_missing');
+        }
+
+        return array_merge($row, [
+            (int) ($supplier->assets_count ?? 0),
+            (int) ($supplier->licenses_count ?? 0),
+            (int) ($supplier->accessories_count ?? 0),
+            (int) ($supplier->components_count ?? 0),
+            (int) ($supplier->consumables_count ?? 0),
+            $supplier->contact,
+            $supplier->email,
+            $supplier->phone,
+            $supplier->url,
+            $supplier->notes,
+        ]);
+    }
+
+    private function exportDate($date): ?string
+    {
+        return $date ? $date->format('Y-m-d') : null;
     }
 }

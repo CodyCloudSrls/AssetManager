@@ -83,4 +83,5 @@ return [
     'supplier_evidence_status_overdue' => 'Scaduta',
     'supplier_evidence_status_review_due' => 'Revisione in scadenza',
     'supplier_evidence_status_current' => 'Corrente',
+    'acn_export' => 'Export fornitori ACN',
 ];

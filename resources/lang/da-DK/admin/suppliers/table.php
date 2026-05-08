@@ -82,4 +82,5 @@ return array (
   'supplier_evidence_status_overdue' => 'Overdue',
   'supplier_evidence_status_review_due' => 'Review due',
   'supplier_evidence_status_current' => 'Current',
+  'acn_export' => 'ACN Supplier Export',
 );
