@@ -4,7 +4,9 @@ namespace App\Observers;
 
 use App\Models\Actionlog;
 use App\Models\Document;
+use App\Models\DocumentAssignmentEvent;
 use App\Models\User;
+use App\Support\Documents\DocumentAssignmentManager;
 
 class DocumentObserver
 {
@@ -46,7 +48,17 @@ class DocumentObserver
 
     public function deleting(Document $document)
     {
-        $document->documentAssignments()->delete();
+        $document->documentAssignments()->get()->each(function ($assignment) use ($document) {
+            DocumentAssignmentManager::logAssignmentEvent(
+                $document,
+                $assignment,
+                DocumentAssignmentEvent::EVENT_DELETED,
+                DocumentAssignmentManager::auditSnapshot($assignment),
+                []
+            );
+
+            $assignment->delete();
+        });
 
         $logAction = new Actionlog;
         $logAction->item_type = Document::class;

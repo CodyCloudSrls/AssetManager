@@ -744,6 +744,14 @@ return array (
     'invalid_object' => 'Šis objekto ID yra neteisingas',
     'nofiles' => 'Įkėlimui nebuvo pridėta jokių failų',
     'confirm_delete' => 'Ar tikrai norite panaikinti šį failą?',
+    'file_deleted' => 'The selected file has been deleted',
+    'integrity_failed' => 'The selected file failed integrity verification',
+  ),
+  'file_integrity' =>
+  array (
+    'title' => 'Integrity',
+    'recorded' => 'Checksum recorded',
+    'not_recorded' => 'Checksum not recorded',
   ),
   'depreciation_options' =>
   array (

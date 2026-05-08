@@ -2220,6 +2220,18 @@
 
     }
 
+    function fileIntegrityFormatter(value) {
+        if (! value) {
+            return '';
+        }
+
+        if (value.sha256) {
+            return '<span class="label label-success" data-tooltip="true" title="' + value.algorithm.toUpperCase() + ': ' + value.sha256 + '">' + value.status + '</span>';
+        }
+
+        return '<span class="label label-default">' + value.status + '</span>';
+    }
+
 
     function linkToUserSectionBasedOnCount (count, id, section) {
         if (count) {

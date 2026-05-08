@@ -744,6 +744,14 @@ return array (
     'invalid_object' => 'Diese Objekt-ID ist ungültig',
     'nofiles' => 'Keine Dateien zum Hochladen vorhanden',
     'confirm_delete' => 'Sind sie sicher das diese Datei gelöscht werden soll?',
+    'file_deleted' => 'The selected file has been deleted',
+    'integrity_failed' => 'The selected file failed integrity verification',
+  ),
+  'file_integrity' =>
+  array (
+    'title' => 'Integrity',
+    'recorded' => 'Checksum recorded',
+    'not_recorded' => 'Checksum not recorded',
   ),
   'depreciation_options' =>
   array (

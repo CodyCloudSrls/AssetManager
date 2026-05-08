@@ -5,6 +5,7 @@ namespace App\Http\Transformers;
 use App\Helpers\Helper;
 use App\Helpers\StorageHelper;
 use App\Models\Actionlog;
+use App\Support\Files\FileIntegrity;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -24,6 +25,7 @@ class UploadedFilesTransformer
     public function transformFile(Actionlog $file)
     {
         $snipeModel = $file->item_type;
+        $integrity = FileIntegrity::integrityFromLog($file);
 
         $array = [
             'id' => (int) $file->id,
@@ -46,6 +48,12 @@ class UploadedFilesTransformer
             'deleted_at' => Helper::getFormattedDateObject($file->deleted_at, 'datetime'),
             'inlineable' => StorageHelper::allowSafeInline($file->uploads_file_path()) ?? false,
             'exists_on_disk' => (Storage::exists($file->uploads_file_path()) ? true : false),
+            'file_integrity' => [
+                'status' => filled($integrity['sha256'] ?? null) ? trans('general.file_integrity.recorded') : trans('general.file_integrity.not_recorded'),
+                'sha256' => filled($integrity['sha256'] ?? null) ? e($integrity['sha256']) : null,
+                'event_hash' => filled($integrity['event_hash'] ?? null) ? e($integrity['event_hash']) : null,
+                'algorithm' => e($integrity['algorithm'] ?? 'sha256'),
+            ],
         ];
 
         $permissions_array['available_actions'] = [

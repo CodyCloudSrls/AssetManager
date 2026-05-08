@@ -40,6 +40,7 @@ return array (
   'all_approval_statuses' => 'All approval statuses',
   'assignment_audit_events' => 'Assignment Audit Events',
   'assignment_event_changes' => 'Changes',
+  'assignment_event_hash' => 'Event Hash',
   'no_assignment_events' => 'No assignment audit events found.',
   'assignment_approval_statuses' =>
   array (

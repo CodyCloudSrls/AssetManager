@@ -744,6 +744,14 @@ return array (
     'invalid_object' => 'Dette objekt-ID er ugyldigt',
     'nofiles' => 'Ingen filer medtaget til upload',
     'confirm_delete' => 'Sikker på, at denne fil skal slettes?',
+    'file_deleted' => 'The selected file has been deleted',
+    'integrity_failed' => 'The selected file failed integrity verification',
+  ),
+  'file_integrity' =>
+  array (
+    'title' => 'Integrity',
+    'recorded' => 'Checksum recorded',
+    'not_recorded' => 'Checksum not recorded',
   ),
   'depreciation_options' =>
   array (

@@ -10,6 +10,7 @@ use App\Models\Location;
 use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\AuditNotification;
+use App\Support\Files\FileIntegrity;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
@@ -455,7 +456,7 @@ trait Loggable
      *
      * @return Actionlog
      */
-    public function logUpload($filename, $note)
+    public function logUpload($filename, $note, array $metadata = [])
     {
         $log = new Actionlog;
         if (static::class == LicenseSeat::class) {
@@ -471,6 +472,12 @@ trait Loggable
         $log->created_at = date('Y-m-d H:i:s');
         $log->action_date = date('Y-m-d H:i:s');
         $log->filename = $filename;
+        $log->action_type = 'uploaded';
+
+        if ($metadata !== []) {
+            $log->log_meta = json_encode(FileIntegrity::withAuditChain($metadata, $log));
+        }
+
         $log->logaction('uploaded');
 
         return $log;

@@ -744,6 +744,14 @@ return array (
     'invalid_object' => 'Невалиден ID на обекта',
     'nofiles' => 'Не бяха избрани файлове за качване',
     'confirm_delete' => 'Сигурни ли сте, че искате да изтриете този файл?',
+    'file_deleted' => 'The selected file has been deleted',
+    'integrity_failed' => 'The selected file failed integrity verification',
+  ),
+  'file_integrity' =>
+  array (
+    'title' => 'Integrity',
+    'recorded' => 'Checksum recorded',
+    'not_recorded' => 'Checksum not recorded',
   ),
   'depreciation_options' =>
   array (

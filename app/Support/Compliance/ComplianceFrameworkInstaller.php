@@ -186,7 +186,11 @@ class ComplianceFrameworkInstaller
             $summary['skipped']++;
         }
 
-        foreach (Arr::get($pack, 'requirements', []) as $index => $requirementData) {
+        $requirementsByCode = [];
+        $requirementsNeedingParentSync = [];
+        $packRequirements = Arr::get($pack, 'requirements', []);
+
+        foreach ($packRequirements as $index => $requirementData) {
             $requirementData = array_merge([
                 'document_framework_id' => $framework->id,
                 'is_mandatory' => true,
@@ -194,6 +198,7 @@ class ComplianceFrameworkInstaller
                 'sort_order' => ($index + 1) * 10,
                 'created_by' => $options['created_by'],
             ], $requirementData);
+            unset($requirementData['parent_requirement_code']);
 
             $requirement = DocumentFrameworkRequirement::withoutGlobalScopes()
                 ->where('document_framework_id', $framework->id)
@@ -204,12 +209,35 @@ class ComplianceFrameworkInstaller
                 $requirement = new DocumentFrameworkRequirement($requirementData);
                 $this->saveOrFail($requirement);
                 $summary['requirements_created']++;
+                $requirementsNeedingParentSync[$requirement->code] = true;
             } elseif ($options['update_existing']) {
                 $requirement->fill($requirementData);
                 $this->saveOrFail($requirement);
                 $summary['requirements_updated']++;
+                $requirementsNeedingParentSync[$requirement->code] = true;
             } else {
                 $summary['requirements_skipped']++;
+            }
+
+            $requirementsByCode[$requirement->code] = $requirement;
+        }
+
+        foreach ($packRequirements as $requirementData) {
+            $code = $requirementData['code'] ?? null;
+            $parentCode = $requirementData['parent_requirement_code'] ?? null;
+
+            if (! $code || ! isset($requirementsByCode[$code], $requirementsNeedingParentSync[$code])) {
+                continue;
+            }
+
+            $requirement = $requirementsByCode[$code];
+            $parentId = $parentCode && isset($requirementsByCode[$parentCode])
+                ? $requirementsByCode[$parentCode]->id
+                : null;
+
+            if ((int) ($requirement->parent_id ?? 0) !== (int) ($parentId ?? 0)) {
+                $requirement->parent_id = $parentId;
+                $this->saveOrFail($requirement);
             }
         }
 

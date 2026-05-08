@@ -746,6 +746,14 @@ return array (
     'invalid_object' => 'ID objektu je neplatné',
     'nofiles' => 'Nebyly vloženy žádné soubory k nahrání',
     'confirm_delete' => 'Jste si jisti, že chcete odstranit tento soubor?',
+    'file_deleted' => 'The selected file has been deleted',
+    'integrity_failed' => 'The selected file failed integrity verification',
+  ),
+  'file_integrity' =>
+  array (
+    'title' => 'Integrity',
+    'recorded' => 'Checksum recorded',
+    'not_recorded' => 'Checksum not recorded',
   ),
   'depreciation_options' =>
   array (
