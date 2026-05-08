@@ -11,7 +11,7 @@ use Illuminate\Support\Arr;
 class InstallComplianceFrameworks extends Command
 {
     protected $signature = 'snipeit:install-compliance-frameworks
-        {pack=all : all, nis2_it, nis2_en, gdpr_eu, gdpr_en, or a comma-separated list}
+        {pack=all : all, a configured pack key, or a comma-separated list}
         {--company_id= : Optional company id for tenant-owned frameworks}
         {--tenant_id= : Optional tenant id. Uses the tenant root company and tenant default language}
         {--visibility=global : private, descendants, or global}
