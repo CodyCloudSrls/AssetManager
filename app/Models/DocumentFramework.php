@@ -49,6 +49,7 @@ class DocumentFramework extends SnipeModel
         'is_system_template' => 'boolean',
         'source_framework_id' => 'nullable|integer|exists:document_frameworks,id',
         'source_pack_key' => 'nullable|string|max:80',
+        'source_pack_version' => 'nullable|string|max:80',
         'locale' => 'nullable|string|max:20',
     ];
 
@@ -79,6 +80,7 @@ class DocumentFramework extends SnipeModel
         'is_system_template',
         'source_framework_id',
         'source_pack_key',
+        'source_pack_version',
         'locale',
     ];
 
@@ -108,6 +110,7 @@ class DocumentFramework extends SnipeModel
         'status',
         'visibility_type',
         'source_pack_key',
+        'source_pack_version',
         'locale',
     ];
 

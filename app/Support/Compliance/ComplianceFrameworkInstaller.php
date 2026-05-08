@@ -140,6 +140,7 @@ class ComplianceFrameworkInstaller
         $frameworkData['visibility_type'] = $options['visibility_type'];
         $frameworkData['is_system_template'] = (bool) $options['is_system_template'];
         $frameworkData['source_pack_key'] = $packKey;
+        $frameworkData['source_pack_version'] = $this->packVersion($pack);
         $frameworkData['locale'] = $options['locale'];
         $frameworkData['created_by'] = $options['created_by'];
         $frameworkData['source_framework_id'] = $options['link_system_source']
@@ -172,7 +173,7 @@ class ComplianceFrameworkInstaller
         } else {
             $metadata = [];
 
-            foreach (['source_pack_key', 'locale', 'source_framework_id'] as $column) {
+            foreach (['source_pack_key', 'source_pack_version', 'locale', 'source_framework_id'] as $column) {
                 if (blank($framework->{$column}) && filled($frameworkData[$column] ?? null)) {
                     $metadata[$column] = $frameworkData[$column];
                 }
@@ -222,6 +223,11 @@ class ComplianceFrameworkInstaller
             ->where('is_system_template', true)
             ->whereNull('company_id')
             ->value('id');
+    }
+
+    private function packVersion(array $pack): ?string
+    {
+        return $pack['pack_version'] ?? Arr::get($pack, 'framework.version');
     }
 
     private function saveOrFail($model): void

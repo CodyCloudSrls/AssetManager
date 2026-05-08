@@ -41,6 +41,7 @@ class DocumentFrameworksTransformer
             'is_active' => (bool) $documentFramework->is_active,
             'is_system_template' => (bool) $documentFramework->is_system_template,
             'source_pack_key' => e($documentFramework->source_pack_key),
+            'source_pack_version' => e($documentFramework->source_pack_version),
             'locale' => e($documentFramework->locale),
             'company' => ($documentFramework->company) ? [
                 'id' => (int) $documentFramework->company->id,

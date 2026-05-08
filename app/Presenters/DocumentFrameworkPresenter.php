@@ -97,6 +97,14 @@ class DocumentFrameworkPresenter extends Presenter
                 'visible' => false,
             ],
             [
+                'field' => 'source_pack_version',
+                'searchable' => true,
+                'sortable' => true,
+                'switchable' => true,
+                'title' => trans('admin/documentframeworks/table.source_pack_version'),
+                'visible' => false,
+            ],
+            [
                 'field' => 'status',
                 'searchable' => true,
                 'sortable' => true,

@@ -1,7 +1,9 @@
 <?php
 
+$packVersion = '2026.05.08';
 $packs = [
         'nis2_it' => [
+            'pack_version' => $packVersion,
             'locale' => 'it-IT',
             'framework' => [
                 'name' => 'NIS2 Italia - Matrice di autovalutazione',
@@ -105,6 +107,7 @@ $packs = [
             ],
         ],
         'gdpr_eu' => [
+            'pack_version' => $packVersion,
             'locale' => 'it-IT',
             'framework' => [
                 'name' => 'GDPR - Evidenze documentali',
@@ -155,6 +158,7 @@ $packs = [
             ],
         ],
         'nis2_en' => [
+            'pack_version' => $packVersion,
             'locale' => 'en-US',
             'framework' => [
                 'name' => 'NIS2 - Self-assessment matrix',
@@ -258,6 +262,7 @@ $packs = [
             ],
         ],
         'gdpr_en' => [
+            'pack_version' => $packVersion,
             'locale' => 'en-US',
             'framework' => [
                 'name' => 'GDPR - Document evidence',
@@ -339,6 +344,7 @@ foreach ($euLocalePackLabels as $locale => $languageName) {
     $localeKey = str_replace('-', '_', $localeSlug);
 
     $packs["nis2_{$localeKey}"] = [
+        'pack_version' => $packVersion,
         'locale' => $locale,
         'framework' => [
             'name' => "NIS2 EU - Self-assessment matrix ({$languageName})",
@@ -361,6 +367,7 @@ foreach ($euLocalePackLabels as $locale => $languageName) {
     ];
 
     $packs["gdpr_{$localeKey}"] = [
+        'pack_version' => $packVersion,
         'locale' => $locale,
         'framework' => [
             'name' => "GDPR EU - Document evidence ({$languageName})",
