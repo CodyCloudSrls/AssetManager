@@ -763,6 +763,25 @@
     });
     @endcan
 
+    @php
+        $supplierAcnExportUrl = route('suppliers.acn_export', array_merge(
+            array_filter(request()->only([
+                'tenant_id',
+                'nis_relevant',
+                'nis_relevance_type',
+                'nis_criticality',
+                'nis_assessment_status',
+                'nis_assessment_method',
+                'nis_assessment_outcome',
+                'nis_review_status',
+                'cpv_code',
+                'search',
+                'filter',
+            ]), static fn ($value) => ! is_null($value) && $value !== ''),
+            ['nis_relevant' => request()->input('nis_relevant', 1)]
+        ));
+    @endphp
+
     // Supplier table buttons
     window.supplierButtons = () => ({
         @can('create', \App\Models\Supplier::class)
@@ -786,22 +805,7 @@
             text: '{{ trans('admin/suppliers/table.acn_export') }}',
             icon: 'fa-solid fa-file-csv',
             event () {
-                window.location.href = @json(route('suppliers.acn_export', array_merge(
-                    array_filter(request()->only([
-                        'tenant_id',
-                        'nis_relevant',
-                        'nis_relevance_type',
-                        'nis_criticality',
-                        'nis_assessment_status',
-                        'nis_assessment_method',
-                        'nis_assessment_outcome',
-                        'nis_review_status',
-                        'cpv_code',
-                        'search',
-                        'filter',
-                    ]), static fn ($value) => ! is_null($value) && $value !== ''),
-                    ['nis_relevant' => request()->input('nis_relevant', 1)]
-                )));
+                window.location.href = @json($supplierAcnExportUrl);
             },
             attributes: {
                 title: '{{ trans('admin/suppliers/table.acn_export') }}',
@@ -1341,7 +1345,7 @@
                 }
 
 
-                
+
                 actions += '<a href="{{ config('app.url') }}/' + dest + '/' + row.id + '" '
                     + ' class="actions btn btn-danger btn-sm delete-asset hidden-print" data-tooltip="true"  '
                     + ' data-toggle="modal" data-icon="fa-trash"'
@@ -1861,7 +1865,7 @@
     function minAmtFormatter(row, value) {
 
         if ((row) && (row!=undefined)) {
-            
+
             if (value.remaining <= value.min_amt) {
                 return  '<span class="text-danger text-bold" data-tooltip="true" title="{{ trans('admin/licenses/general.below_threshold_short') }}"><x-icon type="warning" class="text-yellow" /> ' + value.min_amt + '</span>';
             }
@@ -1870,7 +1874,7 @@
         return '--';
     }
 
-    
+
 
     // Create a linked phone number in the table list
     function phoneFormatter(value) {
@@ -2298,10 +2302,10 @@
         if (Array.isArray(data)) {
             var field = this.field;
             var total_sum = data.reduce(function(sum, row) {
-                
+
                 return (sum) + (cleanFloat(row[field]) || 0);
             }, 0);
-            
+
             return numberWithCommas(total_sum.toFixed(2));
         }
         return 'not an array';
@@ -2309,7 +2313,7 @@
 
     function sumFormatterQuantity(data){
         if(Array.isArray(data)) {
-            
+
             // Prevents issues on page load where data is an empty array
             if(data[0] == undefined){
                 return 0.00
@@ -2333,7 +2337,7 @@
     }
 
     function numberWithCommas(value) {
-        
+
         if ((value) && ("{{$snipeSettings->digit_separator}}" == "1.234,56")){
             var parts = value.toString().split(".");
              parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -2404,5 +2408,5 @@
     });
 
 </script>
-    
+
 @endpush
