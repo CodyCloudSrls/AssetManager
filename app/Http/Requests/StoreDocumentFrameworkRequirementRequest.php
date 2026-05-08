@@ -49,6 +49,25 @@ class StoreDocumentFrameworkRequirementRequest extends FormRequest
                 'document_framework_id' => $framework?->id ?? $framework,
             ]);
         }
+
+        if (! $this->filled('document_framework_id') && $this->route('documentframeworkrequirement')) {
+            $requirement = $this->route('documentframeworkrequirement');
+
+            if ($requirement instanceof DocumentFrameworkRequirement) {
+                $this->merge(['document_framework_id' => $requirement->document_framework_id]);
+            }
+        }
+
+        $framework = $this->route('documentframework');
+        $frameworkId = (int) $this->input('document_framework_id');
+
+        if (! $framework instanceof DocumentFramework && $frameworkId > 0) {
+            $framework = DocumentFramework::find($frameworkId);
+        }
+
+        if ($framework instanceof DocumentFramework && $framework->compliance_domain === 'nis2') {
+            $this->merge(['risk_level' => 'not_applicable']);
+        }
     }
 
     public function withValidator($validator): void

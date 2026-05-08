@@ -45,6 +45,7 @@ return array (
   ),
   'risk_levels' =>
   array (
+    'not_applicable' => 'Not applicable',
     'low' => 'Low',
     'medium' => 'Medium',
     'high' => 'High',

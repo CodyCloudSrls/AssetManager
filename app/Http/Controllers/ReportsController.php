@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\Helper;
+use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
 use App\Http\Requests\CustomAssetReportRequest;
 use App\Mail\CheckoutAccessoryMail;
 use App\Mail\CheckoutAssetMail;
@@ -25,6 +26,7 @@ use App\Models\LicenseSeat;
 use App\Models\Maintenance;
 use App\Models\ReportTemplate;
 use App\Models\Setting;
+use App\Support\Reports\NisRiskMatrixReport;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -47,6 +49,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class ReportsController extends Controller
 {
+    use AppliesTenantCompanyFilter;
+
     /**
      * Checks for correct permissions
      */
@@ -233,6 +237,15 @@ class ReportsController extends Controller
         $this->authorize('reports.view');
 
         return view('reports/activity');
+    }
+
+    public function getNisRiskMatrixReport(Request $request, NisRiskMatrixReport $report): View
+    {
+        $this->authorize('reports.view');
+
+        return view('reports/nis_risk_matrix', $report->build(
+            $this->tenantCompanyIdsFromRequest($request)
+        ));
     }
 
     /**

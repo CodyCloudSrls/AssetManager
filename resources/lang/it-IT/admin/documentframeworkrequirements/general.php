@@ -40,6 +40,7 @@ return [
         'consultant_only' => 'Solo consulente',
     ],
     'risk_levels' => [
+        'not_applicable' => 'Non applicabile',
         'low' => 'Basso',
         'medium' => 'Medio',
         'high' => 'Alto',

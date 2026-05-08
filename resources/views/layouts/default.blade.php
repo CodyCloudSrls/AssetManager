@@ -2030,6 +2030,11 @@
                                         <a href="{{ route('reports.audit') }}">
                                             {{ trans('general.audit_report') }}</a>
                                     </li>
+                                    <li {{!! (request()->is('reports/nis-risk-matrix') ? ' class="active"' : '') !!}}>
+                                        <a href="{{ route('reports.nis-risk-matrix') }}">
+                                            {{ trans('admin/reports/general.nis_risk_matrix') }}
+                                        </a>
+                                    </li>
                                     <li {{!! (request()->is('reports/depreciation') ? ' class="active"' : '') !!}}>
                                         <a href="{{ url('reports/depreciation') }}">
                                             {{ trans('general.depreciation_report') }}
