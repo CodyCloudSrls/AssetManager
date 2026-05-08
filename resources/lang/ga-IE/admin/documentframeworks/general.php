@@ -38,4 +38,11 @@ return array (
     'internal' => 'Internal',
     'custom' => 'Custom',
   ),
+  'import' => 'Import framework',
+  'export' => 'Export framework',
+  'export_csv' => 'CSV (.csv)',
+  'export_xlsx' => 'Excel (.xlsx)',
+  'export_docx' => 'Word (.docx)',
+  'import_section' => 'Framework File',
+  'import_file' => 'File',
 );

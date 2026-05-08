@@ -635,6 +635,16 @@
                 title: '{{ trans('general.create') }}',
             }
         },
+        btnImport: {
+            text: '{{ trans('admin/documentframeworks/general.import') }}',
+            icon: 'fa-solid fa-file-import',
+            event () {
+                window.location.href = '{{ route('documentframeworks.import') }}';
+            },
+            attributes: {
+                title: '{{ trans('admin/documentframeworks/general.import') }}',
+            }
+        },
         btnShowDeleted: {
             text: '{{ (request()->input('status') == "deleted") ? trans('general.show_current') : trans('general.show_deleted') }}',
             icon: 'fa-solid fa-trash',

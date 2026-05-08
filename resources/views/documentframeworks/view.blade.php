@@ -174,6 +174,17 @@
             <x-box class="side-box expanded">
                 <div class="box-body">
                     <div class="text-right" style="margin-bottom: 15px;">
+                        <div class="btn-group pull-right" style="margin-left: 8px;">
+                            <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="{{ trans('admin/documentframeworks/general.export') }}">
+                                <i class="fa-solid fa-download" aria-hidden="true"></i>
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-right">
+                                <li><a href="{{ route('documentframeworks.export', [$documentframework, 'xlsx']) }}">{{ trans('admin/documentframeworks/general.export_xlsx') }}</a></li>
+                                <li><a href="{{ route('documentframeworks.export', [$documentframework, 'docx']) }}">{{ trans('admin/documentframeworks/general.export_docx') }}</a></li>
+                                <li><a href="{{ route('documentframeworks.export', [$documentframework, 'csv']) }}">{{ trans('admin/documentframeworks/general.export_csv') }}</a></li>
+                            </ul>
+                        </div>
                         <x-button.edit :item="$documentframework" :route="route('documentframeworks.edit', $documentframework)" />
                         @can('delete', $documentframework)
                             @if ($documentframework->isDeletable())

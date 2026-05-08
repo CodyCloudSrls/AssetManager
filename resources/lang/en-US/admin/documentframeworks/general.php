@@ -3,8 +3,15 @@
 return array (
   'create' => 'Create document framework',
   'update' => 'Update document framework',
+  'import' => 'Import framework',
+  'export' => 'Export framework',
+  'export_csv' => 'CSV (.csv)',
+  'export_xlsx' => 'Excel (.xlsx)',
+  'export_docx' => 'Word (.docx)',
   'metadata_section' => 'Framework Identity',
   'governance_section' => 'Governance and Validity',
+  'import_section' => 'Framework File',
+  'import_file' => 'File',
   'requirements_tab' => 'Requirements',
   'months_interval' => ':count month interval',
   'coverage' =>

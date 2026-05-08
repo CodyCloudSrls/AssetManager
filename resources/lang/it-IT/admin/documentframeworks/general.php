@@ -3,8 +3,15 @@
 return array (
   'create' => 'Crea framework documentale',
   'update' => 'Modifica framework documentale',
+  'import' => 'Importa framework',
+  'export' => 'Esporta framework',
+  'export_csv' => 'CSV (.csv)',
+  'export_xlsx' => 'Excel (.xlsx)',
+  'export_docx' => 'Word (.docx)',
   'metadata_section' => 'Identità del framework',
   'governance_section' => 'Governance e validità',
+  'import_section' => 'File framework',
+  'import_file' => 'File',
   'requirements_tab' => 'Requisiti',
   'months_interval' => 'intervallo di :count mesi',
   'coverage' =>

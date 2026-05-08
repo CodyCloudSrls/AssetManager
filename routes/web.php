@@ -73,6 +73,11 @@ Route::group(['middleware' => 'auth'], function () {
     */
     Route::group(['prefix' => 'documentframeworks', 'middleware' => ['auth']], function () {
         Route::post('{id}/restore', [DocumentFrameworksController::class, 'restore'])->name('documentframeworks.restore');
+        Route::get('import', [DocumentFrameworksController::class, 'importForm'])->name('documentframeworks.import');
+        Route::post('import', [DocumentFrameworksController::class, 'import'])->name('documentframeworks.import.store');
+        Route::get('{documentframework}/export/{format}', [DocumentFrameworksController::class, 'export'])
+            ->whereIn('format', ['csv', 'xlsx', 'docx'])
+            ->name('documentframeworks.export');
         Route::get('{documentframework}/requirements/create', [DocumentFrameworkRequirementsController::class, 'create'])->name('documentframeworkrequirements.create');
         Route::post('{documentframework}/requirements', [DocumentFrameworkRequirementsController::class, 'store'])->name('documentframeworkrequirements.store');
     });
