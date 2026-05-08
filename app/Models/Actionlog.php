@@ -7,6 +7,7 @@ use App\Models\Traits\CompanyableTrait;
 use App\Models\Traits\Searchable;
 use App\Presenters\ActionlogPresenter;
 use App\Presenters\Presentable;
+use App\Support\Files\FileIntegrity;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -505,7 +506,7 @@ class Actionlog extends SnipeModel
      *
      * @return Actionlog
      */
-    public function logUploadDelete($object, $filename)
+    public function logUploadDelete($object, $filename, array $metadata = [])
     {
         $log = new Actionlog;
         $log->item_type = $object instanceof SnipeModel ? get_class($object) : $object;
@@ -514,6 +515,12 @@ class Actionlog extends SnipeModel
         $log->target_id = null;
         $log->filename = $filename;
         $log->created_at = date('Y-m-d H:i:s');
+        $log->action_type = 'upload deleted';
+
+        if ($metadata !== []) {
+            $log->log_meta = json_encode(FileIntegrity::withAuditChain($metadata, $log));
+        }
+
         $log->logaction('upload deleted');
 
         return $log;

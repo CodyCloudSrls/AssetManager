@@ -86,7 +86,17 @@ class UploadedFilesPresenter extends Presenter
                 'title' => trans('general.created_at'),
                 'visible' => true,
                 'formatter' => 'dateDisplayFormatter',
-            ], [
+            ],
+            [
+                'field' => 'file_integrity',
+                'searchable' => false,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('general.file_integrity.title'),
+                'visible' => true,
+                'formatter' => 'fileIntegrityFormatter',
+            ],
+            [
                 'field' => 'available_actions',
                 'searchable' => false,
                 'sortable' => false,

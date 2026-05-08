@@ -779,6 +779,14 @@ return [
         'invalid_object' => 'That object ID is invalid',
         'nofiles' => 'No files were included for upload',
         'confirm_delete' => 'Are you sure you want to delete this file?',
+        'file_deleted' => 'The selected file has been deleted',
+        'integrity_failed' => 'The selected file failed integrity verification',
+    ],
+
+    'file_integrity' => [
+        'title' => 'Integrity',
+        'recorded' => 'Checksum recorded',
+        'not_recorded' => 'Checksum not recorded',
     ],
 
     'depreciation_options' => [

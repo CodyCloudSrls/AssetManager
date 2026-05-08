@@ -6,6 +6,7 @@ use App\Helpers\StorageHelper;
 use App\Http\Requests\UploadFileRequest;
 use App\Models\Actionlog;
 use App\Models\Import;
+use App\Support\Files\FileIntegrity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -53,7 +54,11 @@ class UploadedFilesController extends Controller
             foreach ($request->file('file') as $file) {
                 $file_name = $request->handleFile(self::$map_storage_path[$object_type], self::$map_file_prefix[$object_type].'-'.$object->id, $file);
                 $files[] = $file_name;
-                $object->logUpload($file_name, $request->input('notes'));
+                $object->logUpload(
+                    $file_name,
+                    $request->input('notes'),
+                    FileIntegrity::metadataForStoredFile(self::$map_storage_path[$object_type].$file_name, $file)
+                );
             }
 
             $files = Actionlog::select('action_logs.*')->where('action_type', '=', 'uploaded')
@@ -100,6 +105,15 @@ class UploadedFilesController extends Controller
             return redirect()->back()->withFragment('files')->with('error', trans('general.file_upload_status.file_not_found'));
         }
 
+        if (FileIntegrity::uploadDeletionRecorded($log)) {
+            return redirect()->back()->withFragment('files')->with('error', trans('general.file_upload_status.file_deleted'));
+        }
+
+        $verification = FileIntegrity::verificationForLog($log);
+        if (($verification['verified'] ?? null) === false && ($verification['status'] ?? null) !== 'not_recorded') {
+            return redirect()->back()->withFragment('files')->with('error', trans('general.file_upload_status.integrity_failed'));
+        }
+
         if (request('inline') == 'true') {
             $headers = [
                 'Content-Disposition' => 'inline',
@@ -140,12 +154,16 @@ class UploadedFilesController extends Controller
             ->where('item_id', $object->id)->first();
 
         if ($log) {
+            $metadata = FileIntegrity::metadataForStoredFile(self::$map_storage_path[$object_type].$log->filename);
+            $metadata['integrity']['delete_recorded_at'] = now()->toIso8601String();
+            $metadata['integrity']['delete_mode'] = $object_type === 'documents' ? 'tombstone_preserve_file' : 'delete_file';
+
             // Check the file actually exists, and delete it
-            if (Storage::exists(self::$map_storage_path[$object_type].$log->filename)) {
+            if ($object_type !== 'documents' && Storage::exists(self::$map_storage_path[$object_type].$log->filename)) {
                 Storage::delete(self::$map_storage_path[$object_type].$log->filename);
             }
             // Delete the record of the file
-            if ($log->logUploadDelete($object, $log->filename)) {
+            if ($log->logUploadDelete($object, $log->filename, $metadata)) {
                 return redirect()->back()->withFragment('files')->with('success', trans_choice('general.file_upload_status.delete.success', 1));
             }
 

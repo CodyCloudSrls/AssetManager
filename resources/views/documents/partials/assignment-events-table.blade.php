@@ -32,6 +32,7 @@
                 <th>{{ trans('admin/documents/form.assignment_approval_status') }}</th>
                 <th>{{ trans('general.created_by') }}</th>
                 <th>{{ trans('admin/documents/general.assignment_event_changes') }}</th>
+                <th>{{ trans('admin/documents/general.assignment_event_hash') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -55,10 +56,19 @@
                     <td>{{ $event->approval_status_label ?: trans('general.na') }}</td>
                     <td>{{ $event->actor?->display_name ?: trans('general.na') }}</td>
                     <td>{{ $changedFields ?: ($event->note ?: trans('general.na')) }}</td>
+                    <td>
+                        @if ($event->event_hash)
+                            <span class="text-monospace" data-tooltip="true" title="{{ $event->event_hash }}">
+                                {{ substr($event->event_hash, 0, 12) }}
+                            </span>
+                        @else
+                            {{ trans('general.na') }}
+                        @endif
+                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="text-muted">{{ trans('admin/documents/general.no_assignment_events') }}</td>
+                    <td colspan="7" class="text-muted">{{ trans('admin/documents/general.no_assignment_events') }}</td>
                 </tr>
             @endforelse
         </tbody>

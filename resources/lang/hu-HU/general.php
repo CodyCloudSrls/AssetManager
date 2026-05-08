@@ -745,6 +745,14 @@ return array (
     'invalid_object' => 'Ez az eszközazonosító érvénytelen',
     'nofiles' => 'Nincs kijelölve fájl a feltöltéshez',
     'confirm_delete' => 'Biztosan törli ezt a fájlt?',
+    'file_deleted' => 'The selected file has been deleted',
+    'integrity_failed' => 'The selected file failed integrity verification',
+  ),
+  'file_integrity' =>
+  array (
+    'title' => 'Integrity',
+    'recorded' => 'Checksum recorded',
+    'not_recorded' => 'Checksum not recorded',
   ),
   'depreciation_options' =>
   array (

@@ -234,7 +234,7 @@ class DocumentAssignmentManager
 
     public static function logAssignmentEvent(Document $document, DocumentAssignment $assignment, string $eventType, array $oldValues = [], array $newValues = [], ?string $note = null): DocumentAssignmentEvent
     {
-        return DocumentAssignmentEvent::create([
+        $eventData = [
             'document_assignment_id' => $assignment->id,
             'document_id' => $document->id,
             'company_id' => $assignment->company_id,
@@ -247,7 +247,12 @@ class DocumentAssignmentManager
             'remote_ip' => request()->ip(),
             'user_agent' => request()->header('User-Agent'),
             'created_at' => now(),
-        ]);
+        ];
+
+        return DocumentAssignmentEvent::create(array_merge(
+            $eventData,
+            static::assignmentEventHashes($document, $eventData)
+        ));
     }
 
     public static function auditSnapshot(DocumentAssignment $assignment): array
@@ -292,6 +297,51 @@ class DocumentAssignmentManager
         }
 
         return [$oldValues, $newValues];
+    }
+
+    private static function assignmentEventHashes(Document $document, array $eventData): array
+    {
+        $previousHash = DocumentAssignmentEvent::query()
+            ->where('document_id', $document->id)
+            ->whereNotNull('event_hash')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->value('event_hash');
+
+        $payload = static::canonicalPayload($eventData);
+        $payloadHash = hash('sha256', static::stableJson($payload));
+        $eventHash = hash('sha256', static::stableJson([
+            'algorithm' => 'sha256',
+            'payload_hash' => $payloadHash,
+            'previous_hash' => $previousHash,
+        ]));
+
+        return [
+            'hash_algorithm' => 'sha256',
+            'previous_hash' => $previousHash,
+            'payload_hash' => $payloadHash,
+            'event_hash' => $eventHash,
+        ];
+    }
+
+    private static function canonicalPayload(array $payload): array
+    {
+        foreach ($payload as $key => $value) {
+            if ($value instanceof \DateTimeInterface) {
+                $payload[$key] = $value->format(DATE_ATOM);
+            } elseif (is_array($value)) {
+                $payload[$key] = static::canonicalPayload($value);
+            }
+        }
+
+        ksort($payload);
+
+        return $payload;
+    }
+
+    private static function stableJson(array $payload): string
+    {
+        return json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     private static function validateDateCoherence($validator, array $payload): void

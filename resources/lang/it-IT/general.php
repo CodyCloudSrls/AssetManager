@@ -773,6 +773,14 @@ return array (
     'invalid_object' => 'L\'ID dell\'oggetto non è valido',
     'nofiles' => 'Nessun file incluso per il caricamento',
     'confirm_delete' => 'Vuoi davvero cancellare questo file?',
+    'file_deleted' => 'Il file selezionato è stato eliminato',
+    'integrity_failed' => 'Il file selezionato non ha superato la verifica di integrità',
+  ),
+  'file_integrity' =>
+  array (
+    'title' => 'Integrità',
+    'recorded' => 'Checksum registrato',
+    'not_recorded' => 'Checksum non registrato',
   ),
   'depreciation_options' =>
   array (

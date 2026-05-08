@@ -30,6 +30,10 @@ class DocumentAssignmentEvent extends SnipeModel
         'note',
         'remote_ip',
         'user_agent',
+        'hash_algorithm',
+        'previous_hash',
+        'payload_hash',
+        'event_hash',
         'created_at',
     ];
 

@@ -744,6 +744,14 @@ return array (
     'invalid_object' => 'Ta ID objekta ni veljaven',
     'nofiles' => 'Za nalaganje ni bilo vključenih datotek',
     'confirm_delete' => 'Ali ste prepričani, da želite zbrisati to datoteko?',
+    'file_deleted' => 'The selected file has been deleted',
+    'integrity_failed' => 'The selected file failed integrity verification',
+  ),
+  'file_integrity' =>
+  array (
+    'title' => 'Integrity',
+    'recorded' => 'Checksum recorded',
+    'not_recorded' => 'Checksum not recorded',
   ),
   'depreciation_options' =>
   array (

@@ -40,6 +40,7 @@ return array (
   'all_approval_statuses' => 'Tutti gli stati approvazione',
   'assignment_audit_events' => 'Eventi audit assegnazione',
   'assignment_event_changes' => 'Modifiche',
+  'assignment_event_hash' => 'Hash evento',
   'no_assignment_events' => 'Nessun evento audit assegnazione trovato.',
   'assignment_approval_statuses' =>
   array (
