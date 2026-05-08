@@ -17,6 +17,7 @@
             || old('assignment_assignable_user_id')
             || old('assignment_assignable_asset_id')
             || old('assignment_assignable_location_id')
+            || old('assignment_assignable_supplier_id')
             || old('assignment_reference_number')
             || old('assignment_issuer_id')
             || old('assignment_effective_at')
@@ -380,6 +381,7 @@
             $('#assignable_user_wrapper').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_USER }}');
             $('#assignable_asset_wrapper').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_ASSET }}');
             $('#assignable_location_id').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_LOCATION }}');
+            $('#assignable_supplier_wrapper').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_SUPPLIER }}');
         }
 
         function syncAssignmentCompanyContext(companyId) {
@@ -387,6 +389,7 @@
                 '#assignable_user_id_select',
                 '#assignable_asset_id_select',
                 '#assignment_assignable_location_id_location_select',
+                '#assignable_supplier_id_select',
                 '#issuer_id_select',
             ].forEach(function (selector) {
                 const $select = $(selector);

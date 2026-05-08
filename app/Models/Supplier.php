@@ -10,6 +10,7 @@ use App\Models\Traits\TenantTemplateTrait;
 use App\Presenters\Presentable;
 use App\Presenters\SupplierPresenter;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Gate;
@@ -248,6 +249,97 @@ class Supplier extends SnipeModel
         return CpvCode::codesFromText($value);
     }
 
+    public static function nisEvidenceCategories(): array
+    {
+        return [
+            'questionnaires' => [
+                'label' => trans('admin/suppliers/table.supplier_evidence_questionnaires'),
+                'keywords' => ['questionnaire', 'questionario'],
+            ],
+            'contracts' => [
+                'label' => trans('admin/suppliers/table.supplier_evidence_contracts'),
+                'keywords' => ['contract', 'contratto', 'agreement', 'accordo'],
+            ],
+            'slas' => [
+                'label' => trans('admin/suppliers/table.supplier_evidence_slas'),
+                'keywords' => ['sla', 'service level', 'livello di servizio'],
+            ],
+            'attestations' => [
+                'label' => trans('admin/suppliers/table.supplier_evidence_attestations'),
+                'keywords' => ['attestation', 'attestazione', 'certification', 'certificazione', 'iso 27001'],
+            ],
+            'improvement_plans' => [
+                'label' => trans('admin/suppliers/table.supplier_evidence_improvement_plans'),
+                'keywords' => ['improvement', 'remediation', 'action plan', 'piano', 'miglioramento', 'correttiva'],
+            ],
+        ];
+    }
+
+    public function nisEvidenceChecklist()
+    {
+        $assignments = $this->relationLoaded('documentAssignments')
+            ? $this->documentAssignments
+            : $this->documentAssignments()->with('document.type')->get();
+
+        return collect(static::nisEvidenceCategories())->map(function (array $category, string $categoryKey) use ($assignments) {
+            $matches = $assignments->filter(function (DocumentAssignment $assignment) use ($category) {
+                return static::documentAssignmentMatchesEvidenceCategory($assignment, $category['keywords']);
+            })->values();
+
+            $overdueCount = $matches->filter(function (DocumentAssignment $assignment) {
+                return $assignment->is_expired || $assignment->status === DocumentAssignment::STATUS_EXPIRED;
+            })->count();
+
+            $reviewDueCount = $matches->filter(function (DocumentAssignment $assignment) {
+                return $assignment->is_expiring || $assignment->status === DocumentAssignment::STATUS_REQUIRED;
+            })->count();
+
+            $statusKey = 'current';
+            $statusClass = 'label label-success';
+
+            if ($matches->isEmpty()) {
+                $statusKey = 'missing';
+                $statusClass = 'label label-default';
+            } elseif ($overdueCount > 0) {
+                $statusKey = 'overdue';
+                $statusClass = 'label label-danger';
+            } elseif ($reviewDueCount > 0) {
+                $statusKey = 'review_due';
+                $statusClass = 'label label-warning';
+            }
+
+            return [
+                'key' => $categoryKey,
+                'label' => $category['label'],
+                'assignments' => $matches,
+                'count' => $matches->count(),
+                'status_label' => trans('admin/suppliers/table.supplier_evidence_status_'.$statusKey),
+                'status_class' => $statusClass,
+            ];
+        })->values();
+    }
+
+    private static function documentAssignmentMatchesEvidenceCategory(DocumentAssignment $assignment, array $keywords): bool
+    {
+        $document = $assignment->document;
+        $haystack = strtolower(implode(' ', array_filter([
+            $document?->name,
+            $document?->document_number,
+            $document?->reference,
+            $document?->type?->name,
+            $assignment->reference_number,
+            $assignment->notes,
+        ])));
+
+        foreach ($keywords as $keyword) {
+            if (str_contains($haystack, strtolower($keyword))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function getNisCriticalityLabelAttribute(): string
     {
         return static::nisCriticalityOptions()[$this->nis_criticality] ?? ucfirst(str_replace('_', ' ', (string) $this->nis_criticality));
@@ -420,6 +512,15 @@ class Supplier extends SnipeModel
     public function maintenances(): Relation
     {
         return $this->hasMany(Maintenance::class, 'supplier_id');
+    }
+
+    public function documentAssignments(): MorphMany
+    {
+        return $this->morphMany(DocumentAssignment::class, 'assignable')
+            ->with(['document.type', 'issuer'])
+            ->orderByRaw('CASE WHEN renewal_due_at IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('renewal_due_at')
+            ->orderByDesc('created_at');
     }
 
     /**

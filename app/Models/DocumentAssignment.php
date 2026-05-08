@@ -21,6 +21,7 @@ class DocumentAssignment extends SnipeModel
     public const ASSIGNABLE_USER = 'user';
     public const ASSIGNABLE_ASSET = 'asset';
     public const ASSIGNABLE_LOCATION = 'location';
+    public const ASSIGNABLE_SUPPLIER = 'supplier';
 
     public const RELATION_ISSUED_TO = 'issued_to';
     public const RELATION_APPLIES_TO = 'applies_to';
@@ -119,6 +120,7 @@ class DocumentAssignment extends SnipeModel
             self::ASSIGNABLE_USER => trans('general.user'),
             self::ASSIGNABLE_ASSET => trans('general.asset'),
             self::ASSIGNABLE_LOCATION => trans('general.location'),
+            self::ASSIGNABLE_SUPPLIER => trans('general.supplier'),
         ];
     }
 
@@ -128,6 +130,7 @@ class DocumentAssignment extends SnipeModel
             self::ASSIGNABLE_USER => User::class,
             self::ASSIGNABLE_ASSET => Asset::class,
             self::ASSIGNABLE_LOCATION => Location::class,
+            self::ASSIGNABLE_SUPPLIER => Supplier::class,
         ];
     }
 
@@ -201,6 +204,7 @@ class DocumentAssignment extends SnipeModel
             $assignable instanceof User => $assignable->display_name,
             $assignable instanceof Asset => $assignable->present()->fullName,
             $assignable instanceof Location => $assignable->name,
+            $assignable instanceof Supplier => $assignable->name,
             default => method_exists($assignable, 'getDisplayNameAttribute') ? $assignable->display_name : (string) ($assignable->name ?? $assignable->id),
         };
     }
@@ -217,6 +221,7 @@ class DocumentAssignment extends SnipeModel
             $assignable instanceof User => route('users.show', $assignable),
             $assignable instanceof Asset => route('hardware.show', $assignable),
             $assignable instanceof Location => route('locations.show', $assignable),
+            $assignable instanceof Supplier => route('suppliers.show', $assignable),
             default => null,
         };
     }

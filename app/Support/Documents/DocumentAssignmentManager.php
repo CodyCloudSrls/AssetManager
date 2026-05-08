@@ -9,6 +9,7 @@ use App\Models\Company;
 use App\Models\Document;
 use App\Models\DocumentAssignment;
 use App\Models\Location;
+use App\Models\Supplier;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -24,6 +25,7 @@ class DocumentAssignmentManager
             DocumentAssignment::ASSIGNABLE_USER => Company::getIdFromInput(static::assignmentField($request, 'assignment_assignable_user_id', 'assignable_user_id')),
             DocumentAssignment::ASSIGNABLE_ASSET => Company::getIdFromInput(static::assignmentField($request, 'assignment_assignable_asset_id', 'assignable_asset_id')),
             DocumentAssignment::ASSIGNABLE_LOCATION => Company::getIdFromInput(static::assignmentField($request, 'assignment_assignable_location_id', 'assignable_location_id')),
+            DocumentAssignment::ASSIGNABLE_SUPPLIER => Company::getIdFromInput(static::assignmentField($request, 'assignment_assignable_supplier_id', 'assignable_supplier_id')),
             default => null,
         };
 
@@ -54,6 +56,7 @@ class DocumentAssignmentManager
             'assignment_assignable_user_id',
             'assignment_assignable_asset_id',
             'assignment_assignable_location_id',
+            'assignment_assignable_supplier_id',
             'assignment_issuer_id',
             'assignment_reference_number',
             'assignment_issued_at',
@@ -123,6 +126,7 @@ class DocumentAssignmentManager
             User::class => User::withoutGlobalScopes()->whereNull('deleted_at')->find($assignableId),
             Asset::class => Asset::withoutGlobalScopes()->whereNull('deleted_at')->find($assignableId),
             Location::class => Location::withoutGlobalScopes()->whereNull('deleted_at')->find($assignableId),
+            Supplier::class => Supplier::withoutGlobalScopes()->whereNull('deleted_at')->find($assignableId),
             default => null,
         };
     }

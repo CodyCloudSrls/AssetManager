@@ -206,6 +206,12 @@ class SuppliersController extends Controller
     public function show(Supplier $supplier): View|RedirectResponse
     {
         $this->authorize('view', $supplier);
+        $supplier->load([
+            'documentAssignments.document.type',
+            'documentAssignments.document.framework',
+            'documentAssignments.document.frameworkRequirements',
+            'documentAssignments.issuer',
+        ]);
 
         return view('suppliers/view', compact('supplier'));
     }

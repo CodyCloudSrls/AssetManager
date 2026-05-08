@@ -89,6 +89,13 @@ class DocumentsController extends Controller
             });
         }
 
+        if ($request->filled('assigned_supplier_id')) {
+            $documents->whereHas('documentAssignments', function ($query) use ($request) {
+                $query->where('assignable_type', \App\Models\Supplier::class)
+                    ->where('assignable_id', '=', (int) $request->input('assigned_supplier_id'));
+            });
+        }
+
         $allowedColumns = [
             'id',
             'name',

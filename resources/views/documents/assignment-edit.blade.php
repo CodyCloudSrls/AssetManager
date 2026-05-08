@@ -74,6 +74,7 @@
                 $('#assignable_user_wrapper').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_USER }}');
                 $('#assignable_asset_wrapper').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_ASSET }}');
                 $('#assignable_location_id').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_LOCATION }}');
+                $('#assignable_supplier_wrapper').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_SUPPLIER }}');
             }
 
             $('input[name="assignment_assignable_type"]').on('change', syncAssignableSelectors);
