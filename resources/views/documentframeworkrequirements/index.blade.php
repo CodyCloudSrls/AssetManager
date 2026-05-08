@@ -9,7 +9,7 @@
     <x-container>
         <x-box>
             <div class="row" style="margin-bottom: 15px;">
-                <div class="col-md-12">
+                <div class="{{ $editableFrameworks->isNotEmpty() ? 'col-md-9' : 'col-md-12' }}">
                     <form method="get" action="{{ route('documentframeworkrequirements.index') }}" class="form-inline" role="search">
                         @foreach (request()->only(['tenant_id']) as $filterName => $filterValue)
                             <input type="hidden" name="{{ $filterName }}" value="{{ $filterValue }}">
@@ -45,6 +45,30 @@
                         </a>
                     </form>
                 </div>
+
+                @if ($editableFrameworks->isNotEmpty())
+                    <div class="col-md-3 text-right">
+                        @if ($editableFrameworks->count() === 1)
+                            <a href="{{ route('documentframeworkrequirements.create', $editableFrameworks->first()) }}" class="btn btn-primary">
+                                <x-icon type="plus" />
+                                {{ trans('admin/documentframeworkrequirements/general.create') }}
+                            </a>
+                        @else
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <x-icon type="plus" />
+                                    {{ trans('admin/documentframeworkrequirements/general.create') }}
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-right">
+                                    @foreach ($editableFrameworks as $framework)
+                                        <li><a href="{{ route('documentframeworkrequirements.create', $framework) }}">{{ $framework->name }}</a></li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                    </div>
+                @endif
             </div>
 
             <x-table.documentframeworkrequirements

@@ -8,6 +8,7 @@ use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 
 class DocumentFrameworkRequirementsController extends Controller
 {
@@ -26,10 +27,15 @@ class DocumentFrameworkRequirementsController extends Controller
                 ? $query->whereRaw('1 = 0')
                 : $query->whereIn('company_id', $tenantCompanyIds))
             ->ordered()
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'company_id', 'visibility_type', 'is_system_template']);
+
+        $editableFrameworks = $frameworks
+            ->filter(fn (DocumentFramework $framework) => Gate::allows('update', $framework))
+            ->values();
 
         return view('documentframeworkrequirements.index', [
             'frameworks' => $frameworks,
+            'editableFrameworks' => $editableFrameworks,
             'coverageOptions' => DocumentFrameworkRequirement::coverageOptions(),
         ]);
     }
