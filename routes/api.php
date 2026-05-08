@@ -698,6 +698,13 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
     Route::patch('/documents/{document}', [Api\DocumentsController::class, 'update'])->name('api.documents.update');
     Route::put('/documents/{document}', [Api\DocumentsController::class, 'update'])->name('api.documents.put-update');
 
+    Route::get('documentassignments',
+        [
+            Api\DocumentAssignmentsController::class,
+            'index',
+        ]
+    )->name('api.documentassignments.index');
+
     Route::resource('documents',
         Api\DocumentsController::class,
         ['names' => [

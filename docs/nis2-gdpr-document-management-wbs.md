@@ -120,6 +120,7 @@ Build a document-centered compliance module that helps consultants and tenants g
 - Supplier qualification includes CPV catalog search and structured NIS2 assessment method, outcome and scope fields while preserving the free-form CPV field.
 - Supplier detail includes a NIS2 evidence checklist and assigned-document review table for supplier evidence.
 - Supplier index includes an ACN-oriented CSV export for NIS2 supplier data preparation.
+- Document section includes a delegated evidence request queue for open user/supplier evidence assignments.
 
 ### 6.3 Future UI Work
 
@@ -189,7 +190,7 @@ The local PHP test runner is currently incomplete: `php artisan test` fails beca
 
 ### Phase 5 - Delegation And Approvals
 
-- Add delegated evidence requests tied to users/suppliers.
+- Add delegated evidence requests tied to users/suppliers. Completed as an operational queue over existing document assignments.
 - Add approval/review states and immutable audit events.
 - Add reminders and escalation while preserving expert sign-off.
 

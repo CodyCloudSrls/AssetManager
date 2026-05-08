@@ -13,6 +13,13 @@ use Illuminate\Http\RedirectResponse;
 
 class DocumentAssignmentsController extends Controller
 {
+    public function index(): View
+    {
+        $this->authorize('index', Document::class);
+
+        return view('documentassignments.index');
+    }
+
     public function store(StoreDocumentAssignmentRequest $request, Document $document): RedirectResponse
     {
         $this->authorize('update', $document);
