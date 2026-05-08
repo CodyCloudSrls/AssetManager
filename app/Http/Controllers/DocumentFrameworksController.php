@@ -5,8 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreDocumentFrameworkRequest;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
+use App\Support\Compliance\ConsultantFrameworkTransfer;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DocumentFrameworksController extends Controller
 {
@@ -27,6 +32,16 @@ class DocumentFrameworksController extends Controller
         ])));
     }
 
+    public function importForm(): View
+    {
+        $this->authorize('create', DocumentFramework::class);
+
+        return view('documentframeworks.import', $this->formData(new DocumentFramework([
+            'status' => 'active',
+            'is_active' => true,
+        ])));
+    }
+
     public function store(StoreDocumentFrameworkRequest $request): RedirectResponse
     {
         $this->authorize('create', DocumentFramework::class);
@@ -42,6 +57,33 @@ class DocumentFrameworksController extends Controller
         }
 
         return redirect()->back()->withInput()->withErrors($documentFramework->getErrors());
+    }
+
+    public function import(Request $request, ConsultantFrameworkTransfer $transfer): RedirectResponse
+    {
+        $this->authorize('create', DocumentFramework::class);
+
+        $validated = $request->validate([
+            'file' => 'required|file|max:10240',
+            'company_id' => 'nullable|integer|exists:companies,id',
+            'visibility_type' => 'required|string|in:private,descendants,global',
+        ]);
+
+        try {
+            $result = $transfer->import($request->file('file'), $validated, auth()->id());
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            Log::warning('Document framework import failed.', ['exception' => $exception]);
+
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['file' => trans('admin/documentframeworks/message.import.parse_error')]);
+        }
+
+        return redirect()
+            ->route('documentframeworks.show', $result['framework'])
+            ->with('success', trans('admin/documentframeworks/message.import.success', ['count' => $result['requirements_count']]));
     }
 
     public function show(DocumentFramework $documentframework): View
@@ -69,6 +111,31 @@ class DocumentFrameworksController extends Controller
         $documentframework->setRelation('requirements', $requirements);
 
         return view('documentframeworks.view', compact('documentframework'));
+    }
+
+    public function export(
+        DocumentFramework $documentframework,
+        string $format,
+        ConsultantFrameworkTransfer $transfer
+    ): BinaryFileResponse|RedirectResponse
+    {
+        $this->authorize('view', $documentframework);
+
+        try {
+            $export = $transfer->export($documentframework, $format);
+        } catch (\Throwable $exception) {
+            Log::warning('Document framework export failed.', [
+                'document_framework_id' => $documentframework->id,
+                'format' => $format,
+                'exception' => $exception,
+            ]);
+
+            return redirect()->back()->with('error', trans('admin/documentframeworks/message.export.error'));
+        }
+
+        return response()
+            ->download($export['path'], $export['filename'], ['Content-Type' => $export['mime']])
+            ->deleteFileAfterSend(true);
     }
 
     public function edit(DocumentFramework $documentframework): View

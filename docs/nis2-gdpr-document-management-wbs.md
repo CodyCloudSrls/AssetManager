@@ -200,4 +200,4 @@ The local PHP test runner is currently incomplete: `php artisan test` fails beca
 
 - Expand official framework packs by jurisdiction/language. Completed with Italian ACN packs plus EU baseline NIS2/GDPR pack keys for every supported tenant locale, preserving existing pack keys.
 - Add pack versioning and tenant diff/merge tooling. Completed with `source_pack_version`, system/tenant diff output and non-destructive tenant merge for missing framework copies or missing requirements only.
-- Add import/export for Word/Excel-based consultant frameworks.
+- Add import/export for Word/Excel-based consultant frameworks. Completed with non-destructive tenant import for CSV/Excel/Word table files and framework export to CSV/XLSX/DOCX.
