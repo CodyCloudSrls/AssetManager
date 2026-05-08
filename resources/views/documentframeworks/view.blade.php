@@ -198,6 +198,7 @@
                         <x-data-row :label="trans('general.company')">{{ $documentframework->company?->name ?? trans('general.na') }}</x-data-row>
                         <x-data-row :label="trans('general.template_visibility.label')">{{ $documentframework->visibility_label }}</x-data-row>
                         <x-data-row :label="trans('admin/documentframeworks/table.slug')"><code>{{ $documentframework->slug }}</code></x-data-row>
+                        <x-data-row :label="trans('admin/documentframeworks/table.source_pack_version')">{{ $documentframework->source_pack_version }}</x-data-row>
                         <x-data-row :label="trans('admin/documentframeworks/table.is_active')">{{ $documentframework->is_active ? trans('general.yes') : trans('general.no') }}</x-data-row>
                         <x-data-row :label="trans('admin/documentframeworks/table.sort_order')">{{ $documentframework->sort_order }}</x-data-row>
                         <x-data-row :label="trans('general.documents')">{{ number_format($documentframework->documents_count) }}</x-data-row>

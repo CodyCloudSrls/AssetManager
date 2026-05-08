@@ -199,5 +199,5 @@ The local PHP test runner is currently incomplete: `php artisan test` fails beca
 ### Phase 6 - Advanced Compliance Packs
 
 - Expand official framework packs by jurisdiction/language. Completed with Italian ACN packs plus EU baseline NIS2/GDPR pack keys for every supported tenant locale, preserving existing pack keys.
-- Add pack versioning and tenant diff/merge tooling.
+- Add pack versioning and tenant diff/merge tooling. Completed with `source_pack_version`, system/tenant diff output and non-destructive tenant merge for missing framework copies or missing requirements only.
 - Add import/export for Word/Excel-based consultant frameworks.

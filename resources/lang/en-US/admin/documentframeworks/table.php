@@ -10,6 +10,7 @@ return array (
   'compliance_objective' => 'Compliance Objective',
   'jurisdiction' => 'Jurisdiction',
   'version' => 'Version',
+  'source_pack_version' => 'Source Pack Version',
   'status' => 'Status',
   'owner' => 'Owner',
   'review_cadence_months' => 'Review Cadence',

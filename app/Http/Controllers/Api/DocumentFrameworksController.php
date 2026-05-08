@@ -37,6 +37,7 @@ class DocumentFrameworksController extends Controller
             'updated_at',
             'is_system_template',
             'source_pack_key',
+            'source_pack_version',
             'locale',
         ];
 
@@ -63,6 +64,7 @@ class DocumentFrameworksController extends Controller
             'is_system_template',
             'source_framework_id',
             'source_pack_key',
+            'source_pack_version',
             'locale',
             'created_by',
             'company_id',
