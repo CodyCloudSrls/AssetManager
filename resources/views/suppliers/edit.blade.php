@@ -19,6 +19,7 @@
     <label for="contact" class="col-md-3 control-label">{{ trans('admin/suppliers/table.contact') }}</label>
     <div class="col-md-7">
         <input class="form-control" name="contact" type="text" id="contact" value="{{ old('contact', $item->contact) }}">
+        <p class="help-block">{{ trans('admin/suppliers/table.contact_help') }}</p>
         {!! $errors->first('contact', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
     </div>
 </div>

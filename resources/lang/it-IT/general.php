@@ -379,7 +379,7 @@ return array (
   'welcome' => 'Benvenuto, :name',
   'years' => 'anni',
   'yes' => 'SÌ',
-  'zip' => 'Zip',
+  'zip' => 'CAP',
   'noimage' => 'Nessuna immagine caricata o immagine non trovata.',
   'file_does_not_exist' => 'Il file richiesto non esiste sul server.',
   'file_not_inlineable' => 'Questo file non può essere aperto direttamente nel browser, ma puoi scaricarlo.',
