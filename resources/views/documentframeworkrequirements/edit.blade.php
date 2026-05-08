@@ -9,9 +9,7 @@
 ])
 
 @section('inputFields')
-    @if (! $item->id)
-        <input type="hidden" name="document_framework_id" value="{{ $framework->id }}">
-    @endif
+    <input type="hidden" name="document_framework_id" value="{{ $framework->id }}">
 
     <div class="form-group">
         <label class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.framework') }}</label>
@@ -101,11 +99,16 @@
     <div class="form-group {{ $errors->has('risk_level') ? ' has-error' : '' }}">
         <label for="risk_level" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.risk_level') }}</label>
         <div class="col-md-4">
-            <select class="form-control select2" name="risk_level" id="risk_level" aria-label="risk_level">
-                @foreach ($riskLevelOptions as $levelValue => $levelLabel)
-                    <option value="{{ $levelValue }}" @selected(old('risk_level', $item->risk_level ?: 'medium') === $levelValue)>{{ $levelLabel }}</option>
-                @endforeach
-            </select>
+            @if ($framework->compliance_domain === 'nis2')
+                <input type="hidden" name="risk_level" value="not_applicable">
+                <input class="form-control" type="text" id="risk_level" value="{{ $riskLevelOptions['not_applicable'] ?? trans('general.none') }}" readonly>
+            @else
+                <select class="form-control select2" name="risk_level" id="risk_level" aria-label="risk_level">
+                    @foreach ($riskLevelOptions as $levelValue => $levelLabel)
+                        <option value="{{ $levelValue }}" @selected(old('risk_level', $item->risk_level ?: 'medium') === $levelValue)>{{ $levelLabel }}</option>
+                    @endforeach
+                </select>
+            @endif
             {!! $errors->first('risk_level', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
         </div>
     </div>

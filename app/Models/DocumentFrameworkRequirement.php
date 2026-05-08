@@ -77,7 +77,7 @@ class DocumentFrameworkRequirement extends SnipeModel
         'default_document_type_id' => 'nullable|integer|exists:document_types,id',
         'evidence_type' => 'nullable|string|max:60',
         'delegation_level' => 'required|string|in:owner_review,delegable,external_evidence,consultant_only',
-        'risk_level' => 'required|string|in:low,medium,high,critical',
+        'risk_level' => 'required|string|in:not_applicable,low,medium,high,critical',
         'official_reference' => 'nullable|string|max:255',
         'source_url' => 'nullable|url|max:2048',
         'review_frequency_months' => 'nullable|integer|min:1|max:120',
@@ -252,6 +252,7 @@ class DocumentFrameworkRequirement extends SnipeModel
     public static function riskLevelOptions(): array
     {
         return [
+            'not_applicable' => trans('admin/documentframeworkrequirements/general.risk_levels.not_applicable'),
             'low' => trans('admin/documentframeworkrequirements/general.risk_levels.low'),
             'medium' => trans('admin/documentframeworkrequirements/general.risk_levels.medium'),
             'high' => trans('admin/documentframeworkrequirements/general.risk_levels.high'),

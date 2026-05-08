@@ -543,6 +543,11 @@ Route::group(['prefix' => 'reports', 'middleware' => ['auth']], function () {
     Route::post('custom', [ReportsController::class, 'postCustom'])
         ->name('reports.post-custom');
 
+    Route::get('nis-risk-matrix', [ReportsController::class, 'getNisRiskMatrixReport'])
+        ->name('reports.nis-risk-matrix')
+        ->breadcrumbs(fn (Trail $trail) => $trail->parent('home')
+            ->push(trans('admin/reports/general.nis_risk_matrix'), route('reports.nis-risk-matrix')));
+
     Route::prefix('templates')
         ->group(function () {
 

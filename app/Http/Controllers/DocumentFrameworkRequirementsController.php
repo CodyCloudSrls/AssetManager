@@ -47,7 +47,7 @@ class DocumentFrameworkRequirementsController extends Controller
         return view('documentframeworkrequirements.edit', $this->formData(new DocumentFrameworkRequirement([
             'document_framework_id' => $documentframework->id,
             'delegation_level' => 'owner_review',
-            'risk_level' => 'medium',
+            'risk_level' => $documentframework->compliance_domain === 'nis2' ? 'not_applicable' : 'medium',
         ]), $documentframework));
     }
 

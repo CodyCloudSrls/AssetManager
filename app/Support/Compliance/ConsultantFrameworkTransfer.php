@@ -141,7 +141,7 @@ class ConsultantFrameworkTransfer
 
         $frameworkRecord = $this->frameworkRecord($records);
         $frameworkData = $this->frameworkData($frameworkRecord, $companyId, $visibilityType, $createdBy);
-        $requirementData = $this->requirementsData($records, $createdBy);
+        $requirementData = $this->requirementsData($records, $createdBy, $frameworkData['compliance_domain'] === 'nis2');
 
         $this->assertFrameworkDoesNotExist($frameworkData);
 
@@ -349,7 +349,7 @@ class ConsultantFrameworkTransfer
         ];
     }
 
-    private function requirementsData(array $records, ?int $createdBy): array
+    private function requirementsData(array $records, ?int $createdBy, bool $forceRiskNotApplicable): array
     {
         $requirements = [];
         $codes = [];
@@ -378,7 +378,9 @@ class ConsultantFrameworkTransfer
                     'default_document_type_id' => null,
                     'evidence_type' => $this->enumValue($record, 'evidence_type', DocumentFrameworkRequirement::evidenceTypeOptions(), null),
                     'delegation_level' => $this->enumValue($record, 'delegation_level', DocumentFrameworkRequirement::delegationLevelOptions(), 'owner_review'),
-                    'risk_level' => $this->enumValue($record, 'risk_level', DocumentFrameworkRequirement::riskLevelOptions(), 'medium'),
+                    'risk_level' => $forceRiskNotApplicable
+                        ? 'not_applicable'
+                        : $this->enumValue($record, 'risk_level', DocumentFrameworkRequirement::riskLevelOptions(), 'medium'),
                     'official_reference' => $this->nullableString($record, 'official_reference', 255),
                     'source_url' => $this->urlValue($record, 'source_url'),
                     'review_frequency_months' => $this->integerValue($record, 'review_frequency_months', 1, 120, null),
