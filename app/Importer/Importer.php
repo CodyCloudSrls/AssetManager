@@ -352,9 +352,6 @@ abstract class Importer
         // If the full name and username is empty, bail out--we need this to extract first name (at the very least)
         if ((empty($user_array['username'])) && (empty($user_array['full_name'])) && (empty($user_array['first_name']))) {
             $this->log('Insufficient user data provided (Full name, first name or username is required) - skipping user creation.');
-            Log::debug('User array: ');
-            Log::debug(print_r($user_array, true));
-            Log::debug(print_r($row, true));
 
             return false;
         }
@@ -404,8 +401,6 @@ abstract class Importer
         $user->department_id = $user_array['department_id'] ?? null;
         $user->activated = 1;
         $user->password = $this->tempPassword;
-
-        Log::debug('Creating a user with the following attributes: '.print_r($user_array, true));
 
         if ($user->save()) {
             $this->log('User '.$user_array['username'].' created');

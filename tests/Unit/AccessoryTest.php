@@ -46,10 +46,12 @@ class AccessoryTest extends TestCase
 
     public function test_an_accessory_has_a_manufacturer()
     {
+        $manufacturer = Manufacturer::where('name', 'Apple')->first() ?? Manufacturer::factory()->apple()->create();
+
         $accessory = Accessory::factory()->appleBtKeyboard()->create(
             [
-                'category_id' => Category::factory()->create(),
-                'manufacturer_id' => Manufacturer::factory()->apple()->create(),
+                'category_id' => Category::factory()->create()->id,
+                'manufacturer_id' => $manufacturer->id,
             ]);
         $this->assertInstanceOf(Manufacturer::class, $accessory->manufacturer);
     }

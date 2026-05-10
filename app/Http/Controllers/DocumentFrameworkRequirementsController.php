@@ -33,9 +33,18 @@ class DocumentFrameworkRequirementsController extends Controller
             ->filter(fn (DocumentFramework $framework) => Gate::allows('update', $framework))
             ->values();
 
+        $editableFrameworkCreateOptions = $editableFrameworks
+            ->map(fn (DocumentFramework $framework) => [
+                'id' => (int) $framework->id,
+                'url' => route('documentframeworkrequirements.create', $framework),
+            ])
+            ->values();
+
         return view('documentframeworkrequirements.index', [
             'frameworks' => $frameworks,
             'editableFrameworks' => $editableFrameworks,
+            'editableFrameworkCreateOptions' => $editableFrameworkCreateOptions,
+            'selectedFrameworkId' => (string) request('document_framework_id', ''),
             'coverageOptions' => DocumentFrameworkRequirement::coverageOptions(),
         ]);
     }

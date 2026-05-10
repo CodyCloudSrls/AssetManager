@@ -113,6 +113,14 @@ class ComplianceFrameworkInstaller
 
     public function installCompanyPack(string $packKey, array $pack, ?int $companyId, string $visibilityType, bool $updateExisting = false, ?int $createdBy = null): array
     {
+        if (is_null($companyId)) {
+            throw new \InvalidArgumentException('Tenant-owned compliance packs require a company id.');
+        }
+
+        if ($visibilityType === DocumentFramework::VISIBILITY_GLOBAL) {
+            throw new \InvalidArgumentException('Tenant-owned compliance packs cannot use global visibility.');
+        }
+
         return $this->installPack($packKey, $pack, [
             'company_id' => $companyId,
             'visibility_type' => $visibilityType,
@@ -126,6 +134,8 @@ class ComplianceFrameworkInstaller
 
     private function installPack(string $packKey, array $pack, array $options): array
     {
+        $this->assertOwnershipOptions($options);
+
         $summary = [
             'created' => 0,
             'updated' => 0,
@@ -242,6 +252,29 @@ class ComplianceFrameworkInstaller
         }
 
         return $summary;
+    }
+
+    private function assertOwnershipOptions(array $options): void
+    {
+        $isSystemTemplate = (bool) ($options['is_system_template'] ?? false);
+        $companyId = $options['company_id'] ?? null;
+        $visibilityType = $options['visibility_type'] ?? null;
+
+        if ($isSystemTemplate) {
+            if (! is_null($companyId) || $visibilityType !== DocumentFramework::VISIBILITY_GLOBAL) {
+                throw new \InvalidArgumentException('System compliance bootstrap packs must be global and company-less.');
+            }
+
+            return;
+        }
+
+        if (is_null($companyId)) {
+            throw new \InvalidArgumentException('Tenant compliance packs require a company id.');
+        }
+
+        if ($visibilityType === DocumentFramework::VISIBILITY_GLOBAL) {
+            throw new \InvalidArgumentException('Tenant compliance packs cannot use global visibility.');
+        }
     }
 
     private function systemFrameworkIdForPack(string $packKey): ?int

@@ -1204,6 +1204,46 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
     ); // end suppliers API routes
 
     /**
+     * Customers API routes
+     */
+    Route::group(['prefix' => 'customers'], function () {
+
+        Route::get('selectlist',
+            [
+                Api\CustomersController::class,
+                'selectlist',
+            ]
+        )->name('api.customers.selectlist');
+
+    });
+
+    Route::resource('customers',
+        Api\CustomersController::class,
+        ['names' => [
+            'index' => 'api.customers.index',
+            'show' => 'api.customers.show',
+            'update' => 'api.customers.update',
+            'store' => 'api.customers.store',
+            'destroy' => 'api.customers.destroy',
+        ],
+            'except' => ['create', 'edit'],
+            'parameters' => ['customer' => 'customer'],
+        ]
+    ); // end customers API routes
+
+    Route::resource('contracts',
+        Api\CustomerContractsController::class,
+        ['names' => [
+            'index' => 'api.contracts.index',
+            'show' => 'api.contracts.show',
+            'destroy' => 'api.contracts.destroy',
+        ],
+            'only' => ['index', 'show', 'destroy'],
+            'parameters' => ['contract' => 'contract'],
+        ]
+    ); // end customer contracts API routes
+
+    /**
      * Users API routes
      */
     Route::group(['prefix' => 'users'], function () {
@@ -1501,7 +1541,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
             'index',
         ]
     )->name('api.files.index')
-        ->where(['object_type' => 'accessories|audits|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|users|companies|departments|documents|tickets']);
+        ->where(['object_type' => 'accessories|audits|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|customers|users|companies|departments|documents|tickets']);
 
     // Get a file
     Route::get('{object_type}/{id}/files/{file_id}',
@@ -1510,7 +1550,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
             'show',
         ]
     )->name('api.files.show')
-        ->where(['object_type' => 'accessories|audits|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|users|companies|departments|documents|tickets']);
+        ->where(['object_type' => 'accessories|audits|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|customers|users|companies|departments|documents|tickets']);
 
     // Upload files(s)
     Route::post('{object_type}/{id}/files',
@@ -1519,7 +1559,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
             'store',
         ]
     )->name('api.files.store')
-        ->where(['object_type' => 'accessories|audits|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|users|companies|departments|documents|tickets']);
+        ->where(['object_type' => 'accessories|audits|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|customers|users|companies|departments|documents|tickets']);
 
     // Delete files(s)
     Route::delete('{object_type}/{id}/files/{file_id}/delete',
@@ -1528,6 +1568,6 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
             'destroy',
         ]
     )->name('api.files.destroy')
-        ->where(['object_type' => 'accessories|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|users|companies|departments|documents|tickets']);
+        ->where(['object_type' => 'accessories|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|customers|users|companies|departments|documents|tickets']);
 
 }); // end API routes

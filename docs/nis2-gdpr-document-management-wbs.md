@@ -2,6 +2,8 @@
 
 This WBS defines the product path for turning the document registry into an audit-ready NIS2-first compliance workspace. It is intentionally conservative: system templates remain separate from tenant data, tenant copies are editable, and each implementation step must preserve existing Snipe-IT workflows.
 
+Current direction and implementation status are tracked in [Project Direction And Status](project-direction-status.md).
+
 ## 1. Scope And Principles
 
 ### 1.1 Product Goal
@@ -12,7 +14,7 @@ Build a document-centered compliance module that helps consultants and tenants g
 
 - Keep tenant isolation and template visibility intact.
 - Never overwrite tenant-edited frameworks during bootstrap unless explicitly requested.
-- Store official/starter content as editable tenant records.
+- Keep system bootstrap content hidden/read-only and store operational starter content as editable tenant records.
 - Keep every UI label and coded option translatable for supported European languages plus general English.
 - Prefer structured fields for audit-critical facts, leaving notes for rationale and context.
 - Keep existing document, asset, supplier, ticket and user workflows working.
@@ -123,6 +125,9 @@ Build a document-centered compliance module that helps consultants and tenants g
 - Document section includes a delegated evidence request queue for open user/supplier evidence assignments.
 - Document assignments include approval/review states and append-only assignment audit events.
 - Delegated document evidence assignments send tenant reminder/escalation digests while leaving approval sign-off to reviewers.
+- Customer register mirrors supplier governance where it is useful, but remains focused on client-side contracts, service-chain duties, security contacts and linked evidence.
+- Customer contracts include subscriptions, service costs, renewal dates, linked signed documents and an append-only hash chain for audit traceability.
+- Contract forecast report shows expected revenue, costs and net margin by month, quarter, year and contract.
 
 ### 6.3 Future UI Work
 
@@ -162,7 +167,14 @@ Only supported European locales plus general English are allowed in code-level U
 
 ### 8.2 Current Test Blocker
 
-The local PHP test runner is currently incomplete: `php artisan test` fails because `SebastianBergmann\Environment\Console` is missing and `vendor/bin/phpunit` is absent. Until dependencies are repaired, verification relies on lint, migration, view cache, tinker/API-level checks and targeted manual UI checks.
+The local PHP test runner is available, but full test execution still requires a safe `.env.testing`. Until that exists, verification relies on lint, migration dry-runs, view cache, targeted artisan checks, API-level checks and targeted manual UI checks.
+
+### 8.3 Current Security Snapshot
+
+- Composer advisories were reduced from 9 to 1 during the 2026-05-10 audit.
+- The remaining advisory is `firebase/php-jwt` CVE-2025-45769, low severity, blocked by the current `laravel/passport` v12 dependency constraint.
+- Moving to `firebase/php-jwt` v7 requires a planned Passport/OAuth major upgrade, not an opportunistic patch.
+- `npm` is not available in this environment, so frontend dependency audit and asset compilation remain unverifiable locally.
 
 ## 9. Implementation Roadmap
 
@@ -201,3 +213,11 @@ The local PHP test runner is currently incomplete: `php artisan test` fails beca
 - Expand official framework packs by jurisdiction/language. Completed with Italian ACN packs plus EU baseline NIS2/GDPR pack keys for every supported tenant locale, preserving existing pack keys.
 - Add pack versioning and tenant diff/merge tooling. Completed with `source_pack_version`, system/tenant diff output and non-destructive tenant merge for missing framework copies or missing requirements only.
 - Add import/export for Word/Excel-based consultant frameworks. Completed with non-destructive tenant import for CSV/Excel/Word table files and framework export to CSV/XLSX/DOCX.
+
+### Phase 7 - Client Contracts And Service Chain
+
+- Add customer register in settings alongside suppliers, with tenant/company ownership, contacts, NIS2 profile, service role, criticality, review dates and linked document evidence.
+- Add customer contracts with status, owner, signed document, renewal/notice dates, subscriptions, supplier-backed service costs and monthly revenue/cost/net indicators.
+- Add immutable customer-contract event log using SHA-256 payload hashes and previous-hash chaining for create/update/delete snapshots.
+- Add contract revenue forecast report with monthly, quarterly, yearly and per-contract deliverables.
+- Keep customer document assignments available through the same document evidence workflow used by users, assets, locations and suppliers.

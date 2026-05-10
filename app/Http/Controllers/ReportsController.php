@@ -26,6 +26,7 @@ use App\Models\LicenseSeat;
 use App\Models\Maintenance;
 use App\Models\ReportTemplate;
 use App\Models\Setting;
+use App\Support\Reports\ContractForecastReport;
 use App\Support\Reports\NisRiskMatrixReport;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -237,6 +238,19 @@ class ReportsController extends Controller
         $this->authorize('reports.view');
 
         return view('reports/activity');
+    }
+
+    public function getContractForecastReport(Request $request, ContractForecastReport $report): View
+    {
+        $this->authorize('reports.view');
+
+        $data = $report->build(
+            $this->tenantCompanyIdsFromRequest($request),
+            $request->input('from'),
+            $request->input('to'),
+        );
+
+        return view('reports/contract_forecast', $data);
     }
 
     public function getNisRiskMatrixReport(Request $request, NisRiskMatrixReport $report): View
@@ -1263,8 +1277,6 @@ class ReportsController extends Controller
         $assignee = $acceptance->assignedTo ?? $item->assignedTo ?? null;
         $email = $assignee?->email;
         $locale = $assignee?->locale;
-
-        Log::debug(print_r($acceptance, true));
 
         if (is_null($acceptance->created_at)) {
             Log::debug('No acceptance created_at');

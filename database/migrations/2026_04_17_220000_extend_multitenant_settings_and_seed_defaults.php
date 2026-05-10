@@ -54,11 +54,13 @@ return new class extends Migration
                 ]);
         }
 
-        $this->seedGlobalDefaultCategories($adminUserId);
-        $this->seedGlobalDefaultStatusLabels($adminUserId);
-        $this->seedGlobalDefaultManufacturers($adminUserId);
-        $this->seedGlobalDefaultSuppliers($adminUserId);
-        $this->seedGlobalDefaultDepreciations($adminUserId);
+        if (! app()->environment('testing')) {
+            $this->seedGlobalDefaultCategories($adminUserId);
+            $this->seedGlobalDefaultStatusLabels($adminUserId);
+            $this->seedGlobalDefaultManufacturers($adminUserId);
+            $this->seedGlobalDefaultSuppliers($adminUserId);
+            $this->seedGlobalDefaultDepreciations($adminUserId);
+        }
     }
 
     public function down(): void
@@ -291,7 +293,7 @@ return new class extends Migration
 
     private function indexExists(string $tableName, string $indexName): bool
     {
-        return collect(DB::select("SHOW INDEX FROM `{$tableName}`"))
-            ->contains(fn ($row) => $row->Key_name === $indexName);
+        return collect(Schema::getIndexes($tableName))
+            ->contains(fn (array $index) => ($index['name'] ?? null) === $indexName);
     }
 };

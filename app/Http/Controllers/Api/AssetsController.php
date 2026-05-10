@@ -1161,7 +1161,7 @@ class AssetsController extends Controller
                 $asset->location_id = $request->input('location_id');
             }
 
-            $asset->last_audit_date = date('Y-m-d H:i:s');
+            $asset->last_audit_date = Carbon::now()->format('Y-m-d H:i:s');
 
             // Set up the payload for re-display in the API response
             $payload = [

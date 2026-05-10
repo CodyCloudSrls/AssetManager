@@ -23,8 +23,6 @@ class AddCompanyToLogs extends Migration
             if ($log->item) {
                 $log->company_id = $log->item->company_id;
                 $log->save();
-            } else {
-                var_dump($log);
             }
         }
     }

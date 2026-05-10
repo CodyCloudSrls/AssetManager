@@ -89,13 +89,6 @@ class StoreAssetModelRequest extends ImageUploadRequest
             $duplicateModelQuery = AssetModel::withoutGlobalScopes()
                 ->whereNull('deleted_at')
                 ->where('name', $name)
-                ->where(function ($query) use ($modelNumber) {
-                    if (is_null($modelNumber)) {
-                        $query->whereNull('model_number');
-                    } else {
-                        $query->where('model_number', $modelNumber);
-                    }
-                })
                 ->where(function ($query) use ($companyId) {
                     if (is_null($companyId)) {
                         $query->whereNull('company_id');
@@ -104,12 +97,20 @@ class StoreAssetModelRequest extends ImageUploadRequest
                     }
                 });
 
+            if (! is_null($modelNumber)) {
+                $duplicateModelQuery->where('model_number', $modelNumber);
+            }
+
             if ($modelId) {
                 $duplicateModelQuery->where('id', '!=', $modelId);
             }
 
             if ($duplicateModelQuery->exists()) {
-                $validator->errors()->add('name', trans('validation.unique'));
+                $validator->errors()->add('name', $this->twoColumnUniqueMessage('name', 'models', 'model_number'));
+
+                if ($this->filled('model_number')) {
+                    $validator->errors()->add('model_number', $this->twoColumnUniqueMessage('model_number', 'models', 'name'));
+                }
             }
 
             if ($this->filled('fieldset_id') && ! CustomFieldset::find($this->input('fieldset_id'))) {
@@ -124,5 +125,14 @@ class StoreAssetModelRequest extends ImageUploadRequest
                 $validator->errors()->add('depreciation_id', trans('validation.exists', ['attribute' => 'depreciation']));
             }
         });
+    }
+
+    private function twoColumnUniqueMessage(string $attribute, string $table1, string $table2): string
+    {
+        return str_replace('_', ' ', trans('validation.two_column_unique_undeleted', [
+            'attribute' => str_replace('_', ' ', $attribute),
+            'table1' => $table1,
+            'table2' => $table2,
+        ]));
     }
 }

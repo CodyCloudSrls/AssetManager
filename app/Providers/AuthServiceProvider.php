@@ -9,6 +9,8 @@ use App\Models\Category;
 use App\Models\Company;
 use App\Models\Component;
 use App\Models\Consumable;
+use App\Models\Customer;
+use App\Models\CustomerContract;
 use App\Models\CustomField;
 use App\Models\CustomFieldset;
 use App\Models\Department;
@@ -23,6 +25,7 @@ use App\Models\Manufacturer;
 use App\Models\PredefinedKit;
 use App\Models\Statuslabel;
 use App\Models\Supplier;
+use App\Models\Tenant;
 use App\Models\Ticket;
 use App\Models\User;
 use App\Policies\AccessoryPolicy;
@@ -32,6 +35,8 @@ use App\Policies\CategoryPolicy;
 use App\Policies\CompanyPolicy;
 use App\Policies\ComponentPolicy;
 use App\Policies\ConsumablePolicy;
+use App\Policies\CustomerContractPolicy;
+use App\Policies\CustomerPolicy;
 use App\Policies\CustomFieldPolicy;
 use App\Policies\CustomFieldsetPolicy;
 use App\Policies\DepartmentPolicy;
@@ -72,6 +77,8 @@ class AuthServiceProvider extends ServiceProvider
         Category::class => CategoryPolicy::class,
         Component::class => ComponentPolicy::class,
         Consumable::class => ConsumablePolicy::class,
+        Customer::class => CustomerPolicy::class,
+        CustomerContract::class => CustomerContractPolicy::class,
         CustomField::class => CustomFieldPolicy::class,
         CustomFieldset::class => CustomFieldsetPolicy::class,
         Department::class => DepartmentPolicy::class,
@@ -117,7 +124,14 @@ class AuthServiceProvider extends ServiceProvider
          * If this condition is true, ANYTHING else below will be assumed to be true.
          * This is where we set the superadmin permission to allow superadmins to be able to do everything within the system.
          */
-        Gate::before(function ($user, $ability) {
+        Gate::before(function ($user, $ability, array $arguments = []) {
+            $globalFramework = $this->globalDocumentFrameworkFromGateArguments($arguments);
+
+            if ($globalFramework) {
+                return $globalFramework->isSystemTemplate()
+                    ? $this->allowsSystemDocumentFrameworkAbility($user, $ability)
+                    : $user->isSuperUser() && is_null(Tenant::activeTenantId());
+            }
 
             // Disallow even superadmins to edit non-editable things when in demo mode.
             // (We have to do this to prevent jerks from trying to break the demo by editing things they shouldn't.)
@@ -286,5 +300,33 @@ class AuthServiceProvider extends ServiceProvider
             return $user->canEditProfile();
         });
 
+    }
+
+    private function globalDocumentFrameworkFromGateArguments(array $arguments): ?DocumentFramework
+    {
+        $item = $arguments[0] ?? null;
+
+        if ($item instanceof DocumentFramework) {
+            return is_null($item->company_id) ? $item : null;
+        }
+
+        if ($item instanceof DocumentFrameworkRequirement) {
+            $framework = $item->relationLoaded('framework')
+                ? $item->framework
+                : DocumentFramework::withoutGlobalScopes()->find($item->document_framework_id);
+
+            return $framework && is_null($framework->company_id) ? $framework : null;
+        }
+
+        return null;
+    }
+
+    private function allowsSystemDocumentFrameworkAbility(User $user, string $ability): bool
+    {
+        if (! in_array($ability, ['view', 'history', 'journal'], true)) {
+            return false;
+        }
+
+        return $user->isSuperUser() && is_null(Tenant::activeTenantId());
     }
 }

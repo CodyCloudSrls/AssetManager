@@ -29,6 +29,8 @@ class CustomFieldFactory extends Factory
             'auto_add_to_fieldsets' => '0',
             'show_in_requestable_list' => '0',
             'created_by' => User::factory()->superuser(),
+            'company_id' => null,
+            'visibility_type' => CustomField::VISIBILITY_GLOBAL,
         ];
     }
 

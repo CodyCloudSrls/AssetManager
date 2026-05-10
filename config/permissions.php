@@ -441,6 +441,48 @@ return [
         ],
     ],
 
+    'Customers' => [
+        [
+            'permission' => 'customers.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'customers.create',
+            'display' => true,
+        ],
+        [
+            'permission' => 'customers.edit',
+            'display' => true,
+        ],
+        [
+            'permission' => 'customers.delete',
+            'display' => true,
+        ],
+        [
+            'permission' => 'customers.files',
+            'display' => true,
+        ],
+    ],
+
+    'Contracts' => [
+        [
+            'permission' => 'contracts.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'contracts.create',
+            'display' => true,
+        ],
+        [
+            'permission' => 'contracts.edit',
+            'display' => true,
+        ],
+        [
+            'permission' => 'contracts.delete',
+            'display' => true,
+        ],
+    ],
+
     'Manufacturers' => [
         [
             'permission' => 'manufacturers.view',

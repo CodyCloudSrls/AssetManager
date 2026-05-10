@@ -73,9 +73,6 @@ class CategoryImporter extends ItemImporter
         $this->item['checkin_email'] = trim(($this->fetchHumanBoolean($this->findCsvMatch($row, 'checkin_email'))) == 1) ? 1 : 0;
         $this->item['tag_color'] = trim($this->findCsvMatch($row, 'tag_color'));
 
-        Log::debug('Item array is: ');
-        Log::debug(print_r($this->item, true));
-
         if ($editingCategory) {
             Log::debug('Updating existing category');
             $category->update($this->sanitizeItemForUpdating($category));

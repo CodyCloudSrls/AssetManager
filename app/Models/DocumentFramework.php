@@ -242,7 +242,9 @@ class DocumentFramework extends SnipeModel
 
     public function scopeOperational($query)
     {
-        return $query->where($this->getTable().'.is_system_template', false);
+        return $query
+            ->where($this->getTable().'.is_system_template', false)
+            ->whereNotNull($this->getTable().'.company_id');
     }
 
     public function scopeSystemTemplates($query)

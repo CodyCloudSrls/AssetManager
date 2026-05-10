@@ -60,6 +60,10 @@ class StoreDocumentFrameworkRequest extends FormRequest
         $validator->after(function ($validator) {
             $documentFrameworkId = $this->route('documentframework')?->id ?? $this->route('documentframework');
 
+            if (is_null($this->input('company_id'))) {
+                $validator->errors()->add('company_id', trans('validation.required', ['attribute' => trans('general.company')]));
+            }
+
             foreach (['name', 'slug'] as $column) {
                 if (! $this->filled($column)) {
                     continue;

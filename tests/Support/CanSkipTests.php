@@ -13,7 +13,9 @@ trait CanSkipTests
 
     public function markIncompleteIfSqlite($message = 'Test skipped due to database driver being sqlite.')
     {
-        if (config('database.default') === 'sqlite') {
+        $connection = config('database.default');
+
+        if (config("database.connections.{$connection}.driver") === 'sqlite') {
             $this->markTestIncomplete($message);
         }
     }

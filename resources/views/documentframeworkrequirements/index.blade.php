@@ -9,7 +9,7 @@
     <x-container>
         <x-box>
             <div class="row" style="margin-bottom: 15px;">
-                <div class="{{ $editableFrameworks->isNotEmpty() ? 'col-md-9' : 'col-md-12' }}">
+                <div class="col-md-12">
                     <form method="get" action="{{ route('documentframeworkrequirements.index') }}" class="form-inline" role="search">
                         @foreach (request()->only(['tenant_id']) as $filterName => $filterValue)
                             <input type="hidden" name="{{ $filterName }}" value="{{ $filterValue }}">
@@ -45,40 +45,61 @@
                         </a>
                     </form>
                 </div>
-
-                @if ($editableFrameworks->isNotEmpty())
-                    <div class="col-md-3 text-right">
-                        @if ($editableFrameworks->count() === 1)
-                            <a href="{{ route('documentframeworkrequirements.create', $editableFrameworks->first()) }}" class="btn btn-primary">
-                                <x-icon type="plus" />
-                                {{ trans('admin/documentframeworkrequirements/general.create') }}
-                            </a>
-                        @else
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <x-icon type="plus" />
-                                    {{ trans('admin/documentframeworkrequirements/general.create') }}
-                                    <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-right">
-                                    @foreach ($editableFrameworks as $framework)
-                                        <li><a href="{{ route('documentframeworkrequirements.create', $framework) }}">{{ $framework->name }}</a></li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
-                    </div>
-                @endif
             </div>
 
             <x-table.documentframeworkrequirements
                 :route="route('api.documentframeworkrequirements.index', request()->only(['tenant_id', 'document_framework_id', 'coverage_status']))"
                 table_header="{{ trans('admin/documentframeworkrequirements/general.work_queue') }}"
+                buttons="documentframeworkrequirementsButtons"
             />
         </x-box>
     </x-container>
 @stop
 
 @section('moar_scripts')
+    <script nonce="{{ csrf_token() }}">
+        window.documentframeworkrequirementsButtons = () => ({
+            @if ($editableFrameworks->isNotEmpty())
+            btnAdd: {
+                text: @json(trans('general.create')),
+                icon: 'fa fa-plus',
+                event () {
+                    const createOptions = @json($editableFrameworkCreateOptions);
+                    const selectedFrameworkId = String(@json($selectedFrameworkId));
+                    const selectedOption = createOptions.find((option) => String(option.id) === selectedFrameworkId);
+                    const createTarget = selectedOption || (createOptions.length === 1 ? createOptions[0] : null);
+
+                    if (createTarget) {
+                        window.location.href = createTarget.url;
+                        return;
+                    }
+
+                    const frameworkFilter = $('#document_framework_filter');
+                    frameworkFilter.one('select2:select.documentframeworkrequirements-create', function (event) {
+                        const option = createOptions.find((item) => String(item.id) === String(event.params.data.id));
+
+                        if (option) {
+                            window.location.href = option.url;
+                        }
+                    });
+
+                    if (frameworkFilter.data('select2')) {
+                        frameworkFilter.select2('open');
+                    } else {
+                        frameworkFilter.trigger('focus');
+                    }
+                },
+                attributes: {
+                    class: 'btn-warning',
+                    title: @json(trans('admin/documentframeworkrequirements/general.create')),
+                    @if ($snipeSettings->shortcuts_enabled == 1)
+                    accesskey: 'n'
+                    @endif
+                }
+            },
+            @endif
+        });
+    </script>
+
     @include('partials.bootstrap-table')
 @stop

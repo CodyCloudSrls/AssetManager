@@ -500,6 +500,48 @@ return array (
   array (
     'name' => 'Elimina Fornitori',
   ),
+  'customers' =>
+  array (
+    'name' => 'Clienti',
+    'note' => 'Consente l\'accesso alla sezione Clienti dell\'applicazione.',
+  ),
+  'customersview' =>
+  array (
+    'name' => 'Visualizza Clienti',
+  ),
+  'customerscreate' =>
+  array (
+    'name' => 'Crea nuovi clienti',
+  ),
+  'customersedit' =>
+  array (
+    'name' => 'Modifica clienti',
+  ),
+  'customersdelete' =>
+  array (
+    'name' => 'Elimina clienti',
+  ),
+  'contracts' =>
+  array (
+    'name' => 'Contratti',
+    'note' => 'Consente l\'accesso ai contratti cliente e agli abbonamenti.',
+  ),
+  'contractsview' =>
+  array (
+    'name' => 'Visualizza contratti',
+  ),
+  'contractscreate' =>
+  array (
+    'name' => 'Crea nuovi contratti',
+  ),
+  'contractsedit' =>
+  array (
+    'name' => 'Modifica contratti',
+  ),
+  'contractsdelete' =>
+  array (
+    'name' => 'Elimina contratti',
+  ),
   'manufacturers' =>
   array (
     'name' => 'Produttori',
@@ -624,6 +666,11 @@ return array (
   array (
     'name' => 'Manage Supplier Files',
     'note' => 'Allows the user to upload, download, and delete files associated with suppliers. (This only makes sense with view privileges or higher.)',
+  ),
+  'customersfiles' =>
+  array (
+    'name' => 'Gestione file clienti',
+    'note' => 'Consente di caricare, scaricare ed eliminare file associati ai clienti. Ha senso solo insieme al permesso di visualizzazione o superiore.',
   ),
   'locationsfiles' =>
   array (

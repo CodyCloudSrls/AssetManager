@@ -42,6 +42,17 @@ class AccessoryFactory extends Factory
         ];
     }
 
+    public function configure()
+    {
+        return $this->afterMaking(function (Accessory $accessory) {
+            if ($accessory->company_id && $accessory->location_id) {
+                Location::withoutGlobalScopes()
+                    ->whereKey($accessory->location_id)
+                    ->update(['company_id' => $accessory->company_id]);
+            }
+        });
+    }
+
     public function appleBtKeyboard()
     {
         return $this->state(function () {

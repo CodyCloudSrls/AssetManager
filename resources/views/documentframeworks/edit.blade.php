@@ -9,7 +9,13 @@
 @section('inputFields')
     @include('partials.forms.edit.name', ['translated_name' => trans('admin/documentframeworks/table.name'), 'item' => $item])
     @include('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id', 'item' => $item])
-    @include('partials.forms.edit.template-visibility-select', ['translated_name' => trans('general.template_visibility.label'), 'fieldname' => 'visibility_type', 'item' => $item])
+    @include('partials.forms.edit.template-visibility-select', [
+        'translated_name' => trans('general.template_visibility.label'),
+        'fieldname' => 'visibility_type',
+        'item' => $item,
+        'visibilityOptions' => array_diff_key(\App\Models\DocumentFramework::visibilityOptions(), [\App\Models\DocumentFramework::VISIBILITY_GLOBAL => true]),
+        'defaultVisibility' => \App\Models\DocumentFramework::VISIBILITY_PRIVATE,
+    ])
 
     <div class="col-md-12 col-sm-12">
         <fieldset name="document-framework-metadata">

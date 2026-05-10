@@ -365,6 +365,10 @@ class ValidationServiceProvider extends ServiceProvider
 
         // Validates that the company of the validated object matches the company of the location in case of scoped locations
         Validator::extend('fmcs_location', function ($attribute, $value, $parameters, $validator) {
+            if (! (bool) (Setting::getSettings()?->full_multiple_companies_support)) {
+                return true;
+            }
+
             $company_id = array_get($validator->getData(), 'company_id');
             $location = Location::find($value);
 

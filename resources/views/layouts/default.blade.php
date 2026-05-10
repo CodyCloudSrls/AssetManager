@@ -1972,6 +1972,22 @@
                                         </li>
                                     @endcan
 
+                                    @can('view', \App\Models\Customer::class)
+                                        <li {{!! (request()->is('customers*') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('customers.index') }}">
+                                                {{ trans('general.customers') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+
+                                    @can('view', \App\Models\CustomerContract::class)
+                                        <li {{!! (request()->is('contracts*') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('contracts.index') }}">
+                                                {{ trans('admin/contracts/general.contracts') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+
                                     @can('view', \App\Models\Department::class)
                                         <li {{!! (request()->is('departments*') ? ' class="active"' : '') !!}}>
                                             <a href="{{ route('departments.index') }}">
@@ -2033,6 +2049,11 @@
                                     <li {{!! (request()->is('reports/nis-risk-matrix') ? ' class="active"' : '') !!}}>
                                         <a href="{{ route('reports.nis-risk-matrix') }}">
                                             {{ trans('admin/reports/general.nis_risk_matrix') }}
+                                        </a>
+                                    </li>
+                                    <li {{!! (request()->is('reports/contract-forecast') ? ' class="active"' : '') !!}}>
+                                        <a href="{{ route('reports.contract-forecast') }}">
+                                            {{ trans('admin/reports/general.contract_forecast') }}
                                         </a>
                                     </li>
                                     <li {{!! (request()->is('reports/depreciation') ? ' class="active"' : '') !!}}>

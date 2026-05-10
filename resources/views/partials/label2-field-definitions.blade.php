@@ -214,9 +214,6 @@
                 get valueString() {
                     return this.getCombinedString(this.fields);
                 },
-                onTest: function(a) {
-                    console.log('test', a);
-                },
 
                 getFieldLabel: function(field) {
                     return field.options.map(option => option.label).join(' | ');

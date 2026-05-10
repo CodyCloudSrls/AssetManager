@@ -36,6 +36,7 @@ class DocumentAssignmentsController extends Controller
             $assignments->whereIn('assignable_type', [
                 DocumentAssignment::classForAssignableToken(DocumentAssignment::ASSIGNABLE_USER),
                 DocumentAssignment::classForAssignableToken(DocumentAssignment::ASSIGNABLE_SUPPLIER),
+                DocumentAssignment::classForAssignableToken(DocumentAssignment::ASSIGNABLE_CUSTOMER),
             ])->whereIn('relation_type', [
                 DocumentAssignment::RELATION_REQUIRED_FOR,
                 DocumentAssignment::RELATION_EVIDENCE_FOR,
@@ -81,6 +82,11 @@ class DocumentAssignmentsController extends Controller
         if ($request->filled('assigned_supplier_id')) {
             $assignments->where('assignable_type', DocumentAssignment::classForAssignableToken(DocumentAssignment::ASSIGNABLE_SUPPLIER))
                 ->where('assignable_id', '=', (int) $request->input('assigned_supplier_id'));
+        }
+
+        if ($request->filled('assigned_customer_id')) {
+            $assignments->where('assignable_type', DocumentAssignment::classForAssignableToken(DocumentAssignment::ASSIGNABLE_CUSTOMER))
+                ->where('assignable_id', '=', (int) $request->input('assigned_customer_id'));
         }
 
         if ($request->filled('review_status')) {

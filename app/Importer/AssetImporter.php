@@ -28,6 +28,7 @@ class AssetImporter extends ItemImporter
                 'deployable' => 0,
                 'pending' => 1,
                 'archived' => 0,
+                'visibility_type' => Statuslabel::VISIBILITY_GLOBAL,
                 'notes' => 'Default status label created by AssetImporter',
             ]);
 
