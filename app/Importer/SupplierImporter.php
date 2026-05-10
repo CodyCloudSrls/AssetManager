@@ -79,9 +79,6 @@ class SupplierImporter extends ItemImporter
         $this->item['notes'] = trim($this->findCsvMatch($row, 'notes'));
         $this->item['tag_color'] = trim($this->findCsvMatch($row, 'tag_color'));
 
-        Log::debug('Item array is: ');
-        Log::debug(print_r($this->item, true));
-
         if ($editingSupplier) {
             Log::debug('Updating existing supplier');
             $supplier->update($this->sanitizeItemForUpdating($supplier));

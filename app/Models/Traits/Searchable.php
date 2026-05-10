@@ -386,11 +386,66 @@ trait Searchable
      */
     private function applyCountAliasFilter(Builder $query, string $countAlias, string $filterValue): Builder
     {
+        $countSubquery = $this->findSelectedCountAliasSubquery($query, $countAlias);
+
+        if ($countSubquery !== null) {
+            if (is_numeric($filterValue)) {
+                return $query->whereRaw($countSubquery.' = ?', [(int) $filterValue]);
+            }
+
+            return $query->whereRaw($countSubquery.' LIKE ?', ['%'.$filterValue.'%']);
+        }
+
         if (is_numeric($filterValue)) {
             return $query->having($countAlias, '=', (int) $filterValue);
         }
 
         return $query->having($countAlias, 'LIKE', '%'.$filterValue.'%');
+    }
+
+    /**
+     * Find a selected withCount() subquery by alias so filters do not rely on HAVING.
+     */
+    private function findSelectedCountAliasSubquery(Builder $query, string $countAlias): ?string
+    {
+        $baseQuery = $query->getQuery();
+        $columns = $baseQuery->columns ?? [];
+
+        if (empty($columns)) {
+            return null;
+        }
+
+        $grammar = $baseQuery->getGrammar();
+        $aliasPattern = implode('|', array_map(
+            static fn ($alias) => preg_quote($alias, '/'),
+            array_unique([
+                $countAlias,
+                $grammar->wrap($countAlias),
+                '"'.$countAlias.'"',
+                '`'.$countAlias.'`',
+                '['.$countAlias.']',
+            ])
+        ));
+
+        foreach ($columns as $column) {
+            $columnSql = $grammar->getValue($column);
+
+            if (! is_string($columnSql)) {
+                continue;
+            }
+
+            if (! preg_match('/^\s*(?<subquery>\(.+\))\s+as\s+(?:'.$aliasPattern.')\s*$/i', $columnSql, $matches)) {
+                continue;
+            }
+
+            if (str_contains($matches['subquery'], '?')) {
+                return null;
+            }
+
+            return $matches['subquery'];
+        }
+
+        return null;
     }
 
     /**

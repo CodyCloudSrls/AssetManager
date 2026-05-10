@@ -539,8 +539,6 @@
 
 <script>
     $('.snipe-table').bootstrapTable('destroy').each(function () {
-        console.log('BS table loaded');
-
         data_export_options = $(this).attr('data-export-options');
         export_options = data_export_options ? JSON.parse(data_export_options) : {};
         export_options['htmlContent'] = false; // this is already the default; but let's be explicit about it

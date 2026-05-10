@@ -1,6 +1,11 @@
 @php
-    $visibilityOptions = $item::visibilityOptions();
-    $selectedVisibility = old($fieldname ?? 'visibility_type', $item->{$fieldname ?? 'visibility_type'} ?? ($item->company_id ? $item::VISIBILITY_PRIVATE : $item::VISIBILITY_GLOBAL));
+    $visibilityOptions = $visibilityOptions ?? $item::visibilityOptions();
+    $defaultVisibility = $defaultVisibility ?? ($item->company_id ? $item::VISIBILITY_PRIVATE : $item::VISIBILITY_GLOBAL);
+    $selectedVisibility = old($fieldname ?? 'visibility_type', $item->{$fieldname ?? 'visibility_type'} ?? $defaultVisibility);
+
+    if (! array_key_exists($selectedVisibility, $visibilityOptions)) {
+        $selectedVisibility = array_key_first($visibilityOptions);
+    }
 @endphp
 <div id="{{ $fieldname ?? 'visibility_type' }}" class="form-group{{ $errors->has($fieldname ?? 'visibility_type') ? ' has-error' : '' }}">
     <label for="{{ $fieldname ?? 'visibility_type' }}" class="col-md-3 control-label">{{ $translated_name }}</label>

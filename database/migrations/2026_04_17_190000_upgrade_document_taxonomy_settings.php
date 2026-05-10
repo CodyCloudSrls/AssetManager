@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -76,7 +75,9 @@ return new class extends Migration
         $uniqueName = $this->findIndexName($table, 'slug', false);
 
         if ($uniqueName) {
-            DB::statement(sprintf('ALTER TABLE `%s` DROP INDEX `%s`', $table, $uniqueName));
+            Schema::table($table, function (Blueprint $tableBlueprint) use ($uniqueName) {
+                $tableBlueprint->dropUnique($uniqueName);
+            });
         }
 
         $indexName = $table.'_slug_index';
@@ -109,17 +110,18 @@ return new class extends Migration
 
     private function findIndexName(string $table, string $column, bool $nonUnique = false): ?string
     {
-        $index = collect(DB::select("SHOW INDEX FROM `{$table}`"))
-            ->first(function ($row) use ($column, $nonUnique) {
-                return $row->Column_name === $column && (bool) $row->Non_unique === $nonUnique;
+        $index = collect(Schema::getIndexes($table))
+            ->first(function (array $index) use ($column, $nonUnique) {
+                return in_array($column, $index['columns'] ?? [], true)
+                    && (bool) ($index['unique'] ?? false) === (! $nonUnique);
             });
 
-        return $index?->Key_name;
+        return $index['name'] ?? null;
     }
 
     private function indexExists(string $table, string $indexName): bool
     {
-        return collect(DB::select("SHOW INDEX FROM `{$table}`"))
-            ->contains(fn ($row) => $row->Key_name === $indexName);
+        return collect(Schema::getIndexes($table))
+            ->contains(fn (array $index) => ($index['name'] ?? null) === $indexName);
     }
 };

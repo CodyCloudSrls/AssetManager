@@ -204,9 +204,19 @@ final class Company extends SnipeModel
         }
 
         $guard = Auth::guard();
-        $userId = method_exists($guard, 'getName')
-            ? session()->get($guard->getName())
-            : null;
+        $userId = null;
+
+        if (method_exists($guard, 'hasUser') && $guard->hasUser() && method_exists($guard, 'user')) {
+            $userId = $guard->user()?->getAuthIdentifier();
+        }
+
+        if (is_null($userId) && method_exists($guard, 'getName')) {
+            $userId = session()->get($guard->getName());
+        }
+
+        if (is_null($userId) && ! method_exists($guard, 'getName') && method_exists($guard, 'id')) {
+            $userId = $guard->id();
+        }
 
         if (is_null($userId)) {
             return null;
@@ -276,6 +286,10 @@ final class Company extends SnipeModel
      */
     public static function getIdForCurrentUser($unescaped_input)
     {
+        if (! self::companyScopingEnabled()) {
+            return self::getIdFromInput($unescaped_input);
+        }
+
         $authContext = self::currentAuthContext();
 
         if ($authContext['is_superuser']) {
@@ -338,6 +352,10 @@ final class Company extends SnipeModel
 
         $authContext = self::currentAuthContext();
 
+        if (! self::companyScopingEnabled()) {
+            return true;
+        }
+
         if (! is_null($authContext['id'])) {
             if ($authContext['is_superuser']) {
                 $activeCompanyContextIds = self::activeCompanyContextIds();
@@ -374,6 +392,16 @@ final class Company extends SnipeModel
 
         if (is_null($authContext['id'])) {
             return false;
+        }
+
+        if (method_exists($template, 'isSystemTemplate')) {
+            if ($template->isSystemTemplate()) {
+                return $authContext['is_superuser'] && is_null(Tenant::activeTenantId());
+            }
+
+            if (is_null($template->company_id)) {
+                return $authContext['is_superuser'] && is_null(Tenant::activeTenantId());
+            }
         }
 
         if ($authContext['is_superuser']) {
@@ -419,6 +447,10 @@ final class Company extends SnipeModel
             return false;
         }
 
+        if (! self::companyScopingEnabled()) {
+            return true;
+        }
+
         if ($authContext['is_superuser']) {
             $activeCompanyContextIds = self::activeCompanyContextIds();
 
@@ -437,6 +469,16 @@ final class Company extends SnipeModel
     {
         if (is_null($template)) {
             return false;
+        }
+
+        if (method_exists($template, 'isSystemTemplate')) {
+            if ($template->isSystemTemplate()) {
+                return false;
+            }
+
+            if (is_null($template->company_id)) {
+                return false;
+            }
         }
 
         if (is_null($template->company_id)) {
@@ -766,6 +808,10 @@ final class Company extends SnipeModel
             return $query;
         }
 
+        if (! self::companyScopingEnabled()) {
+            return $query;
+        }
+
         if (self::currentAuthContext()['is_superuser'] && is_null(Tenant::activeTenantId())) {
             return $query;
         }
@@ -852,6 +898,9 @@ final class Company extends SnipeModel
      */
     public static function scopeCompanyableChildren(array $companyable_names, $query)
     {
+        if (! Auth::hasUser() || ! self::companyScopingEnabled()) {
+            return $query;
+        }
 
         if (count($companyable_names) == 0) {
             throw new Exception('No Companyable Children to scope');
@@ -1058,6 +1107,19 @@ final class Company extends SnipeModel
         }
 
         return 'private';
+    }
+
+    private static function companyScopingEnabled(): bool
+    {
+        try {
+            if (! Schema::hasTable('settings') || ! Schema::hasColumn('settings', 'full_multiple_companies_support')) {
+                return false;
+            }
+
+            return (bool) (Setting::getSettings()?->full_multiple_companies_support);
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     private static function isOwnedByAccessibleCompanyId(?int $companyId): bool

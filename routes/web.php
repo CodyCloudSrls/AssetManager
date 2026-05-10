@@ -6,10 +6,13 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\BulkCategoriesController;
+use App\Http\Controllers\BulkCustomersController;
 use App\Http\Controllers\BulkManufacturersController;
 use App\Http\Controllers\BulkSuppliersController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\CompaniesController;
+use App\Http\Controllers\CustomerContractsController;
+use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentsController;
 use App\Http\Controllers\DepreciationsController;
@@ -122,6 +125,13 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('suppliers', SuppliersController::class);
 
     Route::post('suppliers/bulk/delete', [BulkSuppliersController::class, 'destroy'])->name('suppliers.bulk.delete');
+
+    /*
+    * Customers and contracts
+    */
+    Route::resource('customers', CustomersController::class);
+    Route::post('customers/bulk/delete', [BulkCustomersController::class, 'destroy'])->name('customers.bulk.delete');
+    Route::resource('contracts', CustomerContractsController::class)->parameters(['contracts' => 'contract']);
 
     /*
     * Depreciations
@@ -548,6 +558,11 @@ Route::group(['prefix' => 'reports', 'middleware' => ['auth']], function () {
         ->breadcrumbs(fn (Trail $trail) => $trail->parent('home')
             ->push(trans('admin/reports/general.nis_risk_matrix'), route('reports.nis-risk-matrix')));
 
+    Route::get('contract-forecast', [ReportsController::class, 'getContractForecastReport'])
+        ->name('reports.contract-forecast')
+        ->breadcrumbs(fn (Trail $trail) => $trail->parent('home')
+            ->push(trans('admin/reports/general.contract_forecast'), route('reports.contract-forecast')));
+
     Route::prefix('templates')
         ->group(function () {
 
@@ -719,7 +734,7 @@ Route::group(['middleware' => 'web'], function () {
             'show',
         ]
     )->name('ui.files.show')
-        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|components|companies|departments|documents|tickets']);
+        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|customers|components|companies|departments|documents|tickets']);
 
     // Upload files(s)
     Route::post('{object_type}/{id}/files',
@@ -728,7 +743,7 @@ Route::group(['middleware' => 'web'], function () {
             'store',
         ]
     )->name('ui.files.store')
-        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|components|companies|departments|documents|tickets']);
+        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|customers|components|companies|departments|documents|tickets']);
 
     // Delete files(s)
     Route::delete('{object_type}/{id}/files/{file_id}/delete',
@@ -737,7 +752,7 @@ Route::group(['middleware' => 'web'], function () {
             'destroy',
         ]
     )->name('ui.files.destroy')
-        ->where(['object_type' => 'assets|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|components|companies|departments|documents|tickets']);
+        ->where(['object_type' => 'assets|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|customers|components|companies|departments|documents|tickets']);
 });
 
 /*

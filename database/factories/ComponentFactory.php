@@ -47,6 +47,17 @@ class ComponentFactory extends Factory
         ];
     }
 
+    public function configure()
+    {
+        return $this->afterMaking(function (Component $component) {
+            if ($component->company_id && $component->location_id) {
+                Location::withoutGlobalScopes()
+                    ->whereKey($component->location_id)
+                    ->update(['company_id' => $component->company_id]);
+            }
+        });
+    }
+
     public function ramCrucial4()
     {
         $manufacturer = Manufacturer::where('name', 'Crucial')->first() ?? Manufacturer::factory()->create(['name' => 'Crucial']);

@@ -217,6 +217,10 @@ return [
         'name' => 'Manage Supplier Files',
         'note' => 'Allows the user to upload, download, and delete files associated with suppliers. (This only makes sense with view privileges or higher.)',
     ],
+    'customersfiles' => [
+        'name' => 'Manage Customer Files',
+        'note' => 'Allows the user to upload, download, and delete files associated with customers. (This only makes sense with view privileges or higher.)',
+    ],
 
     'locationsfiles' => [
         'name' => 'Manage Location Files',
@@ -460,6 +464,38 @@ return [
     ],
     'suppliersdelete' => [
         'name' => 'Delete Suppliers',
+    ],
+    'customers' => [
+        'name' => 'Customers',
+        'note' => 'Grants access to the Customers section of the application.',
+    ],
+    'customersview' => [
+        'name' => 'View Customers',
+    ],
+    'customerscreate' => [
+        'name' => 'Create New Customers',
+    ],
+    'customersedit' => [
+        'name' => 'Edit Customers',
+    ],
+    'customersdelete' => [
+        'name' => 'Delete Customers',
+    ],
+    'contracts' => [
+        'name' => 'Contracts',
+        'note' => 'Grants access to customer contracts and subscriptions.',
+    ],
+    'contractsview' => [
+        'name' => 'View Contracts',
+    ],
+    'contractscreate' => [
+        'name' => 'Create New Contracts',
+    ],
+    'contractsedit' => [
+        'name' => 'Edit Contracts',
+    ],
+    'contractsdelete' => [
+        'name' => 'Delete Contracts',
     ],
     'manufacturers' => [
         'name' => 'Manufacturers',

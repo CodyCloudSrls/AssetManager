@@ -400,6 +400,48 @@ return array (
   array (
     'name' => 'Delete Suppliers',
   ),
+  'customers' =>
+  array (
+    'name' => 'Customers',
+    'note' => 'Grants access to the Customers section of the application.',
+  ),
+  'customersview' =>
+  array (
+    'name' => 'View Customers',
+  ),
+  'customerscreate' =>
+  array (
+    'name' => 'Create New Customers',
+  ),
+  'customersedit' =>
+  array (
+    'name' => 'Edit Customers',
+  ),
+  'customersdelete' =>
+  array (
+    'name' => 'Delete Customers',
+  ),
+  'contracts' =>
+  array (
+    'name' => 'Contracts',
+    'note' => 'Grants access to customer contracts and subscriptions.',
+  ),
+  'contractsview' =>
+  array (
+    'name' => 'View Contracts',
+  ),
+  'contractscreate' =>
+  array (
+    'name' => 'Create New Contracts',
+  ),
+  'contractsedit' =>
+  array (
+    'name' => 'Edit Contracts',
+  ),
+  'contractsdelete' =>
+  array (
+    'name' => 'Delete Contracts',
+  ),
   'manufacturers' =>
   array (
     'name' => 'Valmistajat',
@@ -624,6 +666,11 @@ return array (
   array (
     'name' => 'Manage Supplier Files',
     'note' => 'Allows the user to upload, download, and delete files associated with suppliers. (This only makes sense with view privileges or higher.)',
+  ),
+  'customersfiles' =>
+  array (
+    'name' => 'Manage Customer Files',
+    'note' => 'Allows the user to upload, download, and delete files associated with customers. (This only makes sense with view privileges or higher.)',
   ),
   'locationsfiles' =>
   array (

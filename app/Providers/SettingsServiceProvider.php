@@ -157,6 +157,15 @@ class SettingsServiceProvider extends ServiceProvider
             return 'suppliers/';
         });
 
+        // Customers
+        app()->singleton('customers_upload_path', function () {
+            return 'customers/';
+        });
+
+        app()->singleton('customers_upload_url', function () {
+            return 'customers/';
+        });
+
         // Departments
         app()->singleton('departments_upload_path', function () {
             return 'departments/';

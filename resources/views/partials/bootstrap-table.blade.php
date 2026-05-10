@@ -823,6 +823,46 @@
         },
     });
 
+    // Customer table buttons
+    window.customerButtons = () => ({
+        @can('create', \App\Models\Customer::class)
+        btnAdd: {
+            text: '{{ trans('general.create') }}',
+            icon: 'fa fa-plus',
+            event () {
+                window.location.href = '{{ route('customers.create') }}';
+            },
+            attributes: {
+                class: 'btn-warning',
+                title: '{{ trans('general.create') }}',
+                @if ($snipeSettings->shortcuts_enabled == 1)
+                accesskey: 'n'
+                @endif
+            }
+        },
+        @endcan
+    });
+
+    // Contract table buttons
+    window.contractButtons = () => ({
+        @can('create', \App\Models\CustomerContract::class)
+        btnAdd: {
+            text: '{{ trans('general.create') }}',
+            icon: 'fa fa-plus',
+            event () {
+                window.location.href = '{{ route('contracts.create') }}';
+            },
+            attributes: {
+                class: 'btn-warning',
+                title: '{{ trans('general.create') }}',
+                @if ($snipeSettings->shortcuts_enabled == 1)
+                accesskey: 'n'
+                @endif
+            }
+        },
+        @endcan
+    });
+
     @can('create', \App\Models\Department::class)
     // Department table buttons
     window.departmentButtons = () => ({
@@ -1564,6 +1604,8 @@
         'companies',
         'components',
         'consumables',
+        'contracts',
+        'customers',
         'departments',
         'documentframeworks',
         'documentframeworkrequirements',

@@ -88,9 +88,6 @@ class LocationImporter extends ItemImporter
             }
         }
 
-        Log::debug('Item array is: ');
-        Log::debug(print_r($this->item, true));
-
         if ($editingLocation) {
             Log::debug('Updating existing location');
             $location->update($this->sanitizeItemForUpdating($location));

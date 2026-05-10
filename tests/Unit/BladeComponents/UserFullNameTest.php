@@ -15,9 +15,11 @@ class UserFullNameTest extends TestCase
     {
         yield 'Renders link to user if they exist and the authenticated user can view them' => [
             function () {
+                $actor = User::factory()->viewUsers()->create();
+
                 return [
-                    'actor' => User::factory()->viewUsers()->create(),
-                    'user' => User::factory()->create(['first_name' => 'Jim', 'last_name' => 'Bagg', 'display_name' => null]),
+                    'actor' => $actor,
+                    'user' => User::factory()->create(['company_id' => $actor->company_id, 'first_name' => 'Jim', 'last_name' => 'Bagg', 'display_name' => null]),
                     'assertions' => function ($rendered) {
                         Assert::assertStringContainsString('<a ', $rendered);
                         Assert::assertStringContainsString('Jim Bagg', $rendered);
@@ -28,9 +30,11 @@ class UserFullNameTest extends TestCase
 
         yield 'Renders struck-through link to user if they are deleted and the authenticated user can view them' => [
             function () {
+                $actor = User::factory()->viewUsers()->create();
+
                 return [
-                    'actor' => User::factory()->viewUsers()->create(),
-                    'user' => User::factory()->deleted()->create(['first_name' => 'Jim', 'last_name' => 'Bagg', 'display_name' => 'Jim Baggins']),
+                    'actor' => $actor,
+                    'user' => User::factory()->deleted()->create(['company_id' => $actor->company_id, 'first_name' => 'Jim', 'last_name' => 'Bagg', 'display_name' => 'Jim Baggins']),
                     'assertions' => function ($rendered) {
                         Assert::assertStringContainsString('<s><a ', $rendered);
                         Assert::assertStringContainsString('Jim Bagg', $rendered);
@@ -41,9 +45,11 @@ class UserFullNameTest extends TestCase
 
         yield 'Renders name without link if the authenticated user cannot view them' => [
             function () {
+                $actor = User::factory()->create();
+
                 return [
-                    'actor' => User::factory()->create(),
-                    'user' => User::factory()->create(['first_name' => 'Jim', 'last_name' => 'Bagg',  'display_name' => 'Jim Bagg']),
+                    'actor' => $actor,
+                    'user' => User::factory()->create(['company_id' => $actor->company_id, 'first_name' => 'Jim', 'last_name' => 'Bagg',  'display_name' => 'Jim Bagg']),
                     'assertions' => function ($rendered) {
                         Assert::assertStringContainsString('<span>Jim Bagg', $rendered);
                         Assert::assertStringNotContainsString('<a ', $rendered);
@@ -54,9 +60,11 @@ class UserFullNameTest extends TestCase
 
         yield 'Renders struck-through name without link if the user is deleted and the authenticated user cannot view them' => [
             function () {
+                $actor = User::factory()->create();
+
                 return [
-                    'actor' => User::factory()->create(),
-                    'user' => User::factory()->deleted()->create(['first_name' => 'Jim', 'last_name' => 'Bagg',  'display_name' => 'Jim Bagg']),
+                    'actor' => $actor,
+                    'user' => User::factory()->deleted()->create(['company_id' => $actor->company_id, 'first_name' => 'Jim', 'last_name' => 'Bagg',  'display_name' => 'Jim Bagg']),
                     'assertions' => function ($rendered) {
                         Assert::assertStringContainsString('<s><span>Jim Bagg', $rendered);
                     },

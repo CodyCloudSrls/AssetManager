@@ -29,7 +29,7 @@
                         <x-input.select
                             name="visibility_type"
                             id="document-framework-visibility_type"
-                            :options="\App\Models\DocumentFramework::visibilityOptions()"
+                            :options="array_diff_key(\App\Models\DocumentFramework::visibilityOptions(), [\App\Models\DocumentFramework::VISIBILITY_GLOBAL => true])"
                             :selected="old('visibility_type', \App\Models\DocumentFramework::VISIBILITY_PRIVATE)"
                             style="width:100%;"
                         />

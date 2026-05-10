@@ -87,6 +87,7 @@
                 $('#assignable_asset_wrapper').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_ASSET }}');
                 $('#assignable_location_id').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_LOCATION }}');
                 $('#assignable_supplier_wrapper').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_SUPPLIER }}');
+                $('#assignable_customer_wrapper').toggle(selectedType === '{{ \App\Models\DocumentAssignment::ASSIGNABLE_CUSTOMER }}');
             }
 
             $('input[name="assignment_assignable_type"]').on('change', syncAssignableSelectors);

@@ -4,6 +4,7 @@ namespace Tests\Feature\Assets\Api;
 
 use App\Models\Asset;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
@@ -61,26 +62,32 @@ class AuditAssetTest extends TestCase
 
     public function test_asset_audit_is_saved()
     {
-        $asset = Asset::factory()->create(['next_audit_date' => now()->subMonth()->toDateString()]);
-        $now = now();
-        $future = now()->addMonths(3)->toDateString();
+        $now = now()->startOfSecond();
+        $asset = Asset::factory()->create(['next_audit_date' => $now->copy()->subMonth()->toDateString()]);
+        $future = $now->copy()->addMonths(3)->toDateString();
 
-        $this->actingAsForApi(User::factory()->auditAssets()->create())
-            ->postJson(route('api.asset.audit', $asset), [
-                'next_audit_date' => $future,
-                'note' => 'test',
-            ])
-            ->assertStatusMessageIs('success')
-            ->assertJson(
-                [
-                    'messages' => trans('admin/hardware/message.audit.success'),
-                    'payload' => [
-                        'id' => $asset->id,
-                        'asset_tag' => $asset->asset_tag,
-                        'note' => 'test',
-                    ],
+        Carbon::setTestNow($now);
+
+        try {
+            $this->actingAsForApi(User::factory()->auditAssets()->create())
+                ->postJson(route('api.asset.audit', $asset), [
+                    'next_audit_date' => $future,
+                    'note' => 'test',
                 ])
-            ->assertStatus(200);
+                ->assertStatusMessageIs('success')
+                ->assertJson(
+                    [
+                        'messages' => trans('admin/hardware/message.audit.success'),
+                        'payload' => [
+                            'id' => $asset->id,
+                            'asset_tag' => $asset->asset_tag,
+                            'note' => 'test',
+                        ],
+                    ])
+                ->assertStatus(200);
+        } finally {
+            Carbon::setTestNow();
+        }
 
         $this->assertHasTheseActionLogs($asset, ['create', 'audit']);
 

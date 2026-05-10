@@ -2,9 +2,9 @@
 
 use App\Models\AssetModel;
 use App\Models\CustomField;
-use App\Models\CustomFieldset;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 
 class MigrateMacAddress extends Migration
 {
@@ -17,9 +17,8 @@ class MigrateMacAddress extends Migration
     {
         // DB::getDoctrineSchemaManager()->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
 
-        $f2 = new CustomFieldset(['name' => 'Asset with MAC Address']);
-        $f2->timestamps = false; // when this model was first created, it had no timestamps. But later on it gets them.
-        if (! $f2->save()) {
+        $fieldsetId = DB::table('custom_fieldsets')->insertGetId(['name' => 'Asset with MAC Address']);
+        if (! $fieldsetId) {
             throw new Exception("couldn't save customfieldset");
         }
         $macid = DB::table('custom_fields')->insertGetId([
@@ -30,8 +29,13 @@ class MigrateMacAddress extends Migration
             throw new Exception("Can't save MAC Custom field: $macid");
         }
 
-        $f2->fields()->attach($macid, ['required' => false, 'order' => 1]);
-        AssetModel::where(['show_mac_address' => true])->update(['fieldset_id' => $f2->id]);
+        DB::table('custom_field_custom_fieldset')->insert([
+            'custom_field_id' => $macid,
+            'custom_fieldset_id' => $fieldsetId,
+            'required' => false,
+            'order' => 1,
+        ]);
+        AssetModel::where(['show_mac_address' => true])->update(['fieldset_id' => $fieldsetId]);
 
         Schema::table('assets', function (Blueprint $table) {
             $table->renameColumn('mac_address', '_snipeit_mac_address');
@@ -51,11 +55,16 @@ class MigrateMacAddress extends Migration
      */
     public function down()
     {
-        $f = CustomFieldset::where(['name' => 'Asset with MAC Address'])->first();
+        $f = DB::table('custom_fieldsets')->where(['name' => 'Asset with MAC Address'])->first();
 
         if ($f) {
-            $f->fields()->delete();
-            $f->delete();
+            $fieldIds = DB::table('custom_field_custom_fieldset')
+                ->where('custom_fieldset_id', $f->id)
+                ->pluck('custom_field_id');
+
+            DB::table('custom_field_custom_fieldset')->where('custom_fieldset_id', $f->id)->delete();
+            DB::table('custom_fields')->whereIn('id', $fieldIds)->delete();
+            DB::table('custom_fieldsets')->where('id', $f->id)->delete();
         }
 
         Schema::table('models', function (Blueprint $table) {

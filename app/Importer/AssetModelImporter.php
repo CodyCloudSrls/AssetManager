@@ -113,9 +113,6 @@ class AssetModelImporter extends ItemImporter
             }
         }
 
-        Log::debug('Item array is: ');
-        Log::debug(print_r($this->item, true));
-
         if ($editingAssetModel) {
             Log::debug('Updating existing model');
             $assetModel->update($this->sanitizeItemForUpdating($assetModel));

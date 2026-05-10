@@ -129,6 +129,10 @@ class ConsultantFrameworkTransfer
             $ownership['visibility_type'] ?? DocumentFramework::VISIBILITY_PRIVATE,
         );
 
+        if (is_null($companyId)) {
+            $this->fail(trans('validation.required', ['attribute' => trans('general.company')]));
+        }
+
         try {
             $records = $this->recordsFromRows(
                 $this->readRows($file->getRealPath(), $extension)

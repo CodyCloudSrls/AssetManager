@@ -66,7 +66,7 @@ return new class extends Migration
 
     private function indexExists(string $tableName, string $indexName): bool
     {
-        return collect(DB::select("SHOW INDEX FROM `{$tableName}`"))
-            ->contains(fn ($row) => $row->Key_name === $indexName);
+        return collect(Schema::getIndexes($tableName))
+            ->contains(fn (array $index) => ($index['name'] ?? null) === $indexName);
     }
 };
