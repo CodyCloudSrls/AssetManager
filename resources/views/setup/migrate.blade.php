@@ -12,7 +12,7 @@
     <div class="col-md-12">
         <div class="alert alert-warning">
             <i class="fas fa-exclamation-triangle"></i>
-            {{ trans('general.setup_no_migrations') }}
+            {{ trans('admin/settings/general.setup_no_migrations') }}
         </div>
     </div>
 

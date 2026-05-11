@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Afskrivninger',
   'depreciation_report' => 'Afskrivningsrapport',
   'details' => 'Detaljer',
+  'actions' => 'Handlinger',
+  'view' => 'Vis',
+  'none' => 'Ingen',
+  'are_you_sure' => 'Er du sikker?',
+  'description' => 'Beskrivelse',
+  'deleted_at' => 'Slettet den',
+  'maintained' => 'Vedligeholdt',
   'download' => 'Hent',
   'download_all' => 'Download alt',
   'editprofile' => 'Redigér profil',
@@ -775,6 +782,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Vælg tilbehør',
+  'select_consumable' => 'Vælg forbrugsvare',
+  'select_license' => 'Vælg licens',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

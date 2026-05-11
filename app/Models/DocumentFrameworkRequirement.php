@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 use Watson\Validating\ValidatingTrait;
 
 class DocumentFrameworkRequirement extends SnipeModel
@@ -112,6 +113,17 @@ class DocumentFrameworkRequirement extends SnipeModel
         'documents_count',
     ];
 
+    private static ?bool $parentPivotTableExists = null;
+
+    public static function parentPivotTableExists(): bool
+    {
+        try {
+            return self::$parentPivotTableExists ??= Schema::hasTable('document_framework_requirement_parents');
+        } catch (\RuntimeException) {
+            return false;
+        }
+    }
+
     public function framework()
     {
         return $this->belongsTo(DocumentFramework::class, 'document_framework_id');
@@ -122,9 +134,22 @@ class DocumentFrameworkRequirement extends SnipeModel
         return $this->belongsTo(self::class, 'parent_id')->withTrashed();
     }
 
+    public function parents()
+    {
+        return $this->belongsToMany(self::class, 'document_framework_requirement_parents', 'child_requirement_id', 'parent_requirement_id')
+            ->withTrashed()
+            ->withTimestamps();
+    }
+
     public function children()
     {
         return $this->hasMany(self::class, 'parent_id');
+    }
+
+    public function childRequirements()
+    {
+        return $this->belongsToMany(self::class, 'document_framework_requirement_parents', 'parent_requirement_id', 'child_requirement_id')
+            ->withTimestamps();
     }
 
     public function owner()
@@ -275,9 +300,88 @@ class DocumentFrameworkRequirement extends SnipeModel
         return static::delegationLevelOptions()[$this->delegation_level] ?? ucfirst(str_replace('_', ' ', (string) $this->delegation_level));
     }
 
+    public function getEffectiveRiskLevelAttribute(): string
+    {
+        $framework = $this->relationLoaded('framework')
+            ? $this->framework
+            : $this->framework()->first();
+
+        if ($framework?->isNis2Domain()) {
+            return 'not_applicable';
+        }
+
+        return $this->risk_level ?: 'medium';
+    }
+
     public function getRiskLevelLabelAttribute(): string
     {
-        return static::riskLevelOptions()[$this->risk_level] ?? ucfirst(str_replace('_', ' ', (string) $this->risk_level));
+        $riskLevel = $this->effective_risk_level;
+
+        return static::riskLevelOptions()[$riskLevel] ?? ucfirst(str_replace('_', ' ', (string) $riskLevel));
+    }
+
+    public function getParentRequirementIdsAttribute(): array
+    {
+        if (! $this->exists) {
+            return [];
+        }
+
+        $ids = [];
+
+        if ($this->relationLoaded('parents')) {
+            $ids = $this->parents->pluck('id')->all();
+        } elseif (self::parentPivotTableExists()) {
+            $ids = $this->relationLoaded('parents')
+                ? $this->parents->pluck('id')->all()
+                : $this->parents()->pluck('document_framework_requirements.id')->all();
+        }
+
+        if ($this->parent_id && ! in_array((int) $this->parent_id, array_map('intval', $ids), true)) {
+            $ids[] = (int) $this->parent_id;
+        }
+
+        return collect($ids)
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public function getParentRequirementsAttribute()
+    {
+        if (! $this->exists) {
+            return collect();
+        }
+
+        if ($this->relationLoaded('parents')) {
+            $parents = $this->parents;
+        } elseif (self::parentPivotTableExists()) {
+            $parents = $this->parents()->ordered()->get();
+        } else {
+            $parents = collect();
+        }
+
+        if ($this->parent_id && ! $parents->contains('id', (int) $this->parent_id)) {
+            $legacyParent = $this->relationLoaded('parent') ? $this->parent : $this->parent()->first();
+
+            if ($legacyParent) {
+                $parents = $parents->push($legacyParent);
+            }
+        }
+
+        return $parents
+            ->filter()
+            ->unique('id')
+            ->values();
+    }
+
+    public function getParentRequirementCodesAttribute(): string
+    {
+        return $this->parent_requirements
+            ->pluck('code')
+            ->filter()
+            ->implode(', ');
     }
 
     public function getCoverageStatusAttribute(): string

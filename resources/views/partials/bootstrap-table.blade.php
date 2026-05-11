@@ -42,6 +42,59 @@
             return false;
         }
 
+        window.snipeTableSelectedRowsForExport = function ($table) {
+            try {
+                return $table.bootstrapTable('getSelections') || [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        window.snipeTableSyncExportDataTypeForSelection = function ($table) {
+            var bootstrapTable = $table.data('bootstrap.table');
+            if (! bootstrapTable || ! bootstrapTable.options) {
+                return;
+            }
+
+            var selectedRows = window.snipeTableSelectedRowsForExport($table);
+            var defaultExportDataType = $table.data('default-export-data-type') || 'basic';
+            bootstrapTable.options.exportDataType = (selectedRows.length > 0) ? 'selected' : defaultExportDataType;
+
+            if (typeof bootstrapTable.updateExportButton === 'function') {
+                bootstrapTable.updateExportButton();
+            }
+        }
+
+        window.snipeTableSelectedRowIdsForExport = function ($table) {
+            var ids = [];
+            var selectedRows = window.snipeTableSelectedRowsForExport($table);
+
+            for (var i in selectedRows) {
+                if (selectedRows[i].id !== undefined && selectedRows[i].id !== null) {
+                    ids.push(selectedRows[i].id);
+                }
+            }
+
+            return ids;
+        }
+
+        window.snipeTableUrlWithSelectedRowIds = function (url, $table) {
+            var selectedIds = window.snipeTableSelectedRowIdsForExport($table);
+            if (selectedIds.length === 0) {
+                return url;
+            }
+
+            var exportUrl = new URL(url, window.location.origin);
+            exportUrl.searchParams.delete('ids');
+            exportUrl.searchParams.delete('ids[]');
+
+            for (var i in selectedIds) {
+                exportUrl.searchParams.append('ids[]', selectedIds[i]);
+            }
+
+            return exportUrl.toString();
+        }
+
         /** This handles the responsive tab UI on v iew detail pages **/
         function resize() {
             if ($(window).width() < 767) {
@@ -76,8 +129,9 @@
 
         $('.snipe-table').bootstrapTable('destroy').each(function () {
 
-            data_export_options = $(this).attr('data-export-options');
-            export_options = data_export_options ? JSON.parse(data_export_options) : {};
+            var $table = $(this);
+            var data_export_options = $table.attr('data-export-options');
+            var export_options = data_export_options ? JSON.parse(data_export_options) : {};
             export_options['htmlContent'] = false; // this is already the default; but let's be explicit about it
             export_options['jspdf'] = {
                 "orientation": "l",
@@ -93,9 +147,24 @@
             // (this is taken from Bootstrap Tables's default wrapper around jQuery Table Export)
             export_options['onCellHtmlData'] = function (cell, rowIndex, colIndex, htmlData) {
                 if (cell.is('th')) {
-                    return cell.find('.th-inner').text()
+                    return cell.find('.th-inner').text().trim()
                 }
-                return htmlData
+
+                var explicitExportValue = cell.attr('data-tableexport-value');
+                if (explicitExportValue !== undefined) {
+                    return explicitExportValue;
+                }
+
+                var renderedText = cell.text().trim();
+                if (renderedText !== '') {
+                    return renderedText;
+                }
+
+                if (htmlData === undefined || htmlData === null) {
+                    return '';
+                }
+
+                return $('<div/>').html(String(htmlData)).text().trim();
             }
 
             // This allows us to override the table defaults set below using the data-dash attributes
@@ -108,9 +177,11 @@
                 return default_value;
             }
 
+            var default_export_data_type = data_with_default('export-data-type', 'basic');
+            $table.data('default-export-data-type', default_export_data_type);
 
 
-            $(this).bootstrapTable({
+            $table.bootstrapTable({
 
                 ajaxOptions: {
                     headers: {
@@ -196,8 +267,15 @@
                     clearSearch: 'fa-times',
                 },
                 locale: '{{ app()->getLocale() }}',
+                exportDataType: default_export_data_type,
                 exportOptions: export_options,
                 exportTypes: ['xlsx', 'excel', 'csv', 'pdf', 'json', 'xml', 'txt', 'sql', 'doc'],
+                onExportStarted: function () {
+                    window.snipeTableSyncExportDataTypeForSelection($table);
+                },
+                onExportSaved: function () {
+                    window.snipeTableSyncExportDataTypeForSelection($table);
+                },
                 onLoadSuccess: function () { // possible 'fixme'? this might be for contents, not for headers?
                     $('[data-tooltip="true"]').tooltip(); // Needed to attach tooltips after ajax call
                 },
@@ -815,7 +893,7 @@
             text: '{{ trans('admin/suppliers/table.acn_export') }}',
             icon: 'fa-solid fa-file-csv',
             event () {
-                window.location.href = @json($supplierAcnExportUrl);
+                window.location.href = window.snipeTableUrlWithSelectedRowIds(@json($supplierAcnExportUrl), $('#supplierListingTable'));
             },
             attributes: {
                 title: '{{ trans('admin/suppliers/table.acn_export') }}',
@@ -1092,6 +1170,7 @@
 
         $(buttonName).removeAttr('disabled');
         $(buttonName).after('<input id="' + tableId + '_checkbox_' + $element.id + '" type="hidden" name="ids[]" value="' + $element.id + '">');
+        window.snipeTableSyncExportDataTypeForSelection($(this));
     });
 
     $('.snipe-table').on('check-all.bs.table', function (event, rowsAfter) {
@@ -1106,12 +1185,15 @@
                 $(buttonName).after('<input id="' + tableId + '_checkbox_' + rowsAfter[i].id + '" type="hidden" name="ids[]" value="' + rowsAfter[i].id + '">');
             }
         }
+
+        window.snipeTableSyncExportDataTypeForSelection($(this));
     });
 
 
     $('.snipe-table').on('uncheck.bs.table .btSelectItem', function (row, $element) {
         var tableId =  $(this).data('id-table');
         $( "#" + tableId + "_checkbox_" + $element.id).remove();
+        window.snipeTableSyncExportDataTypeForSelection($(this));
     });
 
 
@@ -1123,6 +1205,8 @@
 
             $(buttonName).attr('disabled', 'disabled');
         }
+
+        window.snipeTableSyncExportDataTypeForSelection($(this));
     });
 
     $('.snipe-table').on('uncheck-all.bs.table', function (event, rowsAfter, rowsBefore) {
@@ -1134,6 +1218,8 @@
         for (var i in rowsBefore) {
             $('#' + tableId + "_checkbox_" + rowsBefore[i].id).remove();
         }
+
+        window.snipeTableSyncExportDataTypeForSelection($(this));
 
     });
 

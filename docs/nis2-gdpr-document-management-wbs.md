@@ -4,6 +4,8 @@ This WBS defines the product path for turning the document registry into an audi
 
 Current direction and implementation status are tracked in [Project Direction And Status](project-direction-status.md).
 
+Daily framework pack operations are tracked in [Compliance Framework Pack Operations WBS](compliance-framework-pack-operations-wbs.md).
+
 ## 1. Scope And Principles
 
 ### 1.1 Product Goal
@@ -212,6 +214,7 @@ The local PHP test runner is available, but full test execution still requires a
 
 - Expand official framework packs by jurisdiction/language. Completed with Italian ACN packs plus EU baseline NIS2/GDPR pack keys for every supported tenant locale, preserving existing pack keys.
 - Add pack versioning and tenant diff/merge tooling. Completed with `source_pack_version`, system/tenant diff output and non-destructive tenant merge for missing framework copies or missing requirements only.
+- Add daily superadmin pack operations console. Completed with pack status, tenant diff rows, explicit non-destructive apply actions and immutable audit events.
 - Add import/export for Word/Excel-based consultant frameworks. Completed with non-destructive tenant import for CSV/Excel/Word table files and framework export to CSV/XLSX/DOCX.
 
 ### Phase 7 - Client Contracts And Service Chain

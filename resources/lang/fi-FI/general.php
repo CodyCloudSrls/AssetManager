@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Poistot',
   'depreciation_report' => 'Poistoraportti',
   'details' => 'Tiedot',
+  'actions' => 'Toiminnot',
+  'view' => 'Näytä',
+  'none' => 'Ei mitään',
+  'are_you_sure' => 'Oletko varma?',
+  'description' => 'Kuvaus',
+  'deleted_at' => 'Poistettu',
+  'maintained' => 'Ylläpidetty',
   'download' => 'Lataa',
   'download_all' => 'Lataa kaikki',
   'editprofile' => 'Muokkaa profiilia',
@@ -775,6 +782,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Valitse lisävaruste',
+  'select_consumable' => 'Valitse kulutustarvike',
+  'select_license' => 'Valitse lisenssi',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

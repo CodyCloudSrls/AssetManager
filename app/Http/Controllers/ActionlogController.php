@@ -66,6 +66,6 @@ class ActionlogController extends Controller
             return redirect()->back()->with('error', trans('general.file_does_not_exist'));
         }
 
-        return redirect()->back()->with('error', trans('general.record_not_found'));
+        return redirect()->back()->with('error', trans('general.log_record_not_found'));
     }
 }

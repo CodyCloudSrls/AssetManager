@@ -152,7 +152,7 @@ class Supplier extends SnipeModel
                     }),
             ],
             'fax' => 'min:7|max:35|nullable',
-            'phone' => 'min:7|max:35|nullable',
+            'phone' => 'min:3|max:35|nullable',
             'contact' => 'max:100|nullable',
             'notes' => 'max:191|nullable',
             'email' => 'email|max:150|nullable',

@@ -1,7 +1,7 @@
 @extends('layouts/setup')
 {{-- Page title --}}
 @section('title')
-{{ trans('general.create_admin_user') }}
+{{ trans('admin/settings/general.create_admin_user') }}
 @parent
 @stop
 

@@ -17,6 +17,7 @@ The target is not to replace expert consultants. The platform should remove repe
 - Code-level UI supports only European locales plus general English.
 - Audit-critical data uses structured fields, not only free-text notes.
 - Immutability-sensitive records keep append-only events, payload checksums and hash chaining where legal or evidentiary value matters.
+- Framework pack sync operations create append-only audit events with SHA-256 pack checksums and per-pack hash chaining.
 
 ## Current Functional Surface
 
@@ -34,6 +35,7 @@ The target is not to replace expert consultants. The platform should remove repe
 - Requirements can be linked to document evidence with primary/supporting roles.
 - Requirement queues, filters and document assignment flows are being kept aligned with Snipe-IT table patterns.
 - Word/Excel/CSV consultant framework import and export are supported as operational tenant data, not as global system pollution.
+- Daily pack operations are managed through a superadmin console that shows pack checksums, system-template status, tenant copy diffs and immutable sync events.
 
 ### NIS2 Inventory And Risk
 

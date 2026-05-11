@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Амортизации',
   'depreciation_report' => 'Справка за амортизации',
   'details' => 'Детайли',
+  'actions' => 'Действия',
+  'view' => 'Преглед',
+  'none' => 'Няма',
+  'are_you_sure' => 'Сигурни ли сте?',
+  'description' => 'Описание',
+  'deleted_at' => 'Изтрито на',
+  'maintained' => 'Поддържан',
   'download' => 'Изтегляне',
   'download_all' => 'Изтегляне',
   'editprofile' => 'Редактиране на профил',
@@ -775,6 +782,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Изберете аксесоар',
+  'select_consumable' => 'Изберете консуматив',
+  'select_license' => 'Изберете лиценз',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

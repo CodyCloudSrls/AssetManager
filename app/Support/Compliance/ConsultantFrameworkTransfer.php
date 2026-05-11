@@ -145,7 +145,10 @@ class ConsultantFrameworkTransfer
 
         $frameworkRecord = $this->frameworkRecord($records);
         $frameworkData = $this->frameworkData($frameworkRecord, $companyId, $visibilityType, $createdBy);
-        $requirementData = $this->requirementsData($records, $createdBy, $frameworkData['compliance_domain'] === 'nis2');
+        $requirementData = $this->requirementsData($records, $createdBy, DocumentFramework::looksLikeNis2Domain(
+            $frameworkData['compliance_domain'] ?? null,
+            $frameworkData
+        ));
 
         $this->assertFrameworkDoesNotExist($frameworkData);
 
@@ -172,17 +175,25 @@ class ConsultantFrameworkTransfer
             }
 
             foreach ($requirementData as $row) {
-                $parentCode = $row['parent_requirement_code'];
+                $parentCodes = $row['parent_requirement_codes'];
 
-                if ($parentCode === null) {
+                if ($parentCodes === []) {
                     continue;
                 }
 
                 $requirement = $requirementsByCode[$row['attributes']['code']];
-                $requirement->parent_id = $requirementsByCode[$parentCode]->id;
+                $parentIds = collect($parentCodes)
+                    ->map(fn (string $parentCode) => (int) $requirementsByCode[$parentCode]->id)
+                    ->values()
+                    ->all();
+                $requirement->parent_id = $parentIds[0] ?? null;
 
                 if (! $requirement->save()) {
                     $this->fail(trans('admin/documentframeworks/message.import.save_failed', ['error' => $requirement->getErrors()->first()]));
+                }
+
+                if (DocumentFrameworkRequirement::parentPivotTableExists()) {
+                    $requirement->parents()->sync($parentIds);
                 }
             }
 
@@ -366,10 +377,10 @@ class ConsultantFrameworkTransfer
             }
 
             $codes[$code] = true;
-            $parentCode = $this->nullableString($record, 'parent_requirement_code', 100);
+            $parentCodes = $this->parentRequirementCodesFromRecord($record);
 
             $requirements[] = [
-                'parent_requirement_code' => $parentCode,
+                'parent_requirement_codes' => $parentCodes,
                 'attributes' => [
                     'parent_id' => null,
                     'code' => $code,
@@ -398,14 +409,16 @@ class ConsultantFrameworkTransfer
         }
 
         foreach ($requirements as $row) {
-            $parentCode = $row['parent_requirement_code'];
+            $parentCodes = $row['parent_requirement_codes'];
 
-            if ($parentCode === null) {
+            if ($parentCodes === []) {
                 continue;
             }
 
-            if ($parentCode === $row['attributes']['code'] || ! isset($codes[$parentCode])) {
-                $this->fail(trans('admin/documentframeworks/message.import.invalid_parent', ['code' => $parentCode]));
+            foreach ($parentCodes as $parentCode) {
+                if ($parentCode === $row['attributes']['code'] || ! isset($codes[$parentCode])) {
+                    $this->fail(trans('admin/documentframeworks/message.import.invalid_parent', ['code' => $parentCode]));
+                }
             }
         }
 
@@ -436,7 +449,7 @@ class ConsultantFrameworkTransfer
     private function exportRows(DocumentFramework $framework): array
     {
         $requirements = $framework->requirements()
-            ->with('parent')
+            ->with(DocumentFrameworkRequirement::parentPivotTableExists() ? ['parent', 'parents'] : ['parent'])
             ->ordered()
             ->get();
 
@@ -473,14 +486,14 @@ class ConsultantFrameworkTransfer
 
         foreach ($requirements as $requirement) {
             $requirementRow = [
-                'parent_requirement_code' => $requirement->parent?->code,
+                'parent_requirement_code' => $requirement->parent_requirement_codes,
                 'requirement_code' => $requirement->code,
                 'requirement_title' => $requirement->title,
                 'requirement_domain' => $requirement->domain,
                 'obligation_type' => $requirement->obligation_type,
                 'evidence_type' => $requirement->evidence_type,
                 'delegation_level' => $requirement->delegation_level,
-                'risk_level' => $requirement->risk_level,
+                'risk_level' => $requirement->effective_risk_level,
                 'official_reference' => $requirement->official_reference,
                 'source_url' => $requirement->source_url,
                 'review_frequency_months' => $requirement->review_frequency_months,
@@ -946,6 +959,29 @@ class ConsultantFrameworkTransfer
         }
 
         return $value;
+    }
+
+    private function parentRequirementCodesFromRecord(array $record): array
+    {
+        $value = $this->cleanCell($record['parent_requirement_code'] ?? null);
+
+        if ($value === '') {
+            return [];
+        }
+
+        if (mb_strlen($value) > 1000) {
+            $this->fail(trans('admin/documentframeworks/message.import.invalid_required', [
+                'column' => 'parent_requirement_code',
+                'row' => $record['_row_number'] ?? 1,
+            ]));
+        }
+
+        return collect(preg_split('/[;,|]+/', $value) ?: [])
+            ->map(fn ($code) => trim((string) $code))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 
     private function rowIsBlank(array $row): bool

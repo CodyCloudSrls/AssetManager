@@ -56,7 +56,7 @@ class DocumentFrameworkRequirementsController extends Controller
         return view('documentframeworkrequirements.edit', $this->formData(new DocumentFrameworkRequirement([
             'document_framework_id' => $documentframework->id,
             'delegation_level' => 'owner_review',
-            'risk_level' => $documentframework->compliance_domain === 'nis2' ? 'not_applicable' : 'medium',
+            'risk_level' => $documentframework->isNis2Domain() ? 'not_applicable' : 'medium',
         ]), $documentframework));
     }
 
@@ -65,13 +65,20 @@ class DocumentFrameworkRequirementsController extends Controller
         $this->authorize('update', $documentframework);
 
         $requirement = new DocumentFrameworkRequirement;
-        $requirement->fill($request->validated());
+        $validated = $request->validated();
+        unset($validated['parent_ids']);
+
+        $requirement->fill($validated);
         $requirement->document_framework_id = $documentframework->id;
         $requirement->created_by = auth()->id();
         $requirement->is_active = $request->boolean('is_active', true);
         $requirement->is_mandatory = $request->boolean('is_mandatory', true);
 
         if ($requirement->save()) {
+            if ($request->has('parent_ids') || $request->has('parent_id')) {
+                $this->syncParentRequirements($requirement, $request->input('parent_ids', []));
+            }
+
             return redirect()->route('documentframeworks.show', $documentframework)->with('success', trans('admin/documentframeworkrequirements/message.create.success'));
         }
 
@@ -82,13 +89,19 @@ class DocumentFrameworkRequirementsController extends Controller
     {
         $this->authorize('view', $documentframeworkrequirement);
 
-        $documentframeworkrequirement->load([
+        $relations = [
             'framework.owner',
             'owner',
             'defaultDocumentType',
             'parent',
             'adminuser',
-        ])->loadCount([
+        ];
+
+        if (DocumentFrameworkRequirement::parentPivotTableExists()) {
+            $relations[] = 'parents';
+        }
+
+        $documentframeworkrequirement->load($relations)->loadCount([
             'documents',
             'primaryDocuments as primary_documents_count',
             'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query
@@ -118,11 +131,18 @@ class DocumentFrameworkRequirementsController extends Controller
     {
         $this->authorize('update', $documentframeworkrequirement);
 
-        $documentframeworkrequirement->fill($request->validated());
+        $validated = $request->validated();
+        unset($validated['parent_ids']);
+
+        $documentframeworkrequirement->fill($validated);
         $documentframeworkrequirement->is_active = $request->boolean('is_active');
         $documentframeworkrequirement->is_mandatory = $request->boolean('is_mandatory');
 
         if ($documentframeworkrequirement->save()) {
+            if ($request->has('parent_ids') || $request->has('parent_id')) {
+                $this->syncParentRequirements($documentframeworkrequirement, $request->input('parent_ids', []));
+            }
+
             return redirect()->route('documentframeworkrequirements.show', $documentframeworkrequirement)->with('success', trans('admin/documentframeworkrequirements/message.update.success'));
         }
 
@@ -157,6 +177,26 @@ class DocumentFrameworkRequirementsController extends Controller
 
     private function formData(DocumentFrameworkRequirement $requirement, DocumentFramework $framework): array
     {
+        if ($requirement->exists) {
+            $relations = ['parent'];
+
+            if (DocumentFrameworkRequirement::parentPivotTableExists()) {
+                $relations[] = 'parents';
+            }
+
+            $requirement->loadMissing($relations);
+            $requirement->loadCount([
+                'documents',
+                'primaryDocuments as primary_documents_count',
+                'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query
+                    ->where('documents.status', \App\Models\Document::STATUS_ACTIVE)
+                    ->where(function ($nested) {
+                        $nested->whereNull('documents.next_review_at')
+                            ->orWhereDate('documents.next_review_at', '>=', now()->toDateString());
+                    }),
+            ]);
+        }
+
         $parentOptions = DocumentFrameworkRequirement::query()
             ->forFramework($framework->id)
             ->whereNull('deleted_at')
@@ -172,6 +212,24 @@ class DocumentFrameworkRequirementsController extends Controller
             'evidenceTypeOptions' => DocumentFrameworkRequirement::evidenceTypeOptions(),
             'delegationLevelOptions' => DocumentFrameworkRequirement::delegationLevelOptions(),
             'riskLevelOptions' => DocumentFrameworkRequirement::riskLevelOptions(),
+            'isNis2Framework' => $framework->isNis2Domain(),
         ];
+    }
+
+    private function syncParentRequirements(DocumentFrameworkRequirement $requirement, array $parentIds): void
+    {
+        $parentIds = collect($parentIds)
+            ->filter(fn ($parentId) => filled($parentId))
+            ->map(fn ($parentId) => (int) $parentId)
+            ->filter(fn (int $parentId) => $parentId > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (! DocumentFrameworkRequirement::parentPivotTableExists()) {
+            return;
+        }
+
+        $requirement->parents()->sync($parentIds);
     }
 }

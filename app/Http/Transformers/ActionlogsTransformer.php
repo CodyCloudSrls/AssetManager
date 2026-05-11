@@ -389,10 +389,10 @@ class ActionlogsTransformer
         if (array_key_exists('company_id', $clean_meta)) {
 
             $oldCompany = $company->find($clean_meta['company_id']['old']);
-            $oldCompanyName = $oldCompany ? e($oldCompany->name) : trans('admin/company/message.deleted');
+            $oldCompanyName = $oldCompany ? e($oldCompany->name) : trans('admin/companies/message.deleted');
 
             $newCompany = $company->find($clean_meta['company_id']['new']);
-            $newCompanyName = $newCompany ? e($newCompany->name) : trans('admin/company/message.deleted');
+            $newCompanyName = $newCompany ? e($newCompany->name) : trans('admin/companies/message.deleted');
 
             $clean_meta['company_id']['old'] = $clean_meta['company_id']['old'] ? '[id: '.$clean_meta['company_id']['old'].'] '.$oldCompanyName : trans('general.unassigned');
             $clean_meta['company_id']['new'] = $clean_meta['company_id']['new'] ? '[id: '.$clean_meta['company_id']['new'].'] '.$newCompanyName : trans('general.unassigned');

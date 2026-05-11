@@ -377,7 +377,7 @@
                                                 <option value="{{ $roleValue }}" {{ ($member->pivot->role === $roleValue) ? 'selected' : '' }}>{{ $roleLabel }}</option>
                                             @endforeach
                                         </select>
-                                        <button type="submit" class="btn btn-sm btn-primary">{{ trans('button.update') }}</button>
+                                        <button type="submit" class="btn btn-sm btn-primary">{{ trans('general.update') }}</button>
                                     </form>
                                 @else
                                     {{ $tenantRoleOptions[$member->pivot->role] ?? $member->pivot->role }}

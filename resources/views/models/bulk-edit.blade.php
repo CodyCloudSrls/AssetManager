@@ -2,7 +2,7 @@
 
 {{-- Page title --}}
 @section('title')
-    {{ trans('general.bluk_edit') }}
+    {{ trans('general.bulk_edit') }}
     @parent
 @stop
 

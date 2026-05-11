@@ -244,7 +244,7 @@ class ManufacturersController extends Controller
                 // Redirect them to the deleted page if there are more, otherwise the section index
                 $deleted_manufacturers = Manufacturer::onlyTrashed()->count();
                 if ($deleted_manufacturers > 0) {
-                    return redirect()->back()->with('success', trans('admin/manufacturers/message.success.restored'));
+                    return redirect()->back()->with('success', trans('admin/manufacturers/message.restore.success'));
                 }
 
                 return redirect()->route('manufacturers.index')->with('success', trans('admin/manufacturers/message.restore.success'));

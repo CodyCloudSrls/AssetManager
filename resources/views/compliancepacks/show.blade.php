@@ -1,0 +1,123 @@
+@extends('layouts/default')
+
+@section('title')
+    {{ $packKey }}
+    @parent
+@stop
+
+@section('header_right')
+    <a href="{{ route('settings.compliance_framework_packs.index') }}" class="btn btn-default">
+        <x-icon type="angle-left" />
+        {{ trans('general.back') }}
+    </a>
+@stop
+
+@section('content')
+    <x-container>
+        <x-box :header="data_get($pack, 'framework.name', $packKey)">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>{{ trans('admin/compliancepacks/general.pack') }}</strong><br>
+                    <code>{{ $packKey }}</code>
+                </div>
+                <div class="col-md-2">
+                    <strong>{{ trans('admin/compliancepacks/general.locale') }}</strong><br>
+                    {{ $dashboard->localeLabel($pack['locale'] ?? null) }}
+                </div>
+                <div class="col-md-2">
+                    <strong>{{ trans('admin/compliancepacks/general.version') }}</strong><br>
+                    {{ $pack['pack_version'] ?? data_get($pack, 'framework.version') }}
+                </div>
+                <div class="col-md-5">
+                    <strong>{{ trans('admin/compliancepacks/general.checksum') }}</strong><br>
+                    <code>{{ $checksum }}</code>
+                </div>
+            </div>
+        </x-box>
+
+        <x-box :header="trans('admin/compliancepacks/general.system_template')">
+            <div class="row">
+                <div class="col-md-8">
+                    @include('compliancepacks.partials.diff', ['diff' => $systemDiff])
+                </div>
+                <div class="col-md-4 text-right">
+                    @if ($dashboard->canApplySystemDiff($systemDiff))
+                        <form method="POST" action="{{ route('settings.compliance_framework_packs.system.apply', $packKey) }}">
+                            @csrf
+                            <button type="submit" class="btn btn-warning">
+                                <x-icon type="checkmark" />
+                                {{ trans('admin/compliancepacks/general.apply_system') }}
+                            </button>
+                        </form>
+                    @else
+                        <span class="label label-success">{{ trans('admin/compliancepacks/general.no_action_required') }}</span>
+                    @endif
+                </div>
+            </div>
+        </x-box>
+
+        <x-box :header="trans('admin/compliancepacks/general.tenant_copies')">
+            <div class="table-responsive">
+                <table class="table table-striped snipe-table">
+                    <thead>
+                        <tr>
+                            <th>{{ trans('admin/compliancepacks/general.tenant') }}</th>
+                            <th>{{ trans('admin/compliancepacks/general.locale') }}</th>
+                            <th>{{ trans('admin/compliancepacks/general.status') }}</th>
+                            <th>{{ trans('admin/compliancepacks/general.source_version') }}</th>
+                            <th>{{ trans('admin/compliancepacks/general.missing_requirements') }}</th>
+                            <th>{{ trans('admin/compliancepacks/general.changed_requirements') }}</th>
+                            <th>{{ trans('admin/compliancepacks/general.conflicts') }}</th>
+                            <th>{{ trans('general.actions') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($tenantRows as $row)
+                            @php
+                                $tenant = $row['tenant'];
+                                $diff = $row['diff'];
+                            @endphp
+                            <tr>
+                                <td>
+                                    <a href="{{ route('tenants.show', $tenant) }}">{{ $row['root_company']?->name ?? '-' }}</a><br>
+                                    <small class="text-muted">#{{ $tenant->id }}</small>
+                                </td>
+                                <td>{{ $dashboard->localeLabel($tenant->defaultLocale()) }}</td>
+                                <td>
+                                    <span class="label label-{{ $dashboard->statusLabelClass($diff['status']) }}">
+                                        {{ $dashboard->statusLabel($diff['status']) }}
+                                    </span>
+                                </td>
+                                <td>{{ $diff['source_pack_version'] ?: '-' }}</td>
+                                <td>{{ count($diff['missing_requirements']) }}</td>
+                                <td>{{ count($diff['changed_requirements']) }}</td>
+                                <td>{{ $diff['conflicts_count'] }}</td>
+                                <td>
+                                    @if ($row['can_apply'])
+                                        <form method="POST" action="{{ route('settings.compliance_framework_packs.tenants.apply', [$packKey, $tenant]) }}">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-warning">
+                                                <x-icon type="checkmark" />
+                                                {{ trans('admin/compliancepacks/general.apply_tenant') }}
+                                            </button>
+                                        </form>
+                                    @elseif ($diff['status'] === 'current')
+                                        <span class="label label-success">{{ trans('admin/compliancepacks/general.no_action_required') }}</span>
+                                    @else
+                                        <span class="label label-danger">{{ trans('admin/compliancepacks/general.manual_review') }}</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8">{{ trans('admin/compliancepacks/general.no_compatible_tenants') }}</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </x-box>
+
+        @include('compliancepacks.partials.events', ['events' => $latestEvents, 'showPack' => false])
+    </x-container>
+@stop

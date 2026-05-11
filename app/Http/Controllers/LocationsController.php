@@ -462,7 +462,7 @@ class LocationsController extends Controller
         // Nothing was selected - return to the index
         return redirect()
             ->route('locations.index')
-            ->with('error', trans('general.bulk.nothing_selected',
+            ->with('error', trans('general.bulk.delete.nothing_selected',
                 ['object_type' => trans('general.locations')]
             ));
 

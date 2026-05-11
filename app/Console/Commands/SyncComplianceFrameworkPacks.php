@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\ComplianceFrameworkPackEvent;
 use App\Models\Tenant;
 use App\Support\Compliance\ComplianceFrameworkInstaller;
 use App\Support\Compliance\ComplianceFrameworkPackSync;
@@ -68,6 +69,7 @@ class SyncComplianceFrameworkPacks extends Command
         $diff = $sync->diff($framework, $packKey, $pack);
 
         if ($apply && $diff['framework_missing']) {
+            $before = $diff;
             $summary = $installer->bootstrapTenant(
                 $tenant,
                 $tenant->defaultLocale(),
@@ -77,6 +79,20 @@ class SyncComplianceFrameworkPacks extends Command
             );
             $framework = $sync->tenantFramework($tenant, $packKey, $pack);
             $diff = $sync->diff($framework, $packKey, $pack);
+            ComplianceFrameworkPackEvent::record(
+                ComplianceFrameworkPackEvent::EVENT_TENANT_BOOTSTRAP,
+                ComplianceFrameworkPackEvent::SCOPE_TENANT,
+                $packKey,
+                $pack,
+                [
+                    'tenant_id' => $tenant->id,
+                    'company_id' => $tenant->rootCompany()?->id,
+                    'document_framework_id' => $framework?->id,
+                    'diff_before' => $before,
+                    'diff_after' => $diff,
+                    'result_summary' => $summary,
+                ],
+            );
 
             $this->line($this->formatLine('tenant '.$tenant->id, $diff).' created_frameworks='.($summary['created'] ?? 0));
 
@@ -84,7 +100,31 @@ class SyncComplianceFrameworkPacks extends Command
         }
 
         if ($apply && ! $diff['framework_missing']) {
+            if ((int) $diff['conflicts_count'] > 0) {
+                $this->line($this->formatLine('tenant '.$tenant->id, $diff).' manual_review_required=1');
+
+                return;
+            }
+
             $merge = $sync->mergeMissingRequirements($framework, $packKey, $pack, auth()->id());
+            ComplianceFrameworkPackEvent::record(
+                ComplianceFrameworkPackEvent::EVENT_TENANT_SYNC,
+                ComplianceFrameworkPackEvent::SCOPE_TENANT,
+                $packKey,
+                $pack,
+                [
+                    'tenant_id' => $tenant->id,
+                    'company_id' => $tenant->rootCompany()?->id,
+                    'document_framework_id' => $framework?->id,
+                    'diff_before' => $merge['before'],
+                    'diff_after' => $merge['after'],
+                    'result_summary' => [
+                        'requirements_created' => $merge['requirements_created'],
+                        'metadata_updated' => $merge['metadata_updated'],
+                        'conflicts_count' => $merge['conflicts_count'],
+                    ],
+                ],
+            );
             $this->line($this->formatLine('tenant '.$tenant->id, $merge['after']).' requirements_created='.$merge['requirements_created'].' metadata_updated='.(int) $merge['metadata_updated']);
 
             return;
@@ -100,9 +140,22 @@ class SyncComplianceFrameworkPacks extends Command
         $diff = $sync->diff($framework, $packKey, $pack);
 
         if ($apply) {
+            $before = $diff;
             $summary = $installer->installSystemPack($packKey, $pack, true, auth()->id());
             $framework = $sync->systemFramework($packKey, $pack);
             $diff = $sync->diff($framework, $packKey, $pack);
+            ComplianceFrameworkPackEvent::record(
+                ComplianceFrameworkPackEvent::EVENT_SYSTEM_SYNC,
+                ComplianceFrameworkPackEvent::SCOPE_SYSTEM,
+                $packKey,
+                $pack,
+                [
+                    'document_framework_id' => $framework?->id,
+                    'diff_before' => $before,
+                    'diff_after' => $diff,
+                    'result_summary' => $summary,
+                ],
+            );
 
             $this->line($this->formatLine('system', $diff).' '.$this->formatSummary($summary));
 

@@ -103,7 +103,7 @@
 
                                     <div class="form-group">
                                         <label for="field_id" class="sr-only">
-                                            {{ trans('admin/custom-field/general.add_field_to_fieldset')}}
+                                            {{ trans('admin/custom_fields/general.add_field_to_fieldset')}}
                                         </label>
                                         <x-input.select
                                                 name="field_id"

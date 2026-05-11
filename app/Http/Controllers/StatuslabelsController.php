@@ -57,7 +57,7 @@ class StatuslabelsController extends Controller
         $statusLabel = new Statuslabel;
 
         if ($request->missing('statuslabel_types')) {
-            return redirect()->back()->withInput()->withErrors(['statuslabel_types' => trans('validation.statuslabel_type')]);
+            return redirect()->back()->withInput()->withErrors(['statuslabel_types' => trans('validation.custom.statuslabel_type')]);
         }
 
         $statusType = Statuslabel::getStatuslabelTypesForDB($request->input('statuslabel_types'));
@@ -111,7 +111,7 @@ class StatuslabelsController extends Controller
         $this->authorize('update', $statuslabel);
 
         if (! $request->filled('statuslabel_types')) {
-            return redirect()->back()->withInput()->withErrors(['statuslabel_types' => trans('validation.statuslabel_type')]);
+            return redirect()->back()->withInput()->withErrors(['statuslabel_types' => trans('validation.custom.statuslabel_type')]);
         }
 
         // Update the Statuslabel data

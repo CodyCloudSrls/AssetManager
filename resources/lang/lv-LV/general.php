@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Nolietojums',
   'depreciation_report' => 'Amortizācijas atskaite',
   'details' => 'Detaļas',
+  'actions' => 'Darbības',
+  'view' => 'Skatīt',
+  'none' => 'Nav',
+  'are_you_sure' => 'Vai esat pārliecināts?',
+  'description' => 'Apraksts',
+  'deleted_at' => 'Dzēsts',
+  'maintained' => 'Uzturēts',
   'download' => 'Lejupielādēt',
   'download_all' => 'Lajuplādēt visu',
   'editprofile' => 'Edit Profile',
@@ -775,6 +782,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Atlasiet piederumu',
+  'select_consumable' => 'Atlasiet patēriņa materiālu',
+  'select_license' => 'Atlasiet licenci',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

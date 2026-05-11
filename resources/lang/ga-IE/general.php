@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Depreciations',
   'depreciation_report' => 'Tuarascáil Dímheas',
   'details' => 'Details',
+  'actions' => 'Gníomhartha',
+  'view' => 'Féach',
+  'none' => 'Dada',
+  'are_you_sure' => 'An bhfuil tú cinnte?',
+  'description' => 'Cur síos',
+  'deleted_at' => 'Scriosta ar',
+  'maintained' => 'Cothabháilte',
   'download' => 'Íoslódáil',
   'download_all' => 'Download All',
   'editprofile' => 'Edit Profile',
@@ -775,6 +782,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Roghnaigh cúlpháirtí',
+  'select_consumable' => 'Roghnaigh tomhaltán',
+  'select_license' => 'Roghnaigh ceadúnas',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

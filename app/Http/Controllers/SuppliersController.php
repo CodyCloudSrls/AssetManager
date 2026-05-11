@@ -248,6 +248,7 @@ class SuppliersController extends Controller
 
     private function acnExportQuery(Request $request)
     {
+        $selectedSupplierIds = $this->selectedSupplierIds($request);
         $suppliers = Supplier::query()
             ->with([
                 'company',
@@ -263,6 +264,11 @@ class SuppliersController extends Controller
 
         Company::scopeCompanyables($suppliers);
         $this->applyTenantCompanyFilter($suppliers, $request, 'suppliers.company_id');
+
+        if ($selectedSupplierIds !== []) {
+            return $suppliers->whereIn('suppliers.id', $selectedSupplierIds)
+                ->orderBy('suppliers.id');
+        }
 
         if ($request->filled('filter') || $request->filled('search')) {
             $suppliers->TextSearch($request->input('filter') ?: $request->input('search'));
@@ -304,6 +310,27 @@ class SuppliersController extends Controller
         }
 
         return $suppliers->orderBy('suppliers.id');
+    }
+
+    private function selectedSupplierIds(Request $request): array
+    {
+        $ids = $request->input('ids', []);
+
+        if (is_string($ids)) {
+            $ids = explode(',', $ids);
+        }
+
+        if (! is_array($ids)) {
+            $ids = [$ids];
+        }
+
+        return collect($ids)
+            ->flatten()
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     private function acnExportHeaders(): array

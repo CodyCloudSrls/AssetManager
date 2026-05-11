@@ -6,7 +6,7 @@ return [
     'title' => 'Titolo',
     'domain' => 'Dominio',
     'obligation_type' => 'Tipo obbligo',
-    'parent' => 'Requisito padre',
+    'parent' => 'Requisiti padre',
     'coverage' => 'Copertura',
     'risk_level' => 'Rischio',
     'delegation_level' => 'Delegabilità',

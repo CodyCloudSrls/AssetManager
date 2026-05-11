@@ -83,7 +83,7 @@
                                         <span class="btn btn-theme btn-block fileinput-button">
                                         <span>{{ trans('button.select_file') }}</span>
                                          <!-- The file input field used as target for the file upload widget -->
-                                        <label for="files[]"><span class="sr-only">{{ trans('admin/importer/general.select_file') }}</span></label>
+                                        <label for="files[]"><span class="sr-only">{{ trans('button.select_file') }}</span></label>
                                         <input id="fileupload" type="file" name="files[]" data-url="{{ route('api.imports.index') }}" accept="text/csv" aria-label="files[]">
                                         </span>
                                     @endif

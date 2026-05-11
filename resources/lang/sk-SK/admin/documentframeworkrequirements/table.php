@@ -5,7 +5,7 @@ return array (
   'code' => 'Code',
   'title' => 'Title',
   'domain' => 'Domain',
-  'parent' => 'Parent Requirement',
+  'parent' => 'Parent Requirements',
   'coverage' => 'Coverage',
   'owner' => 'Owner',
   'default_document_type' => 'Preferred Document Type',

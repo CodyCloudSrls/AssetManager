@@ -346,7 +346,7 @@ class ComponentsController extends Controller
     {
         if ($component_assets = DB::table('components_assets')->find($component_asset_id)) {
             if (is_null($component = Component::find($component_assets->component_id))) {
-                return response()->json(Helper::formatStandardApiResponse('error', null, trans('admin/components/message.not_found')));
+                return response()->json(Helper::formatStandardApiResponse('error', null, trans('admin/components/message.does_not_exist')));
             }
 
             $this->authorize('checkin', $component);

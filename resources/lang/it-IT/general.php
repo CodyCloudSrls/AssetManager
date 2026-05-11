@@ -90,6 +90,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'Tutto',
   'select_tenant' => 'Seleziona tenant',
+  'select_accessory' => 'Seleziona accessorio',
+  'select_consumable' => 'Seleziona consumabile',
+  'select_license' => 'Seleziona licenza',
   'template_visibility' =>
   array (
     'label' => 'Visibilità template',
@@ -156,6 +159,13 @@ return array (
   'depreciations' => 'Deprezzamenti',
   'depreciation_report' => 'Report Deprezzamento',
   'details' => 'Dettagli',
+  'actions' => 'Azioni',
+  'view' => 'Visualizza',
+  'none' => 'Nessuno',
+  'are_you_sure' => 'Sei sicuro?',
+  'description' => 'Descrizione',
+  'deleted_at' => 'Eliminato il',
+  'maintained' => 'Mantenuto',
   'download' => 'Scarica',
   'download_all' => 'Scarica tutto',
   'editprofile' => 'Modifica Profilo',
