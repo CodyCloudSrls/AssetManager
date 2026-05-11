@@ -51,4 +51,9 @@ return [
     'all_coverage_statuses' => 'Tutti gli stati copertura',
     'apply_filters' => 'Applica filtri',
     'clear_filters' => 'Pulisci filtri',
+    'coverage_help' => 'La copertura e calcolata dai documenti collegati: mancante se non ci sono evidenze, solo supporto se manca un documento primario, a rischio se il primario e scaduto o non attivo, coperto quando esiste un primario valido.',
+    'nis_risk_help' => 'I requisiti NIS2 non hanno un livello di rischio manuale in questa scheda. Il rischio si calcola nella matrice NIS2 partendo da beni, servizi e fornitori, poi viene riportato nei report.',
+    'risk_level_help' => 'Usa questo valore solo come priorita di framework o nota di rischio residuo quando il framework lo prevede esplicitamente.',
+    'parent_help' => 'Seleziona uno o piu requisiti padre quando il controllo richiama piu riferimenti NIS2 a monte.',
+    'parent_cycle_error' => 'I requisiti padre non possono creare una relazione circolare tra requisiti.',
 ];

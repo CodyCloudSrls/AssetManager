@@ -296,7 +296,7 @@ class PredefinedKitsController extends Controller
 
         $kit->models()->detach($model_id);
 
-        return response()->json(Helper::formatStandardApiResponse('success', $kit, trans('admin/kits/general.model_removed_success')));
+        return response()->json(Helper::formatStandardApiResponse('success', $kit, trans('admin/kits/general.kit_model_detached')));
     }
 
     /**

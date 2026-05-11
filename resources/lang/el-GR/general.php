@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Αποσβέσεις',
   'depreciation_report' => 'Αναφορά απόσβεσης',
   'details' => 'Λεπτομέρειες',
+  'actions' => 'Ενέργειες',
+  'view' => 'Προβολή',
+  'none' => 'Κανένα',
+  'are_you_sure' => 'Είστε σίγουροι;',
+  'description' => 'Περιγραφή',
+  'deleted_at' => 'Διαγράφηκε στις',
+  'maintained' => 'Συντηρείται',
   'download' => 'Λήψη',
   'download_all' => 'Λήψη Όλων',
   'editprofile' => 'Edit Profile',
@@ -775,6 +782,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Επιλέξτε αξεσουάρ',
+  'select_consumable' => 'Επιλέξτε αναλώσιμο',
+  'select_license' => 'Επιλέξτε άδεια',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

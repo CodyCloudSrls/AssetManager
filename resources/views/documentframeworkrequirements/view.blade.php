@@ -34,8 +34,12 @@
                                 <x-data-row :label="trans('admin/documentframeworkrequirements/table.domain')">{{ $requirement->domain }}</x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworkrequirements/table.obligation_type')">{{ $requirement->obligation_type_label }}</x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworkrequirements/table.parent')">
-                                    @if ($requirement->parent)
-                                        <a href="{{ route('documentframeworkrequirements.show', $requirement->parent) }}">{{ $requirement->parent->code }} - {{ $requirement->parent->title }}</a>
+                                    @if ($requirement->parent_requirements->isNotEmpty())
+                                        @foreach ($requirement->parent_requirements as $parentRequirement)
+                                            <div>
+                                                <a href="{{ route('documentframeworkrequirements.show', $parentRequirement) }}">{{ $parentRequirement->code }} - {{ $parentRequirement->title }}</a>
+                                            </div>
+                                        @endforeach
                                     @endif
                                 </x-data-row>
                                 <x-data-row :label="trans('admin/documentframeworkrequirements/table.coverage')">{{ $requirement->coverage_label }}</x-data-row>

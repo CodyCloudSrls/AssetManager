@@ -208,7 +208,7 @@ class ComplianceFrameworkInstaller
                 'sort_order' => ($index + 1) * 10,
                 'created_by' => $options['created_by'],
             ], $requirementData);
-            unset($requirementData['parent_requirement_code']);
+            unset($requirementData['parent_requirement_code'], $requirementData['parent_requirement_codes']);
 
             $requirement = DocumentFrameworkRequirement::withoutGlobalScopes()
                 ->where('document_framework_id', $framework->id)
@@ -234,20 +234,29 @@ class ComplianceFrameworkInstaller
 
         foreach ($packRequirements as $requirementData) {
             $code = $requirementData['code'] ?? null;
-            $parentCode = $requirementData['parent_requirement_code'] ?? null;
+            $parentCodes = $this->parentRequirementCodesFromData($requirementData);
 
             if (! $code || ! isset($requirementsByCode[$code], $requirementsNeedingParentSync[$code])) {
                 continue;
             }
 
             $requirement = $requirementsByCode[$code];
-            $parentId = $parentCode && isset($requirementsByCode[$parentCode])
-                ? $requirementsByCode[$parentCode]->id
-                : null;
+            $parentIds = collect($parentCodes)
+                ->filter(fn (string $parentCode) => isset($requirementsByCode[$parentCode]))
+                ->map(fn (string $parentCode) => (int) $requirementsByCode[$parentCode]->id)
+                ->unique()
+                ->values()
+                ->all();
+
+            $parentId = $parentIds[0] ?? null;
 
             if ((int) ($requirement->parent_id ?? 0) !== (int) ($parentId ?? 0)) {
                 $requirement->parent_id = $parentId;
                 $this->saveOrFail($requirement);
+            }
+
+            if (DocumentFrameworkRequirement::parentPivotTableExists()) {
+                $requirement->parents()->sync($parentIds);
             }
         }
 
@@ -289,6 +298,31 @@ class ComplianceFrameworkInstaller
     private function packVersion(array $pack): ?string
     {
         return $pack['pack_version'] ?? Arr::get($pack, 'framework.version');
+    }
+
+    private function parentRequirementCodesFromData(array $data): array
+    {
+        $value = $data['parent_requirement_codes'] ?? $data['parent_requirement_code'] ?? null;
+
+        if (is_array($value)) {
+            return collect($value)
+                ->filter(fn ($code) => filled($code))
+                ->map(fn ($code) => trim((string) $code))
+                ->unique()
+                ->values()
+                ->all();
+        }
+
+        if (! is_string($value) || trim($value) === '') {
+            return [];
+        }
+
+        return collect(preg_split('/[;,|]+/', $value) ?: [])
+            ->map(fn ($code) => trim((string) $code))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 
     private function saveOrFail($model): void

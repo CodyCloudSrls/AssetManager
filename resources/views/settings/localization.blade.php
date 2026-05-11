@@ -92,7 +92,7 @@
                             <label for="week_start" class="col-md-3 control-label">{{ trans('datepicker.week_start') }}</label>
 
                             <div class="col-md-5 col-xs-12">
-                                <select name="week_start" class="select2" style="width: 100%;" aria-label="week_start" data-placeholder="{{ trans('datepicker.select_day') }}">
+                                <select name="week_start" class="select2" style="width: 100%;" aria-label="week_start" data-placeholder="{{ trans('datepicker.week_start_select') }}">
                                     <option value="0" @selected(old('week_start', $setting->week_start) == 0)>
                                         {{ trans('datepicker.days.sunday') }}
                                     </option>
@@ -171,4 +171,3 @@
     </form>
 
 @stop
-

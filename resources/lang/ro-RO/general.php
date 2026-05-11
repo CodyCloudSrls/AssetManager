@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Deprecieri',
   'depreciation_report' => 'Raport depreciere',
   'details' => 'Detalii',
+  'actions' => 'Acțiuni',
+  'view' => 'Vizualizare',
+  'none' => 'Niciunul',
+  'are_you_sure' => 'Sunteți sigur?',
+  'description' => 'Descriere',
+  'deleted_at' => 'Șters la',
+  'maintained' => 'Menținut',
   'download' => 'Descarca',
   'download_all' => 'Descarcă tot',
   'editprofile' => 'Edit Profile',
@@ -775,6 +782,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Selectați accesoriu',
+  'select_consumable' => 'Selectați consumabil',
+  'select_license' => 'Selectați licență',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

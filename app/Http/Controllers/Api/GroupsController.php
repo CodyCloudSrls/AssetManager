@@ -167,6 +167,6 @@ class GroupsController extends Controller
         }
         $group->delete();
 
-        return response()->json(Helper::formatStandardApiResponse('success', null, trans('admin/groups/message.delete.success')));
+        return response()->json(Helper::formatStandardApiResponse('success', null, trans('admin/groups/message.success.delete')));
     }
 }

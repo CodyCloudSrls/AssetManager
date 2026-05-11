@@ -147,7 +147,7 @@ class Customer extends SnipeModel
             'country' => 'nullable|string|max:191',
             'zip' => 'nullable|string|max:20',
             'contact' => 'nullable|string|max:100',
-            'phone' => 'nullable|string|min:7|max:35',
+            'phone' => 'nullable|string|min:3|max:35',
             'email' => 'nullable|email|max:150',
             'security_contact' => 'nullable|string|max:150',
             'security_email' => 'nullable|email|max:150',

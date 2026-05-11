@@ -51,4 +51,9 @@ return [
     'all_coverage_statuses' => 'All coverage statuses',
     'apply_filters' => 'Apply filters',
     'clear_filters' => 'Clear filters',
+    'coverage_help' => 'Coverage is calculated from linked documents: missing when there is no evidence, supporting only when there is no primary evidence, at risk when primary evidence is expired or not active, covered when valid primary evidence exists.',
+    'nis_risk_help' => 'NIS2 requirements do not carry a manual risk score here. Risk is calculated in the NIS2 risk matrix from assets, services and suppliers, then reported separately.',
+    'risk_level_help' => 'Use this value only as a framework-level priority or residual-risk note when the framework explicitly requires it.',
+    'parent_help' => 'Select one or more parent requirements when the control maps to multiple upstream NIS2 references.',
+    'parent_cycle_error' => 'Parent requirements cannot create a circular requirement relationship.',
 ];

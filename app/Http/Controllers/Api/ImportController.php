@@ -285,7 +285,7 @@ class ImportController extends Controller
         if ($import = Import::find($import_id)) {
 
             if ((auth()->user()->id != $import->created_by) && (! auth()->user()->isSuperUser())) {
-                return response()->json(Helper::formatStandardApiResponse('warning', null, trans('admin/hardware/message.import.file_not_deleted_warning')));
+                return response()->json(Helper::formatStandardApiResponse('warning', null, trans('admin/hardware/message.import.file_delete_error')));
             }
 
             try {
@@ -298,11 +298,11 @@ class ImportController extends Controller
                 // If the file delete didn't work, remove it from the database anyway and return a warning
                 $import->delete();
 
-                return response()->json(Helper::formatStandardApiResponse('warning', null, trans('admin/hardware/message.import.file_not_deleted_warning')));
+                return response()->json(Helper::formatStandardApiResponse('warning', null, trans('admin/hardware/message.import.file_delete_error')));
             }
 
         }
 
-        return response()->json(Helper::formatStandardApiResponse('warning', null, trans('admin/hardware/message.import.file_not_deleted_warning')));
+        return response()->json(Helper::formatStandardApiResponse('warning', null, trans('admin/hardware/message.import.file_delete_error')));
     }
 }

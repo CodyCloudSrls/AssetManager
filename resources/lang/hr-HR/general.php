@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Amortizacija',
   'depreciation_report' => 'Izvješće o amortizaciji',
   'details' => 'Detalji',
+  'actions' => 'Radnje',
+  'view' => 'Prikaži',
+  'none' => 'Ništa',
+  'are_you_sure' => 'Jeste li sigurni?',
+  'description' => 'Opis',
+  'deleted_at' => 'Izbrisano',
+  'maintained' => 'Održavano',
   'download' => 'Preuzimanje',
   'download_all' => 'Preuzmi sve',
   'editprofile' => 'Edit Profile',
@@ -775,6 +782,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Odaberite dodatak',
+  'select_consumable' => 'Odaberite potrošni materijal',
+  'select_license' => 'Odaberite licencu',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

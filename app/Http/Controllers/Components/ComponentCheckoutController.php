@@ -55,7 +55,7 @@ class ComponentCheckoutController extends Controller
         }
 
         // Not found
-        return redirect()->route('components.index')->with('error', trans('admin/components/message.not_found'));
+        return redirect()->route('components.index')->with('error', trans('admin/components/message.does_not_exist'));
 
     }
 
@@ -77,7 +77,7 @@ class ComponentCheckoutController extends Controller
         // Check if the component exists
         if (! $component = Component::find($componentId)) {
             // Redirect to the component management page with error
-            return redirect()->route('components.index')->with('error', trans('admin/components/message.not_found'));
+            return redirect()->route('components.index')->with('error', trans('admin/components/message.does_not_exist'));
         }
 
         $this->authorize('checkout', $component);

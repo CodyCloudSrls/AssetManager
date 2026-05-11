@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Amortyzacje',
   'depreciation_report' => 'Raport Amortyzacji',
   'details' => 'Szczegóły',
+  'actions' => 'Akcje',
+  'view' => 'Zobacz',
+  'none' => 'Brak',
+  'are_you_sure' => 'Czy na pewno?',
+  'description' => 'Opis',
+  'deleted_at' => 'Usunięto',
+  'maintained' => 'Utrzymywany',
   'download' => 'Pobieranie',
   'download_all' => 'Pobierz wszystko',
   'editprofile' => 'Edytuj profil',
@@ -775,6 +782,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Wybierz akcesorium',
+  'select_consumable' => 'Wybierz materiał eksploatacyjny',
+  'select_license' => 'Wybierz licencję',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

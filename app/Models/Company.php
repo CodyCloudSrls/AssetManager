@@ -41,7 +41,7 @@ final class Company extends SnipeModel
     protected $rules = [
         'name' => 'required|max:255|unique:companies,name',
         'fax' => 'min:7|max:35|nullable',
-        'phone' => 'min:7|max:35|nullable',
+        'phone' => 'min:3|max:35|nullable',
         'email' => 'email|max:150|nullable',
         'parent_id' => 'nullable|exists:companies,id|non_circular:companies,id',
     ];

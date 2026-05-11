@@ -45,6 +45,7 @@ class ComplianceFrameworkPackSync
         'is_active',
         'sort_order',
         'parent_requirement_code',
+        'parent_requirement_codes',
     ];
 
     public function systemFramework(string $packKey, array $pack): ?DocumentFramework
@@ -147,7 +148,7 @@ class ComplianceFrameworkPackSync
                     'sort_order' => ($index + 1) * 10,
                     'created_by' => $createdBy,
                 ], $requirementData);
-                unset($attributes['parent_requirement_code']);
+                unset($attributes['parent_requirement_code'], $attributes['parent_requirement_codes']);
 
                 $requirement = new DocumentFrameworkRequirement($attributes);
 
@@ -159,19 +160,28 @@ class ComplianceFrameworkPackSync
 
             foreach (Arr::get($pack, 'requirements', []) as $requirementData) {
                 $code = $requirementData['code'] ?? null;
-                $parentCode = $requirementData['parent_requirement_code'] ?? null;
+                $parentCodes = $this->parentRequirementCodesFromData($requirementData);
 
                 if (! $code || ! isset($createdRequirements[$code])) {
                     continue;
                 }
 
-                $parentId = $parentCode && isset($requirementsByCode[$parentCode])
-                    ? $requirementsByCode[$parentCode]->id
-                    : null;
+                $parentIds = collect($parentCodes)
+                    ->filter(fn (string $parentCode) => isset($requirementsByCode[$parentCode]))
+                    ->map(fn (string $parentCode) => (int) $requirementsByCode[$parentCode]->id)
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                $parentId = $parentIds[0] ?? null;
 
                 if ($parentId) {
                     $createdRequirements[$code]->parent_id = $parentId;
                     $this->saveOrFail($createdRequirements[$code]);
+                }
+
+                if (DocumentFrameworkRequirement::parentPivotTableExists()) {
+                    $createdRequirements[$code]->parents()->sync($parentIds);
                 }
             }
 
@@ -222,6 +232,7 @@ class ComplianceFrameworkPackSync
         $requirements = DocumentFrameworkRequirement::withoutGlobalScopes()
             ->where('document_framework_id', $framework->id)
             ->whereNull('deleted_at')
+            ->with(DocumentFrameworkRequirement::parentPivotTableExists() ? ['parent', 'parents'] : ['parent'])
             ->get()
             ->keyBy('code');
 
@@ -250,19 +261,33 @@ class ComplianceFrameworkPackSync
                 'sort_order' => ($index + 1) * 10,
             ], $requirementData);
 
+            if (array_key_exists('parent_requirement_code', $expected) || array_key_exists('parent_requirement_codes', $expected)) {
+                $currentParentCodes = $this->normalizedParentCodesForCompare($this->parentRequirementCodesFor($requirement));
+                $expectedParentCodes = $this->normalizedParentCodesForCompare($this->parentRequirementCodesFromData($expected));
+
+                if ($currentParentCodes !== $expectedParentCodes) {
+                    $changed[$code]['parent_requirement_code'] = [
+                        'current' => implode(', ', $this->parentRequirementCodesFor($requirement)),
+                        'expected' => implode(', ', $this->parentRequirementCodesFromData($expected)),
+                    ];
+                }
+            }
+
             foreach (self::REQUIREMENT_FIELDS as $field) {
+                if (in_array($field, ['parent_requirement_code', 'parent_requirement_codes'], true)) {
+                    continue;
+                }
+
                 if (! array_key_exists($field, $expected)) {
                     continue;
                 }
 
-                $current = $field === 'parent_requirement_code'
-                    ? $this->normalizeValue($requirement->parent?->code)
-                    : $this->normalizeValue($requirement->{$field});
+                $current = $this->normalizeValue($requirement->{$field});
                 $expectedValue = $this->normalizeValue($expected[$field]);
 
                 if ($current !== $expectedValue) {
                     $changed[$code][$field] = [
-                        'current' => $field === 'parent_requirement_code' ? $requirement->parent?->code : $requirement->{$field},
+                        'current' => $requirement->{$field},
                         'expected' => $expected[$field],
                     ];
                 }
@@ -353,6 +378,54 @@ class ComplianceFrameworkPackSync
         }
 
         return (string) $value;
+    }
+
+    private function parentRequirementCodesFromData(array $data): array
+    {
+        $value = $data['parent_requirement_codes'] ?? $data['parent_requirement_code'] ?? null;
+
+        if (is_array($value)) {
+            return collect($value)
+                ->filter(fn ($code) => filled($code))
+                ->map(fn ($code) => trim((string) $code))
+                ->unique()
+                ->values()
+                ->all();
+        }
+
+        if (! is_string($value) || trim($value) === '') {
+            return [];
+        }
+
+        return collect(preg_split('/[;,|]+/', $value) ?: [])
+            ->map(fn ($code) => trim((string) $code))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function parentRequirementCodesFor(DocumentFrameworkRequirement $requirement): array
+    {
+        return $requirement->parent_requirements
+            ->pluck('code')
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    private function normalizedParentCodesForCompare(array $codes): array
+    {
+        $codes = collect($codes)
+            ->map(fn ($code) => $this->normalizeValue($code))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        sort($codes);
+
+        return $codes;
     }
 
     private function saveOrFail($model): void

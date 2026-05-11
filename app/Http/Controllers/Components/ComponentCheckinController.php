@@ -35,18 +35,18 @@ class ComponentCheckinController extends Controller
         // This could probably be done more cleanly but I am very tired. - @snipe
         if ($component_assets = DB::table('components_assets')->find($component_asset_id)) {
             if (is_null($component = Component::find($component_assets->component_id))) {
-                return redirect()->route('components.index')->with('error', trans('admin/components/messages.not_found'));
+                return redirect()->route('components.index')->with('error', trans('admin/components/message.does_not_exist'));
             }
             if (is_null($asset = Asset::find($component_assets->asset_id))) {
                 return redirect()->route('components.index')->with('error',
-                    trans('admin/components/message.not_found'));
+                    trans('admin/components/message.does_not_exist'));
             }
             $this->authorize('checkin', $component);
 
             return view('components/checkin', compact('component_assets', 'component', 'asset'));
         }
 
-        return redirect()->route('components.index')->with('error', trans('admin/components/messages.not_found'));
+        return redirect()->route('components.index')->with('error', trans('admin/components/message.does_not_exist'));
     }
 
     /**
@@ -67,7 +67,7 @@ class ComponentCheckinController extends Controller
             if (is_null($component = Component::find($component_assets->component_id))) {
 
                 return redirect()->route('components.index')->with('error',
-                    trans('admin/components/message.not_found'));
+                    trans('admin/components/message.does_not_exist'));
             }
 
             $this->authorize('checkin', $component);

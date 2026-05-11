@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Odpisy',
   'depreciation_report' => 'Report zastarání',
   'details' => 'Podrobnosti',
+  'actions' => 'Akce',
+  'view' => 'Zobrazit',
+  'none' => 'Žádné',
+  'are_you_sure' => 'Jste si jistí?',
+  'description' => 'Popis',
+  'deleted_at' => 'Smazáno',
+  'maintained' => 'Udržováno',
   'download' => 'Stáhnout',
   'download_all' => 'Stáhnout vše',
   'editprofile' => 'Upravit profil',
@@ -777,6 +784,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Vyberte příslušenství',
+  'select_consumable' => 'Vyberte spotřební materiál',
+  'select_license' => 'Vyberte licenci',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

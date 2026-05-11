@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Värdeminskning',
   'depreciation_report' => 'Värdeminskningsrapport',
   'details' => 'Information',
+  'actions' => 'Åtgärder',
+  'view' => 'Visa',
+  'none' => 'Ingen',
+  'are_you_sure' => 'Är du säker?',
+  'description' => 'Beskrivning',
+  'deleted_at' => 'Raderad',
+  'maintained' => 'Underhållen',
   'download' => 'Ladda ned',
   'download_all' => 'Ladda ned alla',
   'editprofile' => 'Redigera profil',
@@ -775,6 +782,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Välj tillbehör',
+  'select_consumable' => 'Välj förbrukningsvara',
+  'select_license' => 'Välj licens',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

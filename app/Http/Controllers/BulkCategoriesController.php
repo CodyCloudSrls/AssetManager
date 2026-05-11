@@ -34,7 +34,7 @@ class BulkCategoriesController extends Controller
             } catch (ItemStillHasAccessories $e) {
                 $errors[] = trans('general.bulk_delete_associations.assoc_assets_no_count', ['item_name' => $category->name, 'item' => trans('general.category')]);
             } catch (ItemStillHasAssetModels) {
-                $errors[] = trans('general.bulk_delete_associations.assoc_asset_models_no_count', ['item_name' => $category->name, 'item' => trans('general.category')]);
+                $errors[] = trans('general.bulk_delete_associations.asset_models_no_count', ['item_name' => $category->name, 'item' => trans('general.category')]);
             } catch (ItemStillHasAssets) {
                 $errors[] = trans('general.bulk_delete_associations.assoc_assets_no_count', ['item_name' => $category->name, 'item' => trans('general.category')]);
             } catch (ItemStillHasComponents) {

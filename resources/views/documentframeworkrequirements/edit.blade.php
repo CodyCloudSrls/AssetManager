@@ -55,16 +55,34 @@
         </div>
     </div>
 
-    <div class="form-group {{ $errors->has('parent_id') ? ' has-error' : '' }}">
-        <label for="parent_id" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.parent') }}</label>
+    @php
+        $selectedParentIds = collect(old('parent_ids', $item->parent_requirement_ids))
+            ->filter(fn ($parentId) => filled($parentId))
+            ->map(fn ($parentId) => (int) $parentId)
+            ->all();
+    @endphp
+
+    <div class="form-group {{ ($errors->has('parent_id') || $errors->has('parent_ids') || $errors->has('parent_ids.*')) ? ' has-error' : '' }}">
+        <label for="parent_ids" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.parent') }}</label>
         <div class="col-md-5">
-            <select class="form-control select2" name="parent_id" id="parent_id">
-                <option value="">{{ trans('general.none') }}</option>
+            <input type="hidden" name="parent_ids[]" value="">
+            <select class="form-control select2" name="parent_ids[]" id="parent_ids" multiple="multiple" data-placeholder="{{ trans('general.none') }}">
                 @foreach ($parentOptions as $parentOption)
-                    <option value="{{ $parentOption->id }}" @selected(old('parent_id', $item->parent_id) == $parentOption->id)>{{ $parentOption->code }} - {{ $parentOption->title }}</option>
+                    <option value="{{ $parentOption->id }}" @selected(in_array((int) $parentOption->id, $selectedParentIds, true))>{{ $parentOption->code }} - {{ $parentOption->title }}</option>
                 @endforeach
             </select>
             {!! $errors->first('parent_id', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+            {!! $errors->first('parent_ids', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+            {!! $errors->first('parent_ids.*', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+            <p class="help-block">{{ trans('admin/documentframeworkrequirements/general.parent_help') }}</p>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="coverage_status" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.coverage') }}</label>
+        <div class="col-md-4">
+            <input class="form-control" type="text" id="coverage_status" value="{{ $item->coverage_label }}" readonly>
+            <p class="help-block">{{ trans('admin/documentframeworkrequirements/general.coverage_help') }}</p>
         </div>
     </div>
 
@@ -99,7 +117,7 @@
     <div class="form-group {{ $errors->has('risk_level') ? ' has-error' : '' }}">
         <label for="risk_level" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.risk_level') }}</label>
         <div class="col-md-4">
-            @if ($framework->compliance_domain === 'nis2')
+            @if ($isNis2Framework)
                 <input type="hidden" name="risk_level" value="not_applicable">
                 <input class="form-control" type="text" id="risk_level" value="{{ $riskLevelOptions['not_applicable'] ?? trans('general.none') }}" readonly>
             @else
@@ -109,6 +127,7 @@
                     @endforeach
                 </select>
             @endif
+            <p class="help-block">{{ $isNis2Framework ? trans('admin/documentframeworkrequirements/general.nis_risk_help') : trans('admin/documentframeworkrequirements/general.risk_level_help') }}</p>
             {!! $errors->first('risk_level', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
         </div>
     </div>

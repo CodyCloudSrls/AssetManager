@@ -11,6 +11,7 @@ use App\Http\Controllers\BulkManufacturersController;
 use App\Http\Controllers\BulkSuppliersController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\CompaniesController;
+use App\Http\Controllers\ComplianceFrameworkPacksController;
 use App\Http\Controllers\CustomerContractsController;
 use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\DashboardController;
@@ -210,6 +211,25 @@ Route::group(['middleware' => 'auth'], function () {
 */
 
 Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'authorize:superuser']], function () {
+    Route::get('compliance-framework-packs', [ComplianceFrameworkPacksController::class, 'index'])
+        ->name('settings.compliance_framework_packs.index')
+        ->breadcrumbs(fn (Trail $trail) => $trail->parent('settings.index')
+            ->push(trans('admin/compliancepacks/general.title'), route('settings.compliance_framework_packs.index')));
+
+    Route::get('compliance-framework-packs/{packKey}', [ComplianceFrameworkPacksController::class, 'show'])
+        ->where('packKey', '[A-Za-z0-9_-]+')
+        ->name('settings.compliance_framework_packs.show')
+        ->breadcrumbs(fn (Trail $trail, string $packKey) => $trail->parent('settings.compliance_framework_packs.index')
+            ->push($packKey, route('settings.compliance_framework_packs.show', $packKey)));
+
+    Route::post('compliance-framework-packs/{packKey}/system', [ComplianceFrameworkPacksController::class, 'applySystem'])
+        ->where('packKey', '[A-Za-z0-9_-]+')
+        ->name('settings.compliance_framework_packs.system.apply');
+
+    Route::post('compliance-framework-packs/{packKey}/tenants/{tenant}', [ComplianceFrameworkPacksController::class, 'applyTenant'])
+        ->where('packKey', '[A-Za-z0-9_-]+')
+        ->name('settings.compliance_framework_packs.tenants.apply');
+
     Route::get('settings', [SettingsController::class, 'getSettings'])
         ->name('settings.general.index')
         ->breadcrumbs(fn (Trail $trail) => $trail->parent('settings.index')

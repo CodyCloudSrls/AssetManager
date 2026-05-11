@@ -175,7 +175,7 @@ class DepreciationsController extends Controller
     {
         // Check if the depreciation exists
         if (is_null($depreciation = Depreciation::withCount('models as models_count')->find($depreciationId))) {
-            return redirect()->route('depreciations.index')->with('error', trans('admin/depreciations/message.not_found'));
+            return redirect()->route('depreciations.index')->with('error', trans('admin/depreciations/message.does_not_exist'));
         }
 
         $this->authorize('delete', $depreciation);

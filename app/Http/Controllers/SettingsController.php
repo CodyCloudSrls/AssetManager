@@ -1082,7 +1082,7 @@ class SettingsController extends Controller
             ])->notify(new MailTest);
             Log::debug('Attempting to send mail to '.config('mail.from.address'));
 
-            return response()->json(Helper::formatStandardApiResponse('success', null, trans('mail_sent.mail_sent')));
+            return response()->json(Helper::formatStandardApiResponse('success', null, trans('mail.mail_sent')));
         } catch (\Exception $e) {
             Log::error('Mail sent from '.config('mail.from.address').' with errors '.$e->getMessage());
             Log::debug($e);

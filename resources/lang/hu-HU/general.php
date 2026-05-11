@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Értékcsökkenések',
   'depreciation_report' => 'Értékcsökkenés riport',
   'details' => 'Részletek',
+  'actions' => 'Műveletek',
+  'view' => 'Megtekintés',
+  'none' => 'Nincs',
+  'are_you_sure' => 'Biztos benne?',
+  'description' => 'Leírás',
+  'deleted_at' => 'Törölve',
+  'maintained' => 'Karbantartva',
   'download' => 'Letöltés',
   'download_all' => 'Mind letöltése',
   'editprofile' => 'Profil szerkesztése',
@@ -776,6 +783,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Tartozék kiválasztása',
+  'select_consumable' => 'Fogyóeszköz kiválasztása',
+  'select_license' => 'Licenc kiválasztása',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

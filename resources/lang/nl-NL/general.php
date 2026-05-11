@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Afschrijvingen',
   'depreciation_report' => 'Afschrijvingsrapport',
   'details' => 'Details',
+  'actions' => 'Acties',
+  'view' => 'Bekijken',
+  'none' => 'Geen',
+  'are_you_sure' => 'Weet u het zeker?',
+  'description' => 'Beschrijving',
+  'deleted_at' => 'Verwijderd op',
+  'maintained' => 'Onderhouden',
   'download' => 'Download',
   'download_all' => 'Alles downloaden',
   'editprofile' => 'Profiel bewerken',
@@ -775,6 +782,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Accessoire selecteren',
+  'select_consumable' => 'Verbruiksartikel selecteren',
+  'select_license' => 'Licentie selecteren',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

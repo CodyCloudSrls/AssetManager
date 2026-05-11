@@ -154,7 +154,7 @@ final class CompaniesController extends Controller
 
         if (is_null($company = Company::find($companyId))) {
             return redirect()->route('companies.index')
-                ->with('error', trans('admin/companies/message.not_found'));
+                ->with('error', trans('admin/companies/message.does_not_exist'));
         }
 
         $this->authorize('delete', $company);

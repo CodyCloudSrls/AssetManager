@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Nusidėvėjimas',
   'depreciation_report' => 'Nusidėvėjimo ataskaita',
   'details' => 'Informacija',
+  'actions' => 'Veiksmai',
+  'view' => 'Peržiūrėti',
+  'none' => 'Nėra',
+  'are_you_sure' => 'Ar tikrai?',
+  'description' => 'Aprašymas',
+  'deleted_at' => 'Ištrinta',
+  'maintained' => 'Prižiūrima',
   'download' => 'Atsisiųsti',
   'download_all' => 'Atsisųsti visus',
   'editprofile' => 'Redaguoti profilį',
@@ -775,6 +782,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Pasirinkite priedą',
+  'select_consumable' => 'Pasirinkite eksploatacinę medžiagą',
+  'select_license' => 'Pasirinkite licenciją',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

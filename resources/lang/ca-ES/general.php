@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Depreciations',
   'depreciation_report' => 'Depreciation Report',
   'details' => 'Detalls',
+  'actions' => 'Accions',
+  'view' => 'Visualitza',
+  'none' => 'Cap',
+  'are_you_sure' => 'N\'esteu segur?',
+  'description' => 'Descripció',
+  'deleted_at' => 'Suprimit el',
+  'maintained' => 'Mantingut',
   'download' => 'Descarregar',
   'download_all' => 'Download All',
   'editprofile' => 'Edit Profile',
@@ -775,6 +782,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Selecciona un accessori',
+  'select_consumable' => 'Selecciona un consumible',
+  'select_license' => 'Selecciona una llicència',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

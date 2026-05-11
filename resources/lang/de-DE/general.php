@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Abschreibungen',
   'depreciation_report' => 'Abschreibungsbericht',
   'details' => 'Details',
+  'actions' => 'Aktionen',
+  'view' => 'Anzeigen',
+  'none' => 'Keine',
+  'are_you_sure' => 'Sind Sie sicher?',
+  'description' => 'Beschreibung',
+  'deleted_at' => 'Gelöscht am',
+  'maintained' => 'Gewartet',
   'download' => 'Herunterladen',
   'download_all' => 'Alle herunterladen',
   'editprofile' => 'Profil bearbeiten',
@@ -775,6 +782,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Zubehör auswählen',
+  'select_consumable' => 'Verbrauchsmaterial auswählen',
+  'select_license' => 'Lizenz auswählen',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

@@ -230,7 +230,7 @@ class SetupController extends Controller
     public function getSetupDone(): View
     {
         return view('setup/done')
-            ->with('success', trans('general.create_admin_success'))
+            ->with('success', trans('admin/settings/general.create_admin_success'))
             ->with('step', 4)
             ->with('icon', 'fa-solid fa-champagne-glasses fa-shake')
             ->with('section', trans('general.setup_done'));
@@ -254,7 +254,7 @@ class SetupController extends Controller
         }
 
         return view('setup/migrate')
-            ->with('success', trans('general.create_admin_success'))
+            ->with('success', trans('admin/settings/general.create_admin_success'))
             ->with('output', trim($output))
             ->with('step', 2)
             ->with('section', trans('general.setup_create_database'))

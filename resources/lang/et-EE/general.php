@@ -134,6 +134,13 @@ return array (
   'depreciations' => 'Amortisatsioon',
   'depreciation_report' => 'Amortisatsiooniaruanne',
   'details' => 'Üksikasjad',
+  'actions' => 'Toimingud',
+  'view' => 'Vaata',
+  'none' => 'Puudub',
+  'are_you_sure' => 'Kas olete kindel?',
+  'description' => 'Kirjeldus',
+  'deleted_at' => 'Kustutatud',
+  'maintained' => 'Hooldatud',
   'download' => 'Lae alla',
   'download_all' => 'Laadige kõik alla',
   'editprofile' => 'Edit Profile',
@@ -775,6 +782,9 @@ return array (
   'tenant' => 'Tenant',
   'all_tenants' => 'All',
   'select_tenant' => 'Select Tenant',
+  'select_accessory' => 'Vali tarvik',
+  'select_consumable' => 'Vali kulumaterjal',
+  'select_license' => 'Vali litsents',
   'template_visibility' =>
   array (
     'label' => 'Template Visibility',

@@ -149,6 +149,29 @@ class DocumentFramework extends SnipeModel
         ];
     }
 
+    public static function looksLikeNis2Domain(?string $complianceDomain, array $metadata = []): bool
+    {
+        if ($complianceDomain === 'nis2') {
+            return true;
+        }
+
+        foreach (['framework_code', 'slug', 'name'] as $field) {
+            $value = $metadata[$field] ?? null;
+
+            if (! is_string($value) || trim($value) === '') {
+                continue;
+            }
+
+            $normalized = Str::lower(Str::ascii($value));
+
+            if (preg_match('/\bnis[\s_-]*2\b/', $normalized) === 1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static function getStatusOptions(): array
     {
         return [
@@ -310,5 +333,14 @@ class DocumentFramework extends SnipeModel
     public function isSystemTemplate(): bool
     {
         return (bool) $this->is_system_template;
+    }
+
+    public function isNis2Domain(): bool
+    {
+        return self::looksLikeNis2Domain($this->compliance_domain, [
+            'framework_code' => $this->framework_code,
+            'slug' => $this->slug,
+            'name' => $this->name,
+        ]);
     }
 }

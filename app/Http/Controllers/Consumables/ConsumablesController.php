@@ -215,7 +215,7 @@ class ConsumablesController extends Controller
     public function destroy($consumableId)
     {
         if (is_null($consumable = Consumable::find($consumableId))) {
-            return redirect()->route('consumables.index')->with('error', trans('admin/consumables/message.not_found'));
+            return redirect()->route('consumables.index')->with('error', trans('admin/consumables/message.does_not_exist'));
         }
         $this->authorize($consumable);
 
