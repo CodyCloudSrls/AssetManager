@@ -11,6 +11,16 @@
 @section('inputFields')
 
 @include ('partials.forms.edit.name', ['translated_name' => trans('admin/suppliers/table.name')])
+
+<div class="form-group {{ $errors->has('tax_code') ? ' has-error' : '' }}">
+    <label for="tax_code" class="col-md-3 control-label">{{ trans('admin/suppliers/table.tax_code') }}</label>
+    <div class="col-md-7">
+        <input class="form-control" name="tax_code" type="text" id="tax_code" value="{{ old('tax_code', $item->tax_code) }}">
+        <p class="help-block">{{ trans('admin/suppliers/table.tax_code_help') }}</p>
+        {!! $errors->first('tax_code', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+    </div>
+</div>
+
 @include ('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id', 'item' => $item])
 @include ('partials.forms.edit.template-visibility-select', ['translated_name' => trans('general.template_visibility.label'), 'fieldname' => 'visibility_type', 'item' => $item])
 @include ('partials.forms.edit.address')

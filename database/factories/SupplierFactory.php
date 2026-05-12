@@ -37,6 +37,7 @@ class SupplierFactory extends Factory
             'phone' => $this->faker->phoneNumber(),
             'state' => $this->faker->stateAbbr(),
             'tag_color' => $this->faker->hexColor(),
+            'tax_code' => strtoupper($this->faker->bothify('??????##?##?###?')),
             'url' => $this->faker->url(),
             'visibility_type' => Supplier::VISIBILITY_GLOBAL,
             'zip' => $this->faker->postCode(),

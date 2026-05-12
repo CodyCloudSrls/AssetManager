@@ -15,6 +15,8 @@ return [
     'id' => 'ID',
     'licenses' => 'Licenze',
     'name' => 'Nome Fornitore',
+    'tax_code' => 'Codice fiscale',
+    'tax_code_help' => 'Codice fiscale del fornitore da usare nelle dichiarazioni NIS/ACN quando richiesto. Lascia vuoto se non disponibile o non applicabile.',
     'nis_section' => 'Qualificazione NIS2',
     'nis_relevant' => 'Rilevante ai fini NIS2',
     'nis_criticality' => 'Criticità NIS2',

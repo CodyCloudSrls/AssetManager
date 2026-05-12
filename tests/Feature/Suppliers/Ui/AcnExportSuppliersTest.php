@@ -13,6 +13,7 @@ class AcnExportSuppliersTest extends TestCase
     {
         $selectedRelevantSupplier = Supplier::factory()->create([
             'name' => 'TIM S.p.A.',
+            'tax_code' => '00488410010',
             'nis_relevant' => true,
         ]);
         $selectedNonRelevantSupplier = Supplier::factory()->create([
@@ -36,11 +37,15 @@ class AcnExportSuppliersTest extends TestCase
 
         $records = collect(Reader::createFromString($response->streamedContent())->getRecords())
             ->values();
+        $header = $records->first();
         $names = $records->slice(1)->map(fn (array $row) => $row[2])->values();
+        $taxCodes = $records->slice(1)->map(fn (array $row) => $row[3])->values();
 
+        $this->assertSame(trans('admin/suppliers/table.tax_code'), $header[3]);
         $this->assertCount(2, $names);
         $this->assertContains('TIM S.p.A.', $names);
         $this->assertContains('CodyCloud Srl', $names);
         $this->assertNotContains('Unselected Relevant Supplier', $names);
+        $this->assertContains('00488410010', $taxCodes);
     }
 }

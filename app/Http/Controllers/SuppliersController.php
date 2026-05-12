@@ -61,6 +61,7 @@ class SuppliersController extends Controller
         $supplier = new Supplier;
         // Save the location data
         $supplier->name = request('name');
+        $supplier->tax_code = request('tax_code');
         $supplier->address = request('address');
         $supplier->address2 = request('address2');
         $supplier->city = request('city');
@@ -121,6 +122,7 @@ class SuppliersController extends Controller
         $this->authorize('update', $supplier);
         // Save the  data
         $supplier->name = request('name');
+        $supplier->tax_code = request('tax_code');
         $supplier->address = request('address');
         $supplier->address2 = request('address2');
         $supplier->city = request('city');
@@ -339,6 +341,7 @@ class SuppliersController extends Controller
             strtolower(trans('general.id')),
             trans('general.company'),
             trans('general.name'),
+            trans('admin/suppliers/table.tax_code'),
             trans('admin/suppliers/table.nis_relevant'),
             trans('admin/suppliers/table.nis_relevance_type'),
             trans('admin/suppliers/table.nis_criticality'),
@@ -379,6 +382,7 @@ class SuppliersController extends Controller
             $supplier->id,
             $supplier->company?->name,
             $supplier->name,
+            $supplier->tax_code,
             $supplier->nis_relevant ? trans('general.yes') : trans('general.no'),
             $supplier->nis_relevance_type_label,
             $supplier->nis_criticality_label,

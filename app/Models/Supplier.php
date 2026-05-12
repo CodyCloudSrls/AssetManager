@@ -50,6 +50,7 @@ class Supplier extends SnipeModel
      */
     protected $searchableAttributes = [
         'name',
+        'tax_code',
         'notes',
         'phone',
         'fax',
@@ -89,6 +90,7 @@ class Supplier extends SnipeModel
      */
     protected $fillable = [
         'name',
+        'tax_code',
         'address',
         'address2',
         'city',
@@ -151,6 +153,7 @@ class Supplier extends SnipeModel
                         }
                     }),
             ],
+            'tax_code' => 'nullable|string|max:50',
             'fax' => 'min:7|max:35|nullable',
             'phone' => 'min:3|max:35|nullable',
             'contact' => 'max:100|nullable',
