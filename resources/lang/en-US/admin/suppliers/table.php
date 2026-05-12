@@ -15,6 +15,8 @@ return [
     'id' => 'ID',
     'licenses' => 'Licenses',
     'name' => 'Supplier Name',
+    'tax_code' => 'Tax Code',
+    'tax_code_help' => 'Supplier tax code used for NIS/ACN declarations when required. Leave blank if not available or not applicable.',
     'nis_section' => 'NIS2 Qualification',
     'nis_relevant' => 'NIS2 Relevant',
     'nis_criticality' => 'NIS2 Criticality',

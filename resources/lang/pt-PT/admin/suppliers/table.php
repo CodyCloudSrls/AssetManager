@@ -15,6 +15,8 @@ return array (
   'id' => 'ID',
   'licenses' => 'Licenças',
   'name' => 'Nome do fornecedor',
+  'tax_code' => 'Tax Code',
+  'tax_code_help' => 'Supplier tax code used for NIS/ACN declarations when required. Leave blank if not available or not applicable.',
   'notes' => 'Notas',
   'phone' => 'Telefone',
   'phone_help' => 'Optional supplier switchboard or contact phone number.',

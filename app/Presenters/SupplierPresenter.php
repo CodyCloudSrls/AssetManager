@@ -37,6 +37,13 @@ class SupplierPresenter extends Presenter
                 'visible' => true,
                 'formatter' => 'suppliersLinkFormatter',
             ], [
+                'field' => 'tax_code',
+                'searchable' => true,
+                'sortable' => true,
+                'switchable' => true,
+                'title' => trans('admin/suppliers/table.tax_code'),
+                'visible' => true,
+            ], [
                 'field' => 'image',
                 'searchable' => false,
                 'sortable' => true,

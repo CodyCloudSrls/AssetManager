@@ -42,6 +42,7 @@ class SuppliersController extends Controller
         $allowed_columns = [
             'id',
             'name',
+            'tax_code',
             'address',
             'address2',
             'city',
@@ -74,7 +75,7 @@ class SuppliersController extends Controller
         ];
 
         $suppliers = Supplier::select(
-            ['id', 'name', 'address', 'address2', 'city', 'state', 'country', 'fax', 'phone', 'email', 'contact', 'created_at', 'created_by', 'updated_at', 'deleted_at', 'image', 'notes', 'url', 'zip', 'tag_color', 'company_id', 'visibility_type', 'nis_relevant', 'nis_relevance_type', 'nis_criticality', 'nis_assessment_status', 'nis_assessment_method', 'nis_assessment_outcome', 'nis_assessment_scope', 'nis_relevance_criteria', 'cpv_codes', 'nis_last_assessment_at', 'nis_next_review_at'])
+            ['id', 'name', 'tax_code', 'address', 'address2', 'city', 'state', 'country', 'fax', 'phone', 'email', 'contact', 'created_at', 'created_by', 'updated_at', 'deleted_at', 'image', 'notes', 'url', 'zip', 'tag_color', 'company_id', 'visibility_type', 'nis_relevant', 'nis_relevance_type', 'nis_criticality', 'nis_assessment_status', 'nis_assessment_method', 'nis_assessment_outcome', 'nis_assessment_scope', 'nis_relevance_criteria', 'cpv_codes', 'nis_last_assessment_at', 'nis_next_review_at'])
             ->withCount('assets as assets_count')
             ->withCount('licenses as licenses_count')
             ->withCount('accessories as accessories_count')
@@ -89,6 +90,10 @@ class SuppliersController extends Controller
 
         if ($request->filled('name')) {
             $suppliers->where('name', '=', $request->input('name'));
+        }
+
+        if ($request->filled('tax_code')) {
+            $suppliers->where('tax_code', '=', $request->input('tax_code'));
         }
 
         if ($request->filled('address')) {

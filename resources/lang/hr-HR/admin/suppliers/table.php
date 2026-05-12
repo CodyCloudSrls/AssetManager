@@ -15,6 +15,8 @@ return array (
   'id' => 'iskaznica',
   'licenses' => 'licence',
   'name' => 'ime dobavljača',
+  'tax_code' => 'Tax Code',
+  'tax_code_help' => 'Supplier tax code used for NIS/ACN declarations when required. Leave blank if not available or not applicable.',
   'notes' => 'Bilješke',
   'phone' => 'Telefon',
   'phone_help' => 'Optional supplier switchboard or contact phone number.',

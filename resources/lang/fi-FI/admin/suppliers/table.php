@@ -15,6 +15,8 @@ return array (
   'id' => 'Tunnus',
   'licenses' => 'Lisenssit',
   'name' => 'Toimittajan nimi',
+  'tax_code' => 'Tax Code',
+  'tax_code_help' => 'Supplier tax code used for NIS/ACN declarations when required. Leave blank if not available or not applicable.',
   'notes' => 'Muistiinpanot',
   'phone' => 'Puhelin',
   'phone_help' => 'Optional supplier switchboard or contact phone number.',

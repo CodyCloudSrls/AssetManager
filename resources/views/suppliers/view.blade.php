@@ -45,6 +45,7 @@
                             $supplierEvidenceChecklist = $supplier->nisEvidenceChecklist();
                         @endphp
                         <x-page-data>
+                            <x-data-row :label="trans('admin/suppliers/table.tax_code')">{{ $supplier->tax_code }}</x-data-row>
                             <x-data-row :label="trans('admin/suppliers/table.nis_relevant')">{{ $supplier->nis_relevant ? trans('general.yes') : trans('general.no') }}</x-data-row>
                             <x-data-row :label="trans('admin/suppliers/table.nis_criticality')">{{ $supplier->nis_criticality_label }}</x-data-row>
                             <x-data-row :label="trans('admin/suppliers/table.nis_relevance_type')">{{ $supplier->nis_relevance_type_label }}</x-data-row>
