@@ -74,6 +74,10 @@
                                 <td>{{ trans('localizations.languages')[$tenant->defaultLocale()] ?? $tenant->defaultLocale() }}</td>
                             </tr>
                             <tr>
+                                <th>{{ trans('admin/tenants/general.settings.default_compliance_jurisdiction') }}</th>
+                                <td>{{ \App\Models\Tenant::complianceJurisdictionOptions()[$tenant->defaultComplianceJurisdiction()] ?? $tenant->defaultComplianceJurisdiction() }}</td>
+                            </tr>
+                            <tr>
                                 <th>{{ trans('admin/tenants/general.root_company_link') }}</th>
                                 <td>
                                     @if ($rootCompany)

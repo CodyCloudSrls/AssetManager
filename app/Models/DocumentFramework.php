@@ -142,6 +142,7 @@ class DocumentFramework extends SnipeModel
         return [
             'nis2' => trans('admin/documentframeworks/general.compliance_domains.nis2'),
             'gdpr' => trans('admin/documentframeworks/general.compliance_domains.gdpr'),
+            'ai_act' => trans('admin/documentframeworks/general.compliance_domains.ai_act'),
             'iso27001' => trans('admin/documentframeworks/general.compliance_domains.iso27001'),
             'supplier_risk' => trans('admin/documentframeworks/general.compliance_domains.supplier_risk'),
             'internal' => trans('admin/documentframeworks/general.compliance_domains.internal'),

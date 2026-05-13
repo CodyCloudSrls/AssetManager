@@ -95,6 +95,21 @@ class ComplianceFrameworkPackEvent extends SnipeModel
             return null;
         }
 
+        $resultSummary = $context['result_summary'] ?? null;
+        $sourceRegister = $pack['source_register'] ?? null;
+
+        if (is_array($sourceRegister)) {
+            $resultSummary = is_array($resultSummary) ? $resultSummary : [];
+            $resultSummary['_pack_source'] = [
+                'key' => $pack['source_register_key'] ?? null,
+                'status' => $sourceRegister['status'] ?? null,
+                'scope' => $sourceRegister['scope'] ?? null,
+                'jurisdiction' => $sourceRegister['jurisdiction'] ?? data_get($pack, 'framework.jurisdiction'),
+                'last_checked_at' => $sourceRegister['last_checked_at'] ?? null,
+                'sources' => $sourceRegister['sources'] ?? [],
+            ];
+        }
+
         $eventData = [
             'tenant_id' => $context['tenant_id'] ?? null,
             'company_id' => $context['company_id'] ?? null,
@@ -107,7 +122,7 @@ class ComplianceFrameworkPackEvent extends SnipeModel
             'actor_id' => auth()->id(),
             'diff_before' => $context['diff_before'] ?? null,
             'diff_after' => $context['diff_after'] ?? null,
-            'result_summary' => $context['result_summary'] ?? null,
+            'result_summary' => $resultSummary,
             'remote_ip' => request()?->ip(),
             'user_agent' => request()?->header('User-Agent'),
             'created_at' => now(),

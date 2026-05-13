@@ -7,11 +7,12 @@ use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\Tenant;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ComplianceFrameworkInstaller
 {
-    public function availablePackKeys(?string $locale = null): array
+    public function availablePackKeys(?string $locale = null, ?string $jurisdiction = null): array
     {
         $packs = config('compliance_frameworks.packs', []);
 
@@ -21,9 +22,29 @@ class ComplianceFrameworkInstaller
 
         $locale = $this->bootstrapLocale($locale);
 
-        return collect($packs)
+        $matchingPacks = collect($packs)
             ->filter(fn (array $pack) => ($pack['locale'] ?? null) === $locale)
-            ->keys()
+            ->values();
+
+        if (blank($jurisdiction)) {
+            return $matchingPacks
+                ->map(fn (array $pack) => $this->packKeyFor($pack, $packs))
+                ->filter()
+                ->values()
+                ->all();
+        }
+
+        $jurisdiction = $this->normalizeJurisdiction($jurisdiction);
+
+        return $matchingPacks
+            ->groupBy(fn (array $pack) => data_get($pack, 'framework.compliance_domain', 'custom'))
+            ->map(function (Collection $domainPacks) use ($jurisdiction, $packs) {
+                return $domainPacks
+                    ->sortBy(fn (array $pack) => $this->jurisdictionPriority($pack, $jurisdiction))
+                    ->first();
+            })
+            ->map(fn (array $pack) => $this->packKeyFor($pack, $packs))
+            ->filter()
             ->values()
             ->all();
     }
@@ -60,7 +81,7 @@ class ComplianceFrameworkInstaller
         }
 
         $locale = $this->bootstrapLocale($locale ?: $tenant->defaultLocale());
-        $packKeys = $packKeys ?: $this->availablePackKeys($locale);
+        $packKeys = $packKeys ?: $this->availablePackKeys($locale, $tenant->defaultComplianceJurisdiction());
 
         return DB::transaction(function () use ($packKeys, $rootCompany, $locale, $updateExisting, $createdBy) {
             $summary = [
@@ -298,6 +319,40 @@ class ComplianceFrameworkInstaller
     private function packVersion(array $pack): ?string
     {
         return $pack['pack_version'] ?? Arr::get($pack, 'framework.version');
+    }
+
+    private function packKeyFor(array $pack, array $packs): ?string
+    {
+        foreach ($packs as $packKey => $candidate) {
+            if ($candidate === $pack) {
+                return $packKey;
+            }
+        }
+
+        return null;
+    }
+
+    private function normalizeJurisdiction(?string $jurisdiction): string
+    {
+        $jurisdiction = strtoupper(trim((string) $jurisdiction));
+
+        return $jurisdiction !== '' ? $jurisdiction : Tenant::COMPLIANCE_JURISDICTION_EU;
+    }
+
+    private function jurisdictionPriority(array $pack, string $jurisdiction): int
+    {
+        $scope = data_get($pack, 'source_register.scope');
+        $packJurisdiction = strtoupper((string) data_get($pack, 'source_register.jurisdiction', data_get($pack, 'framework.jurisdiction', '')));
+
+        if ($scope === 'national_overlay' && $jurisdiction !== Tenant::COMPLIANCE_JURISDICTION_EU && str_contains($packJurisdiction, $jurisdiction)) {
+            return 0;
+        }
+
+        if ($scope === 'eu_baseline' && str_contains($packJurisdiction, Tenant::COMPLIANCE_JURISDICTION_EU)) {
+            return 1;
+        }
+
+        return 2;
     }
 
     private function parentRequirementCodesFromData(array $data): array

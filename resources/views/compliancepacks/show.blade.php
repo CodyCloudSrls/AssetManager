@@ -16,7 +16,7 @@
     <x-container>
         <x-box :header="data_get($pack, 'framework.name', $packKey)">
             <div class="row">
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <strong>{{ trans('admin/compliancepacks/general.pack') }}</strong><br>
                     <code>{{ $packKey }}</code>
                 </div>
@@ -25,14 +25,38 @@
                     {{ $dashboard->localeLabel($pack['locale'] ?? null) }}
                 </div>
                 <div class="col-md-2">
+                    <strong>{{ trans('admin/compliancepacks/general.jurisdiction') }}</strong><br>
+                    {{ data_get($pack, 'source_register.jurisdiction', data_get($pack, 'framework.jurisdiction', '-')) }}
+                </div>
+                <div class="col-md-2">
                     <strong>{{ trans('admin/compliancepacks/general.version') }}</strong><br>
                     {{ $pack['pack_version'] ?? data_get($pack, 'framework.version') }}
                 </div>
-                <div class="col-md-5">
+                <div class="col-md-2">
+                    <strong>{{ trans('admin/compliancepacks/general.source_status') }}</strong><br>
+                    {{ $dashboard->sourceStatusLabel(data_get($pack, 'source_register.status')) }}
+                    <small class="text-muted">({{ $dashboard->sourceScopeLabel(data_get($pack, 'source_register.scope')) }})</small>
+                </div>
+                <div class="col-md-2">
+                    <strong>{{ trans('admin/compliancepacks/general.source_checked_at') }}</strong><br>
+                    {{ data_get($pack, 'source_register.last_checked_at', '-') }}
+                </div>
+            </div>
+            <div class="row" style="margin-top: 15px;">
+                <div class="col-md-3">
+                    <strong>{{ trans('admin/compliancepacks/general.source_register') }}</strong><br>
+                    <code>{{ $pack['source_register_key'] ?? '-' }}</code>
+                </div>
+                <div class="col-md-9">
                     <strong>{{ trans('admin/compliancepacks/general.checksum') }}</strong><br>
                     <code>{{ $checksum }}</code>
                 </div>
             </div>
+            @if (data_get($pack, 'source_register.scope') === 'eu_baseline')
+                <p class="help-block" style="margin-top: 15px;">
+                    {{ trans('admin/compliancepacks/general.eu_baseline_help') }}
+                </p>
+            @endif
         </x-box>
 
         <x-box :header="trans('admin/compliancepacks/general.system_template')">

@@ -31,12 +31,82 @@ class ComplianceFrameworkPackDashboard
                 'name' => data_get($pack, 'framework.name', $packKey),
                 'locale' => $pack['locale'] ?? null,
                 'domain' => data_get($pack, 'framework.compliance_domain'),
+                'jurisdiction' => data_get($pack, 'source_register.jurisdiction', data_get($pack, 'framework.jurisdiction')),
+                'source_register_key' => $pack['source_register_key'] ?? null,
+                'source_status' => data_get($pack, 'source_register.status'),
+                'source_scope' => data_get($pack, 'source_register.scope'),
+                'source_checked_at' => data_get($pack, 'source_register.last_checked_at'),
                 'version' => $this->packVersion($pack),
                 'checksum' => $this->checksum($pack),
                 'system' => $systemDiff,
                 'tenant_counts' => $this->tenantCounts($tenantRows),
             ];
         })->values();
+    }
+
+    public function filtersFromInput(array $input): array
+    {
+        return collect([
+            'domain',
+            'locale',
+            'jurisdiction',
+            'source_status',
+            'system_status',
+            'tenant_status',
+        ])->mapWithKeys(fn (string $key) => [$key => trim((string) ($input[$key] ?? ''))])
+            ->filter(fn (string $value) => $value !== '')
+            ->all();
+    }
+
+    public function filterPackRows(Collection $rows, array $filters): Collection
+    {
+        return $rows->filter(function (array $row) use ($filters) {
+            if (isset($filters['domain']) && $row['domain'] !== $filters['domain']) {
+                return false;
+            }
+
+            if (isset($filters['locale']) && $row['locale'] !== $filters['locale']) {
+                return false;
+            }
+
+            if (isset($filters['jurisdiction']) && $row['jurisdiction'] !== $filters['jurisdiction']) {
+                return false;
+            }
+
+            if (isset($filters['source_status']) && $row['source_status'] !== $filters['source_status']) {
+                return false;
+            }
+
+            if (isset($filters['system_status']) && ($row['system']['status'] ?? null) !== $filters['system_status']) {
+                return false;
+            }
+
+            if (isset($filters['tenant_status'])) {
+                $tenantStatus = $filters['tenant_status'];
+                $count = (int) ($row['tenant_counts'][$tenantStatus] ?? 0);
+
+                if ($count < 1) {
+                    return false;
+                }
+            }
+
+            return true;
+        })->values();
+    }
+
+    public function filterOptions(Collection $rows): array
+    {
+        return [
+            'domains' => $this->optionsFromRows($rows, 'domain', fn (?string $value) => $this->domainLabel($value)),
+            'locales' => $this->optionsFromRows($rows, 'locale', fn (?string $value) => $this->localeLabel($value)),
+            'jurisdictions' => $this->optionsFromRows($rows, 'jurisdiction'),
+            'source_statuses' => $this->optionsFromRows($rows, 'source_status', fn (?string $value) => $this->sourceStatusLabel($value)),
+            'system_statuses' => $this->optionsFromRows($rows, 'system.status', fn (?string $value) => $this->statusLabel((string) $value)),
+            'tenant_statuses' => collect(['current', 'outdated', 'modified', 'missing_framework', 'actionable'])
+                ->filter(fn (string $status) => $rows->contains(fn (array $row) => (int) ($row['tenant_counts'][$status] ?? 0) > 0))
+                ->mapWithKeys(fn (string $status) => [$status => $this->statusLabel($status)])
+                ->all(),
+        ];
     }
 
     public function packOrFail(string $packKey): array
@@ -105,6 +175,7 @@ class ComplianceFrameworkPackDashboard
             'current' => 'success',
             'outdated' => 'warning',
             'modified' => 'danger',
+            'actionable' => 'info',
             'missing_framework' => 'default',
             default => 'default',
         };
@@ -149,6 +220,24 @@ class ComplianceFrameworkPackDashboard
         return DocumentFramework::complianceDomainOptions()[$domain] ?? $this->humanizeCode($domain);
     }
 
+    public function sourceStatusLabel(?string $status): string
+    {
+        if (blank($status)) {
+            return '-';
+        }
+
+        return $this->translatedChoice('admin/compliancepacks/general.source_statuses.'.$status, $status);
+    }
+
+    public function sourceScopeLabel(?string $scope): string
+    {
+        if (blank($scope)) {
+            return '-';
+        }
+
+        return $this->translatedChoice('admin/compliancepacks/general.source_scopes.'.$scope, $scope);
+    }
+
     public function shortChecksum(string $checksum): string
     {
         return Str::limit($checksum, 16, '');
@@ -159,7 +248,12 @@ class ComplianceFrameworkPackDashboard
         $packLocale = $pack['locale'] ?? null;
 
         return $tenants
-            ->filter(fn (Tenant $tenant) => $this->installer->bootstrapLocale($tenant->defaultLocale()) === $packLocale)
+            ->filter(function (Tenant $tenant) use ($packKey, $packLocale) {
+                $tenantLocale = $this->installer->bootstrapLocale($tenant->defaultLocale());
+
+                return $tenantLocale === $packLocale
+                    && in_array($packKey, $this->installer->availablePackKeys($tenantLocale, $tenant->defaultComplianceJurisdiction()), true);
+            })
             ->map(function (Tenant $tenant) use ($packKey, $pack) {
                 $framework = $this->sync->tenantFramework($tenant, $packKey, $pack);
                 $diff = $this->sync->diff($framework, $packKey, $pack);
@@ -204,6 +298,24 @@ class ComplianceFrameworkPackDashboard
             ->get()
             ->filter(fn (Tenant $tenant) => ! is_null($tenant->rootCompany()))
             ->values();
+    }
+
+    private function optionsFromRows(Collection $rows, string $key, ?callable $labeler = null): array
+    {
+        $options = $rows
+            ->map(fn (array $row) => data_get($row, $key))
+            ->filter(fn ($value) => filled($value))
+            ->unique()
+            ->mapWithKeys(function ($value) use ($labeler) {
+                $value = (string) $value;
+
+                return [$value => $labeler ? $labeler($value) : $value];
+            })
+            ->all();
+
+        asort($options, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return $options;
     }
 
     private function packs(): array

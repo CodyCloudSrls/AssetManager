@@ -82,6 +82,7 @@ class TenantsController extends Controller
 
         return view('tenants.create', [
             'item' => new Company,
+            'jurisdictionOptions' => Tenant::complianceJurisdictionOptions(),
         ]);
     }
 
@@ -102,6 +103,7 @@ class TenantsController extends Controller
             'link_dark_color' => 'nullable|string|max:16',
             'privacy_policy_link' => 'nullable|url|max:255',
             'default_locale' => 'required|string|in:'.implode(',', Helper::availableLanguageLocales()),
+            'default_compliance_jurisdiction' => 'required|string|in:'.implode(',', Tenant::complianceJurisdictionValues()),
             'bootstrap_compliance_frameworks' => 'nullable|boolean',
         ]);
 
@@ -111,6 +113,7 @@ class TenantsController extends Controller
             DB::transaction(function () use ($request, &$company) {
                 $tenant = Tenant::createMinimal();
                 $tenant->default_locale = $request->input('default_locale');
+                $tenant->default_compliance_jurisdiction = $request->input('default_compliance_jurisdiction');
                 $tenant->save();
 
                 $company = new Company;
@@ -206,6 +209,7 @@ class TenantsController extends Controller
             'tenant' => $tenant,
             'rootCompany' => $rootCompany,
             'languageOptions' => trans('localizations.languages'),
+            'jurisdictionOptions' => Tenant::complianceJurisdictionOptions(),
         ]);
     }
 
@@ -214,6 +218,7 @@ class TenantsController extends Controller
         abort_unless(auth()->user()->canManageTenant($tenant), 403);
 
         $tenant->default_locale = $request->input('default_locale');
+        $tenant->default_compliance_jurisdiction = $request->input('default_compliance_jurisdiction');
         $tenant->save();
 
         $message = trans('admin/tenants/message.settings.update.success');

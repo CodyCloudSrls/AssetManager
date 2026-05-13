@@ -33,8 +33,23 @@ return array (
     'save' => 'Salva impostazioni tenant',
     'default_locale' => 'Lingua predefinita tenant',
     'default_locale_help' => 'Usata per i contenuti di bootstrap del tenant, ad esempio i framework compliance. Gli utenti possono comunque scegliere la propria lingua interfaccia.',
+    'default_compliance_jurisdiction' => 'Giurisdizione compliance predefinita',
+    'default_compliance_jurisdiction_help' => 'Usata per scegliere overlay nazionali verificati nei pacchetti bootstrap. Non cambia la lingua interfaccia degli utenti.',
+    'compliance_jurisdictions' =>
+    array (
+      'eu' => 'Baseline UE',
+      'it' => 'Italia - overlay nazionale NIS2 verificato',
+    ),
+    'compliance_jurisdiction_eu' => 'Baseline UE',
+    'compliance_jurisdiction_statuses' =>
+    array (
+      'implemented' => 'overlay nazionale verificato',
+      'baseline_only' => 'baseline UE',
+      'review_required' => 'revisione nazionale richiesta',
+      'blocked' => 'bloccato',
+    ),
     'bootstrap_compliance_frameworks' => 'Crea i framework compliance mancanti per questo tenant',
-    'bootstrap_compliance_frameworks_help' => 'Crea copie NIS2/GDPR editabili e di proprieta del tenant nella lingua predefinita del tenant. I framework tenant esistenti non vengono sovrascritti.',
+    'bootstrap_compliance_frameworks_help' => 'Crea copie NIS2/GDPR/AI Act editabili e di proprieta del tenant in base a lingua e giurisdizione compliance. I framework tenant esistenti non vengono sovrascritti.',
   ),
   'helpdesk' =>
   array (

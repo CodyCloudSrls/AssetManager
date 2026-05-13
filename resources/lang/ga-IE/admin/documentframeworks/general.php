@@ -33,6 +33,7 @@ return array (
   array (
     'nis2' => 'NIS2',
     'gdpr' => 'GDPR',
+    'ai_act' => 'AI Act',
     'iso27001' => 'ISO 27001',
     'supplier_risk' => 'Supplier Risk',
     'internal' => 'Internal',

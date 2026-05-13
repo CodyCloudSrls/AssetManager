@@ -33,8 +33,23 @@ return array (
     'save' => 'Save tenant settings',
     'default_locale' => 'Tenant default language',
     'default_locale_help' => 'Used for tenant bootstrap content such as compliance frameworks. Users can still choose their own interface language.',
+    'default_compliance_jurisdiction' => 'Default compliance jurisdiction',
+    'default_compliance_jurisdiction_help' => 'Used to choose verified national overlays for bootstrap packs. It does not change the user interface language.',
+    'compliance_jurisdictions' =>
+    array (
+      'eu' => 'EU baseline',
+      'it' => 'Italy - verified NIS2 national overlay',
+    ),
+    'compliance_jurisdiction_eu' => 'EU baseline',
+    'compliance_jurisdiction_statuses' =>
+    array (
+      'implemented' => 'verified national overlay',
+      'baseline_only' => 'EU baseline',
+      'review_required' => 'national review required',
+      'blocked' => 'blocked',
+    ),
     'bootstrap_compliance_frameworks' => 'Create missing compliance frameworks for this tenant',
-    'bootstrap_compliance_frameworks_help' => 'Creates editable tenant-owned NIS2/GDPR framework copies in the tenant default language. Existing tenant frameworks are not overwritten.',
+    'bootstrap_compliance_frameworks_help' => 'Creates editable tenant-owned NIS2/GDPR/AI Act framework copies in the tenant default language and compliance jurisdiction. Existing tenant frameworks are not overwritten.',
   ),
   'helpdesk' =>
   array (
