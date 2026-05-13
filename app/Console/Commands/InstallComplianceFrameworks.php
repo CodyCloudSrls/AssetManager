@@ -13,12 +13,12 @@ class InstallComplianceFrameworks extends Command
     protected $signature = 'snipeit:install-compliance-frameworks
         {pack=all : all, a configured pack key, or a comma-separated list}
         {--company_id= : Optional company id for tenant-owned frameworks}
-        {--tenant_id= : Optional tenant id. Uses the tenant root company and tenant default language}
+        {--tenant_id= : Optional tenant id. Uses the tenant root company, default language and compliance jurisdiction}
         {--visibility=global : private, descendants, or global}
         {--update-existing : Update existing frameworks and requirements}
         {--dry-run : Show changes without writing}';
 
-    protected $description = 'Install starter compliance document frameworks for NIS2/GDPR without overwriting existing data by default.';
+    protected $description = 'Install starter compliance document frameworks without overwriting existing data by default.';
 
     public function handle(): int
     {
@@ -26,7 +26,7 @@ class InstallComplianceFrameworks extends Command
         $installer = app(ComplianceFrameworkInstaller::class);
         $tenant = $this->option('tenant_id') ? Tenant::query()->findOrFail((int) $this->option('tenant_id')) : null;
         $availablePackKeys = $tenant
-            ? $installer->availablePackKeys($tenant->defaultLocale())
+            ? $installer->availablePackKeys($tenant->defaultLocale(), $tenant->defaultComplianceJurisdiction())
             : array_keys($packs);
         $selected = $this->selectedPacks($availablePackKeys);
 
@@ -36,13 +36,20 @@ class InstallComplianceFrameworks extends Command
 
                 return self::FAILURE;
             }
+
+            if ($tenant && ! in_array($packKey, $availablePackKeys, true)) {
+                $this->error("Pack {$packKey} is not available for tenant locale {$tenant->defaultLocale()} and compliance jurisdiction {$tenant->defaultComplianceJurisdiction()}.");
+
+                return self::FAILURE;
+            }
         }
 
         if ($tenant) {
             $locale = $installer->bootstrapLocale($tenant->defaultLocale());
+            $jurisdiction = $tenant->defaultComplianceJurisdiction();
 
             if ((bool) $this->option('dry-run')) {
-                $this->line("[dry-run] would bootstrap tenant {$tenant->display_name} using {$locale}: ".implode(', ', $selected));
+                $this->line("[dry-run] would bootstrap tenant {$tenant->display_name} using {$locale}/{$jurisdiction}: ".implode(', ', $selected));
 
                 return self::SUCCESS;
             }

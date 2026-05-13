@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Helpers\Helper;
+use App\Support\Compliance\ComplianceJurisdictions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -25,16 +26,20 @@ class Tenant extends Model
     public const MAIL_EVENT_TICKET_SLA_ALERT = 'ticket_sla_alert';
     public const MAIL_EVENT_DOCUMENT_REVIEW_DUE = 'document_review_due';
     public const MAIL_EVENT_DOCUMENT_ASSIGNMENT_REMINDER = 'document_assignment_reminder';
+    public const COMPLIANCE_JURISDICTION_EU = ComplianceJurisdictions::EU;
+    public const COMPLIANCE_JURISDICTION_IT = ComplianceJurisdictions::IT;
 
     protected static ?array $currentUserTenantRolesCache = null;
 
     protected $fillable = [
         'uuid',
         'default_locale',
+        'default_compliance_jurisdiction',
     ];
 
     protected $casts = [
         'default_locale' => 'string',
+        'default_compliance_jurisdiction' => 'string',
     ];
 
     protected static function booted(): void
@@ -133,9 +138,29 @@ class Tenant extends Model
         $this->attributes['default_locale'] = Helper::normalizeSupportedLocale($value);
     }
 
+    public function setDefaultComplianceJurisdictionAttribute($value): void
+    {
+        $this->attributes['default_compliance_jurisdiction'] = ComplianceJurisdictions::normalize($value);
+    }
+
     public function defaultLocale(): string
     {
         return Helper::normalizeSupportedLocale($this->default_locale ?: config('app.locale', 'en-US'));
+    }
+
+    public function defaultComplianceJurisdiction(): string
+    {
+        return ComplianceJurisdictions::normalize($this->default_compliance_jurisdiction ?: static::COMPLIANCE_JURISDICTION_EU);
+    }
+
+    public static function complianceJurisdictionValues(): array
+    {
+        return ComplianceJurisdictions::values();
+    }
+
+    public static function complianceJurisdictionOptions(): array
+    {
+        return ComplianceJurisdictions::options();
     }
 
     public function publicHelpdeskUrl(): string

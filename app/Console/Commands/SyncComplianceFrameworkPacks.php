@@ -27,12 +27,18 @@ class SyncComplianceFrameworkPacks extends Command
             : null;
         $apply = (bool) $this->option('apply');
         $locale = $tenant ? $installer->bootstrapLocale($tenant->defaultLocale()) : null;
-        $availablePackKeys = $tenant ? $installer->availablePackKeys($locale) : array_keys($packs);
+        $availablePackKeys = $tenant ? $installer->availablePackKeys($locale, $tenant->defaultComplianceJurisdiction()) : array_keys($packs);
         $selected = $this->selectedPacks($availablePackKeys);
 
         foreach ($selected as $packKey) {
             if (! isset($packs[$packKey])) {
                 $this->error("Unknown compliance pack: {$packKey}");
+
+                return self::FAILURE;
+            }
+
+            if ($tenant && ! in_array($packKey, $availablePackKeys, true)) {
+                $this->error("Pack {$packKey} is not available for tenant locale {$locale} and compliance jurisdiction {$tenant->defaultComplianceJurisdiction()}.");
 
                 return self::FAILURE;
             }

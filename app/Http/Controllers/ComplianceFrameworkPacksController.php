@@ -9,16 +9,28 @@ use App\Support\Compliance\ComplianceFrameworkPackDashboard;
 use App\Support\Compliance\ComplianceFrameworkPackSync;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use InvalidArgumentException;
 
 class ComplianceFrameworkPacksController extends Controller
 {
-    public function index(ComplianceFrameworkPackDashboard $dashboard): View
+    public function index(Request $request, ComplianceFrameworkPackDashboard $dashboard): View
     {
         $this->authorizeGlobalPackManagement();
+        $allRows = $dashboard->packRows();
+        $filters = $dashboard->filtersFromInput($request->only([
+            'domain',
+            'locale',
+            'jurisdiction',
+            'source_status',
+            'system_status',
+            'tenant_status',
+        ]));
 
         return view('compliancepacks.index', [
-            'packRows' => $dashboard->packRows(),
+            'packRows' => $dashboard->filterPackRows($allRows, $filters),
+            'filterOptions' => $dashboard->filterOptions($allRows),
+            'filters' => $filters,
             'dashboard' => $dashboard,
             'latestEvents' => $dashboard->latestEvents(null, 10),
         ]);
@@ -85,11 +97,18 @@ class ComplianceFrameworkPacksController extends Controller
         $pack = $this->packOrAbort($dashboard, $packKey);
         $packLocale = $pack['locale'] ?? null;
         $tenantLocale = $installer->bootstrapLocale($tenant->defaultLocale());
+        $compatiblePackKeys = $installer->availablePackKeys($tenantLocale, $tenant->defaultComplianceJurisdiction());
 
         if ($packLocale !== $tenantLocale) {
             return redirect()
                 ->route('settings.compliance_framework_packs.show', $packKey)
                 ->with('error', trans('admin/compliancepacks/general.messages.locale_mismatch'));
+        }
+
+        if (! in_array($packKey, $compatiblePackKeys, true)) {
+            return redirect()
+                ->route('settings.compliance_framework_packs.show', $packKey)
+                ->with('error', trans('admin/compliancepacks/general.messages.jurisdiction_mismatch'));
         }
 
         $framework = $sync->tenantFramework($tenant, $packKey, $pack);
