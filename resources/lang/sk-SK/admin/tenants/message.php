@@ -52,6 +52,7 @@ return array (
     'bootstrap' =>
     array (
       'success' => 'Bootstrap completed for :locale: :frameworks framework(s) and :requirements requirement(s) created.',
+            'safe_update_success' => 'Compliance pack safe update completed for :locale: :applied pack(s) applied, :frameworks framework(s) created, :requirements requirement(s) created, :manual_review manual review, :skipped skipped.',
     ),
   ),
 );

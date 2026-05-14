@@ -16,7 +16,7 @@ use App\Models\Supplier;
 use App\Models\Tenant;
 use App\Models\Ticket;
 use App\Models\User;
-use App\Support\Compliance\ComplianceFrameworkInstaller;
+use App\Support\Compliance\ComplianceFrameworkPackTenantUpdater;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -152,11 +152,8 @@ class TenantsController extends Controller
                 $company->saveQuietly();
 
                 if ($request->boolean('bootstrap_compliance_frameworks')) {
-                    app(ComplianceFrameworkInstaller::class)->bootstrapTenant(
+                    app(ComplianceFrameworkPackTenantUpdater::class)->applyAvailablePacks(
                         $tenant,
-                        $tenant->defaultLocale(),
-                        null,
-                        false,
                         auth()->id(),
                     );
                 }
@@ -224,17 +221,17 @@ class TenantsController extends Controller
         $message = trans('admin/tenants/message.settings.update.success');
 
         if ($request->boolean('bootstrap_compliance_frameworks')) {
-            $summary = app(ComplianceFrameworkInstaller::class)->bootstrapTenant(
+            $summary = app(ComplianceFrameworkPackTenantUpdater::class)->applyAvailablePacks(
                 $tenant,
-                $tenant->defaultLocale(),
-                null,
-                false,
                 auth()->id(),
             );
 
-            $message .= ' '.trans('admin/tenants/message.settings.bootstrap.success', [
-                'frameworks' => $summary['created'],
+            $message .= ' '.trans('admin/tenants/message.settings.bootstrap.safe_update_success', [
+                'applied' => $summary['applied'],
+                'frameworks' => $summary['frameworks_created'],
                 'requirements' => $summary['requirements_created'],
+                'manual_review' => $summary['manual_review'],
+                'skipped' => $summary['skipped'],
                 'locale' => $tenant->defaultLocale(),
             ]);
         }

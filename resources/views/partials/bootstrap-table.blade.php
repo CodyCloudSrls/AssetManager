@@ -891,7 +891,7 @@
 
         btnExport: {
             text: '{{ trans('admin/suppliers/table.acn_export') }}',
-            icon: 'fa-solid fa-file-csv',
+            icon: 'fa-solid fa-file-excel',
             event () {
                 window.location.href = window.snipeTableUrlWithSelectedRowIds(@json($supplierAcnExportUrl), $('#supplierListingTable'));
             },

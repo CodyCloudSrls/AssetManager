@@ -82,6 +82,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('{documentframework}/export/{format}', [DocumentFrameworksController::class, 'export'])
             ->whereIn('format', ['csv', 'xlsx', 'docx'])
             ->name('documentframeworks.export');
+        Route::get('{documentframework}/requirements/matrix', [DocumentFrameworksController::class, 'requirementsMatrix'])->name('documentframeworks.requirements.matrix');
         Route::get('{documentframework}/requirements/create', [DocumentFrameworkRequirementsController::class, 'create'])->name('documentframeworkrequirements.create');
         Route::post('{documentframework}/requirements', [DocumentFrameworkRequirementsController::class, 'store'])->name('documentframeworkrequirements.store');
     });
@@ -122,7 +123,7 @@ Route::group(['middleware' => 'auth'], function () {
     /*
     * Suppliers
     */
-    Route::get('suppliers/acn-export', [SuppliersController::class, 'exportAcnCsv'])->name('suppliers.acn_export');
+    Route::get('suppliers/acn-export', [SuppliersController::class, 'exportAcnOds'])->name('suppliers.acn_export');
     Route::resource('suppliers', SuppliersController::class);
 
     Route::post('suppliers/bulk/delete', [BulkSuppliersController::class, 'destroy'])->name('suppliers.bulk.delete');
@@ -225,6 +226,10 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'authorize:superuser
     Route::post('compliance-framework-packs/{packKey}/system', [ComplianceFrameworkPacksController::class, 'applySystem'])
         ->where('packKey', '[A-Za-z0-9_-]+')
         ->name('settings.compliance_framework_packs.system.apply');
+
+    Route::post('compliance-framework-packs/{packKey}/tenants/bulk', [ComplianceFrameworkPacksController::class, 'applyTenantsBulk'])
+        ->where('packKey', '[A-Za-z0-9_-]+')
+        ->name('settings.compliance_framework_packs.tenants.bulk_apply');
 
     Route::post('compliance-framework-packs/{packKey}/tenants/{tenant}', [ComplianceFrameworkPacksController::class, 'applyTenant'])
         ->where('packKey', '[A-Za-z0-9_-]+')

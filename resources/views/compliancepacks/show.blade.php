@@ -81,10 +81,22 @@
         </x-box>
 
         <x-box :header="trans('admin/compliancepacks/general.tenant_copies')">
+            <form id="tenant-pack-bulk-apply-form" method="POST" action="{{ route('settings.compliance_framework_packs.tenants.bulk_apply', $packKey) }}" class="form-inline" style="margin-bottom: 15px;">
+                @csrf
+                <input type="hidden" name="confirm_bulk_safe_update" value="1">
+                <button type="submit" class="btn btn-sm btn-warning">
+                    <x-icon type="checkmark" />
+                    {{ trans('admin/compliancepacks/general.bulk_apply_tenants') }}
+                </button>
+                <span class="help-block" style="display: inline; margin-left: 10px;">
+                    {{ trans('admin/compliancepacks/general.bulk_apply_help') }}
+                </span>
+            </form>
             <div class="table-responsive">
                 <table class="table table-striped snipe-table">
                     <thead>
                         <tr>
+                            <th>{{ trans('general.select') }}</th>
                             <th>{{ trans('admin/compliancepacks/general.tenant') }}</th>
                             <th>{{ trans('admin/compliancepacks/general.locale') }}</th>
                             <th>{{ trans('admin/compliancepacks/general.status') }}</th>
@@ -102,6 +114,19 @@
                                 $diff = $row['diff'];
                             @endphp
                             <tr>
+                                <td>
+                                    @if ($row['can_apply'])
+                                        <input
+                                            type="checkbox"
+                                            name="tenant_ids[]"
+                                            value="{{ $tenant->id }}"
+                                            form="tenant-pack-bulk-apply-form"
+                                            aria-label="{{ trans('admin/compliancepacks/general.bulk_select_tenant') }}"
+                                        >
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td>
                                     <a href="{{ route('tenants.show', $tenant) }}">{{ $row['root_company']?->name ?? '-' }}</a><br>
                                     <small class="text-muted">#{{ $tenant->id }}</small>
@@ -134,7 +159,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8">{{ trans('admin/compliancepacks/general.no_compatible_tenants') }}</td>
+                                <td colspan="9">{{ trans('admin/compliancepacks/general.no_compatible_tenants') }}</td>
                             </tr>
                         @endforelse
                     </tbody>

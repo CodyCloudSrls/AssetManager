@@ -143,6 +143,74 @@ class ComplianceFrameworkPackConfigTest extends TestCase
         }
     }
 
+    public function test_source_register_dates_are_current_for_ai_act_and_nis2(): void
+    {
+        $config = $this->packs();
+
+        $this->assertSame('2026-05-14', $config['source_checked_at']);
+
+        foreach (['ai_act_eu', 'nis2_eu', 'nis2_it'] as $sourceRegisterKey) {
+            $this->assertSame(
+                '2026-05-14',
+                $config['source_registers'][$sourceRegisterKey]['last_checked_at'] ?? null,
+                "{$sourceRegisterKey} source register must record the latest review date"
+            );
+        }
+    }
+
+    public function test_source_register_document_covers_ai_act_and_nis2_pack_keys(): void
+    {
+        $config = $this->packs();
+        $document = $this->doc('docs/compliance-source-register.md');
+
+        foreach ([
+            'https://eur-lex.europa.eu/eli/reg/2024/1689/oj',
+            'https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai',
+            'https://eur-lex.europa.eu/eli/dir/2022/2555/oj',
+            'https://digital-strategy.ec.europa.eu/en/policies/nis-transposition',
+            'https://www.gazzettaufficiale.it/eli/id/2024/10/01/24G00155/SG',
+        ] as $sourceUrl) {
+            $this->assertStringContainsString($sourceUrl, $document);
+        }
+
+        foreach ($config['source_registers'] as $sourceRegisterKey => $sourceRegister) {
+            if (! in_array($sourceRegisterKey, ['ai_act_eu', 'nis2_eu', 'nis2_it'], true)) {
+                continue;
+            }
+
+            $this->assertStringContainsString("`{$sourceRegisterKey}`", $document);
+            $this->assertStringContainsString($sourceRegister['last_checked_at'], $document);
+        }
+
+        foreach ($config['packs'] as $packKey => $pack) {
+            if (! in_array($pack['framework']['compliance_domain'] ?? null, ['ai_act', 'nis2'], true)) {
+                continue;
+            }
+
+            $this->assertStringContainsString("`{$packKey}`", $document, "{$packKey} missing from source register document");
+        }
+    }
+
+    public function test_nis2_pack_audit_document_covers_all_nis2_pack_keys(): void
+    {
+        $document = $this->doc('docs/nis2-pack-audit.md');
+
+        foreach ($this->packs()['packs'] as $packKey => $pack) {
+            if (($pack['framework']['compliance_domain'] ?? null) !== 'nis2') {
+                continue;
+            }
+
+            $this->assertStringContainsString("`{$packKey}`", $document, "{$packKey} missing from NIS2 audit document");
+            $this->assertStringContainsString($pack['pack_version'], $document, "{$packKey} pack version missing from NIS2 audit document");
+            $this->assertStringContainsString((string) count($pack['requirements']), $document, "{$packKey} requirement count missing from NIS2 audit document");
+        }
+
+        $this->assertStringContainsString('D.Lgs. 138/2024', $document);
+        $this->assertStringContainsString('CPV', $document);
+        $this->assertStringContainsString('review_required', $document);
+        $this->assertStringContainsString('No NIS2 pack content change is required', $document);
+    }
+
     private function parentCodes(array $requirement): array
     {
         $value = $requirement['parent_requirement_codes'] ?? $requirement['parent_requirement_code'] ?? [];
@@ -156,5 +224,14 @@ class ComplianceFrameworkPackConfigTest extends TestCase
         }
 
         return array_values(array_filter(array_map('strval', $value)));
+    }
+
+    private function doc(string $relativePath): string
+    {
+        $path = dirname(__DIR__, 2).'/'.$relativePath;
+
+        $this->assertFileExists($path);
+
+        return (string) file_get_contents($path);
     }
 }

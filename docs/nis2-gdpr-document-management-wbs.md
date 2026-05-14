@@ -6,6 +6,8 @@ Current direction and implementation status are tracked in [Project Direction An
 
 Daily framework pack operations are tracked in [Compliance Framework Pack Operations WBS](compliance-framework-pack-operations-wbs.md).
 
+Implementation status as of 2026-05-14: this WBS is functionally complete. Remaining notes in this document are verification, security or legal-review constraints rather than unfinished NIS2/GDPR document-management deliverables.
+
 ## 1. Scope And Principles
 
 ### 1.1 Product Goal
@@ -63,8 +65,8 @@ Build a document-centered compliance module that helps consultants and tenants g
 ### 3.3 Assignments
 
 - Keep document assignments to users, assets and locations.
-- Next implementation step: add API/bootstrap-table for assignments with filters and export.
-- Later: add assignment evidence status, issuer review and delegated task follow-up.
+- Assignment API/bootstrap-table coverage includes filters, export and delegated evidence queues.
+- Assignment evidence status, issuer/reviewer metadata, approval states, reminders and delegated task follow-up are implemented on the shared document assignment workflow.
 
 ## 4. Supplier NIS2 Register
 
@@ -83,7 +85,7 @@ Build a document-centered compliance module that helps consultants and tenants g
 
 - Preserve free-form CPV input for compatibility.
 - Add structured relevance criterion before CPV/rationale to reduce ambiguous supplier records.
-- Future step: add reusable CPV catalog/search and validation against official code pattern.
+- Reusable CPV catalog/search and validation against the official code pattern are implemented.
 
 ### 4.3 Supplier Evidence
 
@@ -101,7 +103,7 @@ Build a document-centered compliance module that helps consultants and tenants g
 
 - Track asset NIS2 relevance, scope, service impact and notes.
 - Keep standard asset lifecycle unchanged.
-- Future step: add tenant dashboard for NIS2-relevant assets by scope, impact and missing owner/document evidence.
+- Tenant compliance dashboard includes NIS2 asset counts and high-impact asset drill-downs while keeping the standard asset lifecycle unchanged.
 
 ## 6. UI/UX
 
@@ -123,7 +125,7 @@ Build a document-centered compliance module that helps consultants and tenants g
 - Tenant compliance dashboard counters drill down to existing tenant-filtered requirement, document, supplier, asset, framework and ticket work queues.
 - Supplier qualification includes CPV catalog search and structured NIS2 assessment method, outcome and scope fields while preserving the free-form CPV field.
 - Supplier detail includes a NIS2 evidence checklist and assigned-document review table for supplier evidence.
-- Supplier index includes an ACN-oriented CSV export for NIS2 supplier data preparation.
+- Supplier index includes an ACN-oriented ODS export for NIS2 supplier data preparation, using the official spreadsheet template kept in `docs/ACN_Template_fornitori.ods`.
 - Document section includes a delegated evidence request queue for open user/supplier evidence assignments.
 - Document assignments include approval/review states and append-only assignment audit events.
 - Delegated document evidence assignments send tenant reminder/escalation digests while leaving approval sign-off to reviewers.
@@ -131,12 +133,12 @@ Build a document-centered compliance module that helps consultants and tenants g
 - Customer contracts include subscriptions, service costs, renewal dates, linked signed documents and an append-only hash chain for audit traceability.
 - Contract forecast report shows expected revenue, costs and net margin by month, quarter, year and contract.
 
-### 6.3 Future UI Work
+### 6.3 Completion Status
 
-- Add compliance dashboard to tenant detail.
-- Add framework requirement matrix view: requirements, coverage, owner, risk, due review and linked evidence.
-- Add document filters for framework, requirement, review status and assignment target.
-- Add global requirement index for operational work queues.
+- Tenant detail includes the compliance dashboard with framework, requirement, document, supplier, asset and ticket drill-down counters.
+- Frameworks include a dedicated requirement matrix view covering requirements, coverage, owner, risk, review state and linked evidence.
+- Document index includes framework, requirement, review status, ownership, type, tenant and company filters where relevant.
+- A global requirement work queue exists for operational framework requirement filtering and export.
 
 ## 7. i18n And Locale Governance
 
@@ -182,27 +184,27 @@ The local PHP test runner is available, but full test execution still requires a
 
 ### Phase 1 - Safe Foundation
 
-- Fix missing i18n keys for document coverage roles.
-- Add structured NIS supplier relevance criterion.
-- Keep supplier UI/API/presenter aligned.
-- Document the WBS and verification criteria.
+- Fix missing i18n keys for document coverage roles. Completed.
+- Add structured NIS supplier relevance criterion. Completed.
+- Keep supplier UI/API/presenter aligned. Completed.
+- Document the WBS and verification criteria. Completed.
 
 ### Phase 2 - Evidence Quality
 
-- Add evidence mapping UI fields for pivot notes and coverage date.
-- Add document requirement coverage column/filter in document tables.
-- Add requirement work queue.
+- Add evidence mapping UI fields for pivot notes and coverage date. Completed.
+- Add document requirement coverage column/filter in document tables. Completed.
+- Add requirement work queue. Completed.
 
 ### Phase 3 - Tenant Compliance Dashboard
 
-- Add tenant compliance summary: framework coverage, overdue reviews, supplier reviews, NIS asset coverage and open tickets.
-- Keep dashboard read-only first, then add drill-down actions.
+- Add tenant compliance summary: framework coverage, overdue reviews, supplier reviews, NIS asset coverage and open tickets. Completed.
+- Keep dashboard read-only first, then add drill-down actions. Completed.
 
 ### Phase 4 - CPV And Supplier Assessment
 
-- Add CPV catalog/search and structured supplier assessment fields.
-- Add supplier evidence checklist and review workflow.
-- Add export for ACN-oriented supplier data preparation.
+- Add CPV catalog/search and structured supplier assessment fields. Completed.
+- Add supplier evidence checklist and review workflow. Completed.
+- Add export for ACN-oriented supplier data preparation. Completed with the ACN ODS template export.
 
 ### Phase 5 - Delegation And Approvals
 
@@ -219,8 +221,8 @@ The local PHP test runner is available, but full test execution still requires a
 
 ### Phase 7 - Client Contracts And Service Chain
 
-- Add customer register in settings alongside suppliers, with tenant/company ownership, contacts, NIS2 profile, service role, criticality, review dates and linked document evidence.
-- Add customer contracts with status, owner, signed document, renewal/notice dates, subscriptions, supplier-backed service costs and monthly revenue/cost/net indicators.
-- Add immutable customer-contract event log using SHA-256 payload hashes and previous-hash chaining for create/update/delete snapshots.
-- Add contract revenue forecast report with monthly, quarterly, yearly and per-contract deliverables.
-- Keep customer document assignments available through the same document evidence workflow used by users, assets, locations and suppliers.
+- Add customer register in settings alongside suppliers, with tenant/company ownership, contacts, NIS2 profile, service role, criticality, review dates and linked document evidence. Completed.
+- Add customer contracts with status, owner, signed document, renewal/notice dates, subscriptions, supplier-backed service costs and monthly revenue/cost/net indicators. Completed.
+- Add immutable customer-contract event log using SHA-256 payload hashes and previous-hash chaining for create/update/delete snapshots. Completed.
+- Add contract revenue forecast report with monthly, quarterly, yearly and per-contract deliverables. Completed.
+- Keep customer document assignments available through the same document evidence workflow used by users, assets, locations and suppliers. Completed.

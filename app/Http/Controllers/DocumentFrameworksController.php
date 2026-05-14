@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDocumentFrameworkRequest;
+use App\Models\Document;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Support\Compliance\ConsultantFrameworkTransfer;
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -113,6 +116,57 @@ class DocumentFrameworksController extends Controller
         return view('documentframeworks.view', compact('documentframework'));
     }
 
+    public function requirementsMatrix(DocumentFramework $documentframework): View
+    {
+        $this->authorize('view', $documentframework);
+
+        $documentframework->loadMissing(['company.tenant', 'owner'])
+            ->loadCount(['documents', 'requirements']);
+
+        $requirementRelations = [
+            'owner',
+            'defaultDocumentType',
+            'parent',
+            'documents' => fn ($query) => $query
+                ->with(['owner', 'type'])
+                ->orderByRaw("case document_framework_requirement_document.coverage_role when 'primary' then 0 else 1 end")
+                ->orderByRaw('case when documents.next_review_at is null then 1 else 0 end')
+                ->orderBy('documents.next_review_at')
+                ->orderBy('documents.name'),
+        ];
+
+        if (DocumentFrameworkRequirement::parentPivotTableExists()) {
+            $requirementRelations[] = 'parents';
+        }
+
+        $requirements = DocumentFrameworkRequirement::query()
+            ->forFramework($documentframework->id)
+            ->with($requirementRelations)
+            ->withCount([
+                'documents',
+                'primaryDocuments as primary_documents_count',
+                'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query
+                    ->where('documents.status', Document::STATUS_ACTIVE)
+                    ->where(function ($nested) {
+                        $nested->whereNull('documents.next_review_at')
+                            ->orWhereDate('documents.next_review_at', '>=', now()->toDateString());
+                    }),
+            ])
+            ->ordered()
+            ->get();
+
+        $documentframework->setRelation('requirements', $requirements);
+
+        $reviewWarningDays = $documentframework->company?->tenant?->documentReviewWarningDays() ?? 30;
+
+        return view('documentframeworks.requirements-matrix', [
+            'documentframework' => $documentframework,
+            'coverageSummary' => $documentframework->coverage_summary,
+            'matrixRows' => $this->requirementMatrixRows($requirements, $reviewWarningDays),
+            'reviewWarningDays' => $reviewWarningDays,
+        ]);
+    }
+
     public function export(
         DocumentFramework $documentframework,
         string $format,
@@ -194,6 +248,107 @@ class DocumentFrameworksController extends Controller
             'statusOptions' => DocumentFramework::getStatusOptions(),
             'frameworkTypeOptions' => DocumentFramework::getFrameworkTypeOptions(),
             'complianceDomainOptions' => DocumentFramework::complianceDomainOptions(),
+        ];
+    }
+
+    private function requirementMatrixRows(Collection $requirements, int $reviewWarningDays): Collection
+    {
+        return $requirements->map(function (DocumentFrameworkRequirement $requirement) use ($reviewWarningDays) {
+            $documents = $requirement->documents->values();
+            $primaryDocuments = $documents
+                ->filter(fn (Document $document) => $document->pivot?->coverage_role === Document::COVERAGE_PRIMARY)
+                ->values();
+            $supportingDocuments = $documents
+                ->filter(fn (Document $document) => $document->pivot?->coverage_role === Document::COVERAGE_SUPPORTING)
+                ->values();
+
+            return [
+                'requirement' => $requirement,
+                'documents' => $documents,
+                'primary_documents' => $primaryDocuments,
+                'supporting_documents' => $supportingDocuments,
+                'coverage_class' => $this->coverageLabelClass($requirement->coverage_status),
+                'review_state' => $this->matrixReviewState($requirement, $primaryDocuments, $reviewWarningDays),
+            ];
+        });
+    }
+
+    private function coverageLabelClass(string $coverageStatus): string
+    {
+        return match ($coverageStatus) {
+            DocumentFrameworkRequirement::COVERAGE_COVERED => 'label label-success',
+            DocumentFrameworkRequirement::COVERAGE_AT_RISK => 'label label-danger',
+            DocumentFrameworkRequirement::COVERAGE_SUPPORTING_ONLY => 'label label-warning',
+            default => 'label label-default',
+        };
+    }
+
+    private function matrixReviewState(
+        DocumentFrameworkRequirement $requirement,
+        Collection $primaryDocuments,
+        int $reviewWarningDays
+    ): array {
+        if ($requirement->coverage_status === DocumentFrameworkRequirement::COVERAGE_MISSING) {
+            return [
+                'label' => trans('admin/documentframeworkrequirements/general.matrix.review_missing'),
+                'class' => 'label label-default',
+                'document' => null,
+            ];
+        }
+
+        if ($primaryDocuments->isEmpty()) {
+            return [
+                'label' => trans('admin/documentframeworkrequirements/general.matrix.review_missing_primary'),
+                'class' => 'label label-warning',
+                'document' => null,
+            ];
+        }
+
+        $inactivePrimary = $primaryDocuments->first(fn (Document $document) => $document->status !== Document::STATUS_ACTIVE);
+        if ($inactivePrimary) {
+            return [
+                'label' => trans('admin/documentframeworkrequirements/general.matrix.review_inactive_primary'),
+                'class' => 'label label-danger',
+                'document' => $inactivePrimary,
+            ];
+        }
+
+        $today = Carbon::today();
+        $warningDate = Carbon::today()->addDays($reviewWarningDays);
+
+        $overduePrimary = $primaryDocuments
+            ->filter(fn (Document $document) => $document->next_review_at && $document->next_review_at->lt($today))
+            ->sortBy('next_review_at')
+            ->first();
+
+        if ($overduePrimary) {
+            return [
+                'label' => trans('admin/documentframeworkrequirements/general.matrix.review_overdue'),
+                'class' => 'label label-danger',
+                'document' => $overduePrimary,
+            ];
+        }
+
+        $duePrimary = $primaryDocuments
+            ->filter(fn (Document $document) => $document->next_review_at && $document->next_review_at->lte($warningDate))
+            ->sortBy('next_review_at')
+            ->first();
+
+        if ($duePrimary) {
+            return [
+                'label' => trans('admin/documentframeworkrequirements/general.matrix.review_due'),
+                'class' => 'label label-warning',
+                'document' => $duePrimary,
+            ];
+        }
+
+        return [
+            'label' => trans('admin/documentframeworkrequirements/general.matrix.review_current'),
+            'class' => 'label label-success',
+            'document' => $primaryDocuments
+                ->filter(fn (Document $document) => ! is_null($document->next_review_at))
+                ->sortBy('next_review_at')
+                ->first(),
         ];
     }
 }

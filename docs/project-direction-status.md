@@ -1,10 +1,10 @@
 # Project Direction And Status
 
-Last updated: 2026-05-10
+Last updated: 2026-05-14
 
 ## Product Direction
 
-CodyCloud Asset is moving from a Snipe-IT fork into a multitenant compliance operations platform for European customers. The product direction remains NIS2-first, with GDPR support where evidence, accountability and supplier/customer governance overlap.
+CodyCloud Asset is moving from a Snipe-IT fork into a multitenant compliance operations platform for European customers. The product direction remains NIS2-first, with GDPR support where evidence, accountability and supplier/customer governance overlap, and AI Act support as an EU-baseline evidence and classification pack.
 
 The target is not to replace expert consultants. The platform should remove repetitive work, keep records structured, expose gaps early and preserve audit-grade evidence for decisions made by qualified users.
 
@@ -32,10 +32,14 @@ The target is not to replace expert consultants. The platform should remove repe
 
 - Document frameworks and requirements provide the shared model for NIS2/GDPR evidence.
 - Framework packs exist for all supported locales; Italian is ACN-oriented, while other locales currently use the EU baseline until expert translations are validated.
+- AI Act and NIS2 pack sources are formalized in `docs/compliance-source-register.md`; NIS2 pack coverage is audited in `docs/nis2-pack-audit.md`; selected-tenant rollout is controlled by `docs/compliance-pack-rollout-ai-act-nis2.md`.
 - Requirements can be linked to document evidence with primary/supporting roles.
 - Requirement queues, filters and document assignment flows are being kept aligned with Snipe-IT table patterns.
+- Framework requirement matrix views show requirement coverage, owner, risk/review state and linked evidence in one audit-oriented view.
 - Word/Excel/CSV consultant framework import and export are supported as operational tenant data, not as global system pollution.
 - Daily pack operations are managed through a superadmin console that shows pack checksums, system-template status, tenant copy diffs and immutable sync events.
+- AI Act/NIS2 pack expansion is complete as of 2026-05-14 at pack/source/rollout-documentation level. `nis2_it` remains the only national overlay; non-Italian NIS2 jurisdictions remain `review_required`.
+- Compliance pack operations are complete as of 2026-05-14: tenant managers can run safe tenant-scoped pack updates from tenant settings, and superadmins can apply a pack to explicitly selected compatible tenants without overwriting tenant edits.
 
 ### NIS2 Inventory And Risk
 
@@ -85,4 +89,4 @@ Before merging or deploying this branch, run:
 - Complete automated test execution is blocked locally until a safe `.env.testing` is provided.
 - The remaining JWT advisory requires a planned Passport major upgrade.
 - Frontend dependency audit is blocked until Node/npm are available.
-- Expert legal review is still required before treating framework pack content as jurisdiction-specific advice outside the Italian ACN-oriented starter pack.
+- Expert legal review is still required before treating framework pack content as jurisdiction-specific advice outside the Italian ACN-oriented starter pack. ACN operational material and AI Act timeline updates must be rechecked before client-specific advice or filing.

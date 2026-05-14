@@ -48,8 +48,8 @@ return array (
       'review_required' => 'revisione nazionale richiesta',
       'blocked' => 'bloccato',
     ),
-    'bootstrap_compliance_frameworks' => 'Crea i framework compliance mancanti per questo tenant',
-    'bootstrap_compliance_frameworks_help' => 'Crea copie NIS2/GDPR/AI Act editabili e di proprieta del tenant in base a lingua e giurisdizione compliance. I framework tenant esistenti non vengono sovrascritti.',
+    'bootstrap_compliance_frameworks' => 'Crea o aggiorna in modo sicuro i framework compliance mancanti per questo tenant',
+    'bootstrap_compliance_frameworks_help' => 'Crea copie NIS2/GDPR/AI Act editabili e sincronizza solo framework, metadata puliti o requisiti mancanti. I framework tenant modificati non vengono sovrascritti e restano in revisione manuale.',
   ),
   'helpdesk' =>
   array (
