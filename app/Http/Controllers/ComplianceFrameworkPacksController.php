@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use App\Support\Compliance\ComplianceFrameworkInstaller;
 use App\Support\Compliance\ComplianceFrameworkPackDashboard;
 use App\Support\Compliance\ComplianceFrameworkPackSync;
+use App\Support\Compliance\ComplianceFrameworkPackTenantUpdater;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -89,73 +90,101 @@ class ComplianceFrameworkPacksController extends Controller
         string $packKey,
         Tenant $tenant,
         ComplianceFrameworkPackDashboard $dashboard,
-        ComplianceFrameworkInstaller $installer,
-        ComplianceFrameworkPackSync $sync
+        ComplianceFrameworkPackTenantUpdater $tenantUpdater
     ): RedirectResponse {
         $this->authorizeGlobalPackManagement();
 
         $pack = $this->packOrAbort($dashboard, $packKey);
-        $packLocale = $pack['locale'] ?? null;
-        $tenantLocale = $installer->bootstrapLocale($tenant->defaultLocale());
-        $compatiblePackKeys = $installer->availablePackKeys($tenantLocale, $tenant->defaultComplianceJurisdiction());
+        $result = $tenantUpdater->applyPack($tenant, $packKey, $pack, auth()->id());
 
-        if ($packLocale !== $tenantLocale) {
+        if (($result['status'] ?? null) === 'skipped') {
+            $message = match ($result['reason'] ?? null) {
+                'locale_mismatch' => trans('admin/compliancepacks/general.messages.locale_mismatch'),
+                'jurisdiction_mismatch' => trans('admin/compliancepacks/general.messages.jurisdiction_mismatch'),
+                default => trans('admin/compliancepacks/general.messages.tenant_skipped'),
+            };
+
             return redirect()
                 ->route('settings.compliance_framework_packs.show', $packKey)
-                ->with('error', trans('admin/compliancepacks/general.messages.locale_mismatch'));
+                ->with('error', $message);
         }
 
-        if (! in_array($packKey, $compatiblePackKeys, true)) {
-            return redirect()
-                ->route('settings.compliance_framework_packs.show', $packKey)
-                ->with('error', trans('admin/compliancepacks/general.messages.jurisdiction_mismatch'));
-        }
-
-        $framework = $sync->tenantFramework($tenant, $packKey, $pack);
-        $before = $sync->diff($framework, $packKey, $pack);
-
-        if (! $dashboard->canApplyTenantDiff($before)) {
+        if (($result['status'] ?? null) === 'manual_review') {
             return redirect()
                 ->route('settings.compliance_framework_packs.show', $packKey)
                 ->with('error', trans('admin/compliancepacks/general.messages.manual_review_required'));
         }
 
-        if ($before['framework_missing']) {
-            $summary = $installer->bootstrapTenant($tenant, $tenantLocale, [$packKey], false, auth()->id());
-            $framework = $sync->tenantFramework($tenant, $packKey, $pack);
-            $after = $sync->diff($framework, $packKey, $pack);
-            $eventType = ComplianceFrameworkPackEvent::EVENT_TENANT_BOOTSTRAP;
-        } else {
-            $merge = $sync->mergeMissingRequirements($framework, $packKey, $pack, auth()->id());
-            $summary = [
-                'requirements_created' => $merge['requirements_created'],
-                'metadata_updated' => $merge['metadata_updated'],
-                'conflicts_count' => $merge['conflicts_count'],
-            ];
-            $framework->refresh();
-            $after = $sync->diff($framework, $packKey, $pack);
-            $eventType = ComplianceFrameworkPackEvent::EVENT_TENANT_SYNC;
+        if (($result['status'] ?? null) === 'current') {
+            return redirect()
+                ->route('settings.compliance_framework_packs.show', $packKey)
+                ->with('success', trans('admin/compliancepacks/general.messages.tenant_current'));
         }
-
-        $rootCompany = $tenant->rootCompany();
-        ComplianceFrameworkPackEvent::record(
-            $eventType,
-            ComplianceFrameworkPackEvent::SCOPE_TENANT,
-            $packKey,
-            $pack,
-            [
-                'tenant_id' => $tenant->id,
-                'company_id' => $rootCompany?->id,
-                'document_framework_id' => $framework?->id,
-                'diff_before' => $before,
-                'diff_after' => $after,
-                'result_summary' => $summary,
-            ],
-        );
 
         return redirect()
             ->route('settings.compliance_framework_packs.show', $packKey)
             ->with('success', trans('admin/compliancepacks/general.messages.tenant_applied'));
+    }
+
+    public function applyTenantsBulk(
+        Request $request,
+        string $packKey,
+        ComplianceFrameworkPackDashboard $dashboard,
+        ComplianceFrameworkPackTenantUpdater $tenantUpdater
+    ): RedirectResponse {
+        $this->authorizeGlobalPackManagement();
+
+        $request->validate([
+            'tenant_ids' => 'required|array|min:1',
+            'tenant_ids.*' => 'integer',
+            'confirm_bulk_safe_update' => 'accepted',
+        ]);
+
+        $pack = $this->packOrAbort($dashboard, $packKey);
+        $tenantIds = collect($request->input('tenant_ids', []))
+            ->map(fn ($tenantId) => (int) $tenantId)
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($tenantIds->isEmpty()) {
+            return redirect()
+                ->route('settings.compliance_framework_packs.show', $packKey)
+                ->with('error', trans('admin/compliancepacks/general.messages.bulk_no_tenants'));
+        }
+
+        $tenants = Tenant::query()
+            ->whereIn('id', $tenantIds->all())
+            ->get()
+            ->keyBy('id');
+
+        $summary = $tenantUpdater->emptySummary();
+
+        foreach ($tenantIds as $tenantId) {
+            $tenant = $tenants->get($tenantId);
+
+            if (! $tenant) {
+                $tenantUpdater->countResult($summary, [
+                    'status' => 'skipped',
+                    'reason' => 'missing_tenant',
+                    'tenant_id' => $tenantId,
+                    'pack_key' => $packKey,
+                ]);
+
+                continue;
+            }
+
+            $tenantUpdater->countResult($summary, $tenantUpdater->applyPack($tenant, $packKey, $pack, auth()->id()));
+        }
+
+        return redirect()
+            ->route('settings.compliance_framework_packs.show', $packKey)
+            ->with('success', trans('admin/compliancepacks/general.messages.bulk_tenant_applied', [
+                'applied' => $summary['applied'],
+                'current' => $summary['current'],
+                'manual_review' => $summary['manual_review'],
+                'skipped' => $summary['skipped'],
+            ]));
     }
 
     private function authorizeGlobalPackManagement(): void

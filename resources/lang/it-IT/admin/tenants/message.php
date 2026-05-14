@@ -39,6 +39,7 @@ return [
         ],
         'bootstrap' => [
             'success' => 'Bootstrap completato per :locale: creati :frameworks framework e :requirements requisiti.',
+            'safe_update_success' => 'Aggiornamento sicuro pack completato per :locale: :applied pack applicati, :frameworks framework creati, :requirements requisiti creati, :manual_review in revisione manuale, :skipped saltati.',
         ],
     ],
 ];

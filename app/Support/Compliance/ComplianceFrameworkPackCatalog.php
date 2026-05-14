@@ -6,9 +6,9 @@ class ComplianceFrameworkPackCatalog
 {
     public static function make(): array
     {
-$packVersion = '2026.05.08.2';
-$aiActPackVersion = '2026.05.13.1';
-$sourceCheckedAt = '2026-05-13';
+$packVersion = '2026.05.14.1';
+$aiActPackVersion = '2026.05.14.1';
+$sourceCheckedAt = '2026-05-14';
 
 $sourceRegisters = [
     'ai_act_eu' => [
@@ -31,6 +31,8 @@ $sourceRegisters = [
         'sources' => [
             'https://www.acn.gov.it/portale/faq/nis/aggiornamento-delle-informazioni',
             'https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2024-09-04;138!vig=',
+            'https://www.gazzettaufficiale.it/eli/id/2024/10/01/24G00155/SG',
+            'https://digital-strategy.ec.europa.eu/en/policies/nis2-directive-italy',
             'https://eur-lex.europa.eu/eli/dir/2022/2555/oj',
         ],
     ],
@@ -1228,6 +1230,7 @@ return [
                 'sources' => [
                     'https://www.acn.gov.it/portale/faq/nis/aggiornamento-delle-informazioni',
                     'https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2024-09-04;138!vig=',
+                    'https://www.gazzettaufficiale.it/eli/id/2024/10/01/24G00155/SG',
                     'https://digital-strategy.ec.europa.eu/en/policies/nis2-directive-italy',
                     'https://eur-lex.europa.eu/eli/dir/2022/2555/oj',
                 ],

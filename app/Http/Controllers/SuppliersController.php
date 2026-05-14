@@ -13,6 +13,7 @@ use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
 use App\Http\Requests\ImageUploadRequest;
 use App\Models\Company;
 use App\Models\Supplier;
+use App\Support\Exports\AcnSupplierOdsExporter;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -203,25 +204,24 @@ class SuppliersController extends Controller
         return redirect()->route('suppliers.index')->with('success', trans('admin/suppliers/message.delete.success'));
     }
 
-    public function exportAcnCsv(Request $request): StreamedResponse
+    public function exportAcnOds(Request $request, AcnSupplierOdsExporter $exporter): StreamedResponse
     {
         $this->authorize('view', Supplier::class);
         $this->disableDebugbar();
 
-        $response = new StreamedResponse(function () use ($request) {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, $this->acnExportHeaders());
+        $query = $this->acnExportQuery($request);
 
-            $this->acnExportQuery($request)->chunkById(200, function ($suppliers) use ($handle) {
-                foreach ($suppliers as $supplier) {
-                    fputcsv($handle, $this->acnExportRow($supplier));
-                }
-            }, 'suppliers.id', 'id');
+        $response = new StreamedResponse(function () use ($exporter, $query) {
+            $temporaryPath = $exporter->buildFromQuery($query);
 
-            fclose($handle);
+            try {
+                readfile($temporaryPath);
+            } finally {
+                @unlink($temporaryPath);
+            }
         }, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="acn-supplier-preparation-'.date('Y-m-d-His').'.csv"',
+            'Content-Type' => 'application/vnd.oasis.opendocument.spreadsheet',
+            'Content-Disposition' => 'attachment; filename="acn-supplier-preparation-'.date('Y-m-d-His').'.ods"',
         ]);
 
         return $response;
@@ -252,17 +252,7 @@ class SuppliersController extends Controller
     {
         $selectedSupplierIds = $this->selectedSupplierIds($request);
         $suppliers = Supplier::query()
-            ->with([
-                'company',
-                'documentAssignments.document.type',
-                'documentAssignments.issuer',
-                'documentAssignments.reviewer',
-            ])
-            ->withCount('assets as assets_count')
-            ->withCount('licenses as licenses_count')
-            ->withCount('accessories as accessories_count')
-            ->withCount('components as components_count')
-            ->withCount('consumables as consumables_count');
+            ->with('company');
 
         Company::scopeCompanyables($suppliers);
         $this->applyTenantCompanyFilter($suppliers, $request, 'suppliers.company_id');
@@ -333,92 +323,5 @@ class SuppliersController extends Controller
             ->unique()
             ->values()
             ->all();
-    }
-
-    private function acnExportHeaders(): array
-    {
-        $headers = [
-            strtolower(trans('general.id')),
-            trans('general.company'),
-            trans('general.name'),
-            trans('admin/suppliers/table.tax_code'),
-            trans('admin/suppliers/table.nis_relevant'),
-            trans('admin/suppliers/table.nis_relevance_type'),
-            trans('admin/suppliers/table.nis_criticality'),
-            trans('admin/suppliers/table.nis_assessment_status'),
-            trans('admin/suppliers/table.nis_assessment_method'),
-            trans('admin/suppliers/table.nis_assessment_outcome'),
-            trans('admin/suppliers/table.cpv_codes'),
-            trans('admin/suppliers/table.nis_relevance_criteria'),
-            trans('admin/suppliers/table.nis_assessment_scope'),
-            trans('admin/suppliers/table.nis_last_assessment_at'),
-            trans('admin/suppliers/table.nis_next_review_at'),
-            trans('admin/suppliers/table.supplier_evidence_documents'),
-        ];
-
-        foreach (Supplier::nisEvidenceCategories() as $category) {
-            $headers[] = $category['label'].' - '.trans('admin/suppliers/table.supplier_evidence_linked');
-            $headers[] = $category['label'].' - '.trans('admin/suppliers/table.supplier_evidence_review_status');
-        }
-
-        return array_merge($headers, [
-            trans('general.assets'),
-            trans('general.licenses'),
-            trans('general.accessories'),
-            trans('general.components'),
-            trans('general.consumables'),
-            trans('admin/suppliers/table.contact'),
-            trans('admin/suppliers/table.email'),
-            trans('admin/suppliers/table.phone'),
-            trans('general.url'),
-            trans('general.notes'),
-        ]);
-    }
-
-    private function acnExportRow(Supplier $supplier): array
-    {
-        $evidenceChecklist = $supplier->nisEvidenceChecklist()->keyBy('key');
-        $row = [
-            $supplier->id,
-            $supplier->company?->name,
-            $supplier->name,
-            $supplier->tax_code,
-            $supplier->nis_relevant ? trans('general.yes') : trans('general.no'),
-            $supplier->nis_relevance_type_label,
-            $supplier->nis_criticality_label,
-            $supplier->nis_assessment_status_label,
-            $supplier->nis_assessment_method_label,
-            $supplier->nis_assessment_outcome_label,
-            $supplier->cpv_codes,
-            $supplier->nis_relevance_criteria,
-            $supplier->nis_assessment_scope,
-            $this->exportDate($supplier->nis_last_assessment_at),
-            $this->exportDate($supplier->nis_next_review_at),
-            $supplier->documentAssignments->count(),
-        ];
-
-        foreach (Supplier::nisEvidenceCategories() as $categoryKey => $category) {
-            $evidenceItem = $evidenceChecklist->get($categoryKey);
-            $row[] = $evidenceItem['count'] ?? 0;
-            $row[] = $evidenceItem['status_label'] ?? trans('admin/suppliers/table.supplier_evidence_status_missing');
-        }
-
-        return array_merge($row, [
-            (int) ($supplier->assets_count ?? 0),
-            (int) ($supplier->licenses_count ?? 0),
-            (int) ($supplier->accessories_count ?? 0),
-            (int) ($supplier->components_count ?? 0),
-            (int) ($supplier->consumables_count ?? 0),
-            $supplier->contact,
-            $supplier->email,
-            $supplier->phone,
-            $supplier->url,
-            $supplier->notes,
-        ]);
-    }
-
-    private function exportDate($date): ?string
-    {
-        return $date ? $date->format('Y-m-d') : null;
     }
 }

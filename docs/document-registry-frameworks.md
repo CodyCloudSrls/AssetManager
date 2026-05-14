@@ -151,6 +151,16 @@ Additional practical candidates, depending on governance scope:
 - Multi-framework
 - Altro
 
+## Compliance Pack Source Control
+
+Generated compliance framework packs are controlled through a source register and a conservative rollout model:
+
+- `docs/compliance-source-register.md` records official source URLs, jurisdiction, source status, review date and impacted pack keys.
+- `docs/nis2-pack-audit.md` records the current NIS2 pack audit and confirms that only `nis2_it` is a national overlay.
+- `docs/compliance-pack-rollout-ai-act-nis2.md` defines the controlled AI Act/NIS2 rollout path for selected tenants.
+
+Consultant note: EU-baseline packs are evidence scaffolds. Country overlays require official source validation and expert review. Final applicability, evidence approval, signatures and client advice remain consultant/client responsibilities.
+
 ## Working Taxonomy By Framework
 
 This is a practical baseline, not a legal completeness claim.
@@ -194,6 +204,12 @@ Official references used for the structure:
 
 For Italy, the main current legal anchor is Dlgs 4 settembre 2024, n. 138.
 
+Pack policy:
+
+- `nis2_it` is the only shipped national overlay.
+- Other NIS2 locale packs remain EU baseline and require national review before country-specific use.
+- Supplier evidence should include relevance rationale, criticality, CPV, contracts/SLA/DPA, contact/accountability data and review status where applicable.
+
 Typical document families:
 
 - perimetro soggetti e servizi rilevanti
@@ -230,6 +246,12 @@ Official references used for the structure:
 
 - Regulation (EU) 2024/1689: https://eur-lex.europa.eu/eli/reg/2024/1689/oj
 - Annex IV technical documentation reference: https://eur-lex.europa.eu/legal-content/EN/TXT/?qid=1736344989138&uri=CELEX%3A32024R1689
+
+Pack policy:
+
+- AI Act packs are EU baseline packs for every supported locale.
+- The pack structures AI inventory, operator-role assessment, prohibited-practice screening, high-risk/GPAI evidence and integrity records.
+- Commission AI Act implementation dates and simplification updates must be rechecked before client-specific advice.
 
 ## Operating Recommendation
 
@@ -278,4 +300,6 @@ At the time of this document, the repository includes:
 - requirement-to-document mapping directly from the document form
 - document-to-user, document-to-asset, and document-to-location assignments with dedicated lifecycle metadata
 - framework coverage summaries and requirement views
+- framework requirement matrix views with coverage, owner, risk/review state and linked evidence
+- AI Act and NIS2 pack source register, NIS2 pack audit and controlled rollout documentation
 - locale coverage seeded across the available language folders so the module does not fall back to missing keys

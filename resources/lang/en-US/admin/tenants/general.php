@@ -48,8 +48,8 @@ return array (
       'review_required' => 'national review required',
       'blocked' => 'blocked',
     ),
-    'bootstrap_compliance_frameworks' => 'Create missing compliance frameworks for this tenant',
-    'bootstrap_compliance_frameworks_help' => 'Creates editable tenant-owned NIS2/GDPR/AI Act framework copies in the tenant default language and compliance jurisdiction. Existing tenant frameworks are not overwritten.',
+    'bootstrap_compliance_frameworks' => 'Create or safely update missing compliance frameworks for this tenant',
+    'bootstrap_compliance_frameworks_help' => 'Creates editable tenant-owned NIS2/GDPR/AI Act framework copies and synchronizes only missing frameworks, clean metadata, or missing requirements. Tenant-modified frameworks are not overwritten and remain blocked for manual review.',
   ),
   'helpdesk' =>
   array (

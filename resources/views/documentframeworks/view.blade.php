@@ -149,6 +149,10 @@
 
                     <x-tabs.pane name="requirements">
                         <div class="text-right" style="margin-bottom: 15px;">
+                            <a href="{{ route('documentframeworks.requirements.matrix', $documentframework) }}" class="btn btn-default">
+                                <i class="fa-solid fa-table-cells-large" aria-hidden="true"></i>
+                                {{ trans('admin/documentframeworkrequirements/general.matrix.open') }}
+                            </a>
                             @can('update', $documentframework)
                                 <a href="{{ route('documentframeworkrequirements.create', $documentframework) }}" class="btn btn-primary">
                                     <x-icon type="plus" />
