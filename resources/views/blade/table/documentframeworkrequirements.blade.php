@@ -12,6 +12,17 @@
         {{ $table_header }}
     </x-slot:table_header>
 
+    @if (auth()->user()?->hasAccess('documentframeworks.edit'))
+        <x-slot:bulkactions>
+            <x-table.bulk-actions
+                action_route="{{ route('documentframeworkrequirements.bulk.edit') }}"
+                model_name="document_framework_requirements"
+            >
+                <option value="edit">{{ trans('general.bulk_edit') }}</option>
+            </x-table.bulk-actions>
+        </x-slot:bulkactions>
+    @endif
+
     <x-table
         :$name
         :$presenter
