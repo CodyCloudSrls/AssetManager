@@ -89,6 +89,8 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::resource('documentframeworks', DocumentFrameworksController::class);
     Route::group(['prefix' => 'documentframeworkrequirements', 'middleware' => ['auth']], function () {
+        Route::post('bulk/edit', [DocumentFrameworkRequirementsController::class, 'bulkEdit'])->name('documentframeworkrequirements.bulk.edit');
+        Route::post('bulk/update', [DocumentFrameworkRequirementsController::class, 'bulkUpdate'])->name('documentframeworkrequirements.bulk.update');
         Route::post('{id}/restore', [DocumentFrameworkRequirementsController::class, 'restore'])->name('documentframeworkrequirements.restore');
     });
     Route::resource('documentframeworkrequirements', DocumentFrameworkRequirementsController::class)->except(['create', 'store']);

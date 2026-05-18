@@ -266,6 +266,15 @@ class Customer extends SnipeModel
             && ($this->deleted_at == '');
     }
 
+    public function addhttp($url)
+    {
+        if (($url != '') && (! preg_match('~^(?:f|ht)tps?://~i', $url))) {
+            $url = 'http://'.$url;
+        }
+
+        return $url;
+    }
+
     public function setStatusAttribute($value): void
     {
         $this->attributes['status'] = $value ?: self::STATUS_ACTIVE;

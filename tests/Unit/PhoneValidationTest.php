@@ -36,4 +36,13 @@ class PhoneValidationTest extends TestCase
 
         $this->assertTrue($customer->isValid(), $customer->getErrors()->toJson());
     }
+
+    public function test_customer_urls_are_normalized_like_supplier_urls()
+    {
+        $customer = new Customer;
+
+        $this->assertSame('http://example.com', $customer->addhttp('example.com'));
+        $this->assertSame('https://example.com', $customer->addhttp('https://example.com'));
+        $this->assertNull($customer->addhttp(null));
+    }
 }

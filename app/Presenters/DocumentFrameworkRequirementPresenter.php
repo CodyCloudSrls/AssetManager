@@ -8,6 +8,13 @@ class DocumentFrameworkRequirementPresenter extends Presenter
     {
         $layout = [
             [
+                'field' => 'checkbox',
+                'checkbox' => true,
+                'titleTooltip' => trans('general.select_all_none'),
+                'printIgnore' => true,
+                'class' => 'hidden-print',
+            ],
+            [
                 'field' => 'id',
                 'searchable' => false,
                 'sortable' => true,
@@ -69,6 +76,13 @@ class DocumentFrameworkRequirementPresenter extends Presenter
                 'searchable' => true,
                 'sortable' => false,
                 'title' => trans('admin/documentframeworkrequirements/table.obligation_type'),
+                'visible' => false,
+            ],
+            [
+                'field' => 'parent_requirement_codes',
+                'searchable' => true,
+                'sortable' => false,
+                'title' => trans('admin/documentframeworkrequirements/table.parent'),
                 'visible' => false,
             ],
             [
