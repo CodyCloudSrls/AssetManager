@@ -124,6 +124,10 @@
                                         <div class="requirements-matrix-label-line">
                                             <span class="label label-primary">{{ trans('admin/documentframeworkrequirements/general.matrix.primary_count', ['count' => $row['primary_documents']->count()]) }}</span>
                                             <span class="label label-default">{{ trans('admin/documentframeworkrequirements/general.matrix.supporting_count', ['count' => $row['supporting_documents']->count()]) }}</span>
+                                            <span class="label label-default">{{ trans('admin/documentframeworkrequirements/general.matrix.minimum_required_documents', ['count' => $requirement->minimum_required_documents]) }}</span>
+                                            @if ($requirement->document_shortfall_count > 0)
+                                                <span class="label label-danger">{{ trans('admin/documentframeworkrequirements/general.matrix.missing_documents', ['count' => $requirement->document_shortfall_count]) }}</span>
+                                            @endif
                                         </div>
                                     </td>
                                     <td>

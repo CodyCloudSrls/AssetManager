@@ -5,7 +5,12 @@ namespace Tests\Feature\Reporting;
 use App\Models\Asset;
 use App\Models\AssetModel;
 use App\Models\Category;
+use App\Models\Company;
+use App\Models\Document;
+use App\Models\DocumentFramework;
+use App\Models\DocumentFrameworkRequirement;
 use App\Models\User;
+use App\Support\Reports\NisRealCoverageReport;
 use App\Support\Reports\NisRiskMatrixReport;
 use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
@@ -27,6 +32,15 @@ class NisRiskMatrixReportTest extends TestCase
             ->assertOk()
             ->assertViewIs('reports.nis_risk_matrix')
             ->assertViewHas(['summary', 'categoryRows', 'rows']);
+    }
+
+    public function test_can_load_nis_real_coverage_report_page()
+    {
+        $this->actingAs(User::factory()->canViewReports()->create())
+            ->get(route('reports.nis-real-coverage'))
+            ->assertOk()
+            ->assertViewIs('reports.nis_real_coverage')
+            ->assertViewHas(['summary', 'frameworkRows', 'requirementRows']);
     }
 
     public function test_report_is_calculated_from_nis_asset_and_category_fields()
@@ -60,5 +74,46 @@ class NisRiskMatrixReportTest extends TestCase
         $this->assertSame(12, $report['rows']->first()['risk_score']);
         $this->assertSame(1, $report['summary'][NisRiskMatrixReport::RISK_CRITICAL]);
         $this->assertCount(2, $report['categoryRows']);
+    }
+
+    public function test_nis_real_coverage_uses_minimum_healthy_primary_documents()
+    {
+        $company = Company::factory()->create();
+        $framework = DocumentFramework::factory()->for($company)->create([
+            'name' => 'NIS2 Tenant',
+            'slug' => 'nis2-tenant-real-coverage',
+            'framework_code' => 'NIS2',
+            'compliance_domain' => 'nis2',
+        ]);
+
+        $requirement = DocumentFrameworkRequirement::create([
+            'document_framework_id' => $framework->id,
+            'code' => 'NIS2-REQ-01',
+            'title' => 'Evidence requirement',
+            'delegation_level' => 'owner_review',
+            'risk_level' => 'not_applicable',
+            'minimum_required_documents' => 2,
+        ]);
+
+        $document = Document::create([
+            'name' => 'Primary evidence',
+            'company_id' => $company->id,
+            'status' => Document::STATUS_ACTIVE,
+        ]);
+
+        $requirement->documents()->attach($document->id, [
+            'coverage_role' => Document::COVERAGE_PRIMARY,
+            'covered_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $report = (new NisRealCoverageReport)->build([$company->id]);
+
+        $this->assertSame(1, $report['summary']['total']);
+        $this->assertSame(0, $report['summary']['covered']);
+        $this->assertSame(1, $report['summary']['at_risk']);
+        $this->assertSame(1, $report['summary']['document_shortfall_count']);
+        $this->assertSame(DocumentFrameworkRequirement::COVERAGE_AT_RISK, $report['requirementRows']->first()['requirement']->coverage_status);
     }
 }

@@ -1,16 +1,21 @@
 @props([
         'action_route',
         'model_name' => 'asset',
+        'name' => null,
     ])
 @aware(['name'])
 
-<div id="{{ Illuminate\Support\Str::camel($name) }}Form" style="min-width:400px" class="hidden-print">
+@php
+    $bulkActionId = Illuminate\Support\Str::camel($name);
+@endphp
+
+<div id="{{ $bulkActionId }}BulkActions" style="min-width:0" class="hidden-print">
     <form
             method="POST"
             action="{{ $action_route }}"
             accept-charset="UTF-8"
             class="form-inline"
-            id="{{ Illuminate\Support\Str::camel($name) }}Form"
+            id="{{ $bulkActionId }}Form"
     >
         @csrf
 
@@ -22,10 +27,16 @@
                 {{ trans('button.bulk_actions') }}
             </span>
         </label>
-        <select name="bulk_actions" class="form-control select2" aria-label="bulk_actions" style="min-width: 350px;">
+        <select name="bulk_actions" class="form-control select2" aria-label="bulk_actions" style="width: 320px; max-width: 100%;">
             {{ $slot }}
         </select>
 
-        <button class="btn btn-theme" id="{{ Illuminate\Support\Str::camel($name) }}Button" disabled>{{ trans('button.go') }}</button>
+        <button
+            type="submit"
+            class="btn btn-theme"
+            id="{{ $bulkActionId }}Button"
+            style="margin-left: 4px;"
+            disabled
+        >{{ trans('button.go') }}</button>
     </form>
 </div>

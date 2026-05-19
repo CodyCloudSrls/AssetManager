@@ -13,7 +13,7 @@
 
 @section('content')
     @php
-        $selectedParentIds = collect(old('parent_ids', []))
+        $selectedParentIds = collect(old('parent_ids', $selectedParentIds ?? []))
             ->filter(fn ($parentId) => filled($parentId))
             ->map(fn ($parentId) => (int) $parentId)
             ->all();
@@ -212,6 +212,21 @@
                             </div>
                         </div>
 
+                        <div class="form-group {{ $errors->has('minimum_required_documents') ? ' has-error' : '' }}">
+                            <label for="minimum_required_documents" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.minimum_required_documents') }}</label>
+                            <div class="col-md-2">
+                                <input class="form-control" type="number" min="0" max="65535" name="minimum_required_documents" id="minimum_required_documents" value="{{ old('minimum_required_documents') }}">
+                                {!! $errors->first('minimum_required_documents', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+                                <p class="help-block">{{ trans('admin/documentframeworkrequirements/general.minimum_required_documents_help') }}</p>
+                            </div>
+                            <div class="col-md-4 col-md-offset-3">
+                                <label class="form-control">
+                                    <input type="checkbox" name="apply_minimum_required_documents" value="1" @checked(old('apply_minimum_required_documents'))>
+                                    {{ trans('general.apply') }}
+                                </label>
+                            </div>
+                        </div>
+
                         @foreach (['description', 'evidence_guidance', 'applicability_notes'] as $textField)
                             <div class="form-group {{ $errors->has($textField) ? ' has-error' : '' }}">
                                 <label for="{{ $textField }}" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.'.$textField) }}</label>
@@ -306,4 +321,46 @@
             </form>
         </div>
     </div>
+@stop
+
+@section('moar_scripts')
+    <script nonce="{{ csrf_token() }}">
+        $(function () {
+            var bulkApplyFields = {
+                domain: 'apply_domain',
+                obligation_type: 'apply_obligation_type',
+                parent_ids: 'apply_parent_ids',
+                owner_id: 'apply_owner_id',
+                default_document_type_id: 'apply_default_document_type_id',
+                evidence_type: 'apply_evidence_type',
+                delegation_level: 'apply_delegation_level',
+                risk_level: 'apply_risk_level',
+                review_frequency_months: 'apply_review_frequency_months',
+                minimum_required_documents: 'apply_minimum_required_documents',
+                official_reference: 'apply_official_reference',
+                source_url: 'apply_source_url',
+                description: 'apply_description',
+                evidence_guidance: 'apply_evidence_guidance',
+                applicability_notes: 'apply_applicability_notes'
+            };
+
+            var markApplyField = function (fieldName) {
+                var applyFieldName = bulkApplyFields[fieldName];
+
+                if (applyFieldName) {
+                    $('input[name="' + applyFieldName + '"]').prop('checked', true);
+                }
+            };
+
+            $.each(bulkApplyFields, function (fieldName) {
+                var selector = fieldName === 'parent_ids'
+                    ? 'select[name="parent_ids[]"]'
+                    : '[name="' + fieldName + '"]';
+
+                $(selector).on('input change select2:select select2:unselect select2:clear', function () {
+                    markApplyField(fieldName);
+                });
+            });
+        });
+    </script>
 @stop

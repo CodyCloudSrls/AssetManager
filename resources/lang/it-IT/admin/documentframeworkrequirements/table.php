@@ -12,6 +12,7 @@ return [
     'delegation_level' => 'Delegabilità',
     'owner' => 'Responsabile',
     'default_document_type' => 'Tipologia documento preferita',
+    'minimum_required_documents' => 'Documenti minimi',
     'evidence_type' => 'Tipo evidenza',
     'review_frequency_months' => 'Cadenza revisione',
     'description' => 'Descrizione',
@@ -24,4 +25,5 @@ return [
     'sort_order' => 'Ordine',
     'primary_documents_count' => 'Documenti primari',
     'healthy_primary_documents_count' => 'Documenti primari validi',
+    'document_shortfall_count' => 'Documenti mancanti',
 ];

@@ -48,6 +48,11 @@ class DocumentFrameworkRequirementsTransformer
             'coverage_status' => e($requirement->coverage_status),
             'coverage_label' => e($requirement->coverage_label),
             'documents_count' => (int) ($requirement->documents_count ?? 0),
+            'primary_documents_count' => (int) ($requirement->primary_documents_count ?? 0),
+            'healthy_primary_documents_count' => (int) ($requirement->healthy_primary_documents_count ?? 0),
+            'minimum_required_documents' => (int) $requirement->minimum_required_documents,
+            'document_minimum_satisfied' => (bool) $requirement->document_minimum_satisfied,
+            'document_shortfall_count' => (int) $requirement->document_shortfall_count,
             'owner' => $requirement->owner ? [
                 'id' => (int) $requirement->owner->id,
                 'name' => e($requirement->owner->display_name),

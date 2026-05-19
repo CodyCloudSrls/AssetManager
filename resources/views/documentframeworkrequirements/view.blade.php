@@ -101,8 +101,10 @@
                         <x-data-row :label="trans('admin/documentframeworkrequirements/table.is_mandatory')">{{ $requirement->is_mandatory ? trans('general.yes') : trans('general.no') }}</x-data-row>
                         <x-data-row :label="trans('admin/documentframeworkrequirements/table.is_active')">{{ $requirement->is_active ? trans('general.yes') : trans('general.no') }}</x-data-row>
                         <x-data-row :label="trans('general.documents')">{{ number_format($requirement->documents_count) }}</x-data-row>
+                        <x-data-row :label="trans('admin/documentframeworkrequirements/table.minimum_required_documents')">{{ number_format($requirement->minimum_required_documents) }}</x-data-row>
                         <x-data-row :label="trans('admin/documentframeworkrequirements/table.primary_documents_count')">{{ number_format($requirement->primary_documents_count) }}</x-data-row>
                         <x-data-row :label="trans('admin/documentframeworkrequirements/table.healthy_primary_documents_count')">{{ number_format($requirement->healthy_primary_documents_count) }}</x-data-row>
+                        <x-data-row :label="trans('admin/documentframeworkrequirements/table.document_shortfall_count')">{{ number_format($requirement->document_shortfall_count) }}</x-data-row>
                         <x-data-row :label="trans('admin/documentframeworkrequirements/table.sort_order')">{{ $requirement->sort_order }}</x-data-row>
                         <x-data-row :label="trans('general.created_by')">{{ $requirement->adminuser?->display_name }}</x-data-row>
                         <x-data-row :label="trans('general.created_at')">{{ Helper::getFormattedDateObject($requirement->created_at, 'datetime', false) }}</x-data-row>

@@ -8,19 +8,22 @@
 ])
 
 @can('view', \App\Models\DocumentFramework::class)
-    <x-slot:table_header>
-        {{ $table_header }}
-    </x-slot:table_header>
+    @if ($table_header)
+        <h3 class="box-title{{ (! auth()->user()?->hasAccess('documentframeworks.edit')) ? ' pull-left' : '' }}">
+            {{ $table_header }}
+        </h3>
+    @endif
 
     @if (auth()->user()?->hasAccess('documentframeworks.edit'))
-        <x-slot:bulkactions>
+        <div id="{{ Illuminate\Support\Str::camel($name) }}Toolbar" class="pull-left" style="min-width:0; padding-top: 10px; margin-right: 8px;">
             <x-table.bulk-actions
+                :$name
                 action_route="{{ route('documentframeworkrequirements.bulk.edit') }}"
                 model_name="document_framework_requirements"
             >
                 <option value="edit">{{ trans('general.bulk_edit') }}</option>
             </x-table.bulk-actions>
-        </x-slot:bulkactions>
+        </div>
     @endif
 
     <x-table

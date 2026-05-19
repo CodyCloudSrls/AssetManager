@@ -91,6 +91,14 @@ class DocumentFrameworkRequirementPresenter extends Presenter
                 'sortable' => true,
                 'title' => trans('general.documents'),
                 'visible' => true,
+                'formatter' => 'documentFrameworkRequirementDocumentsCountFormatter',
+            ],
+            [
+                'field' => 'minimum_required_documents',
+                'searchable' => false,
+                'sortable' => true,
+                'title' => trans('admin/documentframeworkrequirements/table.minimum_required_documents'),
+                'visible' => false,
             ],
             [
                 'field' => 'owner',

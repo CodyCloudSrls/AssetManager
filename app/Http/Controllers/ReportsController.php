@@ -27,6 +27,7 @@ use App\Models\Maintenance;
 use App\Models\ReportTemplate;
 use App\Models\Setting;
 use App\Support\Reports\ContractForecastReport;
+use App\Support\Reports\NisRealCoverageReport;
 use App\Support\Reports\NisRiskMatrixReport;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -258,6 +259,15 @@ class ReportsController extends Controller
         $this->authorize('reports.view');
 
         return view('reports/nis_risk_matrix', $report->build(
+            $this->tenantCompanyIdsFromRequest($request)
+        ));
+    }
+
+    public function getNisRealCoverageReport(Request $request, NisRealCoverageReport $report): View
+    {
+        $this->authorize('reports.view');
+
+        return view('reports/nis_real_coverage', $report->build(
             $this->tenantCompanyIdsFromRequest($request)
         ));
     }

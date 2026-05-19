@@ -1194,11 +1194,20 @@ foreach ($euLocalePackLabels as $locale => $languageName) {
 
 $nis2CountryOverlays = self::nis2CountryOverlayMatrix($sourceCheckedAt);
 
+foreach ($nis2CountryOverlays as $jurisdiction => $overlay) {
+    $nis2CountryOverlays[$jurisdiction]['pack_key'] = null;
+
+    if ($jurisdiction !== 'EU') {
+        $nis2CountryOverlays[$jurisdiction]['status'] = 'review_required';
+        $nis2CountryOverlays[$jurisdiction]['notes'] = 'Bootstrap pack purged: tenant requirements must be curated manually.';
+    }
+}
+
 return [
     'source_checked_at' => $sourceCheckedAt,
     'source_registers' => $sourceRegisters,
     'nis2_country_overlays' => $nis2CountryOverlays,
-    'packs' => $packs,
+    'packs' => [],
 ];
     }
 

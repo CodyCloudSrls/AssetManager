@@ -2051,6 +2051,11 @@
                                             {{ trans('admin/reports/general.nis_risk_matrix') }}
                                         </a>
                                     </li>
+                                    <li {{!! (request()->is('reports/nis-real-coverage') ? ' class="active"' : '') !!}}>
+                                        <a href="{{ route('reports.nis-real-coverage') }}">
+                                            {{ trans('admin/reports/general.nis_real_coverage') }}
+                                        </a>
+                                    </li>
                                     <li {{!! (request()->is('reports/contract-forecast') ? ' class="active"' : '') !!}}>
                                         <a href="{{ route('reports.contract-forecast') }}">
                                             {{ trans('admin/reports/general.contract_forecast') }}

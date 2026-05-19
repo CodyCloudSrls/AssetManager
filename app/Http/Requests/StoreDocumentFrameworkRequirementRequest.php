@@ -33,6 +33,7 @@ class StoreDocumentFrameworkRequirementRequest extends FormRequest
             'applicability_notes' => 'nullable|string|max:65535',
             'owner_id' => 'nullable|integer|exists:users,id',
             'default_document_type_id' => 'nullable|integer|exists:document_types,id',
+            'minimum_required_documents' => 'required|integer|min:0|max:65535',
             'evidence_type' => 'nullable|string|in:'.implode(',', array_keys(DocumentFrameworkRequirement::evidenceTypeOptions())),
             'delegation_level' => 'required|string|in:'.implode(',', array_keys(DocumentFrameworkRequirement::delegationLevelOptions())),
             'risk_level' => 'required|string|in:'.implode(',', array_keys(DocumentFrameworkRequirement::riskLevelOptions())),
@@ -73,6 +74,10 @@ class StoreDocumentFrameworkRequirementRequest extends FormRequest
             $this->merge(['risk_level' => 'not_applicable']);
         }
 
+        if (! $this->has('minimum_required_documents')) {
+            $this->merge(['minimum_required_documents' => 1]);
+        }
+
         if ($this->has('parent_ids')) {
             $parentIds = $this->normalizedParentIds($this->input('parent_ids', []));
             $this->merge([
@@ -105,6 +110,12 @@ class StoreDocumentFrameworkRequirementRequest extends FormRequest
                 $validator->errors()->add('code', trans('validation.unique'));
             }
 
+            $framework = $frameworkId > 0 ? DocumentFramework::find($frameworkId) : null;
+
+            if ($frameworkId > 0 && ! $framework) {
+                $validator->errors()->add('document_framework_id', trans('validation.exists', ['attribute' => 'document framework']));
+            }
+
             $parentIds = $this->parentIdsForValidation();
 
             if ($parentIds !== []) {
@@ -129,16 +140,10 @@ class StoreDocumentFrameworkRequirementRequest extends FormRequest
                         continue;
                     }
 
-                    if ($requirementId && $this->wouldCreateParentCycle((int) $requirementId, (int) $parentId)) {
+                    if ($requirementId && ! $framework?->isNis2Domain() && $this->wouldCreateParentCycle((int) $requirementId, (int) $parentId)) {
                         $validator->errors()->add('parent_ids', trans('admin/documentframeworkrequirements/general.parent_cycle_error'));
                     }
                 }
-            }
-
-            $framework = $frameworkId > 0 ? DocumentFramework::find($frameworkId) : null;
-
-            if ($frameworkId > 0 && ! $framework) {
-                $validator->errors()->add('document_framework_id', trans('validation.exists', ['attribute' => 'document framework']));
             }
 
             if ($framework) {

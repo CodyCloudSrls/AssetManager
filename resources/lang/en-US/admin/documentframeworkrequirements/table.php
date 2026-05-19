@@ -12,6 +12,7 @@ return [
     'delegation_level' => 'Delegation',
     'owner' => 'Owner',
     'default_document_type' => 'Preferred Document Type',
+    'minimum_required_documents' => 'Minimum Documents',
     'evidence_type' => 'Evidence Type',
     'review_frequency_months' => 'Review Cadence',
     'description' => 'Description',
@@ -24,4 +25,5 @@ return [
     'sort_order' => 'Sort Order',
     'primary_documents_count' => 'Primary Documents',
     'healthy_primary_documents_count' => 'Healthy Primary Documents',
+    'document_shortfall_count' => 'Missing Documents',
 ];

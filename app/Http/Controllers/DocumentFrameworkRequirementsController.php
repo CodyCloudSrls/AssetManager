@@ -61,6 +61,7 @@ class DocumentFrameworkRequirementsController extends Controller
 
         return view('documentframeworkrequirements.edit', $this->formData(new DocumentFrameworkRequirement([
             'document_framework_id' => $documentframework->id,
+            'minimum_required_documents' => 1,
             'delegation_level' => 'owner_review',
             'risk_level' => $documentframework->isNis2Domain() ? 'not_applicable' : 'medium',
         ]), $documentframework));
@@ -170,6 +171,14 @@ class DocumentFrameworkRequirementsController extends Controller
         }
 
         $selectedIds = $requirements->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $selectedParentIds = $requirements
+            ->flatMap(fn (DocumentFrameworkRequirement $requirement) => $requirement->parent_requirement_ids)
+            ->map(fn ($parentId) => (int) $parentId)
+            ->filter(fn (int $parentId) => $parentId && ! in_array($parentId, $selectedIds, true))
+            ->unique()
+            ->values()
+            ->all();
+
         $parentOptions = DocumentFrameworkRequirement::query()
             ->forFramework($framework->id)
             ->whereNull('deleted_at')
@@ -181,6 +190,7 @@ class DocumentFrameworkRequirementsController extends Controller
             'requirements' => $requirements,
             'framework' => $framework,
             'parentOptions' => $parentOptions,
+            'selectedParentIds' => $selectedParentIds,
             'obligationTypeOptions' => DocumentFrameworkRequirement::obligationTypeOptions(),
             'evidenceTypeOptions' => DocumentFrameworkRequirement::evidenceTypeOptions(),
             'delegationLevelOptions' => DocumentFrameworkRequirement::delegationLevelOptions(),
@@ -217,6 +227,8 @@ class DocumentFrameworkRequirementsController extends Controller
             'owner_id' => 'nullable|integer|exists:users,id',
             'apply_default_document_type_id' => 'nullable|boolean',
             'default_document_type_id' => 'nullable|integer|exists:document_types,id',
+            'apply_minimum_required_documents' => 'nullable|boolean',
+            'minimum_required_documents' => 'nullable|integer|min:0|max:65535',
             'apply_evidence_type' => 'nullable|boolean',
             'evidence_type' => 'nullable|string|in:'.implode(',', array_keys(DocumentFrameworkRequirement::evidenceTypeOptions())),
             'apply_delegation_level' => 'nullable|boolean',
@@ -242,6 +254,10 @@ class DocumentFrameworkRequirementsController extends Controller
         $validator->after(function ($validator) use ($request, $requirements, $framework) {
             if (! $this->bulkUpdateHasSelectedFields($request)) {
                 $validator->errors()->add('bulk_actions', trans('admin/hardware/message.update.nothing_updated'));
+            }
+
+            if ($request->boolean('apply_minimum_required_documents') && ! $request->filled('minimum_required_documents')) {
+                $validator->errors()->add('minimum_required_documents', trans('validation.required', ['attribute' => trans('admin/documentframeworkrequirements/table.minimum_required_documents')]));
             }
 
             $frameworkCompanyId = $framework->company_id ? (int) $framework->company_id : null;
@@ -283,7 +299,7 @@ class DocumentFrameworkRequirementsController extends Controller
                             continue;
                         }
 
-                        if ($this->wouldCreateParentCycle((int) $requirement->id, (int) $parentId)) {
+                        if (! $framework->isNis2Domain() && $this->wouldCreateParentCycle((int) $requirement->id, (int) $parentId)) {
                             $validator->errors()->add('parent_ids', trans('admin/documentframeworkrequirements/general.parent_cycle_error'));
                         }
                     }
@@ -412,7 +428,10 @@ class DocumentFrameworkRequirementsController extends Controller
             ]));
         }
 
-        $relations = ['framework', 'parent'];
+        $relations = [
+            'framework' => fn ($query) => $query->withoutGlobalScopes(),
+            'parent',
+        ];
 
         if (DocumentFrameworkRequirement::parentPivotTableExists()) {
             $relations[] = 'parents';
@@ -464,6 +483,7 @@ class DocumentFrameworkRequirementsController extends Controller
             'apply_parent_ids',
             'apply_owner_id',
             'apply_default_document_type_id',
+            'apply_minimum_required_documents',
             'apply_evidence_type',
             'apply_delegation_level',
             'apply_risk_level',
@@ -493,6 +513,7 @@ class DocumentFrameworkRequirementsController extends Controller
             'obligation_type',
             'owner_id',
             'default_document_type_id',
+            'minimum_required_documents',
             'evidence_type',
             'delegation_level',
             'review_frequency_months',

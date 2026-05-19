@@ -226,6 +226,7 @@ class ComplianceFrameworkInstaller
                 'document_framework_id' => $framework->id,
                 'is_mandatory' => true,
                 'is_active' => true,
+                'minimum_required_documents' => 1,
                 'sort_order' => ($index + 1) * 10,
                 'created_by' => $options['created_by'],
             ], $requirementData);

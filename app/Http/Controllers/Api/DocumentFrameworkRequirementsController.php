@@ -23,7 +23,7 @@ class DocumentFrameworkRequirementsController extends Controller
 
         $allowedColumns = [
             'id', 'code', 'title', 'domain', 'obligation_type', 'evidence_type', 'delegation_level',
-            'risk_level', 'documents_count', 'review_frequency_months', 'sort_order', 'is_mandatory',
+            'risk_level', 'documents_count', 'minimum_required_documents', 'review_frequency_months', 'sort_order', 'is_mandatory',
             'is_active', 'created_at', 'created_by',
         ];
 

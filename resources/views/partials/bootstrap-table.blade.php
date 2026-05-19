@@ -213,6 +213,7 @@
                 cookieExpire: '2y',
                 cookieStorage: '{{ config('session.bs_table_storage') }}',
                 iconsPrefix: 'fa',
+                uniqueId: data_with_default('unique-id', 'id'),
                 maintainSelected: data_with_default('maintain-selected', true),
                 minimumCountColumns: data_with_default('minimum-count-columns', 2),
                 mobileResponsive: data_with_default('mobile-responsive', true),
@@ -1163,64 +1164,340 @@
     }
 
 
-    // These methods dynamically add/remove hidden input values in the bulk actions form
-    $('.snipe-table').on('check.bs.table .btSelectItem', function (row, $element) {
-        var buttonName =  $(this).data('bulk-button-id');
-        var tableId =  $(this).data('id-table');
+    window.snipeTableBulkSelectionForm = function ($table) {
+        var buttonName = $table.data('bulk-button-id');
+        var formName = $table.data('bulk-form-id');
+        var $form = $(buttonName).closest('form');
 
-        $(buttonName).removeAttr('disabled');
-        $(buttonName).after('<input id="' + tableId + '_checkbox_' + $element.id + '" type="hidden" name="ids[]" value="' + $element.id + '">');
-        window.snipeTableSyncExportDataTypeForSelection($(this));
-    });
+        if ($form.length == 0 && formName) {
+            $form = $(formName).filter('form').first();
+        }
 
-    $('.snipe-table').on('check-all.bs.table', function (event, rowsAfter) {
+        if ($form.length == 0 && formName) {
+            $form = $(formName).find('form').first();
+        }
 
-        var buttonName =  $(this).data('bulk-button-id');
-        $(buttonName).removeAttr('disabled');
-        var tableId =  $(this).data('id-table');
+        return $form;
+    };
 
-        for (var i in rowsAfter) {
-            // Do not select things that were already selected
-            if($('#'+ tableId + '_checkbox_' + rowsAfter[i].id).length == 0) {
-                $(buttonName).after('<input id="' + tableId + '_checkbox_' + rowsAfter[i].id + '" type="hidden" name="ids[]" value="' + rowsAfter[i].id + '">');
+    window.snipeTableBulkSelectionButton = function ($table, $form) {
+        var buttonName = $table.data('bulk-button-id');
+        var $button = $(buttonName);
+
+        if ($button.length == 0 && $form && $form.length > 0) {
+            $button = $form.find('button[type="submit"]').first();
+        }
+
+        return $button;
+    };
+
+    window.snipeTableNormalizeBulkSelectionIds = function (ids) {
+        var normalizedIds = [];
+
+        if (ids === undefined || ids === null) {
+            return normalizedIds;
+        }
+
+        if (! $.isArray(ids)) {
+            ids = [ids];
+        }
+
+        for (var i in ids) {
+            if (! ids.hasOwnProperty(i)) {
+                continue;
+            }
+
+            if (ids[i] === undefined || ids[i] === null || ids[i] === '' || ids[i] === 'on') {
+                continue;
+            }
+
+            if (normalizedIds.indexOf(String(ids[i])) === -1) {
+                normalizedIds.push(String(ids[i]));
             }
         }
 
-        window.snipeTableSyncExportDataTypeForSelection($(this));
-    });
+        return normalizedIds;
+    };
 
+    window.snipeTableUniqueBulkIdField = function ($table) {
+        return $table.data('unique-id') || 'id';
+    };
 
-    $('.snipe-table').on('uncheck.bs.table .btSelectItem', function (row, $element) {
-        var tableId =  $(this).data('id-table');
-        $( "#" + tableId + "_checkbox_" + $element.id).remove();
-        window.snipeTableSyncExportDataTypeForSelection($(this));
-    });
+    window.snipeTableBulkIdFromRow = function ($table, row) {
+        var uniqueId = window.snipeTableUniqueBulkIdField($table);
 
-
-    // Handle whether the edit button should be disabled
-    $('.snipe-table').on('uncheck.bs.table', function () {
-        var buttonName =  $(this).data('bulk-button-id');
-
-        if ($(this).bootstrapTable('getSelections').length == 0) {
-
-            $(buttonName).attr('disabled', 'disabled');
+        if (! row) {
+            return null;
         }
 
-        window.snipeTableSyncExportDataTypeForSelection($(this));
+        if (row[uniqueId] !== undefined) {
+            return row[uniqueId];
+        }
+
+        if (row.id !== undefined) {
+            return row.id;
+        }
+
+        return null;
+    };
+
+    window.snipeTableIdsFromRows = function ($table, rows) {
+        var ids = [];
+
+        if (rows === undefined || rows === null) {
+            return ids;
+        }
+
+        if (! $.isArray(rows)) {
+            rows = [rows];
+        }
+
+        for (var i in rows) {
+            if (! rows.hasOwnProperty(i)) {
+                continue;
+            }
+
+            ids.push(window.snipeTableBulkIdFromRow($table, rows[i]));
+        }
+
+        return window.snipeTableNormalizeBulkSelectionIds(ids);
+    };
+
+    window.snipeTableVisibleBulkIds = function ($table) {
+        var tableData = [];
+
+        try {
+            tableData = $table.bootstrapTable('getData') || [];
+        } catch (e) {
+            tableData = [];
+        }
+
+        return window.snipeTableIdsFromRows($table, tableData);
+    };
+
+    window.snipeTableCurrentBulkSelectionIds = function ($table) {
+        var $form = window.snipeTableBulkSelectionForm($table);
+        var ids = [];
+
+        if ($form.length == 0) {
+            return ids;
+        }
+
+        $form.find('input[data-bulk-selection="true"]').each(function () {
+            ids.push($(this).val());
+        });
+
+        return window.snipeTableNormalizeBulkSelectionIds(ids);
+    };
+
+    window.snipeTableSelectedBulkIds = function ($table) {
+        var ids = [];
+        var selectedRows = [];
+        var tableData = [];
+        var $tableContainer = $table.closest('.bootstrap-table');
+
+        try {
+            selectedRows = $table.bootstrapTable('getSelections') || [];
+        } catch (e) {
+            selectedRows = [];
+        }
+
+        for (var i in selectedRows) {
+            if (selectedRows.hasOwnProperty(i)) {
+                ids.push(window.snipeTableBulkIdFromRow($table, selectedRows[i]));
+            }
+        }
+
+        try {
+            tableData = $table.bootstrapTable('getData') || [];
+        } catch (e) {
+            tableData = [];
+        }
+
+        if ($tableContainer.length == 0) {
+            $tableContainer = $table;
+        }
+
+        $tableContainer.find('input[name="btSelectItem"]:checked, input[data-index][type="checkbox"]:checked, .bs-checkbox input:checked, tr.selected[data-index]').each(function () {
+            var $row = $(this).is('tr') ? $(this) : $(this).closest('tr[data-index]');
+            var rowIndex = $row.data('index');
+
+            if (rowIndex === undefined && ! $(this).is('tr')) {
+                rowIndex = $(this).data('index');
+            }
+
+            if (rowIndex !== undefined && tableData[rowIndex]) {
+                ids.push(window.snipeTableBulkIdFromRow($table, tableData[rowIndex]));
+                return;
+            }
+
+            if (! $(this).is('tr')) {
+                ids.push($(this).val());
+            }
+        });
+
+        return window.snipeTableNormalizeBulkSelectionIds(ids);
+    };
+
+    window.snipeTableWriteBulkSelectionIds = function ($table, ids) {
+        var $form = window.snipeTableBulkSelectionForm($table);
+        var $button = window.snipeTableBulkSelectionButton($table, $form);
+        var selectedIds = window.snipeTableNormalizeBulkSelectionIds(ids);
+
+        if ($form.length == 0) {
+            return selectedIds;
+        }
+
+        $form.find('input[data-bulk-selection="true"]').remove();
+
+        for (var i in selectedIds) {
+            if (! selectedIds.hasOwnProperty(i)) {
+                continue;
+            }
+
+            $('<input>')
+                .attr('type', 'hidden')
+                .attr('name', 'ids[]')
+                .attr('value', selectedIds[i])
+                .attr('data-bulk-selection', 'true')
+                .appendTo($form);
+        }
+
+        if ($button.length > 0) {
+            if (selectedIds.length > 0) {
+                $button.removeAttr('disabled');
+            } else {
+                $button.attr('disabled', 'disabled');
+            }
+        }
+
+        return selectedIds;
+    };
+
+    window.snipeTableAddBulkSelectionIds = function ($table, ids) {
+        var selectedIds = window.snipeTableCurrentBulkSelectionIds($table);
+
+        selectedIds = selectedIds.concat(window.snipeTableNormalizeBulkSelectionIds(ids));
+
+        return window.snipeTableWriteBulkSelectionIds($table, selectedIds);
+    };
+
+    window.snipeTableRemoveBulkSelectionIds = function ($table, ids) {
+        var selectedIds = window.snipeTableCurrentBulkSelectionIds($table);
+        var idsToRemove = window.snipeTableNormalizeBulkSelectionIds(ids);
+        var remainingIds = [];
+
+        for (var i in selectedIds) {
+            if (! selectedIds.hasOwnProperty(i)) {
+                continue;
+            }
+
+            if (idsToRemove.indexOf(String(selectedIds[i])) === -1) {
+                remainingIds.push(selectedIds[i]);
+            }
+        }
+
+        return window.snipeTableWriteBulkSelectionIds($table, remainingIds);
+    };
+
+    window.snipeTableSyncBulkSelections = function ($table, fallbackIds) {
+        var selectedIds = window.snipeTableSelectedBulkIds($table);
+
+        if (selectedIds.length == 0 && fallbackIds !== undefined) {
+            selectedIds = window.snipeTableNormalizeBulkSelectionIds(fallbackIds);
+        }
+
+        return window.snipeTableWriteBulkSelectionIds($table, selectedIds);
+    };
+
+    window.snipeTableSyncVisibleBulkSelections = function ($table) {
+        var currentIds = window.snipeTableCurrentBulkSelectionIds($table);
+        var visibleIds = window.snipeTableVisibleBulkIds($table);
+        var selectedIds = window.snipeTableSelectedBulkIds($table);
+        var remainingIds = [];
+
+        if (visibleIds.length == 0) {
+            return window.snipeTableSyncBulkSelections($table, currentIds);
+        }
+
+        for (var i in currentIds) {
+            if (! currentIds.hasOwnProperty(i)) {
+                continue;
+            }
+
+            if (visibleIds.indexOf(String(currentIds[i])) === -1) {
+                remainingIds.push(currentIds[i]);
+            }
+        }
+
+        return window.snipeTableWriteBulkSelectionIds($table, remainingIds.concat(selectedIds));
+    };
+
+    window.snipeTableSyncAllBulkSelections = function () {
+        $('.snipe-table').each(function () {
+            var $table = $(this);
+            window.snipeTableSyncVisibleBulkSelections($table);
+            window.snipeTableSyncExportDataTypeForSelection($table);
+        });
+    };
+
+    $('.snipe-table').on('check.bs.table', function (event, row) {
+        var $table = $(this);
+
+        window.snipeTableAddBulkSelectionIds($table, window.snipeTableIdsFromRows($table, row));
+        window.snipeTableSyncExportDataTypeForSelection($table);
+    });
+
+    $('.snipe-table').on('check-all.bs.table', function (event, rowsAfter) {
+        var $table = $(this);
+
+        window.snipeTableAddBulkSelectionIds($table, window.snipeTableIdsFromRows($table, rowsAfter));
+        window.snipeTableSyncExportDataTypeForSelection($table);
+    });
+
+    $('.snipe-table').on('uncheck.bs.table', function (event, row) {
+        var $table = $(this);
+
+        window.snipeTableRemoveBulkSelectionIds($table, window.snipeTableIdsFromRows($table, row));
+        window.snipeTableSyncExportDataTypeForSelection($table);
     });
 
     $('.snipe-table').on('uncheck-all.bs.table', function (event, rowsAfter, rowsBefore) {
+        var $table = $(this);
+        var rows = rowsBefore || rowsAfter || [];
 
-        var buttonName =  $(this).data('bulk-button-id');
-        $(buttonName).attr('disabled', 'disabled');
-        var tableId =  $(this).data('id-table');
+        window.snipeTableRemoveBulkSelectionIds($table, window.snipeTableIdsFromRows($table, rows));
+        window.snipeTableSyncExportDataTypeForSelection($table);
+    });
 
-        for (var i in rowsBefore) {
-            $('#' + tableId + "_checkbox_" + rowsBefore[i].id).remove();
+    $('.snipe-table').on('post-body.bs.table page-change.bs.table', function () {
+        window.snipeTableSyncBulkSelections($(this), window.snipeTableCurrentBulkSelectionIds($(this)));
+        window.snipeTableSyncExportDataTypeForSelection($(this));
+    });
+
+    $(document).on('click.snipeBulkSelections change.snipeBulkSelections', 'input[name="btSelectItem"], input[name="btSelectAll"]', function () {
+        window.setTimeout(window.snipeTableSyncAllBulkSelections, 0);
+        window.setTimeout(window.snipeTableSyncAllBulkSelections, 75);
+    });
+
+    $(document).on('click.snipeBulkSelections', '.bootstrap-table tbody tr, .fixed-table-container tbody tr', function () {
+        window.setTimeout(window.snipeTableSyncAllBulkSelections, 0);
+        window.setTimeout(window.snipeTableSyncAllBulkSelections, 75);
+    });
+
+    $('.snipe-table').each(function () {
+        var $table = $(this);
+        var $form = window.snipeTableBulkSelectionForm($table);
+
+        if ($form.length == 0) {
+            return;
         }
 
-        window.snipeTableSyncExportDataTypeForSelection($(this));
+        $form.off('submit.snipeBulkSelections').on('submit.snipeBulkSelections', function () {
+            window.snipeTableSyncBulkSelections($table, window.snipeTableCurrentBulkSelectionIds($table));
+        });
 
+        window.snipeTableSyncBulkSelections($table);
     });
 
     // Initialize sort-order for bulk actions (label-generation) for snipe-tables
@@ -1901,6 +2178,30 @@
         }
 
         return html.join(' ');
+    }
+
+    function documentFrameworkRequirementDocumentsCountFormatter(value, row) {
+        var count = parseInt(value, 10);
+        var minimum = parseInt(row.minimum_required_documents, 10);
+        var shortfall = parseInt(row.document_shortfall_count, 10);
+
+        if (isNaN(count)) {
+            count = 0;
+        }
+
+        if (isNaN(minimum)) {
+            minimum = 1;
+        }
+
+        if (isNaN(shortfall)) {
+            shortfall = 0;
+        }
+
+        if (row.document_minimum_satisfied === false) {
+            return '<span class="text-danger" data-tooltip="true" title="{{ trans('admin/documentframeworkrequirements/table.minimum_required_documents') }}: ' + minimum + ' - {{ trans('admin/documentframeworkrequirements/table.document_shortfall_count') }}: ' + shortfall + '">' + count + '</span>';
+        }
+
+        return count;
     }
 
 

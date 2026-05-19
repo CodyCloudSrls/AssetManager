@@ -29,6 +29,10 @@ class DocumentFrameworkRequirement extends SnipeModel
 
     protected $table = 'document_framework_requirements';
 
+    protected $attributes = [
+        'minimum_required_documents' => 1,
+    ];
+
     protected $fillable = [
         'document_framework_id',
         'parent_id',
@@ -40,6 +44,7 @@ class DocumentFrameworkRequirement extends SnipeModel
         'is_active',
         'owner_id',
         'default_document_type_id',
+        'minimum_required_documents',
         'evidence_type',
         'delegation_level',
         'risk_level',
@@ -58,6 +63,7 @@ class DocumentFrameworkRequirement extends SnipeModel
         'parent_id' => 'integer',
         'owner_id' => 'integer',
         'default_document_type_id' => 'integer',
+        'minimum_required_documents' => 'integer',
         'review_frequency_months' => 'integer',
         'sort_order' => 'integer',
         'is_mandatory' => 'boolean',
@@ -76,6 +82,7 @@ class DocumentFrameworkRequirement extends SnipeModel
         'is_active' => 'boolean',
         'owner_id' => 'nullable|integer|exists:users,id',
         'default_document_type_id' => 'nullable|integer|exists:document_types,id',
+        'minimum_required_documents' => 'required|integer|min:0|max:65535',
         'evidence_type' => 'nullable|string|max:60',
         'delegation_level' => 'required|string|in:owner_review,delegable,external_evidence,consultant_only',
         'risk_level' => 'required|string|in:not_applicable,low,medium,high,critical',
@@ -386,9 +393,14 @@ class DocumentFrameworkRequirement extends SnipeModel
 
     public function getCoverageStatusAttribute(): string
     {
+        $minimumRequiredDocuments = $this->minimum_required_documents;
         $documentsCount = (int) ($this->documents_count ?? $this->documents()->count());
         $primaryDocumentsCount = (int) ($this->primary_documents_count ?? $this->primaryDocuments()->count());
         $healthyPrimaryDocumentsCount = (int) ($this->healthy_primary_documents_count ?? $this->healthyPrimaryDocumentsQuery()->count());
+
+        if ($minimumRequiredDocuments === 0) {
+            return self::COVERAGE_COVERED;
+        }
 
         if ($documentsCount === 0) {
             return self::COVERAGE_MISSING;
@@ -398,11 +410,26 @@ class DocumentFrameworkRequirement extends SnipeModel
             return self::COVERAGE_SUPPORTING_ONLY;
         }
 
-        if ($healthyPrimaryDocumentsCount === 0) {
+        if ($healthyPrimaryDocumentsCount < $minimumRequiredDocuments) {
             return self::COVERAGE_AT_RISK;
         }
 
         return self::COVERAGE_COVERED;
+    }
+
+    public function getDocumentMinimumSatisfiedAttribute(): bool
+    {
+        return $this->document_shortfall_count === 0;
+    }
+
+    public function getDocumentShortfallCountAttribute(): int
+    {
+        return max(0, $this->minimum_required_documents - (int) ($this->healthy_primary_documents_count ?? $this->healthyPrimaryDocumentsQuery()->count()));
+    }
+
+    public function getMinimumRequiredDocumentsAttribute($value): int
+    {
+        return max(0, (int) ($value ?? 1));
     }
 
     public function getCoverageLabelAttribute(): string
@@ -435,5 +462,10 @@ class DocumentFrameworkRequirement extends SnipeModel
     public function setOfficialReferenceAttribute($value)
     {
         $this->attributes['official_reference'] = ($value === '' ? null : $value);
+    }
+
+    public function setMinimumRequiredDocumentsAttribute($value): void
+    {
+        $this->attributes['minimum_required_documents'] = max(0, (int) ($value === '' || is_null($value) ? 1 : $value));
     }
 }

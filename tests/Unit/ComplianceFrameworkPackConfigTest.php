@@ -11,26 +11,16 @@ class ComplianceFrameworkPackConfigTest extends TestCase
         return include dirname(__DIR__, 2).'/config/compliance_frameworks.php';
     }
 
-    public function test_ai_act_pack_exists_for_every_supported_locale(): void
+    public function test_bootstrap_packs_are_purged(): void
     {
-        $packs = $this->packs()['packs'];
-        $supportedLocales = array_map('basename', glob(dirname(__DIR__, 2).'/resources/lang/*', GLOB_ONLYDIR));
-
-        foreach ($supportedLocales as $locale) {
-            $key = $locale === 'it-IT'
-                ? 'ai_act_it'
-                : ($locale === 'en-US' ? 'ai_act_en' : 'ai_act_'.str_replace('-', '_', strtolower($locale)));
-
-            $this->assertArrayHasKey($key, $packs);
-            $this->assertSame($locale, $packs[$key]['locale']);
-            $this->assertSame('ai_act', $packs[$key]['framework']['compliance_domain']);
-            $this->assertSame('EU', $packs[$key]['framework']['jurisdiction']);
-        }
+        $this->assertSame([], $this->packs()['packs']);
     }
 
     public function test_pack_metadata_and_requirement_references_are_consistent(): void
     {
         $config = $this->packs();
+
+        $this->assertSame([], $config['packs']);
 
         foreach ($config['packs'] as $packKey => $pack) {
             $this->assertNotEmpty($pack['pack_version'] ?? null, "{$packKey} missing pack_version");
@@ -68,6 +58,8 @@ class ComplianceFrameworkPackConfigTest extends TestCase
 
     public function test_nis2_and_ai_act_requirements_do_not_store_manual_risk_scores(): void
     {
+        $this->assertSame([], $this->packs()['packs']);
+
         foreach ($this->packs()['packs'] as $packKey => $pack) {
             if (! in_array($pack['framework']['compliance_domain'] ?? null, ['nis2', 'ai_act'], true)) {
                 continue;
@@ -86,26 +78,13 @@ class ComplianceFrameworkPackConfigTest extends TestCase
     public function test_nis2_country_overlay_claims_are_explicit(): void
     {
         $config = $this->packs();
-        $packs = $config['packs'];
         $countryOverlays = $config['nis2_country_overlays'];
 
-        $this->assertSame('nis2_it', $packs['nis2_it']['source_register_key']);
-        $this->assertSame('national_overlay', $packs['nis2_it']['source_register']['scope']);
-        $this->assertSame('implemented', $countryOverlays['IT']['status']);
-        $this->assertSame('nis2_it', $countryOverlays['IT']['pack_key']);
-
-        $this->assertSame('nis2_eu', $packs['nis2_eu_it']['source_register_key']);
-        $this->assertSame('eu_baseline', $packs['nis2_eu_it']['source_register']['scope']);
-        $this->assertSame('it-IT', $packs['nis2_eu_it']['locale']);
-
-        foreach ($packs as $packKey => $pack) {
-            if (($pack['framework']['compliance_domain'] ?? null) !== 'nis2' || $packKey === 'nis2_it') {
-                continue;
-            }
-
-            $this->assertSame('nis2_eu', $pack['source_register_key'], "{$packKey} must remain an EU baseline pack");
-            $this->assertStringNotContainsString('ACN', serialize($pack), "{$packKey} must not contain Italian ACN references");
-        }
+        $this->assertSame([], $config['packs']);
+        $this->assertSame('review_required', $countryOverlays['IT']['status']);
+        $this->assertNull($countryOverlays['IT']['pack_key']);
+        $this->assertSame('nis2_it', $countryOverlays['IT']['source_register_key']);
+        $this->assertSame('national_overlay', $config['source_registers']['nis2_it']['scope']);
     }
 
     public function test_nis2_country_overlay_matrix_is_complete_and_conservative(): void
@@ -126,13 +105,6 @@ class ComplianceFrameworkPackConfigTest extends TestCase
             if ($countryCode === 'EU') {
                 $this->assertSame('baseline_only', $overlay['status']);
                 $this->assertNull($overlay['pack_key']);
-
-                continue;
-            }
-
-            if ($countryCode === 'IT') {
-                $this->assertSame('implemented', $overlay['status']);
-                $this->assertSame('nis2_it', $overlay['pack_key']);
 
                 continue;
             }

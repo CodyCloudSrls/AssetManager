@@ -86,6 +86,15 @@
         </div>
     </div>
 
+    <div class="form-group {{ $errors->has('minimum_required_documents') ? ' has-error' : '' }}">
+        <label for="minimum_required_documents" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.minimum_required_documents') }}</label>
+        <div class="col-md-2">
+            <input class="form-control" type="number" min="0" max="65535" name="minimum_required_documents" id="minimum_required_documents" value="{{ old('minimum_required_documents', $item->minimum_required_documents ?? 1) }}" required>
+            {!! $errors->first('minimum_required_documents', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+            <p class="help-block">{{ trans('admin/documentframeworkrequirements/general.minimum_required_documents_help') }}</p>
+        </div>
+    </div>
+
     @include ('partials.forms.edit.user-select', ['translated_name' => trans('admin/documentframeworkrequirements/table.owner'), 'fieldname' => 'owner_id', 'item' => $item, 'required' => 'false'])
     @include ('partials.forms.edit.document-type-select', ['translated_name' => trans('admin/documentframeworkrequirements/table.default_document_type'), 'fieldname' => 'default_document_type_id', 'item' => $item, 'required' => 'false', 'hide_new' => 'true'])
 

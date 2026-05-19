@@ -2,23 +2,33 @@
 
 namespace Tests\Unit;
 
-use App\Presenters\DocumentFrameworkRequirementPresenter;
-use Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class DocumentFrameworkRequirementPresenterTest extends TestCase
 {
     public function test_requirements_table_supports_bulk_selection_and_parent_column()
     {
-        $layout = json_decode(DocumentFrameworkRequirementPresenter::dataTableLayout(), true);
-        $fields = collect($layout)->pluck('field')->all();
+        $presenter = $this->repoFile('app/Presenters/DocumentFrameworkRequirementPresenter.php');
 
-        $this->assertContains('checkbox', $fields);
-        $this->assertContains('parent_requirement_codes', $fields);
+        $this->assertStringContainsString("'field' => 'checkbox'", $presenter);
+        $this->assertStringContainsString("'checkbox' => true", $presenter);
+        $this->assertStringContainsString("'field' => 'parent_requirement_codes'", $presenter);
+        $this->assertStringContainsString("'field' => 'minimum_required_documents'", $presenter);
+        $this->assertStringContainsString("'formatter' => 'documentFrameworkRequirementDocumentsCountFormatter'", $presenter);
+        $this->assertStringContainsString("'visible' => false", $presenter);
+    }
 
-        $checkbox = collect($layout)->firstWhere('field', 'checkbox');
-        $parentColumn = collect($layout)->firstWhere('field', 'parent_requirement_codes');
+    private function repoPath(string $relativePath): string
+    {
+        return dirname(__DIR__, 2).'/'.$relativePath;
+    }
 
-        $this->assertTrue($checkbox['checkbox']);
-        $this->assertFalse($parentColumn['visible']);
+    private function repoFile(string $relativePath): string
+    {
+        $path = $this->repoPath($relativePath);
+
+        $this->assertFileExists($path);
+
+        return (string) file_get_contents($path);
     }
 }

@@ -585,6 +585,11 @@ Route::group(['prefix' => 'reports', 'middleware' => ['auth']], function () {
         ->breadcrumbs(fn (Trail $trail) => $trail->parent('home')
             ->push(trans('admin/reports/general.nis_risk_matrix'), route('reports.nis-risk-matrix')));
 
+    Route::get('nis-real-coverage', [ReportsController::class, 'getNisRealCoverageReport'])
+        ->name('reports.nis-real-coverage')
+        ->breadcrumbs(fn (Trail $trail) => $trail->parent('home')
+            ->push(trans('admin/reports/general.nis_real_coverage'), route('reports.nis-real-coverage')));
+
     Route::get('contract-forecast', [ReportsController::class, 'getContractForecastReport'])
         ->name('reports.contract-forecast')
         ->breadcrumbs(fn (Trail $trail) => $trail->parent('home')
