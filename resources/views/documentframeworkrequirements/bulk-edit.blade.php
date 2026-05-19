@@ -227,6 +227,20 @@
                             </div>
                         </div>
 
+                        <div class="form-group {{ $errors->has('sort_order') ? ' has-error' : '' }}">
+                            <label for="sort_order" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.sort_order') }}</label>
+                            <div class="col-md-2">
+                                <input class="form-control" type="number" min="0" max="65535" name="sort_order" id="sort_order" value="{{ old('sort_order') }}">
+                                {!! $errors->first('sort_order', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+                            </div>
+                            <div class="col-md-4 col-md-offset-3">
+                                <label class="form-control">
+                                    <input type="checkbox" name="apply_sort_order" value="1" @checked(old('apply_sort_order'))>
+                                    {{ trans('general.apply') }}
+                                </label>
+                            </div>
+                        </div>
+
                         @foreach (['description', 'evidence_guidance', 'applicability_notes'] as $textField)
                             <div class="form-group {{ $errors->has($textField) ? ' has-error' : '' }}">
                                 <label for="{{ $textField }}" class="col-md-3 control-label">{{ trans('admin/documentframeworkrequirements/table.'.$textField) }}</label>
@@ -337,6 +351,7 @@
                 risk_level: 'apply_risk_level',
                 review_frequency_months: 'apply_review_frequency_months',
                 minimum_required_documents: 'apply_minimum_required_documents',
+                sort_order: 'apply_sort_order',
                 official_reference: 'apply_official_reference',
                 source_url: 'apply_source_url',
                 description: 'apply_description',

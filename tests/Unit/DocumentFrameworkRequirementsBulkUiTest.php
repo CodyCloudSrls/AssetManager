@@ -87,6 +87,20 @@ class DocumentFrameworkRequirementsBulkUiTest extends TestCase
         $this->assertStringContainsString("select[name=\"parent_ids[]\"]", $view);
         $this->assertStringContainsString('minimum_required_documents', $view);
         $this->assertStringContainsString('apply_minimum_required_documents', $view);
+        $this->assertStringContainsString('sort_order', $view);
+        $this->assertStringContainsString('apply_sort_order', $view);
+    }
+
+    public function test_bulk_requirement_update_supports_common_sort_order(): void
+    {
+        $controller = $this->repoFile('app/Http/Controllers/DocumentFrameworkRequirementsController.php');
+        $view = $this->repoFile('resources/views/documentframeworkrequirements/bulk-edit.blade.php');
+
+        $this->assertStringContainsString("'apply_sort_order' => 'nullable|boolean'", $controller);
+        $this->assertStringContainsString("'sort_order' => 'nullable|integer|min:0|max:65535'", $controller);
+        $this->assertStringContainsString("'apply_sort_order'", $controller);
+        $this->assertStringContainsString("'sort_order'", $controller);
+        $this->assertStringContainsString("sort_order: 'apply_sort_order'", $view);
     }
 
     public function test_requirement_documents_count_formatter_marks_unsatisfied_minimum(): void

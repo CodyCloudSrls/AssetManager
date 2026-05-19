@@ -237,6 +237,8 @@ class DocumentFrameworkRequirementsController extends Controller
             'risk_level' => 'nullable|string|in:'.implode(',', array_keys(DocumentFrameworkRequirement::riskLevelOptions())),
             'apply_review_frequency_months' => 'nullable|boolean',
             'review_frequency_months' => 'nullable|integer|min:1|max:120',
+            'apply_sort_order' => 'nullable|boolean',
+            'sort_order' => 'nullable|integer|min:0|max:65535',
             'apply_official_reference' => 'nullable|boolean',
             'official_reference' => 'nullable|string|max:255',
             'apply_source_url' => 'nullable|boolean',
@@ -258,6 +260,10 @@ class DocumentFrameworkRequirementsController extends Controller
 
             if ($request->boolean('apply_minimum_required_documents') && ! $request->filled('minimum_required_documents')) {
                 $validator->errors()->add('minimum_required_documents', trans('validation.required', ['attribute' => trans('admin/documentframeworkrequirements/table.minimum_required_documents')]));
+            }
+
+            if ($request->boolean('apply_sort_order') && ! $request->filled('sort_order')) {
+                $validator->errors()->add('sort_order', trans('validation.required', ['attribute' => trans('admin/documentframeworkrequirements/table.sort_order')]));
             }
 
             $frameworkCompanyId = $framework->company_id ? (int) $framework->company_id : null;
@@ -488,6 +494,7 @@ class DocumentFrameworkRequirementsController extends Controller
             'apply_delegation_level',
             'apply_risk_level',
             'apply_review_frequency_months',
+            'apply_sort_order',
             'apply_official_reference',
             'apply_source_url',
             'apply_description',
@@ -517,6 +524,7 @@ class DocumentFrameworkRequirementsController extends Controller
             'evidence_type',
             'delegation_level',
             'review_frequency_months',
+            'sort_order',
             'official_reference',
             'source_url',
             'description',
