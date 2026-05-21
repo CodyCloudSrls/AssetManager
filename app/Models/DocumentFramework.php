@@ -216,12 +216,7 @@ class DocumentFramework extends SnipeModel
                 ->withCount([
                     'documents',
                     'primaryDocuments as primary_documents_count',
-                    'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query
-                        ->where('documents.status', Document::STATUS_ACTIVE)
-                        ->where(function ($nested) {
-                            $nested->whereNull('documents.next_review_at')
-                                ->orWhereDate('documents.next_review_at', '>=', Carbon::today());
-                        }),
+                    'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query->currentForCoverage(),
                 ])
                 ->get();
 

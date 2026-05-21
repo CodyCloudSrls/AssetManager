@@ -33,22 +33,25 @@
         $renewalDueCount = $document->documentAssignments->filter(fn ($assignment) => $assignment->is_expiring)->count();
         $expiredAssignmentsCount = $document->documentAssignments->filter(fn ($assignment) => $assignment->is_expired)->count();
 
-        $datePercent = function ($start, $end) {
-            if (! $start || ! $end) {
+        $datePercent = function ($end) {
+            if (! $end) {
                 return 0;
             }
 
-            $startDate = $start instanceof \Carbon\Carbon ? $start : \Carbon\Carbon::parse($start);
             $endDate = $end instanceof \Carbon\Carbon ? $end : \Carbon\Carbon::parse($end);
+            $daysUntil = \Carbon\Carbon::today()->diffInDays($endDate, false);
 
-            $totalDays = max(1, $startDate->diffInDays($endDate));
-            $elapsedDays = $startDate->diffInDays(\Carbon\Carbon::now());
+            if ($daysUntil <= 0) {
+                return 100;
+            }
 
-            return min(100, max(0, ($elapsedDays / $totalDays) * 100));
+            $reviewHorizonDays = 365 * 3;
+            $daysInsideHorizon = max(0, $reviewHorizonDays - min($daysUntil, $reviewHorizonDays));
+
+            return min(100, max(0, ($daysInsideHorizon / $reviewHorizonDays) * 100));
         };
 
-        $reviewStart = $document->effective_at ?: $document->issued_at ?: $document->created_at;
-        $reviewPercent = $datePercent($reviewStart, $document->next_review_at);
+        $reviewPercent = $datePercent($document->next_review_at);
         $reviewDate = $document->next_review_at ? \Carbon\Carbon::parse($document->next_review_at) : null;
         $isReviewOverdue = $reviewDate?->isPast() ?? false;
         $isReviewDueSoon = ! $isReviewOverdue && $reviewDate?->lte(\Carbon\Carbon::today()->addDays(30));
@@ -57,15 +60,13 @@
             ->filter(fn ($assignment) => ! is_null($assignment->renewal_due_at))
             ->sortBy('renewal_due_at')
             ->first();
-        $renewalStart = $nextRenewalAssignment?->effective_at ?: $nextRenewalAssignment?->issued_at ?: $document->effective_at ?: $document->issued_at ?: $document->created_at;
-        $renewalPercent = $datePercent($renewalStart, $nextRenewalAssignment?->renewal_due_at);
+        $renewalPercent = $datePercent($nextRenewalAssignment?->renewal_due_at);
 
         $nextExpiryAssignment = $document->documentAssignments
             ->filter(fn ($assignment) => ! is_null($assignment->expires_at))
             ->sortBy('expires_at')
             ->first();
-        $expiryStart = $nextExpiryAssignment?->effective_at ?: $nextExpiryAssignment?->issued_at ?: $document->effective_at ?: $document->issued_at ?: $document->created_at;
-        $expiryPercent = $datePercent($expiryStart, $nextExpiryAssignment?->expires_at);
+        $expiryPercent = $datePercent($nextExpiryAssignment?->expires_at);
     @endphp
     <x-container columns="2">
         <x-page-column class="col-md-9 main-panel">

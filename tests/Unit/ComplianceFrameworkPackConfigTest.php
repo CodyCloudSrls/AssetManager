@@ -11,16 +11,31 @@ class ComplianceFrameworkPackConfigTest extends TestCase
         return include dirname(__DIR__, 2).'/config/compliance_frameworks.php';
     }
 
-    public function test_bootstrap_packs_are_purged(): void
+    public function test_nis2_it_allegato_bootstrap_packs_are_available(): void
     {
-        $this->assertSame([], $this->packs()['packs']);
+        $packs = $this->packs()['packs'];
+
+        $this->assertSame(['nis2_it_allegato_1', 'nis2_it_allegato_2'], array_keys($packs));
+        $this->assertCount(87, $packs['nis2_it_allegato_1']['requirements']);
+        $this->assertCount(116, $packs['nis2_it_allegato_2']['requirements']);
+        $this->assertSame('NIS2 IT - Allegato 1', $packs['nis2_it_allegato_1']['framework']['name']);
+        $this->assertSame('NIS2 IT - Allegato 2', $packs['nis2_it_allegato_2']['framework']['name']);
+    }
+
+    public function test_unused_bootstrap_tenant_framework_purge_is_guarded(): void
+    {
+        $migration = $this->doc('database/migrations/2026_05_20_085733_purge_unused_bootstrap_tenant_frameworks.php');
+
+        $this->assertStringContainsString("whereNotNull('document_frameworks.company_id')", $migration);
+        $this->assertStringContainsString("whereNotNull('document_frameworks.source_pack_key')", $migration);
+        $this->assertStringContainsString("whereColumn('documents.document_framework_id', 'document_frameworks.id')", $migration);
+        $this->assertStringContainsString('document_framework_requirement_document', $migration);
+        $this->assertStringContainsString("where('document_frameworks.is_system_template', false)", $migration);
     }
 
     public function test_pack_metadata_and_requirement_references_are_consistent(): void
     {
         $config = $this->packs();
-
-        $this->assertSame([], $config['packs']);
 
         foreach ($config['packs'] as $packKey => $pack) {
             $this->assertNotEmpty($pack['pack_version'] ?? null, "{$packKey} missing pack_version");
@@ -56,20 +71,18 @@ class ComplianceFrameworkPackConfigTest extends TestCase
         }
     }
 
-    public function test_nis2_and_ai_act_requirements_do_not_store_manual_risk_scores(): void
+    public function test_nis2_and_ai_act_requirement_risk_levels_are_valid(): void
     {
-        $this->assertSame([], $this->packs()['packs']);
-
         foreach ($this->packs()['packs'] as $packKey => $pack) {
             if (! in_array($pack['framework']['compliance_domain'] ?? null, ['nis2', 'ai_act'], true)) {
                 continue;
             }
 
             foreach ($pack['requirements'] as $requirement) {
-                $this->assertSame(
-                    'not_applicable',
+                $this->assertContains(
                     $requirement['risk_level'] ?? null,
-                    "{$packKey}:{$requirement['code']} must not store a manual risk score"
+                    ['not_applicable', 'low', 'medium', 'high', 'critical'],
+                    "{$packKey}:{$requirement['code']} has an invalid risk level"
                 );
             }
         }
@@ -80,9 +93,9 @@ class ComplianceFrameworkPackConfigTest extends TestCase
         $config = $this->packs();
         $countryOverlays = $config['nis2_country_overlays'];
 
-        $this->assertSame([], $config['packs']);
-        $this->assertSame('review_required', $countryOverlays['IT']['status']);
-        $this->assertNull($countryOverlays['IT']['pack_key']);
+        $this->assertSame('implemented', $countryOverlays['IT']['status']);
+        $this->assertSame('nis2_it_allegato_1', $countryOverlays['IT']['pack_key']);
+        $this->assertSame(['nis2_it_allegato_1', 'nis2_it_allegato_2'], $countryOverlays['IT']['pack_keys']);
         $this->assertSame('nis2_it', $countryOverlays['IT']['source_register_key']);
         $this->assertSame('national_overlay', $config['source_registers']['nis2_it']['scope']);
     }
@@ -105,6 +118,14 @@ class ComplianceFrameworkPackConfigTest extends TestCase
             if ($countryCode === 'EU') {
                 $this->assertSame('baseline_only', $overlay['status']);
                 $this->assertNull($overlay['pack_key']);
+
+                continue;
+            }
+
+            if ($countryCode === 'IT') {
+                $this->assertSame('implemented', $overlay['status']);
+                $this->assertSame(['nis2_it_allegato_1', 'nis2_it_allegato_2'], $overlay['pack_keys']);
+                $this->assertSame('nis2_eu', $overlay['fallback_source_register_key']);
 
                 continue;
             }
@@ -180,7 +201,7 @@ class ComplianceFrameworkPackConfigTest extends TestCase
         $this->assertStringContainsString('D.Lgs. 138/2024', $document);
         $this->assertStringContainsString('CPV', $document);
         $this->assertStringContainsString('review_required', $document);
-        $this->assertStringContainsString('No NIS2 pack content change is required', $document);
+        $this->assertStringContainsString('NIS2 Allegato 1 and Allegato 2 are the only shipped Italian bootstrap packs', $document);
     }
 
     private function parentCodes(array $requirement): array

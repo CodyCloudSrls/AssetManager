@@ -103,21 +103,38 @@ class Helper
      */
     public static function parseEscapedMarkedown($str = null)
     {
-        $Parsedown = new \Parsedown;
-        $Parsedown->setSafeMode(true);
-
         if ($str) {
-            return $Parsedown->text(strip_tags($str));
+            return self::parseMarkdownWithoutDeprecationNoise(
+                fn ($parsedown) => $parsedown->text(strip_tags($str))
+            );
         }
     }
 
     public static function parseEscapedMarkedownInline($str = null)
     {
-        $Parsedown = new \Parsedown;
-        $Parsedown->setSafeMode(true);
-
         if ($str) {
-            return $Parsedown->line(strip_tags($str));
+            return self::parseMarkdownWithoutDeprecationNoise(
+                fn ($parsedown) => $parsedown->line(strip_tags($str))
+            );
+        }
+    }
+
+    private static function parseMarkdownWithoutDeprecationNoise(callable $callback): string
+    {
+        $previousReporting = error_reporting();
+        error_reporting($previousReporting & ~E_DEPRECATED);
+        set_error_handler(function (int $severity) {
+            return in_array($severity, [E_DEPRECATED, E_USER_DEPRECATED], true);
+        });
+
+        try {
+            $parsedown = new \Parsedown;
+            $parsedown->setSafeMode(true);
+
+            return (string) $callback($parsedown);
+        } finally {
+            restore_error_handler();
+            error_reporting($previousReporting);
         }
     }
 

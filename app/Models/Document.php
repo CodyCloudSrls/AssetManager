@@ -260,6 +260,22 @@ class Document extends SnipeModel
             ->whereDate('next_review_at', '<', Carbon::today());
     }
 
+    public function scopeCurrentForCoverage($query)
+    {
+        return $query->whereNotIn('documents.status', [
+                self::STATUS_OBSOLETE,
+                self::STATUS_ARCHIVED,
+            ])
+            ->where(function ($nested) {
+                $nested->whereNull('documents.effective_at')
+                    ->orWhereDate('documents.effective_at', '<=', Carbon::today());
+            })
+            ->where(function ($nested) {
+                $nested->whereNull('documents.next_review_at')
+                    ->orWhereDate('documents.next_review_at', '>=', Carbon::today());
+            });
+    }
+
     public function scopeOrderByCompany($query, $order)
     {
         return $query->leftJoin('companies as documents_companies', 'documents.company_id', '=', 'documents_companies.id')

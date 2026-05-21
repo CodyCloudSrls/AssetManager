@@ -116,4 +116,97 @@ class NisRiskMatrixReportTest extends TestCase
         $this->assertSame(1, $report['summary']['document_shortfall_count']);
         $this->assertSame(DocumentFrameworkRequirement::COVERAGE_AT_RISK, $report['requirementRows']->first()['requirement']->coverage_status);
     }
+
+    public function test_nis_real_coverage_counts_primary_documents_effective_today()
+    {
+        $company = Company::factory()->create();
+        $framework = DocumentFramework::factory()->for($company)->create([
+            'name' => 'NIS2 Tenant Effective',
+            'slug' => 'nis2-tenant-effective',
+            'framework_code' => 'NIS2',
+            'compliance_domain' => 'nis2',
+        ]);
+
+        $requirement = DocumentFrameworkRequirement::create([
+            'document_framework_id' => $framework->id,
+            'code' => 'NIS2-REQ-02',
+            'title' => 'Effective evidence requirement',
+            'delegation_level' => 'owner_review',
+            'risk_level' => 'not_applicable',
+            'minimum_required_documents' => 1,
+        ]);
+
+        $document = Document::create([
+            'name' => 'Effective primary evidence',
+            'company_id' => $company->id,
+            'status' => Document::STATUS_ACTIVE,
+            'effective_at' => now()->toDateString(),
+            'next_review_at' => now()->addMonth()->toDateString(),
+        ]);
+
+        $requirement->documents()->attach($document->id, [
+            'coverage_role' => Document::COVERAGE_PRIMARY,
+            'covered_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $report = (new NisRealCoverageReport)->build([$company->id]);
+
+        $this->assertSame(1, $report['summary']['covered']);
+        $this->assertSame(100, $report['summary']['coverage_percent']);
+        $this->assertSame(1, $report['summary']['healthy_primary_documents']);
+        $this->assertSame(DocumentFrameworkRequirement::COVERAGE_COVERED, $report['requirementRows']->first()['requirement']->coverage_status);
+    }
+
+    public function test_nis_real_coverage_excludes_primary_documents_that_are_not_yet_effective()
+    {
+        $company = Company::factory()->create();
+        $framework = DocumentFramework::factory()->for($company)->create([
+            'name' => 'NIS2 Tenant Future Effective',
+            'slug' => 'nis2-tenant-future-effective',
+            'framework_code' => 'NIS2',
+            'compliance_domain' => 'nis2',
+        ]);
+
+        $requirement = DocumentFrameworkRequirement::create([
+            'document_framework_id' => $framework->id,
+            'code' => 'NIS2-REQ-03',
+            'title' => 'Future effective evidence requirement',
+            'delegation_level' => 'owner_review',
+            'risk_level' => 'not_applicable',
+            'minimum_required_documents' => 2,
+        ]);
+
+        $currentDocument = Document::create([
+            'name' => 'Current primary evidence',
+            'company_id' => $company->id,
+            'status' => Document::STATUS_ACTIVE,
+            'effective_at' => now()->toDateString(),
+            'next_review_at' => now()->addMonth()->toDateString(),
+        ]);
+
+        $futureDocument = Document::create([
+            'name' => 'Future primary evidence',
+            'company_id' => $company->id,
+            'status' => Document::STATUS_ACTIVE,
+            'effective_at' => now()->addDay()->toDateString(),
+            'next_review_at' => now()->addMonth()->toDateString(),
+        ]);
+
+        $requirement->documents()->attach([$currentDocument->id, $futureDocument->id], [
+            'coverage_role' => Document::COVERAGE_PRIMARY,
+            'covered_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $report = (new NisRealCoverageReport)->build([$company->id]);
+
+        $this->assertSame(0, $report['summary']['covered']);
+        $this->assertSame(1, $report['summary']['at_risk']);
+        $this->assertSame(1, $report['summary']['healthy_primary_documents']);
+        $this->assertSame(1, $report['summary']['document_shortfall_count']);
+        $this->assertSame(DocumentFrameworkRequirement::COVERAGE_AT_RISK, $report['requirementRows']->first()['requirement']->coverage_status);
+    }
 }

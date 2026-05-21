@@ -1,6 +1,6 @@
 # Compliance Source Register
 
-Last updated: 2026-05-14
+Last updated: 2026-05-21
 
 This register formalizes the source-control layer for generated compliance framework packs. It is intentionally conservative: pack content is a bootstrap aid for consultants and tenants, not legal advice or a completeness claim.
 
@@ -20,7 +20,7 @@ Country-specific labels must not be used unless the source row is `verified` and
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `ai_act_eu` | AI Act | EU | EU regulation; European Commission AI Office policy and GPAI guidance | verified | EU baseline | 2026-05-14 | All `ai_act_*` packs |
 | `nis2_eu` | NIS2 | EU | EU directive; European Commission transposition status; ENISA overview | verified | EU baseline | 2026-05-14 | `nis2_en`, `nis2_eu_it`, and generated `nis2_*` EU-baseline locale packs |
-| `nis2_it` | NIS2 | IT/EU | Italian national transposition; ACN operational material; EU directive; Commission Italy state-of-transposition page | verified | national overlay | 2026-05-14 | `nis2_it` only |
+| `nis2_it` | NIS2 | IT/EU | Italian national transposition; ACN operational material; EU directive; Commission Italy state-of-transposition page | verified | national overlay | 2026-05-14 | `nis2_it_allegato_1`, `nis2_it_allegato_2` |
 | `gdpr_eu` | GDPR | EU | EU regulation | verified | EU baseline | 2026-05-14 | All `gdpr_*` packs |
 
 ## Official Sources
@@ -89,42 +89,19 @@ Pack keys:
 
 ## NIS2 Pack Coverage
 
-The only national overlay currently shipped is `nis2_it`. Every other NIS2 pack uses the EU baseline source register.
+The only national overlay currently shipped is Italy, split into `nis2_it_allegato_1` and `nis2_it_allegato_2`. Every other NIS2 jurisdiction remains unshipped and requires manual tenant curation.
 
 | Pack key | Locale | Jurisdiction | Source register | Scope | Status |
 | --- | --- | --- | --- | --- | --- |
-| `nis2_it` | it-IT | IT/EU | `nis2_it` | national_overlay | verified |
-| `nis2_en` | en-US | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_eu_it` | it-IT | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_bg_bg` | bg-BG | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_ca_es` | ca-ES | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_cs_cz` | cs-CZ | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_da_dk` | da-DK | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_de_de` | de-DE | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_el_gr` | el-GR | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_es_es` | es-ES | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_et_ee` | et-EE | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_fi_fi` | fi-FI | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_fr_fr` | fr-FR | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_ga_ie` | ga-IE | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_hr_hr` | hr-HR | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_hu_hu` | hu-HU | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_lt_lt` | lt-LT | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_lv_lv` | lv-LV | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_nl_nl` | nl-NL | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_pl_pl` | pl-PL | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_pt_pt` | pt-PT | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_ro_ro` | ro-RO | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_sk_sk` | sk-SK | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_sl_si` | sl-SI | EU | `nis2_eu` | eu_baseline | verified |
-| `nis2_sv_se` | sv-SE | EU | `nis2_eu` | eu_baseline | verified |
+| `nis2_it_allegato_1` | it-IT | IT/EU | `nis2_it` | national_overlay | verified |
+| `nis2_it_allegato_2` | it-IT | IT/EU | `nis2_it` | national_overlay | verified |
 
 ## NIS2 Country Overlay Decision Matrix
 
 | Jurisdiction | Status | Pack key | Fallback source register | Release decision |
 | --- | --- | --- | --- | --- |
 | EU | baseline_only | - | `nis2_eu` | EU baseline only |
-| IT | implemented | `nis2_it` | `nis2_eu` | Verified national overlay kept |
+| IT | implemented | `nis2_it_allegato_1`, `nis2_it_allegato_2` | `nis2_eu` | Verified national overlay kept as Allegato 1 and Allegato 2 bootstrap packs |
 | AT | review_required | - | `nis2_eu` | No national overlay shipped |
 | BE | review_required | - | `nis2_eu` | No national overlay shipped |
 | BG | review_required | - | `nis2_eu` | No national overlay shipped |

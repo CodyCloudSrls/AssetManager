@@ -9,27 +9,27 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StorageHelper
 {
-    public static function downloader($filename, $disk = 'default'): BinaryFileResponse|RedirectResponse|StreamedResponse
+    public static function downloader($filename, $disk = 'default', ?string $downloadName = null): BinaryFileResponse|RedirectResponse|StreamedResponse
     {
         if ($disk == 'default') {
             $disk = config('filesystems.default');
         }
         switch (config("filesystems.disks.$disk.driver")) {
             case 'local':
-                return response()->download(Storage::disk($disk)->path($filename)); // works for PRIVATE or public?!
+                return response()->download(Storage::disk($disk)->path($filename), $downloadName); // works for PRIVATE or public?!
 
             case 's3':
-                Storage::disk($disk)->temporaryUrl(
+                return redirect()->away(Storage::disk($disk)->temporaryUrl(
                     $filename,
                     now()->addMinutes(5),
                     [
                         'ResponseContentType' => 'application/octet-stream',
-                        'ResponseContentDisposition' => 'attachment; filename=download-file',
+                        'ResponseContentDisposition' => 'attachment; filename="'.($downloadName ?: basename($filename)).'"',
                     ]
-                );
+                ));
 
             default:
-                return Storage::disk($disk)->download($filename);
+                return Storage::disk($disk)->download($filename, $downloadName);
         }
     }
 

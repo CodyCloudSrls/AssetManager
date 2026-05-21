@@ -2,7 +2,6 @@
 
 namespace App\Support\Reports;
 
-use App\Models\Document;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use Illuminate\Database\Eloquent\Builder;
@@ -62,12 +61,7 @@ class NisRealCoverageReport
         return [
             'documents',
             'primaryDocuments as primary_documents_count',
-            'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query
-                ->where('documents.status', Document::STATUS_ACTIVE)
-                ->where(function ($nested) {
-                    $nested->whereNull('documents.next_review_at')
-                        ->orWhereDate('documents.next_review_at', '>=', now()->toDateString());
-                }),
+            'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query->currentForCoverage(),
         ];
     }
 

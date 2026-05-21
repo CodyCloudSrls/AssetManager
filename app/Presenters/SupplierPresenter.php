@@ -172,6 +172,13 @@ class SupplierPresenter extends Presenter
                 'title' => trans('admin/suppliers/table.cpv_codes'),
                 'visible' => false,
             ], [
+                'field' => 'cpv_codes_label',
+                'searchable' => true,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('admin/suppliers/table.cpv_codes_label'),
+                'visible' => false,
+            ], [
                 'field' => 'nis_next_review_at',
                 'searchable' => false,
                 'sortable' => true,

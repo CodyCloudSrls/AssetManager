@@ -52,7 +52,7 @@
                             <x-data-row :label="trans('admin/suppliers/table.nis_assessment_status')">{{ $supplier->nis_assessment_status_label }}</x-data-row>
                             <x-data-row :label="trans('admin/suppliers/table.nis_assessment_method')">{{ $supplier->nis_assessment_method_label }}</x-data-row>
                             <x-data-row :label="trans('admin/suppliers/table.nis_assessment_outcome')">{{ $supplier->nis_assessment_outcome_label }}</x-data-row>
-                            <x-data-row :label="trans('admin/suppliers/table.cpv_codes')">{{ $supplier->cpv_codes }}</x-data-row>
+                            <x-data-row :label="trans('admin/suppliers/table.cpv_codes')">{{ $supplier->cpv_codes_label ?: $supplier->cpv_codes }}</x-data-row>
                             <x-data-row :label="trans('admin/suppliers/table.nis_assessment_scope')">{{ $supplier->nis_assessment_scope }}</x-data-row>
                             <x-data-row :label="trans('admin/suppliers/table.nis_relevance_criteria')">{{ $supplier->nis_relevance_criteria }}</x-data-row>
                             <x-data-row :label="trans('admin/suppliers/table.nis_last_assessment_at')">{{ Helper::getFormattedDateObject($supplier->nis_last_assessment_at, 'date', false) }}</x-data-row>

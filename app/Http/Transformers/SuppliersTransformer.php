@@ -59,6 +59,7 @@ class SuppliersTransformer
                 'nis_assessment_scope' => e($supplier->nis_assessment_scope),
                 'nis_relevance_criteria' => e($supplier->nis_relevance_criteria),
                 'cpv_codes' => e($supplier->cpv_codes),
+                'cpv_codes_label' => e($supplier->cpv_codes_label),
                 'nis_last_assessment_at' => Helper::getFormattedDateObject($supplier->nis_last_assessment_at, 'date'),
                 'nis_next_review_at' => Helper::getFormattedDateObject($supplier->nis_next_review_at, 'date'),
                 'assets_count' => (int) $supplier->assets_count,

@@ -47,6 +47,7 @@ public/uploads/companies/*
 public/uploads/categories/*
 public/uploads/users/*
 storage/app/private_uploads/users/*
+storage/private_uploads/documents/*
 public/uploads/departments/*
 storage/debugbar/
 storage/dumps/*

@@ -325,12 +325,7 @@ class TenantsController extends Controller
                     ->withCount([
                         'documents',
                         'primaryDocuments as primary_documents_count',
-                        'primaryDocuments as healthy_primary_documents_count' => fn ($documentsQuery) => $documentsQuery
-                            ->where('documents.status', Document::STATUS_ACTIVE)
-                            ->where(function ($nested) {
-                                $nested->whereNull('documents.next_review_at')
-                                    ->orWhereDate('documents.next_review_at', '>=', now()->toDateString());
-                            }),
+                        'primaryDocuments as healthy_primary_documents_count' => fn ($documentsQuery) => $documentsQuery->currentForCoverage(),
                     ])
                     ->ordered();
             }])

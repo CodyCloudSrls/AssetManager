@@ -5,6 +5,7 @@ namespace App\Support\Compliance;
 use App\Helpers\Helper;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
+use App\Models\DocumentType;
 use App\Models\Tenant;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -37,12 +38,16 @@ class ComplianceFrameworkInstaller
         $jurisdiction = $this->normalizeJurisdiction($jurisdiction);
 
         return $matchingPacks
-            ->groupBy(fn (array $pack) => data_get($pack, 'framework.compliance_domain', 'custom'))
+            ->groupBy(fn (array $pack) => data_get($pack, 'framework.bootstrap_group', data_get($pack, 'framework.compliance_domain', 'custom')))
             ->map(function (Collection $domainPacks) use ($jurisdiction, $packs) {
-                return $domainPacks
+                $compatiblePacks = $domainPacks
+                    ->filter(fn (array $pack) => $this->jurisdictionPriority($pack, $jurisdiction) < 2);
+
+                return $compatiblePacks
                     ->sortBy(fn (array $pack) => $this->jurisdictionPriority($pack, $jurisdiction))
                     ->first();
             })
+            ->filter()
             ->map(fn (array $pack) => $this->packKeyFor($pack, $packs))
             ->filter()
             ->values()
@@ -230,6 +235,8 @@ class ComplianceFrameworkInstaller
                 'sort_order' => ($index + 1) * 10,
                 'created_by' => $options['created_by'],
             ], $requirementData);
+            $requirementData['default_document_type_id'] = $this->documentTypeIdForRequirement($requirementData, $frameworkData['company_id']);
+            unset($requirementData['default_document_type_name']);
             unset($requirementData['parent_requirement_code'], $requirementData['parent_requirement_codes']);
 
             $requirement = DocumentFrameworkRequirement::withoutGlobalScopes()
@@ -314,6 +321,33 @@ class ComplianceFrameworkInstaller
             ->where('source_pack_key', $packKey)
             ->where('is_system_template', true)
             ->whereNull('company_id')
+            ->value('id');
+    }
+
+    private function documentTypeIdForRequirement(array $requirementData, ?int $companyId): ?int
+    {
+        if (isset($requirementData['default_document_type_id']) && is_numeric($requirementData['default_document_type_id'])) {
+            return (int) $requirementData['default_document_type_id'];
+        }
+
+        $documentTypeName = trim((string) ($requirementData['default_document_type_name'] ?? ''));
+
+        if ($documentTypeName === '') {
+            return null;
+        }
+
+        return DocumentType::withoutGlobalScopes()
+            ->whereNull('deleted_at')
+            ->where('name', $documentTypeName)
+            ->where(function ($query) use ($companyId) {
+                if (! is_null($companyId)) {
+                    $query->where('company_id', $companyId)
+                        ->orWhereNull('company_id');
+                } else {
+                    $query->whereNull('company_id');
+                }
+            })
+            ->orderByRaw('CASE WHEN company_id IS NULL THEN 1 ELSE 0 END')
             ->value('id');
     }
 

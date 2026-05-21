@@ -119,7 +119,7 @@ class UsersController extends Controller
         $user->mobile = $request->input('mobile');
         $user->location_id = $request->input('location_id', null);
         $user->department_id = $request->input('department_id', null);
-        $user->company_id = Company::getIdForUser($request->input('company_id', null));
+        $user->company_id = Company::getIdForCurrentUser($request->input('company_id', null));
         $user->manager_id = $request->input('manager_id', null);
         $user->notes = $request->input('notes');
         $user->address = $request->input('address', null);
@@ -161,7 +161,7 @@ class UsersController extends Controller
             }
 
             if (auth()->user()->can('canEditAuthFields', $user) && auth()->user()->can('editableOnDemo')) {
-                $user->groups()->sync($request->input('groups'));
+                $user->groups()->sync($this->selectedGroupIds($request));
             }
 
             return Helper::getRedirectOption($request, $user->id, 'Users')
@@ -181,6 +181,18 @@ class UsersController extends Controller
         }
 
         return $output;
+    }
+
+    private function selectedGroupIds(Request $request): array
+    {
+        return collect($request->input('groups', []))
+            ->flatten()
+            ->filter(fn ($id) => filled($id))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**
@@ -271,7 +283,7 @@ class UsersController extends Controller
         $user->phone = $request->input('phone');
         $user->mobile = $request->input('mobile');
         $user->location_id = $request->input('location_id', null);
-        $user->company_id = Company::getIdForUser($request->input('company_id', null));
+        $user->company_id = Company::getIdForCurrentUser($request->input('company_id', null));
         $user->manager_id = $request->input('manager_id', null);
         $user->notes = $request->input('notes');
         $user->department_id = $request->input('department_id', null);
@@ -315,7 +327,7 @@ class UsersController extends Controller
 
             // Only save groups if the user is a superuser
             if (auth()->user()->isSuperUser()) {
-                $user->groups()->sync($request->input('groups'));
+                $user->groups()->sync($this->selectedGroupIds($request));
             }
         }
 

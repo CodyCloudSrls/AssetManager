@@ -15,6 +15,11 @@ Route::group(
         Route::get('evidence-requests', [DocumentAssignmentsController::class, 'index'])
             ->name('documents.evidence_requests.index');
 
+        Route::match(['get', 'post'], 'bulk/edit', [DocumentsController::class, 'bulkEdit'])
+            ->name('documents.bulk.edit');
+        Route::post('bulk/update', [DocumentsController::class, 'bulkUpdate'])
+            ->name('documents.bulk.update');
+
         Route::post('{document}/restore', [DocumentsController::class, 'restore'])
             ->name('documents.restore')
             ->withTrashed();

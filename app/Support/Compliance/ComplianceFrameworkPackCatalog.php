@@ -6,7 +6,7 @@ class ComplianceFrameworkPackCatalog
 {
     public static function make(): array
     {
-$packVersion = '2026.05.14.1';
+$packVersion = '2026.05.21.1';
 $aiActPackVersion = '2026.05.14.1';
 $sourceCheckedAt = '2026-05-14';
 
@@ -1192,12 +1192,70 @@ foreach ($euLocalePackLabels as $locale => $languageName) {
     ];
 }
 
+$packs = [
+    'nis2_it_allegato_1' => [
+        'pack_version' => $packVersion,
+        'locale' => 'it-IT',
+        'framework' => [
+            'name' => 'NIS2 IT - Allegato 1',
+            'slug' => 'nis2-it-allegato-1',
+            'description' => 'Bootstrap requisiti NIS2 Italia Allegato 1 da matrice operativa completa.',
+            'compliance_objective' => 'Tracciare requisiti, evidenze, responsabilita e copertura documentale NIS2 IT Allegato 1.',
+            'authority_name' => 'ACN',
+            'framework_code' => 'NIS2-IT-ALLEGATO-1',
+            'framework_type' => 'law',
+            'compliance_domain' => 'nis2',
+            'bootstrap_group' => 'nis2_it_allegato_1',
+            'jurisdiction' => 'IT/EU',
+            'version' => '2026',
+            'status' => 'active',
+            'review_cadence_months' => 12,
+            'external_reference_url' => 'https://www.gazzettaufficiale.it/eli/id/2024/10/01/24G00155/SG',
+            'sort_order' => 10,
+            'is_active' => true,
+        ],
+        'requirements' => self::packRequirements('nis2_it_allegato_1.php'),
+    ],
+    'nis2_it_allegato_2' => [
+        'pack_version' => $packVersion,
+        'locale' => 'it-IT',
+        'framework' => [
+            'name' => 'NIS2 IT - Allegato 2',
+            'slug' => 'nis2-it-allegato-2',
+            'description' => 'Bootstrap requisiti NIS2 Italia Allegato 2 dal framework Codycloud validato.',
+            'compliance_objective' => 'Tracciare requisiti, evidenze, responsabilita e copertura documentale NIS2 IT Allegato 2.',
+            'authority_name' => 'ACN',
+            'framework_code' => 'NIS2-IT-ALLEGATO-2',
+            'framework_type' => 'law',
+            'compliance_domain' => 'nis2',
+            'bootstrap_group' => 'nis2_it_allegato_2',
+            'jurisdiction' => 'IT/EU',
+            'version' => '2026',
+            'status' => 'active',
+            'review_cadence_months' => 12,
+            'external_reference_url' => 'https://www.gazzettaufficiale.it/eli/id/2024/10/01/24G00155/SG',
+            'sort_order' => 20,
+            'is_active' => true,
+        ],
+        'requirements' => self::packRequirements('nis2_it_allegato_2.php'),
+    ],
+];
+
+foreach ($packs as &$pack) {
+    $pack['source_register'] = $sourceRegisters['nis2_it'];
+    $pack['source_register_key'] = 'nis2_it';
+}
+unset($pack);
+
 $nis2CountryOverlays = self::nis2CountryOverlayMatrix($sourceCheckedAt);
 
 foreach ($nis2CountryOverlays as $jurisdiction => $overlay) {
-    $nis2CountryOverlays[$jurisdiction]['pack_key'] = null;
+    if (! in_array($jurisdiction, ['EU', 'IT'], true)) {
+        $nis2CountryOverlays[$jurisdiction]['pack_key'] = null;
+        $nis2CountryOverlays[$jurisdiction]['pack_keys'] = [];
+    }
 
-    if ($jurisdiction !== 'EU') {
+    if (! in_array($jurisdiction, ['EU', 'IT'], true)) {
         $nis2CountryOverlays[$jurisdiction]['status'] = 'review_required';
         $nis2CountryOverlays[$jurisdiction]['notes'] = 'Bootstrap pack purged: tenant requirements must be curated manually.';
     }
@@ -1207,7 +1265,7 @@ return [
     'source_checked_at' => $sourceCheckedAt,
     'source_registers' => $sourceRegisters,
     'nis2_country_overlays' => $nis2CountryOverlays,
-    'packs' => [],
+    'packs' => $packs,
 ];
     }
 
@@ -1233,7 +1291,8 @@ return [
                 'status' => 'implemented',
                 'source_register_key' => 'nis2_it',
                 'jurisdiction' => 'IT/EU',
-                'pack_key' => 'nis2_it',
+                'pack_key' => 'nis2_it_allegato_1',
+                'pack_keys' => ['nis2_it_allegato_1', 'nis2_it_allegato_2'],
                 'fallback_source_register_key' => 'nis2_eu',
                 'last_checked_at' => $sourceCheckedAt,
                 'sources' => [
@@ -1318,5 +1377,18 @@ return [
             'sl-SI' => 'Slovenian',
             'sv-SE' => 'Swedish',
         ];
+    }
+
+    private static function packRequirements(string $file): array
+    {
+        $path = __DIR__.'/Packs/'.$file;
+
+        if (! is_file($path)) {
+            return [];
+        }
+
+        $requirements = require $path;
+
+        return is_array($requirements) ? $requirements : [];
     }
 }

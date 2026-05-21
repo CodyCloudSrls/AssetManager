@@ -30,6 +30,7 @@ return [
     'nis_relevance_type_ict_and_non_fungible' => 'ICT and non-fungible supply',
     'nis_relevance_type_not_relevant' => 'Not relevant',
     'cpv_codes' => 'CPV Codes',
+    'cpv_codes_label' => 'CPV Codes and Descriptions',
     'cpv_codes_help' => 'Enter one or more CPV codes separated by comma or new line, preserving the official code format used in tender/contract documents.',
     'nis_last_assessment_at' => 'Last NIS2 Assessment',
     'nis_next_review_at' => 'Next NIS2 Review',

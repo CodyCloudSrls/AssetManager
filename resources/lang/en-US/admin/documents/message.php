@@ -23,6 +23,8 @@ return array (
   ),
   'framework_required_for_requirements' => 'Select a framework before mapping requirements to this document.',
   'invalid_requirements_for_framework' => 'One or more selected requirements do not belong to the chosen framework.',
+  'invalid_bulk_documents' => 'One or more selected documents are not valid.',
+  'bulk_action_invalid' => 'Select a valid bulk action.',
   'assignment_document_missing' => 'The source document for this assignment could not be resolved.',
   'assignment_requires_company' => 'Assign the document to a tenant company before linking it to people, assets, locations, or suppliers.',
   'assignment_target_invalid' => 'Select a valid person, asset, location, or supplier.',

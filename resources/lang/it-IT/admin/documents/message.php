@@ -23,6 +23,8 @@ return array (
   ),
   'framework_required_for_requirements' => 'Seleziona un framework prima di collegare requisiti a questo documento.',
   'invalid_requirements_for_framework' => 'Uno o più requisiti selezionati non appartengono al framework scelto.',
+  'invalid_bulk_documents' => 'Uno o più documenti selezionati non sono validi.',
+  'bulk_action_invalid' => 'Seleziona un’azione massiva valida.',
   'assignment_document_missing' => 'Documento non trovato per questa assegnazione.',
   'assignment_requires_company' => 'Per assegnare un documento devi prima associarlo a un’azienda del tenant.',
   'assignment_target_invalid' => 'Seleziona una persona, un bene, una sede o un fornitore validi.',

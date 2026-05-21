@@ -101,7 +101,7 @@ For tenant manager self-service:
 - NIS2 pack audit: `docs/nis2-pack-audit.md`.
 - AI Act/NIS2 controlled rollout: `docs/compliance-pack-rollout-ai-act-nis2.md`.
 
-Operational status as of 2026-05-14: AI Act and NIS2 pack expansion uses source-register metadata with pack version `2026.05.14.1`. `nis2_it` remains the only national overlay. All non-Italian NIS2 jurisdictions remain `review_required` and use the EU baseline until expert national review is recorded.
+Operational status as of 2026-05-21: NIS2 bootstrap ships only the Italian Allegato 1 and Allegato 2 packs with pack version `2026.05.21.1`. All non-Italian NIS2 jurisdictions remain `review_required` and require tenant manual curation until expert national review is recorded.
 
 ## Closure Notes
 

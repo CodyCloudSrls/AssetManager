@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Models\Traits\Searchable;
 use App\Presenters\DocumentFrameworkRequirementPresenter;
 use App\Presenters\Presentable;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Gate;
@@ -446,12 +445,7 @@ class DocumentFrameworkRequirement extends SnipeModel
 
     public function healthyPrimaryDocumentsQuery()
     {
-        return $this->primaryDocuments()
-            ->where('documents.status', Document::STATUS_ACTIVE)
-            ->where(function ($query) {
-                $query->whereNull('documents.next_review_at')
-                    ->orWhereDate('documents.next_review_at', '>=', Carbon::today());
-            });
+        return $this->primaryDocuments()->currentForCoverage();
     }
 
     public function setSourceUrlAttribute($value)

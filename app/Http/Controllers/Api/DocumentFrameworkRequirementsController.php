@@ -10,7 +10,6 @@ use App\Http\Requests\StoreDocumentFrameworkRequirementRequest;
 use App\Http\Transformers\DocumentFrameworkRequirementsTransformer;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
-use App\Models\Document;
 use Illuminate\Http\JsonResponse;
 
 class DocumentFrameworkRequirementsController extends Controller
@@ -39,12 +38,7 @@ class DocumentFrameworkRequirementsController extends Controller
             ->withCount([
                 'documents',
                 'primaryDocuments as primary_documents_count',
-                'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query
-                    ->where('documents.status', Document::STATUS_ACTIVE)
-                    ->where(function ($nested) {
-                        $nested->whereNull('documents.next_review_at')
-                            ->orWhereDate('documents.next_review_at', '>=', now()->toDateString());
-                    }),
+                'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query->currentForCoverage(),
             ]);
 
         if ($request->input('deleted') === 'true') {
@@ -109,12 +103,7 @@ class DocumentFrameworkRequirementsController extends Controller
             ->loadCount([
                 'documents',
                 'primaryDocuments as primary_documents_count',
-                'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query
-                    ->where('documents.status', Document::STATUS_ACTIVE)
-                    ->where(function ($nested) {
-                        $nested->whereNull('documents.next_review_at')
-                            ->orWhereDate('documents.next_review_at', '>=', now()->toDateString());
-                    }),
+                'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query->currentForCoverage(),
             ]);
 
         return (new DocumentFrameworkRequirementsTransformer)->transformRequirement($documentframeworkrequirement);

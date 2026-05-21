@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class CpvCode extends Model
 {
+    private static array $labelCache = [];
+
     protected $fillable = [
         'code',
         'division_code',
@@ -42,6 +44,36 @@ class CpvCode extends Model
             ->map(fn ($code) => static::normalizeCode($code))
             ->filter(fn ($code) => is_string($code) && preg_match('/^\d{8}-\d$/', $code))
             ->unique()
+            ->values()
+            ->all();
+    }
+
+    public static function labelsForCodes(array $codes): array
+    {
+        $codes = collect($codes)
+            ->map(fn ($code) => static::normalizeCode($code))
+            ->filter(fn ($code) => is_string($code) && preg_match('/^\d{8}-\d$/', $code))
+            ->unique()
+            ->values()
+            ->all();
+
+        $missingCodes = array_values(array_diff($codes, array_keys(self::$labelCache)));
+
+        if ($missingCodes !== []) {
+            static::query()
+                ->whereIn('code', $missingCodes)
+                ->get(['code', 'description'])
+                ->each(function (self $cpvCode) {
+                    self::$labelCache[$cpvCode->code] = $cpvCode->display_name;
+                });
+
+            foreach ($missingCodes as $code) {
+                self::$labelCache[$code] ??= $code;
+            }
+        }
+
+        return collect($codes)
+            ->map(fn ($code) => self::$labelCache[$code] ?? $code)
             ->values()
             ->all();
     }

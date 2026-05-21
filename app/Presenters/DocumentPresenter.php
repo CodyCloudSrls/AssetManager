@@ -8,6 +8,13 @@ class DocumentPresenter extends Presenter
     {
         $layout = [
             [
+                'field' => 'checkbox',
+                'checkbox' => true,
+                'titleTooltip' => trans('general.select_all_none'),
+                'printIgnore' => true,
+                'class' => 'hidden-print',
+            ],
+            [
                 'field' => 'id',
                 'searchable' => false,
                 'sortable' => true,
@@ -52,6 +59,15 @@ class DocumentPresenter extends Presenter
                 'title' => trans('admin/documentframeworks/general.requirements_tab'),
                 'visible' => true,
                 'formatter' => 'documentRequirementsFormatter',
+            ],
+            [
+                'field' => 'files_count',
+                'searchable' => false,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('general.files'),
+                'visible' => true,
+                'formatter' => 'documentFilesCountFormatter',
             ],
             [
                 'field' => 'status',

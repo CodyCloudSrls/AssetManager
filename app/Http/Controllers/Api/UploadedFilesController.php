@@ -171,15 +171,17 @@ class UploadedFilesController extends Controller
             return response()->json(Helper::formatStandardApiResponse('error', null, trans('general.file_upload_status.integrity_failed')), 409);
         }
 
+        $downloadName = FileIntegrity::integrityFromLog($log)['original_filename'] ?? $log->filename;
+
         if (request('inline') == 'true') {
             $headers = [
                 'Content-Disposition' => 'inline',
             ];
 
-            return Storage::download(self::$map_storage_path[$object_type].$log->filename, $log->filename, $headers);
+            return Storage::download(self::$map_storage_path[$object_type].$log->filename, $downloadName, $headers);
         }
 
-        return StorageHelper::downloader(self::$map_storage_path[$object_type].$log->filename);
+        return StorageHelper::downloader(self::$map_storage_path[$object_type].$log->filename, 'default', $downloadName);
 
     }
 

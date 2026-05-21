@@ -30,6 +30,7 @@ return [
     'nis_relevance_type_ict_and_non_fungible' => 'Fornitura ICT e non fungibile',
     'nis_relevance_type_not_relevant' => 'Non rilevante',
     'cpv_codes' => 'Codici CPV',
+    'cpv_codes_label' => 'Codici CPV e descrizioni',
     'cpv_codes_help' => 'Inserisci uno o più codici CPV separati da virgola o nuova riga, mantenendo il codice ufficiale nel formato usato in gara/contratto.',
     'nis_last_assessment_at' => 'Ultima valutazione NIS2',
     'nis_next_review_at' => 'Prossima revisione NIS2',

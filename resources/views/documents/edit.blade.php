@@ -136,6 +136,7 @@
                                             <option value="{{ $statusValue }}" @selected(old('status', $document->status ?: \App\Models\Document::STATUS_DRAFT) == $statusValue)>{{ $statusLabel }}</option>
                                         @endforeach
                                     </select>
+                                    <p class="help-block">{{ trans('admin/documents/form.status_help') }}</p>
                                     @if (! $assignmentFormActive)
                                         {!! $errors->first('status', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
                                     @endif
@@ -221,7 +222,8 @@
                                         <div class="form-group {{ $errors->has('classification') ? ' has-error' : '' }}">
                                             <label for="classification" class="col-md-3 control-label">{{ trans('admin/documents/form.classification') }}</label>
                                             <div class="col-md-4">
-                                                <input class="form-control" type="text" name="classification" id="classification" value="{{ old('classification', $document->classification) }}">
+                                                <input class="form-control" type="text" name="classification" id="classification" value="{{ old('classification', $document->classification) }}" placeholder="{{ trans('admin/documents/form.classification_placeholder') }}">
+                                                <p class="help-block">{{ trans('admin/documents/form.classification_help') }}</p>
                                                 {!! $errors->first('classification', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
                                             </div>
                                         </div>
@@ -237,7 +239,8 @@
                                         <div class="form-group {{ $errors->has('scope') ? ' has-error' : '' }}">
                                             <label for="scope" class="col-md-3 control-label">{{ trans('admin/documents/form.scope') }}</label>
                                             <div class="col-md-7">
-                                                <input class="form-control" type="text" name="scope" id="scope" value="{{ old('scope', $document->scope) }}">
+                                                <input class="form-control" type="text" name="scope" id="scope" value="{{ old('scope', $document->scope) }}" placeholder="{{ trans('admin/documents/form.scope_placeholder') }}">
+                                                <p class="help-block">{{ trans('admin/documents/form.scope_help') }}</p>
                                                 {!! $errors->first('scope', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
                                             </div>
                                         </div>
@@ -256,6 +259,7 @@
                                             <label for="effective_at" class="col-md-3 control-label">{{ trans('admin/documents/form.effective_at') }}</label>
                                             <div class="col-md-4">
                                                 <x-input.datepicker name="effective_at" :value="old('effective_at', optional($document->effective_at)->format('Y-m-d'))" placeholder="{{ trans('general.select_date') }}"/>
+                                                <p class="help-block">{{ trans('admin/documents/form.effective_at_help') }}</p>
                                                 @if (! $assignmentFormActive)
                                                     {!! $errors->first('effective_at', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
                                                 @endif
@@ -266,6 +270,7 @@
                                             <label for="next_review_at" class="col-md-3 control-label">{{ trans('admin/documents/form.next_review_at') }}</label>
                                             <div class="col-md-4">
                                                 <x-input.datepicker name="next_review_at" :value="old('next_review_at', optional($document->next_review_at)->format('Y-m-d'))" placeholder="{{ trans('general.select_date') }}"/>
+                                                <p class="help-block">{{ trans('admin/documents/form.next_review_at_help') }}</p>
                                                 {!! $errors->first('next_review_at', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
                                             </div>
                                         </div>

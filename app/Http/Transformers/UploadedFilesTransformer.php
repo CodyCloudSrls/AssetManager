@@ -26,16 +26,18 @@ class UploadedFilesTransformer
     {
         $snipeModel = $file->item_type;
         $integrity = FileIntegrity::integrityFromLog($file);
+        $displayName = $integrity['original_filename'] ?? $file->filename;
 
         $array = [
             'id' => (int) $file->id,
-            'icon' => Helper::filetype_icon($file->filename),
-            'name' => e($file->filename),
+            'icon' => Helper::filetype_icon($displayName),
+            'name' => e($displayName),
             'item' => ($file->item_type) ? [
                 'id' => (int) $file->item_id,
                 'type' => str_plural(strtolower(class_basename($file->item_type))),
             ] : null,
-            'filename' => e($file->filename),
+            'filename' => e($displayName),
+            'stored_filename' => e($file->filename),
             'filetype' => StorageHelper::getFiletype($file->uploads_file_path()),
             'mediatype' => StorageHelper::getMediaType($file->uploads_file_path()),
             'url' => $file->uploads_file_url(),

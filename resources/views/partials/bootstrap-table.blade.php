@@ -2180,6 +2180,16 @@
         return html.join(' ');
     }
 
+    function documentFilesCountFormatter(value, row) {
+        var count = parseInt(value, 10);
+
+        if (isNaN(count) || count <= 0) {
+            return '<span class="text-muted">0</span>';
+        }
+
+        return '<a href="{{ config('app.url') }}/documents/' + row.id + '#files" data-tooltip="true" title="{{ trans('general.uploaded_files') }}"><i class="fas fa-paperclip fa-fw" aria-hidden="true"></i> ' + count + '</a>';
+    }
+
     function documentFrameworkRequirementDocumentsCountFormatter(value, row) {
         var count = parseInt(value, 10);
         var minimum = parseInt(row.minimum_required_documents, 10);
@@ -2198,7 +2208,7 @@
         }
 
         if (row.document_minimum_satisfied === false) {
-            return '<span class="text-danger" data-tooltip="true" title="{{ trans('admin/documentframeworkrequirements/table.minimum_required_documents') }}: ' + minimum + ' - {{ trans('admin/documentframeworkrequirements/table.document_shortfall_count') }}: ' + shortfall + '">' + count + '</span>';
+            return '<span class="text-danger" data-tooltip="true" title="{{ trans('admin/documentframeworkrequirements/table.minimum_required_documents') }}: ' + minimum + ' - {{ trans('admin/documentframeworkrequirements/table.document_shortfall_count') }}: ' + shortfall + ' - {{ trans('admin/documents/form.status_help') }}">' + count + '</span>';
         }
 
         return count;

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Accessory;
 use App\Models\Actionlog;
 use App\Models\Asset;
+use App\Models\Company;
 use App\Models\ConsumableAssignment;
 use App\Models\Group;
 use App\Models\License;
@@ -203,7 +204,7 @@ class BulkUsersController extends Controller
         }
 
         if ($request->input('null_company_id') == '1') {
-            $this->update_array['company_id'] = null;
+            $this->update_array['company_id'] = Company::getIdForCurrentUser(null);
         }
 
         if ($request->input('null_start_date') == '1') {
@@ -235,12 +236,12 @@ class BulkUsersController extends Controller
                 ->update(['location_id' => $this->update_array['location_id']]);
         }
 
-        // Only sync groups if groups were selected
-        if ($request->filled('groups')) {
+        if ($request->has('groups')) {
+            $groupIds = $this->selectedGroupIds($request);
 
             foreach ($users as $user) {
                 if (auth()->user()->can('canEditAuthFields', $user) && auth()->user()->can('editableOnDemo')) {
-                    $user->groups()->sync($request->input('groups'));
+                    $user->groups()->sync($groupIds);
                 }
             }
         }
@@ -265,10 +266,24 @@ class BulkUsersController extends Controller
     protected function conditionallyAddItem($field)
     {
         if (request()->filled($field)) {
-            $this->update_array[$field] = request()->input($field);
+            $this->update_array[$field] = $field === 'company_id'
+                ? Company::getIdForCurrentUser(request()->input($field))
+                : request()->input($field);
         }
 
         return $this;
+    }
+
+    private function selectedGroupIds(Request $request): array
+    {
+        return collect($request->input('groups', []))
+            ->flatten()
+            ->filter(fn ($id) => filled($id))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**

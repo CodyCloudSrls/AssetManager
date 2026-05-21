@@ -602,6 +602,7 @@
                                               </p>
                                           @else
                                                <div class="controls">
+                                                <input type="hidden" name="groups[]" value="">
                                                 <select
                                                         name="groups[]"
                                                         size="{{ ($groups->count() > 25) ? '25' : '10' }}"

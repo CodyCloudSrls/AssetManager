@@ -32,6 +32,7 @@ class DocumentsTransformer
             'document_type' => e($document->type?->name),
             'framework' => e($document->framework?->name),
             'requirement_count' => (int) ($document->frameworkRequirements?->count() ?? 0),
+            'files_count' => (int) $document->uploads()->count(),
             'requirements' => $document->frameworkRequirements ? $document->frameworkRequirements->map(function ($requirement) {
                 return [
                     'id' => (int) $requirement->id,
@@ -82,6 +83,11 @@ class DocumentsTransformer
             'update' => ($document->deleted_at == '' && Gate::allows('update', $document)),
             'delete' => ($document->deleted_at == '' && Gate::allows('delete', $document)),
             'restore' => ($document->deleted_at != '' && Gate::allows('create', Document::class)),
+        ];
+        $array['available_actions']['bulk_selectable'] = [
+            'edit' => $array['available_actions']['update'],
+            'delete' => $array['available_actions']['delete'],
+            'restore' => $array['available_actions']['restore'],
         ];
 
         return $array;

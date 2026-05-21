@@ -252,6 +252,11 @@ class Supplier extends SnipeModel
         return CpvCode::codesFromText($value);
     }
 
+    public function getCpvCodesLabelAttribute(): string
+    {
+        return implode(', ', CpvCode::labelsForCodes(static::cpvCodesFromText($this->cpv_codes)));
+    }
+
     public static function nisEvidenceCategories(): array
     {
         return [

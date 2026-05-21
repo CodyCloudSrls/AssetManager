@@ -12,12 +12,16 @@ use App\Models\DocumentAssignment;
 use App\Models\DocumentAssignmentEvent;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
+use App\Models\DocumentType;
 use App\Models\User;
 use App\Support\Documents\DocumentAssignmentManager;
+use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class DocumentsController extends Controller
@@ -174,6 +178,235 @@ class DocumentsController extends Controller
 
         return redirect()->route('documents.show', $document)
             ->with('success', trans('admin/documents/message.restore.success'));
+    }
+
+    public function bulkEdit(Request $request): View|RedirectResponse
+    {
+        $action = $request->input('bulk_actions', session()->getOldInput('bulk_actions', 'edit'));
+
+        if ($action === 'delete') {
+            $documents = $this->documentsFromBulkRequest($request, 'delete');
+
+            if ($documents instanceof RedirectResponse) {
+                return $documents;
+            }
+
+            DB::transaction(function () use ($documents) {
+                foreach ($documents as $document) {
+                    $document->delete();
+                }
+            });
+
+            return redirect()->route('documents.index')
+                ->with('success', trans('admin/documents/message.delete.success'));
+        }
+
+        if ($action === 'restore') {
+            $documents = $this->documentsFromBulkRequest($request, 'restore');
+
+            if ($documents instanceof RedirectResponse) {
+                return $documents;
+            }
+
+            DB::transaction(function () use ($documents) {
+                foreach ($documents as $document) {
+                    $document->restore();
+                }
+            });
+
+            return redirect()->route('documents.index')
+                ->with('success', trans('admin/documents/message.restore.success'));
+        }
+
+        if ($action !== 'edit') {
+            return redirect()->back()->with('error', trans('admin/documents/message.bulk_action_invalid'));
+        }
+
+        $documents = $this->documentsFromBulkRequest($request, 'edit');
+
+        if ($documents instanceof RedirectResponse) {
+            return $documents;
+        }
+
+        return view('documents.bulk-edit', [
+            'documents' => $documents,
+            'documentStatuses' => Document::getStatusOptions(),
+        ]);
+    }
+
+    public function bulkUpdate(Request $request): RedirectResponse
+    {
+        $documents = $this->documentsFromBulkRequest($request, 'edit');
+
+        if ($documents instanceof RedirectResponse) {
+            return $documents;
+        }
+
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required|array',
+            'ids.*' => 'integer|distinct|exists:documents,id',
+            'apply_status' => 'nullable|boolean',
+            'status' => ['nullable', Rule::in(array_keys(Document::getStatusOptions()))],
+            'apply_owner_id' => 'nullable|boolean',
+            'owner_id' => 'nullable|integer|exists:users,id',
+            'apply_document_type_id' => 'nullable|boolean',
+            'document_type_id' => 'nullable|integer|exists:document_types,id',
+            'apply_classification' => 'nullable|boolean',
+            'classification' => 'nullable|string|max:100',
+            'apply_retention_period' => 'nullable|boolean',
+            'retention_period' => 'nullable|string|max:100',
+            'apply_scope' => 'nullable|boolean',
+            'scope' => 'nullable|string|max:150',
+            'apply_issued_at' => 'nullable|boolean',
+            'issued_at' => 'nullable|date_format:Y-m-d',
+            'apply_effective_at' => 'nullable|boolean',
+            'effective_at' => 'nullable|date_format:Y-m-d',
+            'apply_next_review_at' => 'nullable|boolean',
+            'next_review_at' => 'nullable|date_format:Y-m-d',
+            'apply_control_url' => 'nullable|boolean',
+            'control_url' => 'nullable|url|max:2048',
+        ]);
+
+        $validator->after(function ($validator) use ($request, $documents) {
+            if (! $this->bulkUpdateHasSelectedFields($request)) {
+                $validator->errors()->add('bulk_actions', trans('admin/hardware/message.update.nothing_updated'));
+            }
+
+            if ($request->boolean('apply_status') && ! $request->filled('status')) {
+                $validator->errors()->add('status', trans('validation.required', ['attribute' => trans('general.status')]));
+            }
+
+            if ($request->boolean('apply_owner_id') && $request->filled('owner_id')) {
+                foreach ($documents as $document) {
+                    $tenantId = TenantRecordGuard::companyTenantId($document->company_id ? (int) $document->company_id : null);
+
+                    if (! TenantRecordGuard::userCanBeReferencedByTenant($request->integer('owner_id'), $tenantId)) {
+                        $validator->errors()->add('owner_id', trans('validation.exists', ['attribute' => 'owner']));
+                        break;
+                    }
+                }
+            }
+
+            if ($request->boolean('apply_document_type_id') && $request->filled('document_type_id')) {
+                $documentType = DocumentType::find($request->integer('document_type_id'));
+
+                foreach ($documents as $document) {
+                    if (! TenantRecordGuard::templateCanBeAppliedToCompany($documentType, $document->company_id ? (int) $document->company_id : null)) {
+                        $validator->errors()->add('document_type_id', trans('validation.exists', ['attribute' => 'document type']));
+                        break;
+                    }
+                }
+            }
+        });
+
+        if ($validator->fails()) {
+            return redirect()->back()->withInput()->withErrors($validator);
+        }
+
+        $updates = $this->bulkDocumentUpdates($request);
+
+        DB::transaction(function () use ($documents, $updates) {
+            foreach ($documents as $document) {
+                $document->fill($updates);
+                $this->persistDocument($document);
+            }
+        });
+
+        return redirect()->route('documents.index')
+            ->with('success', trans('admin/documents/message.update.success'));
+    }
+
+    private function documentsFromBulkRequest(Request $request, string $action)
+    {
+        $ids = $this->normalizedIds($request->input('ids', session()->getOldInput('ids', [])));
+
+        if ($ids === []) {
+            return redirect()->back()->with('error', trans('general.bulk.delete.nothing_selected', [
+                'object_type' => trans('general.documents'),
+            ]));
+        }
+
+        $documents = Document::withTrashed()
+            ->whereIn('id', $ids)
+            ->get()
+            ->sortBy(fn (Document $document) => array_search((int) $document->id, $ids, true))
+            ->values();
+
+        if ($documents->count() !== count($ids)) {
+            return redirect()->back()->with('error', trans('admin/documents/message.invalid_bulk_documents'));
+        }
+
+        foreach ($documents as $document) {
+            if ($action === 'restore') {
+                $this->authorize('create', Document::class);
+                continue;
+            }
+
+            if ($action === 'edit' && $document->trashed()) {
+                return redirect()->back()->with('error', trans('admin/documents/message.invalid_bulk_documents'));
+            }
+
+            $this->authorize($action === 'delete' ? 'delete' : 'update', $document);
+        }
+
+        return $documents;
+    }
+
+    private function normalizedIds($value): array
+    {
+        return collect(is_array($value) ? $value : [$value])
+            ->filter(fn ($id) => filled($id))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function bulkUpdateHasSelectedFields(Request $request): bool
+    {
+        foreach ([
+            'apply_status',
+            'apply_owner_id',
+            'apply_document_type_id',
+            'apply_classification',
+            'apply_retention_period',
+            'apply_scope',
+            'apply_issued_at',
+            'apply_effective_at',
+            'apply_next_review_at',
+            'apply_control_url',
+        ] as $field) {
+            if ($request->boolean($field)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function bulkDocumentUpdates(Request $request): array
+    {
+        $updates = [];
+
+        foreach ([
+            'status',
+            'owner_id',
+            'document_type_id',
+            'classification',
+            'retention_period',
+            'scope',
+            'issued_at',
+            'effective_at',
+            'next_review_at',
+            'control_url',
+        ] as $field) {
+            if ($request->boolean('apply_'.$field)) {
+                $updates[$field] = $request->filled($field) ? $request->input($field) : null;
+            }
+        }
+
+        return $updates;
     }
 
     private function fillDocument(Document $document, StoreDocumentRequest $request): void
