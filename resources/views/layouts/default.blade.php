@@ -2023,7 +2023,7 @@
                             </li>
                         @endcan
 
-                        @can('reports.view')
+                        @canany(['reports.view', 'reports.nis_risk_matrix.view', 'reports.nis_real_coverage.view'])
                             <li class="treeview{{ (request()->is('reports*') ? ' active' : '') }}">
                                 <a href="#" class="dropdown-toggle">
                                     <x-icon type="reports" class="fa-fw" />
@@ -2032,63 +2032,71 @@
                                 </a>
 
                                 <ul class="treeview-menu">
-                                    <li {{!! (request()->is('reports/activity') ? ' class="active"' : '') !!}}>
-                                        <a href="{{ route('reports.activity') }}">
-                                            {{ trans('general.activity_report') }}
-                                        </a>
-                                    </li>
-                                    <li {{!! (request()->is('reports/custom') ? ' class="active"' : '') !!}}>
-                                        <a href="{{ url('reports/custom') }}">
-                                            {{ trans('general.custom_report') }}
-                                        </a>
-                                    </li>
-                                    <li {{!! (request()->is('reports/audit') ? ' class="active"' : '') !!}}>
-                                        <a href="{{ route('reports.audit') }}">
-                                            {{ trans('general.audit_report') }}</a>
-                                    </li>
-                                    <li {{!! (request()->is('reports/nis-risk-matrix') ? ' class="active"' : '') !!}}>
-                                        <a href="{{ route('reports.nis-risk-matrix') }}">
-                                            {{ trans('admin/reports/general.nis_risk_matrix') }}
-                                        </a>
-                                    </li>
-                                    <li {{!! (request()->is('reports/nis-real-coverage') ? ' class="active"' : '') !!}}>
-                                        <a href="{{ route('reports.nis-real-coverage') }}">
-                                            {{ trans('admin/reports/general.nis_real_coverage') }}
-                                        </a>
-                                    </li>
-                                    <li {{!! (request()->is('reports/contract-forecast') ? ' class="active"' : '') !!}}>
-                                        <a href="{{ route('reports.contract-forecast') }}">
-                                            {{ trans('admin/reports/general.contract_forecast') }}
-                                        </a>
-                                    </li>
-                                    <li {{!! (request()->is('reports/depreciation') ? ' class="active"' : '') !!}}>
-                                        <a href="{{ url('reports/depreciation') }}">
-                                            {{ trans('general.depreciation_report') }}
-                                        </a>
-                                    </li>
-                                    <li {{!! (request()->is('reports/licenses') ? ' class="active"' : '') !!}}>
-                                        <a href="{{ url('reports/licenses') }}">
-                                            {{ trans('general.license_report') }}
-                                        </a>
-                                    </li>
-                                    <li {{!! (request()->is('ui.reports.maintenances') ? ' class="active"' : '') !!}}>
-                                        <a href="{{ route('ui.reports.maintenances') }}">
-                                            {{ trans('general.asset_maintenance_report') }}
-                                        </a>
-                                    </li>
-                                    <li {{!! (request()->is('reports/unaccepted_assets') ? ' class="active"' : '') !!}}>
-                                        <a href="{{ url('reports/unaccepted_assets') }}">
-                                            {{ trans('general.unaccepted_asset_report') }}
-                                        </a>
-                                    </li>
-                                    <li  {{!! (request()->is('reports/accessories') ? ' class="active"' : '') !!}}>
-                                        <a href="{{ url('reports/accessories') }}">
-                                            {{ trans('general.accessory_report') }}
-                                        </a>
-                                    </li>
+                                    @can('reports.view')
+                                        <li {{!! (request()->is('reports/activity') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('reports.activity') }}">
+                                                {{ trans('general.activity_report') }}
+                                            </a>
+                                        </li>
+                                        <li {{!! (request()->is('reports/custom') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ url('reports/custom') }}">
+                                                {{ trans('general.custom_report') }}
+                                            </a>
+                                        </li>
+                                        <li {{!! (request()->is('reports/audit') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('reports.audit') }}">
+                                                {{ trans('general.audit_report') }}</a>
+                                        </li>
+                                    @endcan
+                                    @can('reports.nis_risk_matrix.view')
+                                        <li {{!! (request()->is('reports/nis-risk-matrix') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('reports.nis-risk-matrix') }}">
+                                                {{ trans('admin/reports/general.nis_risk_matrix') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('reports.nis_real_coverage.view')
+                                        <li {{!! (request()->is('reports/nis-real-coverage') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('reports.nis-real-coverage') }}">
+                                                {{ trans('admin/reports/general.nis_real_coverage') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('reports.view')
+                                        <li {{!! (request()->is('reports/contract-forecast') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('reports.contract-forecast') }}">
+                                                {{ trans('admin/reports/general.contract_forecast') }}
+                                            </a>
+                                        </li>
+                                        <li {{!! (request()->is('reports/depreciation') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ url('reports/depreciation') }}">
+                                                {{ trans('general.depreciation_report') }}
+                                            </a>
+                                        </li>
+                                        <li {{!! (request()->is('reports/licenses') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ url('reports/licenses') }}">
+                                                {{ trans('general.license_report') }}
+                                            </a>
+                                        </li>
+                                        <li {{!! (request()->is('ui.reports.maintenances') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('ui.reports.maintenances') }}">
+                                                {{ trans('general.asset_maintenance_report') }}
+                                            </a>
+                                        </li>
+                                        <li {{!! (request()->is('reports/unaccepted_assets') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ url('reports/unaccepted_assets') }}">
+                                                {{ trans('general.unaccepted_asset_report') }}
+                                            </a>
+                                        </li>
+                                        <li  {{!! (request()->is('reports/accessories') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ url('reports/accessories') }}">
+                                                {{ trans('general.accessory_report') }}
+                                            </a>
+                                        </li>
+                                    @endcan
                                 </ul>
                             </li>
-                        @endcan
+                        @endcanany
 
                         @can('viewRequestable', \App\Models\Asset::class)
                             <li{!! (request()->is('account/requestable-assets') ? ' class="active"' : '') !!}>

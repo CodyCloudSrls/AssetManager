@@ -390,6 +390,26 @@ class UserFactory extends Factory
         return $this->appendPermission(['reports.view' => '1']);
     }
 
+    public function canViewNisRiskMatrixReport()
+    {
+        return $this->appendPermission(['reports.nis_risk_matrix.view' => '1']);
+    }
+
+    public function canViewNisRealCoverageReport()
+    {
+        return $this->appendPermission(['reports.nis_real_coverage.view' => '1']);
+    }
+
+    public function canViewDocumentFiles()
+    {
+        return $this->appendPermission(['documents.files.view' => '1']);
+    }
+
+    public function canManageDocumentFiles()
+    {
+        return $this->appendPermission(['documents.files' => '1']);
+    }
+
     public function canImport()
     {
         return $this->appendPermission(['import' => '1']);

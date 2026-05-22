@@ -129,6 +129,46 @@ class FrancescaTeamsIssuesTest extends TestCase
         $this->assertStringContainsString("Gate::allows('update', \$user)", $usersTransformer);
     }
 
+    public function test_nis_reports_have_granular_permissions_without_unlocking_all_reports(): void
+    {
+        $permissions = $this->repoFile('config/permissions.php');
+        $authProvider = $this->repoFile('app/Providers/AuthServiceProvider.php');
+        $reportsController = $this->repoFile('app/Http/Controllers/ReportsController.php');
+        $layout = $this->repoFile('resources/views/layouts/default.blade.php');
+        $tenant = $this->repoFile('app/Models/Tenant.php');
+
+        $this->assertStringContainsString("'permission' => 'reports.nis_risk_matrix.view'", $permissions);
+        $this->assertStringContainsString("'permission' => 'reports.nis_real_coverage.view'", $permissions);
+        $this->assertStringContainsString("Gate::define('reports.nis_risk_matrix.view'", $authProvider);
+        $this->assertStringContainsString("Gate::define('reports.nis_real_coverage.view'", $authProvider);
+        $this->assertStringContainsString("\$this->authorize('reports.nis_risk_matrix.view')", $reportsController);
+        $this->assertStringContainsString("\$this->authorize('reports.nis_real_coverage.view')", $reportsController);
+        $this->assertStringContainsString("@canany(['reports.view', 'reports.nis_risk_matrix.view', 'reports.nis_real_coverage.view'])", $layout);
+        $this->assertStringContainsString("@can('reports.nis_risk_matrix.view')", $layout);
+        $this->assertStringContainsString("@can('reports.nis_real_coverage.view')", $layout);
+        $this->assertStringContainsString("'reports.view', 'reports.nis_risk_matrix.view', 'reports.nis_real_coverage.view'", $tenant);
+    }
+
+    public function test_document_file_view_permission_is_separate_from_file_management(): void
+    {
+        $permissions = $this->repoFile('config/permissions.php');
+        $policy = $this->repoFile('app/Policies/SnipePermissionsPolicy.php');
+        $webController = $this->repoFile('app/Http/Controllers/UploadedFilesController.php');
+        $apiController = $this->repoFile('app/Http/Controllers/Api/UploadedFilesController.php');
+        $filesTab = $this->repoFile('resources/views/blade/tabs/files-tab.blade.php');
+        $filesTable = $this->repoFile('resources/views/blade/table/files.blade.php');
+        $transformer = $this->repoFile('app/Http/Transformers/UploadedFilesTransformer.php');
+
+        $this->assertStringContainsString("'permission' => 'documents.files.view'", $permissions);
+        $this->assertStringContainsString('public function viewFiles(User $user, $item = null)', $policy);
+        $this->assertStringContainsString("\$this->columnName().'.files.view'", $policy);
+        $this->assertStringContainsString("\$this->authorize('viewFiles', \$object)", $webController);
+        $this->assertStringContainsString("\$this->authorize('viewFiles', \$object)", $apiController);
+        $this->assertStringContainsString("@can('viewFiles', \$item)", $filesTab);
+        $this->assertStringContainsString("@can('viewFiles', \$object)", $filesTable);
+        $this->assertStringContainsString("Gate::allows('files', \$file->item)", $transformer);
+    }
+
     private function repoPath(string $relativePath): string
     {
         return dirname(__DIR__, 2).'/'.$relativePath;

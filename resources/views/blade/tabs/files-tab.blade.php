@@ -4,7 +4,7 @@
     'item' => false,
 ])
 
-@can('files', $item)
+@can('viewFiles', $item)
 <x-tabs.nav-item
         :$class
         name="files"

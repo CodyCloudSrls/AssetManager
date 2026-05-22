@@ -225,6 +225,18 @@ class AuthServiceProvider extends ServiceProvider
             }
         });
 
+        Gate::define('reports.nis_risk_matrix.view', function ($user) {
+            if ($user->hasAccess('reports.nis_risk_matrix.view') || $user->hasAccess('reports.view')) {
+                return true;
+            }
+        });
+
+        Gate::define('reports.nis_real_coverage.view', function ($user) {
+            if ($user->hasAccess('reports.nis_real_coverage.view') || $user->hasAccess('reports.view')) {
+                return true;
+            }
+        });
+
         // -----------------------------------------
         // Activity
         // -----------------------------------------

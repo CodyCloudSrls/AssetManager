@@ -24,7 +24,6 @@ class UploadedFilesTransformer
 
     public function transformFile(Actionlog $file)
     {
-        $snipeModel = $file->item_type;
         $integrity = FileIntegrity::integrityFromLog($file);
         $displayName = $integrity['original_filename'] ?? $file->filename;
 
@@ -59,7 +58,7 @@ class UploadedFilesTransformer
         ];
 
         $permissions_array['available_actions'] = [
-            'delete' => (Gate::allows('update', $snipeModel) && ($file->deleted_at == '')),
+            'delete' => ($file->item && Gate::allows('files', $file->item) && ($file->deleted_at == '')),
         ];
 
         $array += $permissions_array;

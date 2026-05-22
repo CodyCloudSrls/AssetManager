@@ -4,7 +4,7 @@
     'object_type' => '',
     'table_header' => trans('general.files'),
 ])
-@can('files', $object)
+@can('viewFiles', $object)
 
 <x-slot:table_header>
     {{ $table_header }}

@@ -256,7 +256,7 @@ class ReportsController extends Controller
 
     public function getNisRiskMatrixReport(Request $request, NisRiskMatrixReport $report): View
     {
-        $this->authorize('reports.view');
+        $this->authorize('reports.nis_risk_matrix.view');
 
         return view('reports/nis_risk_matrix', $report->build(
             $this->tenantCompanyIdsFromRequest($request)
@@ -265,7 +265,7 @@ class ReportsController extends Controller
 
     public function getNisRealCoverageReport(Request $request, NisRealCoverageReport $report): View
     {
-        $this->authorize('reports.view');
+        $this->authorize('reports.nis_real_coverage.view');
 
         return view('reports/nis_real_coverage', $report->build(
             $this->tenantCompanyIdsFromRequest($request)

@@ -48,6 +48,14 @@ return [
             'permission' => 'reports.view',
             'display' => true,
         ],
+        [
+            'permission' => 'reports.nis_risk_matrix.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'reports.nis_real_coverage.view',
+            'display' => true,
+        ],
     ],
 
     'Assets' => [
@@ -118,6 +126,10 @@ return [
         ],
         [
             'permission' => 'documents.delete',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.files.view',
             'display' => true,
         ],
         [

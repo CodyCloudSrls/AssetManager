@@ -125,6 +125,12 @@ abstract class SnipePermissionsPolicy
         return $user->hasAccess($this->columnName().'.files');
     }
 
+    public function viewFiles(User $user, $item = null)
+    {
+        return $user->hasAccess($this->columnName().'.files.view')
+            || $this->files($user, $item);
+    }
+
     /**
      * Determine whether the user can create model.
      *

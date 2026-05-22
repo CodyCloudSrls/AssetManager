@@ -45,6 +45,18 @@ return [
         'name' => 'Reports Access',
         'note' => 'Determines whether the user has access to the Reports section of the application.',
     ],
+    'reportsview' => [
+        'name' => 'View All Reports',
+        'note' => 'Allows access to the standard reports section.',
+    ],
+    'reportsnis-risk-matrixview' => [
+        'name' => 'View NIS2 Risk Matrix Report',
+        'note' => 'Allows access only to the NIS2 risk matrix report.',
+    ],
+    'reportsnis-real-coverageview' => [
+        'name' => 'View NIS2 Real Coverage Report',
+        'note' => 'Allows access only to the NIS2 real coverage report.',
+    ],
 
     'assets' => [
         'name' => 'Assets',
@@ -146,6 +158,11 @@ return [
 
     'documentsdelete' => [
         'name' => 'Delete Documents',
+    ],
+
+    'documentsfilesview' => [
+        'name' => 'View Document Files',
+        'note' => 'Allows the user to list, preview, and download files associated with documents without upload or delete rights.',
     ],
 
     'documentsfiles' => [

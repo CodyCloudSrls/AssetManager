@@ -689,9 +689,9 @@ class Tenant extends Model
     {
         return [
             'import',
-            'reports.view',
+            'reports.view', 'reports.nis_risk_matrix.view', 'reports.nis_real_coverage.view',
             'assets.view', 'assets.create', 'assets.edit', 'assets.delete', 'assets.checkin', 'assets.checkout', 'assets.audit', 'assets.view.requestable', 'assets.view.encrypted_custom_fields', 'assets.files',
-            'documents.view', 'documents.create', 'documents.edit', 'documents.delete', 'documents.files',
+            'documents.view', 'documents.create', 'documents.edit', 'documents.delete', 'documents.files.view', 'documents.files',
             'tickets.view', 'tickets.create', 'tickets.operate', 'tickets.edit', 'tickets.delete', 'tickets.files',
             'documenttypes.view', 'documenttypes.create', 'documenttypes.edit', 'documenttypes.delete',
             'documentframeworks.view', 'documentframeworks.create', 'documentframeworks.edit', 'documentframeworks.delete',

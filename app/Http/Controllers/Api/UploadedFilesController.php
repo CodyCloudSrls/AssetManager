@@ -33,7 +33,7 @@ class UploadedFilesController extends Controller
 
         // Check the permissions to make sure the user can view the object
         $object = self::$map_object_type[$object_type]::withTrashed()->find($id);
-        $this->authorize('files', $object);
+        $this->authorize('viewFiles', $object);
 
         if (! $object) {
             return response()->json(Helper::formatStandardApiResponse('error', null, trans('general.file_upload_status.invalid_object')));
@@ -51,7 +51,7 @@ class UploadedFilesController extends Controller
             ];
 
         $uploads = self::$map_object_type[$object_type]::withTrashed()->find($id)->uploads()
-            ->with('adminuser');
+            ->with(['adminuser', 'item']);
 
         $limit = app('api_limit_value');
         $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $uploads->count(), $limit);
@@ -146,7 +146,7 @@ class UploadedFilesController extends Controller
     {
         // Check the permissions to make sure the user can view the object
         $object = self::$map_object_type[$object_type]::withTrashed()->find($id);
-        $this->authorize('files', $object);
+        $this->authorize('viewFiles', $object);
 
         if (! $object) {
             return response()->json(Helper::formatStandardApiResponse('error', null, trans('general.file_upload_status.invalid_object')));

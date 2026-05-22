@@ -36,6 +36,21 @@ return array (
     'name' => 'Rapporti di accesso',
     'note' => 'Determina se l\'utente ha accesso alla sezione Report dell\'applicazione.',
   ),
+  'reportsview' =>
+  array (
+    'name' => 'Visualizza tutti i report',
+    'note' => 'Consente l\'accesso alla sezione report standard.',
+  ),
+  'reportsnis-risk-matrixview' =>
+  array (
+    'name' => 'Visualizza report matrice rischio NIS2',
+    'note' => 'Consente l\'accesso solo al report matrice rischio NIS2.',
+  ),
+  'reportsnis-real-coverageview' =>
+  array (
+    'name' => 'Visualizza report copertura reale NIS2',
+    'note' => 'Consente l\'accesso solo al report copertura reale NIS2.',
+  ),
   'assets' =>
   array (
     'name' => 'Beni',
@@ -138,6 +153,11 @@ return array (
   'documentsdelete' =>
   array (
     'name' => 'Elimina documenti',
+  ),
+  'documentsfilesview' =>
+  array (
+    'name' => 'Visualizza allegati documenti',
+    'note' => 'Consente all\'utente di elencare, aprire e scaricare gli allegati dei documenti senza poterli caricare o eliminare.',
   ),
   'documentsfiles' =>
   array (
