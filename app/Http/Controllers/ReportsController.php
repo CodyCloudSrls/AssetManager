@@ -26,6 +26,7 @@ use App\Models\LicenseSeat;
 use App\Models\Maintenance;
 use App\Models\ReportTemplate;
 use App\Models\Setting;
+use App\Models\Tenant;
 use App\Support\Reports\ContractForecastReport;
 use App\Support\Reports\NisRealCoverageReport;
 use App\Support\Reports\NisRiskMatrixReport;
@@ -246,7 +247,7 @@ class ReportsController extends Controller
         $this->authorize('reports.view');
 
         $data = $report->build(
-            $this->tenantCompanyIdsFromRequest($request),
+            $this->tenantCompanyIdsForReport($request),
             $request->input('from'),
             $request->input('to'),
         );
@@ -259,7 +260,7 @@ class ReportsController extends Controller
         $this->authorize('reports.nis_risk_matrix.view');
 
         return view('reports/nis_risk_matrix', $report->build(
-            $this->tenantCompanyIdsFromRequest($request)
+            $this->tenantCompanyIdsForReport($request)
         ));
     }
 
@@ -268,8 +269,19 @@ class ReportsController extends Controller
         $this->authorize('reports.nis_real_coverage.view');
 
         return view('reports/nis_real_coverage', $report->build(
-            $this->tenantCompanyIdsFromRequest($request)
+            $this->tenantCompanyIdsForReport($request)
         ));
+    }
+
+    private function tenantCompanyIdsForReport(Request $request): ?array
+    {
+        $companyIds = $this->tenantCompanyIdsFromRequest($request);
+
+        if (! is_null($companyIds)) {
+            return $companyIds;
+        }
+
+        return Tenant::activeTenant()?->activeCompanyIds();
     }
 
     /**

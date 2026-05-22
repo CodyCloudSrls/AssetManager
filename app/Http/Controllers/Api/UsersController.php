@@ -22,6 +22,7 @@ use App\Models\Asset;
 use App\Models\Company;
 use App\Models\Consumable;
 use App\Models\License;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Notifications\CurrentInventory;
 use App\Notifications\WelcomeNotification;
@@ -29,6 +30,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -104,6 +106,8 @@ class UsersController extends Controller
                 'managesUsers as manages_users_count',
                 'managedLocations as manages_locations_count',
             ]);
+
+        $this->scopeUsersToTenantContext($users, $request);
 
         $allowed_columns =
             [
@@ -380,6 +384,128 @@ class UsersController extends Controller
         $users = $users->skip($offset)->take($limit)->get();
 
         return (new UsersTransformer)->transformUsers($users, $total);
+    }
+
+    private function scopeUsersToTenantContext(Builder $users, Request $request): void
+    {
+        [$tenantId, $companyIds] = $this->userIndexTenantContext($request);
+
+        if (is_null($companyIds)) {
+            return;
+        }
+
+        $users->where(function (Builder $query) use ($tenantId, $companyIds) {
+            if ($companyIds === []) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->whereIn('users.company_id', $companyIds);
+            }
+
+            if (! is_null($tenantId)) {
+                $query->orWhereHas('tenants', fn (Builder $tenantQuery) => $tenantQuery->where('tenants.id', $tenantId));
+            }
+        });
+    }
+
+    private function userIndexTenantContext(Request $request): array
+    {
+        $user = $request->user();
+
+        if (! $user instanceof User) {
+            return [null, []];
+        }
+
+        $activeTenantId = $this->activeTenantIdFromRequest($request);
+
+        if (! is_null($activeTenantId) && $this->userCanAccessTenantId($user, $activeTenantId)) {
+            return [$activeTenantId, $this->companyIdsForTenant($activeTenantId)];
+        }
+
+        if ($this->userCanViewAllTenants($user) && is_null($user->company_id)) {
+            return [null, null];
+        }
+
+        if (! is_null($user->company_id)) {
+            $tenantId = Company::withoutGlobalScopes()
+                ->where('id', $user->company_id)
+                ->value('tenant_id');
+
+            if (! is_null($tenantId)) {
+                return [(int) $tenantId, $this->companyIdsForTenant((int) $tenantId)];
+            }
+
+            return [null, null];
+        }
+
+        $tenantIds = DB::table('tenant_users')
+            ->where('user_id', $user->id)
+            ->pluck('tenant_id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        if ($tenantIds->count() === 1) {
+            $tenantId = (int) $tenantIds->first();
+
+            return [$tenantId, $this->companyIdsForTenant($tenantId)];
+        }
+
+        if ($tenantIds->count() > 1) {
+            return [null, Company::withoutGlobalScopes()
+                ->whereNull('deleted_at')
+                ->whereIn('tenant_id', $tenantIds->all())
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all()];
+        }
+
+        return [null, []];
+    }
+
+    private function activeTenantIdFromRequest(Request $request): ?int
+    {
+        if (! $request->hasSession()) {
+            return null;
+        }
+
+        return Company::getIdFromInput($request->session()->get(Tenant::ACTIVE_TENANT_SESSION_KEY));
+    }
+
+    private function userCanAccessTenantId(User $user, int $tenantId): bool
+    {
+        if ($this->userCanViewAllTenants($user)) {
+            return true;
+        }
+
+        if (! is_null($user->company_id)) {
+            $companyTenantId = Company::withoutGlobalScopes()
+                ->where('id', $user->company_id)
+                ->value('tenant_id');
+
+            if ((int) ($companyTenantId ?? 0) === $tenantId) {
+                return true;
+            }
+        }
+
+        return DB::table('tenant_users')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $user->id)
+            ->exists();
+    }
+
+    private function userCanViewAllTenants(User $user): bool
+    {
+        return $user->isSuperAdmin() && $user->hasAccess('tenants.view_all');
+    }
+
+    private function companyIdsForTenant(int $tenantId): array
+    {
+        return Company::withoutGlobalScopes()
+            ->whereNull('deleted_at')
+            ->where('tenant_id', $tenantId)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
     }
 
     /**

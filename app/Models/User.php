@@ -1073,6 +1073,14 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         );
     }
 
+    private static function whereAnyPermissionEnabled(Builder $query, string $column, array $permissions): void
+    {
+        foreach ($permissions as $permission) {
+            $query->orWhere($column, 'LIKE', '%"'.$permission.'":"1"%')
+                ->orWhere($column, 'LIKE', '%"'.$permission.'":1%');
+        }
+    }
+
     /**
      * Return only admins and superusers
      *
@@ -1080,15 +1088,17 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
      */
     public function scopeOnlySuperAdmins($query)
     {
+        $permissions = ['superadmin', 'superuser'];
 
-        return $query->where('users.permissions', 'LIKE', '%"superadmin":"1"%')
-            ->orWhere('users.permissions', 'LIKE', '%"superadmin":1%')
-            ->orWhereHas(
-                'groups', function ($query) {
-                    $query->where('permission_groups.permissions', 'LIKE', '%"superadmin":"1"%')
-                        ->orWhere('permission_groups.permissions', 'LIKE', '%"superadmin":1%');
-                }
-            );
+        return $query->where(function (Builder $query) use ($permissions) {
+            self::whereAnyPermissionEnabled($query, 'users.permissions', $permissions);
+
+            $query->orWhereHas('groups', function (Builder $query) use ($permissions) {
+                $query->where(function (Builder $query) use ($permissions) {
+                    self::whereAnyPermissionEnabled($query, 'permission_groups.permissions', $permissions);
+                });
+            });
+        });
 
     }
 
@@ -1113,19 +1123,19 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
      */
     public function scopeOnlyAdminsAndSuperAdmins($query)
     {
+        $permissions = ['superadmin', 'superuser', 'admin'];
 
-        return $query->where('users.permissions', 'LIKE', '%"superadmin":"1"%')
-            ->orWhere('users.permissions', 'LIKE', '%"superadmin":1%')
-            ->orWhere('users.permissions', 'LIKE', '%"admin":1%')
-            ->orWhere('users.permissions', 'LIKE', '%"admin":"1"%')
-            ->orWhereHas(
-                'groups', function ($query) {
-                    $query->where('permission_groups.permissions', 'LIKE', '%"superadmin":"1"%')
-                        ->orWhere('permission_groups.permissions', 'LIKE', '%"superadmin":1%')
-                        ->orWhere('permission_groups.permissions', 'LIKE', '%"admin":1%')
-                        ->orWhere('permission_groups.permissions', 'LIKE', '%"admin":"1"%');
-                }
-            );
+        return $query->where(function (Builder $query) use ($permissions) {
+            self::whereAnyPermissionEnabled($query, 'users.permissions', $permissions);
+
+            $query->orWhereHas('groups', function (Builder $query) use ($permissions) {
+                $query->where(function (Builder $query) use ($permissions) {
+                    self::whereAnyPermissionEnabled($query, 'permission_groups.permissions', $permissions);
+                });
+            });
+
+            $query->orWhereHas('tenants', fn (Builder $query) => $query->where('tenant_users.role', Tenant::ROLE_ADMIN));
+        });
 
     }
 

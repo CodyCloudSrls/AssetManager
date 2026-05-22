@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\Users\Api;
 
+use App\Models\Company;
 use App\Models\Location;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
@@ -56,6 +58,39 @@ class IndexUsersTest extends TestCase
                 ->where('rows.0.first_name', 'Manages Locations')
                 ->etc();
         });
+    }
+
+    public function test_admin_filters_include_tenant_superusers_without_leaking_other_tenants()
+    {
+        $tenantA = Tenant::createMinimal();
+        $tenantB = Tenant::createMinimal();
+        $companyA = Company::factory()->create(['tenant_id' => $tenantA->id]);
+        $companyB = Company::factory()->create(['tenant_id' => $tenantB->id]);
+
+        $actor = User::factory()->viewUsers()->create(['company_id' => $companyA->id]);
+        $tenantSuperuser = User::factory()->tenantSuperuser()->create(['company_id' => null]);
+        $tenantA->members()->attach($tenantSuperuser->id, ['role' => Tenant::ROLE_ADMIN]);
+        $tenantRoleAdmin = User::factory()->create(['company_id' => null]);
+        $tenantA->members()->attach($tenantRoleAdmin->id, ['role' => Tenant::ROLE_ADMIN]);
+        $otherTenantAdmin = User::factory()->admin()->create(['company_id' => $companyB->id]);
+
+        $adminResponse = $this->actingAsForApi($actor)
+            ->getJson(route('api.users.index', ['admins' => 'true']))
+            ->assertOk();
+
+        $adminIds = collect($adminResponse->json('rows'))->pluck('id')->all();
+        $this->assertContains($tenantSuperuser->id, $adminIds);
+        $this->assertContains($tenantRoleAdmin->id, $adminIds);
+        $this->assertNotContains($otherTenantAdmin->id, $adminIds);
+
+        $superadminResponse = $this->actingAsForApi($actor)
+            ->getJson(route('api.users.index', ['superadmins' => 'true']))
+            ->assertOk();
+
+        $superadminIds = collect($superadminResponse->json('rows'))->pluck('id')->all();
+        $this->assertContains($tenantSuperuser->id, $superadminIds);
+        $this->assertNotContains($tenantRoleAdmin->id, $superadminIds);
+        $this->assertNotContains($otherTenantAdmin->id, $superadminIds);
     }
 
     public function test_gracefully_handles_malformed_filter()

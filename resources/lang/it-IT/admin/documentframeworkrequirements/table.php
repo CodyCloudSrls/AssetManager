@@ -26,4 +26,7 @@ return [
     'primary_documents_count' => 'Documenti primari',
     'healthy_primary_documents_count' => 'Documenti primari validi',
     'document_shortfall_count' => 'Documenti mancanti',
+    'required_document_types_count' => 'Tipologie documento richieste',
+    'healthy_required_document_types_count' => 'Tipologie documento valide',
+    'missing_required_document_types_count' => 'Tipologie documento mancanti',
 ];

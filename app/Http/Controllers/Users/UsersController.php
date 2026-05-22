@@ -319,11 +319,13 @@ class UsersController extends Controller
                 $user->password = bcrypt($request->input('password'));
             }
 
-            $user->permissions = json_encode(PreserveUnauthorizedPrivilegedPermissionsAction::run(
-                requestedPermissions: NormalizePermissionsPayloadAction::run($request->input('permission')),
-                authenticatedUser: $authenticatedUser,
-                originalPermissions: $orig_permissions_array,
-            ));
+            if ($request->exists('permission')) {
+                $user->permissions = json_encode(PreserveUnauthorizedPrivilegedPermissionsAction::run(
+                    requestedPermissions: NormalizePermissionsPayloadAction::run($request->input('permission')),
+                    authenticatedUser: $authenticatedUser,
+                    originalPermissions: $orig_permissions_array,
+                ));
+            }
 
             // Only platform superadmins can assign global permission groups.
             if (auth()->user()->isSuperAdmin()) {

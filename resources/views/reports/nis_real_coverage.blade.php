@@ -18,9 +18,9 @@
                             <th>{{ trans('admin/documentframeworkrequirements/general.coverage.supporting_only') }}</th>
                             <th>{{ trans('admin/documentframeworkrequirements/general.coverage.missing') }}</th>
                             <th>{{ trans('admin/documentframeworks/general.coverage.coverage_percent') }}</th>
-                            <th>{{ trans('admin/documentframeworkrequirements/table.minimum_required_documents') }}</th>
-                            <th>{{ trans('admin/documentframeworkrequirements/table.healthy_primary_documents_count') }}</th>
-                            <th>{{ trans('admin/documentframeworkrequirements/table.document_shortfall_count') }}</th>
+                            <th>{{ trans('admin/documentframeworkrequirements/table.required_document_types_count') }}</th>
+                            <th>{{ trans('admin/documentframeworkrequirements/table.healthy_required_document_types_count') }}</th>
+                            <th>{{ trans('admin/documentframeworkrequirements/table.missing_required_document_types_count') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -31,9 +31,9 @@
                             <td><span class="label label-warning">{{ number_format($summary['supporting_only']) }}</span></td>
                             <td><span class="label label-default">{{ number_format($summary['missing']) }}</span></td>
                             <td>{{ $summary['coverage_percent'] }}%</td>
-                            <td>{{ number_format($summary['minimum_required_documents']) }}</td>
-                            <td>{{ number_format($summary['healthy_primary_documents']) }}</td>
-                            <td><span class="{{ $summary['document_shortfall_count'] > 0 ? 'text-danger' : '' }}">{{ number_format($summary['document_shortfall_count']) }}</span></td>
+                            <td>{{ number_format($summary['required_document_types_count']) }}</td>
+                            <td>{{ number_format($summary['healthy_required_document_types_count']) }}</td>
+                            <td><span class="{{ $summary['missing_required_document_types_count'] > 0 ? 'text-danger' : '' }}">{{ number_format($summary['missing_required_document_types_count']) }}</span></td>
                         </tr>
                     </tbody>
                 </table>
@@ -62,7 +62,7 @@
                             <th data-sortable="true">{{ trans('admin/documentframeworkrequirements/general.coverage.at_risk') }}</th>
                             <th data-sortable="true">{{ trans('admin/documentframeworkrequirements/general.coverage.missing') }}</th>
                             <th data-sortable="true">{{ trans('admin/documentframeworks/general.coverage.coverage_percent') }}</th>
-                            <th data-sortable="true">{{ trans('admin/documentframeworkrequirements/table.document_shortfall_count') }}</th>
+                            <th data-sortable="true">{{ trans('admin/documentframeworkrequirements/table.missing_required_document_types_count') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -81,7 +81,7 @@
                                 <td>{{ number_format($row['summary']['at_risk']) }}</td>
                                 <td>{{ number_format($row['summary']['missing']) }}</td>
                                 <td>{{ $row['summary']['coverage_percent'] }}%</td>
-                                <td><span class="{{ $row['summary']['document_shortfall_count'] > 0 ? 'text-danger' : '' }}">{{ number_format($row['summary']['document_shortfall_count']) }}</span></td>
+                                <td><span class="{{ $row['summary']['missing_required_document_types_count'] > 0 ? 'text-danger' : '' }}">{{ number_format($row['summary']['missing_required_document_types_count']) }}</span></td>
                             </tr>
                         @endforeach
                     </tbody>

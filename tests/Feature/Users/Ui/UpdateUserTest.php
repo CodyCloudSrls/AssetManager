@@ -304,6 +304,31 @@ class UpdateUserTest extends TestCase
         $this->assertArrayNotHasKey('superuser', $decoded, 'Admin should not be able to grant superuser');
     }
 
+    public function test_existing_permissions_are_preserved_when_permission_payload_is_not_sent_via_ui()
+    {
+        $editingUser = User::factory()->editUsers()->create();
+        $targetUser = User::factory()->create([
+            'permissions' => json_encode([
+                'documents.files.view' => '1',
+                'reports.nis_real_coverage.view' => '1',
+            ]),
+        ]);
+
+        $this->actingAs($editingUser)
+            ->put(route('users.update', $targetUser), [
+                'first_name' => 'Updated',
+                'last_name' => $targetUser->last_name,
+                'username' => $targetUser->username,
+                'redirect_option' => 'index',
+            ])
+            ->assertRedirect(route('users.index'));
+
+        $decoded = (array) $targetUser->refresh()->decodePermissions();
+
+        $this->assertSame('1', (string) ($decoded['documents.files.view'] ?? null));
+        $this->assertSame('1', (string) ($decoded['reports.nis_real_coverage.view'] ?? null));
+    }
+
     /**
      * This can occur if the user edit screen is open in one tab and
      * the user is deleted in another before the edit form is submitted.

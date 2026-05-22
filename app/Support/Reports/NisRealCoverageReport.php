@@ -25,7 +25,7 @@ class NisRealCoverageReport
     {
         return DocumentFramework::withoutGlobalScopes()
             ->whereNull('deleted_at')
-            ->where('is_system_template', false)
+            ->operational()
             ->where('is_active', true)
             ->where('status', 'active')
             ->where(function (Builder $query) {
@@ -46,7 +46,10 @@ class NisRealCoverageReport
             ->with(['company', 'requirements' => function ($query) {
                 $query->whereNull('deleted_at')
                     ->where('is_active', true)
-                    ->with(['owner'])
+                    ->with([
+                        'owner',
+                        'primaryDocuments' => fn ($query) => $query->currentForCoverage(),
+                    ])
                     ->withCount($this->coverageCounts())
                     ->ordered();
             }])
@@ -68,6 +71,7 @@ class NisRealCoverageReport
     private function summary(Collection $requirements): array
     {
         $coverageCounts = $requirements->countBy(fn (DocumentFrameworkRequirement $requirement) => $requirement->coverage_status);
+        $documentTypeCounts = $this->documentTypeCounts($requirements);
 
         $covered = (int) $coverageCounts->get(DocumentFrameworkRequirement::COVERAGE_COVERED, 0);
         $total = $requirements->count();
@@ -82,6 +86,40 @@ class NisRealCoverageReport
             'minimum_required_documents' => (int) $requirements->sum(fn (DocumentFrameworkRequirement $requirement) => $requirement->minimum_required_documents),
             'healthy_primary_documents' => (int) $requirements->sum(fn (DocumentFrameworkRequirement $requirement) => (int) ($requirement->healthy_primary_documents_count ?? 0)),
             'document_shortfall_count' => (int) $requirements->sum(fn (DocumentFrameworkRequirement $requirement) => $requirement->document_shortfall_count),
+            'required_document_types_count' => $documentTypeCounts['required'],
+            'healthy_required_document_types_count' => $documentTypeCounts['healthy'],
+            'missing_required_document_types_count' => $documentTypeCounts['missing'],
+        ];
+    }
+
+    private function documentTypeCounts(Collection $requirements): array
+    {
+        $requiredTypeIds = $requirements
+            ->pluck('default_document_type_id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $healthyTypeIds = $requirements
+            ->flatMap(function (DocumentFrameworkRequirement $requirement) {
+                $documents = $requirement->relationLoaded('primaryDocuments')
+                    ? $requirement->primaryDocuments
+                    : $requirement->healthyPrimaryDocumentsQuery()->get(['documents.id', 'documents.document_type_id']);
+
+                return $documents->pluck('document_type_id');
+            })
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $healthyRequiredTypeIds = $requiredTypeIds->intersect($healthyTypeIds);
+
+        return [
+            'required' => $requiredTypeIds->count(),
+            'healthy' => $healthyRequiredTypeIds->count(),
+            'missing' => $requiredTypeIds->diff($healthyTypeIds)->count(),
         ];
     }
 

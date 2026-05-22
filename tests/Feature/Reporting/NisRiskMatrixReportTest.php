@@ -9,6 +9,8 @@ use App\Models\Company;
 use App\Models\Document;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
+use App\Models\DocumentType;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Support\Reports\NisRealCoverageReport;
 use App\Support\Reports\NisRiskMatrixReport;
@@ -42,6 +44,92 @@ class NisRiskMatrixReportTest extends TestCase
             ->assertOk()
             ->assertViewIs('reports.nis_real_coverage')
             ->assertViewHas(['summary', 'frameworkRows', 'requirementRows']);
+    }
+
+    public function test_nis_real_coverage_page_defaults_to_active_tenant_companies()
+    {
+        $italwayTenant = Tenant::createMinimal();
+        $codycloudTenant = Tenant::createMinimal();
+        $italway = Company::factory()->create(['name' => 'Italway Srl', 'tenant_id' => $italwayTenant->id]);
+        $codycloud = Company::factory()->create(['name' => 'CodyCloud', 'tenant_id' => $codycloudTenant->id]);
+
+        $this->createNisFrameworkWithRequirement($italway, 'NIS2 IT - Allegato 1');
+        $this->createNisFrameworkWithRequirement($codycloud, 'NIS2 IT - Allegato 2');
+
+        $actor = User::factory()->canViewReports()->create(['company_id' => $italway->id]);
+
+        $this->actingAs($actor)
+            ->get(route('reports.nis-real-coverage'))
+            ->assertOk()
+            ->assertViewHas('frameworkRows', function ($rows) {
+                return $rows->count() === 1
+                    && $rows->first()['company_name'] === 'Italway Srl'
+                    && $rows->first()['framework']->name === 'NIS2 IT - Allegato 1';
+            });
+    }
+
+    public function test_nis_real_coverage_excludes_companyless_operational_frameworks()
+    {
+        $company = Company::factory()->create();
+        $this->createNisFrameworkWithRequirement($company, 'NIS2 IT - Allegato 1');
+
+        $globalFramework = DocumentFramework::factory()->create([
+            'name' => 'NIS2 IT - Allegato 2',
+            'slug' => 'nis2-it-allegato-2',
+            'framework_code' => 'NIS2-IT-2',
+            'compliance_domain' => 'nis2',
+            'company_id' => null,
+            'is_system_template' => false,
+        ]);
+        DocumentFrameworkRequirement::create([
+            'document_framework_id' => $globalFramework->id,
+            'code' => 'NIS2-GLOBAL-01',
+            'title' => 'Global requirement should not be reported',
+            'delegation_level' => 'owner_review',
+            'risk_level' => 'not_applicable',
+        ]);
+
+        $report = (new NisRealCoverageReport)->build();
+
+        $this->assertCount(1, $report['frameworkRows']);
+        $this->assertSame('NIS2 IT - Allegato 1', $report['frameworkRows']->first()['framework']->name);
+        $this->assertSame(1, $report['summary']['total']);
+    }
+
+    public function test_nis_real_coverage_document_type_missing_count_is_not_summed_per_requirement()
+    {
+        $company = Company::factory()->create();
+        $policyType = DocumentType::factory()->create(['name' => 'Policy']);
+        $procedureType = DocumentType::factory()->create(['name' => 'Procedure']);
+        $framework = DocumentFramework::factory()->for($company)->create([
+            'name' => 'NIS2 Tenant Document Types',
+            'slug' => 'nis2-tenant-document-types',
+            'framework_code' => 'NIS2',
+            'compliance_domain' => 'nis2',
+        ]);
+
+        foreach ([
+            ['NIS2-TYPE-01', $policyType->id],
+            ['NIS2-TYPE-02', $policyType->id],
+            ['NIS2-TYPE-03', $procedureType->id],
+        ] as [$code, $documentTypeId]) {
+            DocumentFrameworkRequirement::create([
+                'document_framework_id' => $framework->id,
+                'code' => $code,
+                'title' => $code,
+                'delegation_level' => 'owner_review',
+                'risk_level' => 'not_applicable',
+                'default_document_type_id' => $documentTypeId,
+                'minimum_required_documents' => 1,
+            ]);
+        }
+
+        $report = (new NisRealCoverageReport)->build([$company->id]);
+
+        $this->assertSame(3, $report['summary']['document_shortfall_count']);
+        $this->assertSame(2, $report['summary']['required_document_types_count']);
+        $this->assertSame(0, $report['summary']['healthy_required_document_types_count']);
+        $this->assertSame(2, $report['summary']['missing_required_document_types_count']);
     }
 
     public function test_report_is_calculated_from_nis_asset_and_category_fields()
@@ -310,5 +398,25 @@ class NisRiskMatrixReportTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+    }
+
+    private function createNisFrameworkWithRequirement(Company $company, string $name): DocumentFramework
+    {
+        $framework = DocumentFramework::factory()->for($company)->create([
+            'name' => $name,
+            'slug' => str($name)->slug()->toString(),
+            'framework_code' => 'NIS2',
+            'compliance_domain' => 'nis2',
+        ]);
+
+        DocumentFrameworkRequirement::create([
+            'document_framework_id' => $framework->id,
+            'code' => str($name)->slug('-')->upper()->toString().'-REQ-01',
+            'title' => 'Requirement for '.$name,
+            'delegation_level' => 'owner_review',
+            'risk_level' => 'not_applicable',
+        ]);
+
+        return $framework;
     }
 }
