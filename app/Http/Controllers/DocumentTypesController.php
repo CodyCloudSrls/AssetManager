@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDocumentTypeRequest;
 use App\Models\DocumentType;
+use App\Models\Tenant;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -20,7 +21,9 @@ class DocumentTypesController extends Controller
     {
         $this->authorize('create', DocumentType::class);
 
-        return view('documenttypes.edit')->with('item', new DocumentType);
+        return view('documenttypes.edit', $this->formData(new DocumentType([
+            'is_active' => true,
+        ])));
     }
 
     public function store(StoreDocumentTypeRequest $request): RedirectResponse
@@ -28,7 +31,7 @@ class DocumentTypesController extends Controller
         $this->authorize('create', DocumentType::class);
 
         $documentType = new DocumentType;
-        $documentType->fill($request->all());
+        $documentType->fill($request->validated());
         $documentType->created_by = auth()->id();
         $documentType->is_active = $request->boolean('is_active', true);
 
@@ -52,14 +55,14 @@ class DocumentTypesController extends Controller
     {
         $this->authorize('update', $documenttype);
 
-        return view('documenttypes.edit')->with('item', $documenttype);
+        return view('documenttypes.edit', $this->formData($documenttype));
     }
 
     public function update(StoreDocumentTypeRequest $request, DocumentType $documenttype): RedirectResponse
     {
         $this->authorize('update', $documenttype);
 
-        $documenttype->fill($request->all());
+        $documenttype->fill($request->validated());
         $documenttype->is_active = $request->boolean('is_active');
 
         if ($documenttype->save()) {
@@ -94,5 +97,26 @@ class DocumentTypesController extends Controller
         }
 
         return redirect()->route('documenttypes.index')->with('error', trans('general.could_not_restore', ['item_type' => trans('general.document_type'), 'error' => $documenttype->getErrors()->first()]));
+    }
+
+    private function formData(DocumentType $item): array
+    {
+        return [
+            'item' => $item,
+            'visibilityOptions' => $this->visibilityOptions(),
+        ];
+    }
+
+    private function visibilityOptions(): array
+    {
+        $options = DocumentType::visibilityOptions();
+
+        if (Tenant::canCurrentUserUseGlobalTenantContext()) {
+            return $options;
+        }
+
+        unset($options[DocumentType::VISIBILITY_GLOBAL]);
+
+        return $options;
     }
 }

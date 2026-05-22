@@ -30,7 +30,7 @@ class AccessorySeeder extends Seeder
 
         $supplierIds = Supplier::all()->pluck('id');
 
-        $admin = User::where('permissions->superuser', '1')->first() ?? User::factory()->firstAdmin()->create();
+        $admin = User::where('permissions->superadmin', '1')->first() ?? User::factory()->firstAdmin()->create();
 
         Accessory::factory()->appleUsbKeyboard()->create([
             'location_id' => $locationIds->random(),

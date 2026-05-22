@@ -10,6 +10,7 @@ use App\Models\Tenant;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ComplianceFrameworkInstaller
 {
@@ -226,6 +227,8 @@ class ComplianceFrameworkInstaller
         $requirementsNeedingParentSync = [];
         $packRequirements = Arr::get($pack, 'requirements', []);
 
+        $this->ensureGlobalDocumentTypesForRequirements($packRequirements, $options['created_by']);
+
         foreach ($packRequirements as $index => $requirementData) {
             $requirementData = array_merge([
                 'document_framework_id' => $framework->id,
@@ -349,6 +352,40 @@ class ComplianceFrameworkInstaller
             })
             ->orderByRaw('CASE WHEN company_id IS NULL THEN 1 ELSE 0 END')
             ->value('id');
+    }
+
+    private function ensureGlobalDocumentTypesForRequirements(array $requirements, ?int $createdBy): void
+    {
+        $documentTypeNames = collect($requirements)
+            ->pluck('default_document_type_name')
+            ->filter(fn ($name) => is_string($name) && trim($name) !== '')
+            ->map(fn (string $name) => trim($name))
+            ->unique()
+            ->values();
+
+        foreach ($documentTypeNames as $index => $documentTypeName) {
+            $exists = DocumentType::withoutGlobalScopes()
+                ->whereNull('deleted_at')
+                ->whereNull('company_id')
+                ->where('name', $documentTypeName)
+                ->exists();
+
+            if ($exists) {
+                continue;
+            }
+
+            $documentType = new DocumentType([
+                'name' => $documentTypeName,
+                'slug' => Str::slug($documentTypeName),
+                'sort_order' => ($index + 1) * 10,
+                'is_active' => true,
+                'created_by' => $createdBy,
+                'company_id' => null,
+                'visibility_type' => DocumentType::VISIBILITY_GLOBAL,
+            ]);
+
+            $this->saveOrFail($documentType);
+        }
     }
 
     private function packVersion(array $pack): ?string

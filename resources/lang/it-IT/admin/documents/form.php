@@ -9,7 +9,7 @@ return array (
   'owner' => 'Responsabile',
   'reference' => 'Riferimento',
   'version' => 'Versione',
-  'status_help' => 'I documenti primari assegnati contano nei documenti minimi se non sono obsoleti o archiviati e rispettano le date di efficacia e revisione.',
+  'status_help' => 'I documenti primari assegnati contano nei documenti minimi solo se sono validi, in corso di validità e hanno almeno un allegato caricato.',
   'classification' => 'Classificazione',
   'classification_help' => 'Indica il livello di riservatezza o trattamento del documento, ad esempio Pubblico, Interno, Riservato o Confidenziale.',
   'classification_placeholder' => 'Es. Interno, Riservato, Confidenziale',

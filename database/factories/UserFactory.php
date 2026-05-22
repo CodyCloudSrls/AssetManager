@@ -60,7 +60,7 @@ class UserFactory extends Factory
                 'last_name' => 'User',
                 'username' => 'admin',
                 'avatar' => '1.jpg',
-                'permissions' => '{"superuser":"1"}',
+                'permissions' => '{"superadmin":"1","superuser":"1","tenants.view_all":"1"}',
             ];
         });
     }
@@ -74,7 +74,7 @@ class UserFactory extends Factory
                 'username' => 'snipe',
                 'avatar' => '2.jpg',
                 'email' => 'snipe@snipe.net',
-                'permissions' => '{"superuser":"1"}',
+                'permissions' => '{"superadmin":"1","superuser":"1","tenants.view_all":"1"}',
             ];
         });
     }
@@ -88,12 +88,22 @@ class UserFactory extends Factory
                 'username' => 'agianotto@grokability.com',
                 'avatar' => '2.jpg',
                 'email' => 'agianotto@grokability.com',
-                'permissions' => '{"superuser":"1"}',
+                'permissions' => '{"superadmin":"1","superuser":"1","tenants.view_all":"1"}',
             ];
         });
     }
 
     public function superuser()
+    {
+        return $this->superadmin();
+    }
+
+    public function superadmin()
+    {
+        return $this->appendPermission(['superadmin' => '1', 'superuser' => '1', 'tenants.view_all' => '1']);
+    }
+
+    public function tenantSuperuser()
     {
         return $this->appendPermission(['superuser' => '1']);
     }
@@ -104,7 +114,7 @@ class UserFactory extends Factory
             return [
                 'permissions' => '{"admin":"1"}',
                 'manager_id' => function () {
-                    return User::where('permissions->superuser', '1')->first() ?? User::factory()->firstAdmin();
+                    return User::where('permissions->superadmin', '1')->first() ?? User::factory()->firstAdmin();
                 },
             ];
         });

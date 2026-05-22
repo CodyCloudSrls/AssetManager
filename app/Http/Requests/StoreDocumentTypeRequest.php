@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Company;
 use App\Models\DocumentType;
+use App\Models\Tenant;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 
@@ -44,6 +45,18 @@ class StoreDocumentTypeRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
+            if ($this->input('visibility_type') !== DocumentType::VISIBILITY_GLOBAL && is_null($this->input('company_id'))) {
+                $validator->errors()->add('company_id', trans('validation.required', ['attribute' => trans('general.company')]));
+            }
+
+            if ($this->input('visibility_type') === DocumentType::VISIBILITY_GLOBAL) {
+                $canManageGlobalTemplate = Tenant::canCurrentUserUseGlobalTenantContext();
+
+                if (! $canManageGlobalTemplate) {
+                    $validator->errors()->add('visibility_type', trans('validation.in', ['attribute' => trans('general.template_visibility.label')]));
+                }
+            }
+
             $documentTypeId = $this->route('documenttype')?->id ?? $this->route('documenttype');
 
             foreach (['name', 'slug'] as $column) {

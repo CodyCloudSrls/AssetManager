@@ -82,7 +82,7 @@ class DocumentTypesController extends Controller
         $this->authorize('create', DocumentType::class);
 
         $documentType = new DocumentType;
-        $documentType->fill($request->all());
+        $documentType->fill($request->validated());
         $documentType->created_by = auth()->id();
         $documentType->is_active = $request->boolean('is_active', true);
 
@@ -106,7 +106,7 @@ class DocumentTypesController extends Controller
     {
         $this->authorize('update', $documenttype);
 
-        $documenttype->fill($request->all());
+        $documenttype->fill($request->validated());
         $documenttype->is_active = $request->boolean('is_active');
 
         if ($documenttype->save()) {

@@ -4,9 +4,11 @@ namespace App\Support\Compliance;
 
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
+use App\Models\DocumentType;
 use App\Models\Tenant;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ComplianceFrameworkPackSync
 {
@@ -128,13 +130,16 @@ class ComplianceFrameworkPackSync
             $created = 0;
 
             $createdRequirements = [];
+            $packRequirements = Arr::get($pack, 'requirements', []);
+            $this->ensureGlobalDocumentTypesForRequirements($packRequirements, $createdBy);
+
             $requirementsByCode = DocumentFrameworkRequirement::withoutGlobalScopes()
                 ->where('document_framework_id', $framework->id)
                 ->whereNull('deleted_at')
                 ->get()
                 ->keyBy('code');
 
-            foreach (Arr::get($pack, 'requirements', []) as $index => $requirementData) {
+            foreach ($packRequirements as $index => $requirementData) {
                 $code = $requirementData['code'] ?? null;
 
                 if (! $code || ! in_array($code, $before['missing_requirements'], true)) {
@@ -148,6 +153,8 @@ class ComplianceFrameworkPackSync
                     'sort_order' => ($index + 1) * 10,
                     'created_by' => $createdBy,
                 ], $requirementData);
+                $attributes['default_document_type_id'] = $this->documentTypeIdForRequirement($attributes, $framework->company_id);
+                unset($attributes['default_document_type_name']);
                 unset($attributes['parent_requirement_code'], $attributes['parent_requirement_codes']);
 
                 $requirement = new DocumentFrameworkRequirement($attributes);
@@ -158,7 +165,7 @@ class ComplianceFrameworkPackSync
                 $created++;
             }
 
-            foreach (Arr::get($pack, 'requirements', []) as $requirementData) {
+            foreach ($packRequirements as $requirementData) {
                 $code = $requirementData['code'] ?? null;
                 $parentCodes = $this->parentRequirementCodesFromData($requirementData);
 
@@ -361,6 +368,67 @@ class ComplianceFrameworkPackSync
             ->where('is_system_template', true)
             ->whereNull('company_id')
             ->value('id');
+    }
+
+    private function documentTypeIdForRequirement(array $requirementData, ?int $companyId): ?int
+    {
+        if (isset($requirementData['default_document_type_id']) && is_numeric($requirementData['default_document_type_id'])) {
+            return (int) $requirementData['default_document_type_id'];
+        }
+
+        $documentTypeName = trim((string) ($requirementData['default_document_type_name'] ?? ''));
+
+        if ($documentTypeName === '') {
+            return null;
+        }
+
+        return DocumentType::withoutGlobalScopes()
+            ->whereNull('deleted_at')
+            ->where('name', $documentTypeName)
+            ->where(function ($query) use ($companyId) {
+                if (! is_null($companyId)) {
+                    $query->where('company_id', $companyId)
+                        ->orWhereNull('company_id');
+                } else {
+                    $query->whereNull('company_id');
+                }
+            })
+            ->orderByRaw('CASE WHEN company_id IS NULL THEN 1 ELSE 0 END')
+            ->value('id');
+    }
+
+    private function ensureGlobalDocumentTypesForRequirements(array $requirements, ?int $createdBy): void
+    {
+        $documentTypeNames = collect($requirements)
+            ->pluck('default_document_type_name')
+            ->filter(fn ($name) => is_string($name) && trim($name) !== '')
+            ->map(fn (string $name) => trim($name))
+            ->unique()
+            ->values();
+
+        foreach ($documentTypeNames as $index => $documentTypeName) {
+            $exists = DocumentType::withoutGlobalScopes()
+                ->whereNull('deleted_at')
+                ->whereNull('company_id')
+                ->where('name', $documentTypeName)
+                ->exists();
+
+            if ($exists) {
+                continue;
+            }
+
+            $documentType = new DocumentType([
+                'name' => $documentTypeName,
+                'slug' => Str::slug($documentTypeName),
+                'sort_order' => ($index + 1) * 10,
+                'is_active' => true,
+                'created_by' => $createdBy,
+                'company_id' => null,
+                'visibility_type' => DocumentType::VISIBILITY_GLOBAL,
+            ]);
+
+            $this->saveOrFail($documentType);
+        }
     }
 
     private function normalizeValue($value): ?string

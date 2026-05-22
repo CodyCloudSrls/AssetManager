@@ -15,13 +15,25 @@ return [
     |---------------------------------------------------------------------------
     */
 
+    'superadmin' => [
+        'name' => 'Platform Superadmin',
+        'note' => 'Determines whether the user has platform-wide access, including system settings and global administration. Only platform superadmins can be allowed to view every tenant.',
+    ],
     'superuser' => [
-        'name' => 'Super User',
-        'note' => 'Determines whether the user has full access to all aspects of the admin. This setting overrides ALL more specific and restrictive permissions throughout the system. ',
+        'name' => 'Tenant Superadmin',
+        'note' => 'Determines whether the user has full administrative access within their tenant. This does not grant platform-wide or cross-tenant access.',
     ],
     'admin' => [
         'name' => 'Admin Access',
         'note' => 'Determines whether the user has access to most aspects of the system EXCEPT the System Admin Settings. These users will be able to manage users, locations, categories, etc, but ARE constrained by Full Multiple Company Support if it is enabled.',
+    ],
+    'tenants' => [
+        'name' => 'Tenants',
+        'note' => 'Controls cross-tenant visibility. Without this permission, users can only switch into tenants they are directly assigned to or the tenant that owns their company.',
+    ],
+    'tenantsview-all' => [
+        'name' => 'View All Tenants',
+        'note' => 'Allows a platform superadmin to see and switch across every tenant. This permission has no effect for tenant superusers or tenant-bound users.',
     ],
 
     'import' => [

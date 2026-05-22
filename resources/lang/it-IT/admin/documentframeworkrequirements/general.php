@@ -75,6 +75,7 @@ return [
         'review_missing_primary' => 'Evidenza primaria mancante',
         'review_inactive_primary' => 'Evidenza primaria non attiva',
         'review_overdue' => 'Revisione scaduta',
+        'review_missing_upload' => 'Allegato mancante',
         'review_due' => 'Revisione in scadenza',
         'review_current' => 'Corrente',
     ],

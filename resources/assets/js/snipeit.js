@@ -671,10 +671,10 @@ for (var i in all_cookies) {
 
 
 /**
- * This handles the show/hide of superuser and admin specific permissions
+ * This handles the show/hide of platform superadmin and admin specific permissions
  * on the group edit and user edit pages
  */
-if ($("#superuser_allow").is(':checked')) {
+if ($("#superadmin_allow").is(':checked')) {
 
     // Hide here instead of fadeout on pageload to prevent what looks like Flash Of Unstyled Content (FOUC)
     $(".nonsuperuser").hide();
@@ -682,7 +682,7 @@ if ($("#superuser_allow").is(':checked')) {
 }
 
 
-$(".superuser").change(function() {
+$(".superadmin").change(function() {
     if ($(this).val() == '1') {
         $(".nonsuperuser").fadeOut();
         $(".nonsuperuser").attr('display','none');

@@ -153,7 +153,7 @@ class SetupController extends Controller
         $user->last_name = $request->input('last_name');
         $user->email = $data['email'] = $request->input('email');
         $user->activated = 1;
-        $permissions = ['superuser' => 1];
+        $permissions = ['superadmin' => 1, 'superuser' => 1, 'tenants.view_all' => 1];
         $user->permissions = json_encode($permissions);
         $user->username = $data['username'] = $request->input('username');
         $user->password = bcrypt($request->input('password'));

@@ -132,8 +132,10 @@
                                 </x-data-row>
 
                                 <x-data-row :label="trans('general.username')" copy_what="username">
-                                    @if ($user->isSuperUser())
-                                        <span class="label label-danger" data-tooltip="true" title="{{ trans('general.superuser_tooltip') }}"><x-icon type="superadmin" style="padding-right: 5px;"/>{{ $user->username }}</span>
+                                    @if ($user->isSuperAdmin())
+                                        <span class="label label-danger" data-tooltip="true" title="{{ trans('general.superadmin_tooltip') }}"><x-icon type="superadmin" style="padding-right: 5px;"/>{{ $user->username }}</span>
+                                    @elseif ($user->isSuperUser())
+                                        <span class="label label-primary" data-tooltip="true" title="{{ trans('general.superuser_tooltip') }}"><x-icon type="superadmin" style="padding-right: 5px;"/>{{ $user->username }}</span>
                                     @elseif ($user->hasAccess('admin'))
                                         <span class="label label-warning" data-tooltip="true" title="{{ trans('general.admin_tooltip') }}"><x-icon type="superadmin" style="padding-right: 5px;"/>{{ $user->username }}</span>
                                     @else

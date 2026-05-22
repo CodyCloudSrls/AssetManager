@@ -213,7 +213,7 @@ Route::group(['middleware' => 'auth'], function () {
 |
 */
 
-Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'authorize:superuser']], function () {
+Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'authorize:superadmin']], function () {
     Route::get('compliance-framework-packs', [ComplianceFrameworkPacksController::class, 'index'])
         ->name('settings.compliance_framework_packs.index')
         ->breadcrumbs(fn (Trail $trail) => $trail->parent('settings.index')

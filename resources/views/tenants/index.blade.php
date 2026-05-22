@@ -49,7 +49,7 @@
                                     <x-icon type="edit" class="fa-fw" />
                                 </a>
 
-                                @if (auth()->user()->isSuperUser())
+                                @if (auth()->user()->isSuperAdmin())
                                     @if ($row->tenant->isDeletable())
                                         <form method="POST"
                                               action="{{ route('tenants.destroy', $row->tenant) }}"

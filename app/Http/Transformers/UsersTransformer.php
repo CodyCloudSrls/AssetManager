@@ -23,8 +23,10 @@ class UsersTransformer
     {
 
         $role = null;
-        if ($user->isSuperUser()) {
+        if ($user->isSuperAdmin()) {
             $role = 'superadmin';
+        } elseif ($user->isSuperUser()) {
+            $role = 'superuser';
         } elseif ($user->isAdmin()) {
             $role = 'admin';
         }
@@ -102,9 +104,9 @@ class UsersTransformer
         ];
 
         $permissions_array['available_actions'] = [
-            'update' => (Gate::allows('update', User::class) && ($user->deleted_at == '')),
+            'update' => (Gate::allows('update', $user) && ($user->deleted_at == '')),
             'delete' => ($user->isDeletable() && (auth()->user()->can('canEditAuthFields', $user) && auth()->user()->can('editableOnDemo'))),
-            'clone' => (Gate::allows('create', User::class) && ($user->deleted_at == '')),
+            'clone' => (Gate::allows('create', User::class) && Gate::allows('view', $user) && ($user->deleted_at == '')),
             'restore' => (Gate::allows('create', User::class) && ($user->deleted_at != '')),
         ];
 

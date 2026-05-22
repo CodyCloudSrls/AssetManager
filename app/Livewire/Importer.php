@@ -694,7 +694,7 @@ class Importer extends Component
             return;
         }
 
-        if ((auth()->user()->id != $import->created_by) && (! auth()->user()->isSuperUser())) {
+        if ((auth()->user()->id != $import->created_by) && (! auth()->user()->isSuperAdmin())) {
             $this->message = trans('general.generic_model_not_found', ['model' => trans('general.import')]);
             $this->message_type = 'danger';
 

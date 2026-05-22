@@ -586,7 +586,7 @@
                                   <div class="col-md-6">
 
                                       @if ($groups->count())
-                                          @if ((!Gate::allows('editableOnDemo') || (!Auth::user()->isSuperUser())))
+                                          @if ((!Gate::allows('editableOnDemo') || (!Auth::user()->isSuperAdmin())))
 
                                               @if (count($userGroups->keys()) > 0)
                                                   <ul>
@@ -607,9 +607,10 @@
                                                         name="groups[]"
                                                         size="{{ ($groups->count() > 25) ? '25' : '10' }}"
                                                         aria-label="groups[]"
-                                                        id="groups[]"
+                                                        id="groups"
                                                         multiple="multiple"
-                                                        class="form-control">
+                                                        class="form-control select2"
+                                                        style="width: 100%;">
 
                                                     @foreach ($groups as $id => $group)
                                                         <option value="{{ $id }}"
@@ -644,7 +645,7 @@
 
           @can('admin')
           <div class="tab-pane" id="permissions">
-                  @if (!Auth::user()->isSuperUser())
+                  @if (!Auth::user()->isSuperAdmin())
                     <p class="alert alert-warning">{{ trans('admin/users/general.superadmin_permission_warning') }}</p>
                   @endif
 

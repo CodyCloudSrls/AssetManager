@@ -1590,7 +1590,9 @@
             if ((value) && (row)) {
 
                 if (row.role === 'superadmin') {
-                    return '<span style="white-space: nowrap" data-tooltip="true" title="{{ trans('general.superuser_tooltip') }}"><x-icon type="superadmin" title="{{ trans('general.superuser') }}"  class="text-danger" /> <a href="{{ config('app.url') }}/users/' + row.id + '">' + value + '</a></span>';
+                    return '<span style="white-space: nowrap" data-tooltip="true" title="{{ trans('general.superadmin_tooltip') }}"><x-icon type="superadmin" title="{{ trans('general.superadmin') }}"  class="text-danger" /> <a href="{{ config('app.url') }}/users/' + row.id + '">' + value + '</a></span>';
+                } else if (row.role === 'superuser') {
+                    return '<span style="white-space: nowrap" data-tooltip="true" title="{{ trans('general.superuser_tooltip') }}"><x-icon type="superadmin" title="{{ trans('general.superuser') }}"  class="text-primary" /> <a href="{{ config('app.url') }}/users/' + row.id + '">' + value + '</a></span>';
                 } else if (row.role === 'admin') {
                     return '<span style="white-space: nowrap" data-tooltip="true" title="{{ trans('general.admin_tooltip') }}"><x-icon type="superadmin" title="{{ trans('general.admin_user') }}" class="text-warning" /> <a href="{{ config('app.url') }}/users/' + row.id + '">' + value + '</a></span>';
                 }

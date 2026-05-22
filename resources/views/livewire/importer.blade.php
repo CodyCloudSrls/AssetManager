@@ -126,7 +126,7 @@
                                     		<tr style="{{ ($this->activeFile && ($currentFile->id == $this->activeFile->id)) ? 'font-weight: bold' : '' }}" class="{{ ($this->activeFile && ($currentFile->id == $this->activeFile->id)) ? '' : '' }}">
                                     			<td>
 
-                                                    @if ((auth()->user()->id == $currentFile->adminuser?->id) || (auth()->user()->isSuperUser()))
+                                                    @if ((auth()->user()->id == $currentFile->adminuser?->id) || (auth()->user()->isSuperAdmin()))
                                                         <a href="{{ route('imports.download', $currentFile) }}">{{ $currentFile->file_path }}</a>
                                                     @else
                                                         {{ $currentFile->file_path }}
@@ -152,7 +152,7 @@
                                                         <span class="sr-only">{{ trans('general.import') }}</span>
                                                     </button>
 
-                                                    @if ((auth()->user()->id == $currentFile->adminuser?->id) || (auth()->user()->isSuperUser()))
+                                                    @if ((auth()->user()->id == $currentFile->adminuser?->id) || (auth()->user()->isSuperAdmin()))
                                                         <a href="#" wire:click.prevent="$set('activeFileId',null)" data-tooltip="true" data-title="{{ trans('general.delete') }}">
                                                             <button class="btn btn-sm btn-danger" wire:click="destroy({{ $currentFile->id }})">
                                                                 <i class="fas fa-trash icon-white" aria-hidden="true"></i>

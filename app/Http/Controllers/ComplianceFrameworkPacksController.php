@@ -189,7 +189,7 @@ class ComplianceFrameworkPacksController extends Controller
 
     private function authorizeGlobalPackManagement(): void
     {
-        abort_unless(auth()->user()?->isSuperUser(), 403);
+        abort_unless(auth()->user()?->isSuperAdmin(), 403);
     }
 
     private function packOrAbort(ComplianceFrameworkPackDashboard $dashboard, string $packKey): array

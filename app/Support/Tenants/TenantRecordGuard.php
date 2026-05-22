@@ -36,7 +36,7 @@ class TenantRecordGuard
             return false;
         }
 
-        if ($allowSuperuser && $user->isSuperUser()) {
+        if ($allowSuperuser && $user->isSuperAdmin()) {
             return true;
         }
 

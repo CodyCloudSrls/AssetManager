@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Actions\Permissions\NormalizePermissionsPayloadAction;
+use App\Actions\Permissions\PreserveUnauthorizedPrivilegedPermissionsAction;
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FilterRequest;
@@ -83,6 +84,10 @@ class GroupsController extends Controller
         $requestedPermissions = $request->has('permissions')
             ? NormalizePermissionsPayloadAction::run($request->input('permissions'))
             : $defaultPermissions;
+        $requestedPermissions = PreserveUnauthorizedPrivilegedPermissionsAction::run(
+            requestedPermissions: $requestedPermissions,
+            authenticatedUser: auth()->user()
+        );
 
         $group->fill($request->only(['name', 'notes']));
         $group->created_by = auth()->id();
@@ -133,10 +138,15 @@ class GroupsController extends Controller
 
         // Preserve existing permissions when omitted from PATCH/PUT payload.
         if ($request->has('permissions')) {
+            $originalPermissions = NormalizePermissionsPayloadAction::run($group->permissions);
             $group->permissions = json_encode(
                 Helper::selectedPermissionsArray(
                     config('permissions'),
-                    NormalizePermissionsPayloadAction::run($request->input('permissions'))
+                    PreserveUnauthorizedPrivilegedPermissionsAction::run(
+                        requestedPermissions: NormalizePermissionsPayloadAction::run($request->input('permissions')),
+                        authenticatedUser: auth()->user(),
+                        originalPermissions: $originalPermissions
+                    )
                 )
             );
         }

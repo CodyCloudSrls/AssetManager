@@ -75,6 +75,7 @@ return [
         'review_missing_primary' => 'Missing primary evidence',
         'review_inactive_primary' => 'Inactive primary evidence',
         'review_overdue' => 'Review overdue',
+        'review_missing_upload' => 'Missing uploaded file',
         'review_due' => 'Review due',
         'review_current' => 'Current',
     ],

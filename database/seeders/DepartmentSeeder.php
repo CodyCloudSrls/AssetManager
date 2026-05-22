@@ -19,7 +19,7 @@ class DepartmentSeeder extends Seeder
 
         $locationIds = Location::all()->pluck('id');
 
-        $admin = User::where('permissions->superuser', '1')->first() ?? User::factory()->firstAdmin()->create();
+        $admin = User::where('permissions->superadmin', '1')->first() ?? User::factory()->firstAdmin()->create();
 
         Department::factory()->count(1)->hr()->create([
             'location_id' => $locationIds->random(),

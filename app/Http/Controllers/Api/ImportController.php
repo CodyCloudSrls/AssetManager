@@ -284,7 +284,7 @@ class ImportController extends Controller
 
         if ($import = Import::find($import_id)) {
 
-            if ((auth()->user()->id != $import->created_by) && (! auth()->user()->isSuperUser())) {
+            if ((auth()->user()->id != $import->created_by) && (! auth()->user()->isSuperAdmin())) {
                 return response()->json(Helper::formatStandardApiResponse('warning', null, trans('admin/hardware/message.import.file_delete_error')));
             }
 

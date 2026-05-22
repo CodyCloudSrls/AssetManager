@@ -14,7 +14,7 @@ class ConsumableSeeder extends Seeder
         Consumable::truncate();
         DB::table('consumables_users')->truncate();
 
-        $admin = User::where('permissions->superuser', '1')->first() ?? User::factory()->firstAdmin()->create();
+        $admin = User::where('permissions->superadmin', '1')->first() ?? User::factory()->firstAdmin()->create();
 
         Consumable::factory()->count(1)->cardstock()->create(['created_by' => $admin->id]);
         Consumable::factory()->count(1)->paper()->create(['created_by' => $admin->id]);

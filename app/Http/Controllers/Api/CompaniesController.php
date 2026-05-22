@@ -243,15 +243,44 @@ class CompaniesController extends Controller
 
     private function fillCompany(Company $company, Request $request): void
     {
-        $company->fill($request->all());
-        $company->brand = $request->input('brand');
-        $company->header_color = $request->input('header_color');
-        $company->nav_link_color = $request->input('nav_link_color');
-        $company->link_light_color = $request->input('link_light_color');
-        $company->link_dark_color = $request->input('link_dark_color');
-        $company->footer_text = $request->input('footer_text');
-        $company->privacy_policy_link = $request->input('privacy_policy_link');
-        $company->custom_css = $request->input('custom_css');
+        $company->name = $request->input('name', $company->name);
+        $company->parent_id = $this->normalizedParentId($company, $request);
+        $company->phone = $request->input('phone', $company->phone);
+        $company->fax = $request->input('fax', $company->fax);
+        $company->email = $request->input('email', $company->email);
+        $company->tag_color = $request->input('tag_color', $company->tag_color);
+        $company->notes = $request->input('notes', $company->notes);
+        $company->brand = $request->input('brand', $company->brand);
+        $company->header_color = $request->input('header_color', $company->header_color);
+        $company->nav_link_color = $request->input('nav_link_color', $company->nav_link_color);
+        $company->link_light_color = $request->input('link_light_color', $company->link_light_color);
+        $company->link_dark_color = $request->input('link_dark_color', $company->link_dark_color);
+        $company->footer_text = $request->input('footer_text', $company->footer_text);
+        $company->privacy_policy_link = $request->input('privacy_policy_link', $company->privacy_policy_link);
+        $company->custom_css = $request->input('custom_css', $company->custom_css);
+    }
+
+    private function normalizedParentId(Company $company, Request $request): ?int
+    {
+        if (! $request->has('parent_id') && $company->exists) {
+            return $company->parent_id ? (int) $company->parent_id : null;
+        }
+
+        $parentId = Company::getIdFromInput($request->input('parent_id'));
+
+        if (! is_null($parentId) && (int) $parentId === (int) ($company->id ?? 0)) {
+            return null;
+        }
+
+        if (! is_null($parentId) && Company::canCurrentUserSwitchToCompany((int) $parentId)) {
+            return (int) $parentId;
+        }
+
+        if (! $company->exists && ! Company::currentAuthContext()['can_view_all_tenants']) {
+            return Company::activeCompanyId();
+        }
+
+        return null;
     }
 
     private function handleBrandingUploads(ImageUploadRequest $request, Company $company): void

@@ -181,7 +181,7 @@ class UploadedFilesController extends Controller
 
         if ($import = Import::find($import->id)) {
 
-            if ((auth()->user()->id != $import->created_by) && (! auth()->user()->isSuperUser())) {
+            if ((auth()->user()->id != $import->created_by) && (! auth()->user()->isSuperAdmin())) {
                 return redirect()->back()->with('error', trans('general.file_upload_status.file_not_found'));
             }
 

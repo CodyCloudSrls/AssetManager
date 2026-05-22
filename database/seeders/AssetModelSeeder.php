@@ -14,7 +14,7 @@ class AssetModelSeeder extends Seeder
     {
         AssetModel::truncate();
 
-        $admin = User::where('permissions->superuser', '1')->first() ?? User::factory()->firstAdmin()->create();
+        $admin = User::where('permissions->superadmin', '1')->first() ?? User::factory()->firstAdmin()->create();
 
         // Laptops
         AssetModel::factory()->count(1)->mbp13Model()->create(['created_by' => $admin->id]);

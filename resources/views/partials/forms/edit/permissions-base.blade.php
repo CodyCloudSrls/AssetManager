@@ -3,15 +3,20 @@
 
   <!-- handle superadmin and reports, and anything else with only one option -->
   @php
-    // Ugh, this sucks, but we need to special case reports to map to reports.view
     $sectionPermission = $main_section_permission[0];
-    if ((str_slug($main_section)) == 'reports') {
-        $section_name = 'reports.view';
+    if (count($main_section_permission) === 1) {
+        $section_name = $sectionPermission['permission'];
     } else {
         $section_name =  str_slug($main_section);
     }
+
+    $platformOnlyPermissions = ['superadmin', 'tenants.view_all'];
+    $tenantSuperuserPermissions = ['superuser'];
+    $disableSectionPermission = ((str_slug($main_section) == 'admin') && (!auth()->user()->hasAccess('admin')))
+        || ((in_array($section_name, $platformOnlyPermissions, true)) && (!auth()->user()->isSuperAdmin()))
+        || ((in_array($section_name, $tenantSuperuserPermissions, true)) && (!auth()->user()->isSuperAdmin()) && (!auth()->user()->isSuperUser()));
   @endphp
-  <div class="form-group {{ ($sectionPermission['permission']!='superuser') ? ' nonsuperuser' : '' }}{{ ( ($sectionPermission['permission']!='superuser') && ($sectionPermission['permission']!='admin')) ? ' nonadmin' : '' }}">
+  <div class="form-group {{ (!in_array($sectionPermission['permission'], ['superadmin', 'superuser'], true)) ? ' nonsuperuser' : '' }}{{ ( (!in_array($sectionPermission['permission'], ['superadmin', 'superuser'], true)) && ($sectionPermission['permission']!='admin')) ? ' nonadmin' : '' }}">
 
       <!-- start callout legend for major sections -->
       <div class="callout callout-legend col-md-12">
@@ -47,7 +52,7 @@
                         type="radio"
                         value="1"
                         {{-- Disable the superuser and admin allow if the user is not a superuser --}}
-                        @if (((str_slug($main_section) == 'admin') && (!auth()->user()->hasAccess('admin'))) || ((str_slug($main_section) == 'superuser') && (!auth()->user()->isSuperUser())))
+                        @if ($disableSectionPermission)
                           disabled
                         @endif
                         id="{{ str_slug($main_section) }}_allow"
@@ -66,12 +71,12 @@
                           class="form-control  {{ str_slug($main_section) }} inherit"
                           data-checker-group="{{ str_slug($main_section) }}"
                           aria-label="{{ str_slug($main_section) }}"
-                          name="permission[{{ str_slug($main_section) }}]"
-                          @checked((array_key_exists(str_slug($main_section), $groupPermissions) && $groupPermissions[str_slug($main_section)] == '0') || (!array_key_exists(str_slug($main_section), $groupPermissions)))
+                          name="permission[{{ $section_name }}]"
+                          @checked((array_key_exists($section_name, $groupPermissions) && $groupPermissions[$section_name] == '0') || (!array_key_exists($section_name, $groupPermissions)))
                           type="radio"
                           value="0"
                           {{-- Disable the superuser and admin allow if the user is not a superuser --}}
-                          @if (((str_slug($main_section) == 'admin') && (!auth()->user()->hasAccess('admin'))) || ((str_slug($main_section) == 'superuser') && (!auth()->user()->isSuperUser())))
+                          @if ($disableSectionPermission)
                             disabled
                           @endif
                           id="{{ str_slug($main_section) }}_inherit"
@@ -91,11 +96,11 @@
                         data-checker-group="{{ str_slug($main_section) }}"
                         aria-label="{{ str_slug($main_section) }}"
                         name="permission[{{ $section_name }}]"
-                        @checked(array_key_exists(str_slug($main_section), $groupPermissions) && $groupPermissions[str_slug($main_section)] == '-1')
+                        @checked(array_key_exists($section_name, $groupPermissions) && $groupPermissions[$section_name] == '-1')
                         type="radio"
                         value="-1"
                         {{-- Disable the superuser and admin allow if the user is not a superuser --}}
-                        @if (((str_slug($main_section) == 'admin') && (!auth()->user()->hasAccess('admin'))) || ((str_slug($main_section) == 'superuser') && (!auth()->user()->isSuperUser())))
+                        @if ($disableSectionPermission)
                           disabled
                         @endif
                         id="{{ str_slug($main_section) }}_deny"
@@ -117,7 +122,7 @@
   @if (count($main_section_permission) > 2)
       <div
            class="toggle-content-{{ str_slug($sectionPermission['permission']) }} {{ str_slug($sectionPermission['permission']) }}
-          {{ ($sectionPermission['permission']!='superuser') ? ' nonsuperuser' : '' }}{{ ( ($sectionPermission['permission']!='superuser') && ($sectionPermission['permission']!='admin')) ? ' nonadmin' : '' }}"
+          {{ (!in_array($sectionPermission['permission'], ['superadmin', 'superuser'], true)) ? ' nonsuperuser' : '' }}{{ ( (!in_array($sectionPermission['permission'], ['superadmin', 'superuser'], true)) && ($sectionPermission['permission']!='admin')) ? ' nonadmin' : '' }}"
       >
 
                 @foreach ($main_section_permission as $index => $this_permission)
@@ -125,6 +130,8 @@
 
                     @php
                         $section_translation = trans('permissions.'.str_slug($this_permission['permission']).'.name');
+                        $disablePermission = ((in_array($this_permission['permission'], $platformOnlyPermissions, true)) && (!auth()->user()->isSuperAdmin()))
+                            || ((in_array($this_permission['permission'], $tenantSuperuserPermissions, true)) && (!auth()->user()->isSuperAdmin()) && (!auth()->user()->isSuperUser()));
                     @endphp
 
                       <div class="form-group" style="border-bottom: 1px solid #eee; padding-right: 13px;">
@@ -146,6 +153,9 @@
                                           name="permission[{{ $this_permission['permission'] }}]"
                                           type="radio"
                                           id="{{ str_slug($this_permission['permission']) }}_allow"
+                                          @if ($disablePermission)
+                                            disabled
+                                          @endif
                                           value="1"
                                   >
                                   <label for="{{ str_slug($this_permission['permission']) }}_allow" class="allow">
@@ -162,6 +172,9 @@
                                           name="permission[{{ $this_permission['permission'] }}]"
                                           type="radio"
                                           id="{{ str_slug($this_permission['permission']) }}_inherit"
+                                          @if ($disablePermission)
+                                            disabled
+                                          @endif
                                           value="0"
                                   >
                                   <label for="{{ str_slug($this_permission['permission']) }}_inherit" class="inherit">
@@ -179,6 +192,9 @@
                                         type="radio"
                                         value="-1"
                                         id="{{ str_slug($this_permission['permission']) }}_deny"
+                                        @if ($disablePermission)
+                                          disabled
+                                        @endif
                                 >
                                 <label for="{{ str_slug($this_permission['permission']) }}_deny">
                                   <i class="fa-solid fa-square-xmark"></i>
@@ -196,5 +212,3 @@
   @endif
 
 @endforeach
-
-

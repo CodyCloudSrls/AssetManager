@@ -9,7 +9,13 @@
 @section('inputFields')
     @include('partials.forms.edit.name', ['translated_name' => trans('admin/documenttypes/table.name'), 'item' => $item])
     @include('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id', 'item' => $item])
-    @include('partials.forms.edit.template-visibility-select', ['translated_name' => trans('general.template_visibility.label'), 'fieldname' => 'visibility_type', 'item' => $item])
+    @include('partials.forms.edit.template-visibility-select', [
+        'translated_name' => trans('general.template_visibility.label'),
+        'fieldname' => 'visibility_type',
+        'item' => $item,
+        'visibilityOptions' => $visibilityOptions,
+        'defaultVisibility' => \App\Models\DocumentType::VISIBILITY_PRIVATE,
+    ])
 
     <div class="form-group {{ $errors->has('slug') ? ' has-error' : '' }}">
         <label for="slug" class="col-md-3 control-label">{{ trans('admin/documenttypes/table.slug') }}</label>

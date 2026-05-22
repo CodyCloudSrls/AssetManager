@@ -9,7 +9,7 @@ return array (
   'owner' => 'Owner',
   'reference' => 'Reference',
   'version' => 'Version',
-  'status_help' => 'Assigned primary documents count toward requirement minimum documents when they are not obsolete or archived and satisfy effective and review dates.',
+  'status_help' => 'Assigned primary documents count toward requirement minimum documents only when they are valid, currently effective, and have at least one uploaded file.',
   'classification' => 'Classification',
   'classification_help' => 'Set the confidentiality or handling level for the document, for example Public, Internal, Restricted, or Confidential.',
   'classification_placeholder' => 'E.g. Internal, Restricted, Confidential',

@@ -253,28 +253,22 @@ final class Company extends SnipeModel
             return self::$authContextCache = [
                 'id' => null,
                 'company_id' => null,
+                'is_superadmin' => false,
                 'is_superuser' => false,
+                'can_view_all_tenants' => false,
             ];
         }
 
-        $permissions = json_decode((string) ($user->permissions ?? '{}'), true) ?: [];
-        $isSuperuser = ! empty($permissions['superuser']) && ($permissions['superuser'] !== '0');
-
-        if (! $isSuperuser) {
-            $isSuperuser = DB::table('users_groups')
-                ->join('permission_groups', 'permission_groups.id', '=', 'users_groups.group_id')
-                ->where('users_groups.user_id', $user->id)
-                ->where(function ($query) {
-                    $query->where('permission_groups.permissions', 'LIKE', '%"superuser":"1"%')
-                        ->orWhere('permission_groups.permissions', 'LIKE', '%"superuser":1%');
-                })
-                ->exists();
-        }
+        $isSuperadmin = self::currentAuthUserHasPermission($user, 'superadmin');
+        $isSuperuser = $isSuperadmin || self::currentAuthUserHasPermission($user, 'superuser');
+        $canViewAllTenants = $isSuperadmin && self::currentAuthUserHasPermission($user, 'tenants.view_all');
 
         return self::$authContextCache = [
             'id' => $user->id ? (int) $user->id : null,
             'company_id' => $user->company_id ? (int) $user->company_id : null,
+            'is_superadmin' => $isSuperadmin,
             'is_superuser' => $isSuperuser,
+            'can_view_all_tenants' => $canViewAllTenants,
         ];
     }
 
@@ -297,7 +291,7 @@ final class Company extends SnipeModel
             $context_company_ids = self::activeCompanyContextIds();
 
             if (count($context_company_ids) === 0) {
-                return $requested_company_id;
+                return $authContext['can_view_all_tenants'] ? $requested_company_id : null;
             }
 
             if (($requested_company_id !== null) && in_array((int) $requested_company_id, $context_company_ids, true)) {
@@ -361,7 +355,7 @@ final class Company extends SnipeModel
                 $activeCompanyContextIds = self::activeCompanyContextIds();
 
                 if (count($activeCompanyContextIds) === 0) {
-                    return true;
+                    return $authContext['can_view_all_tenants'];
                 }
 
                 if ($companyable instanceof Company) {
@@ -396,11 +390,11 @@ final class Company extends SnipeModel
 
         if (method_exists($template, 'isSystemTemplate')) {
             if ($template->isSystemTemplate()) {
-                return $authContext['is_superuser'] && is_null(Tenant::activeTenantId());
+                return Tenant::canCurrentUserUseGlobalTenantContext();
             }
 
             if (is_null($template->company_id)) {
-                return $authContext['is_superuser'] && is_null(Tenant::activeTenantId());
+                return Tenant::canCurrentUserUseGlobalTenantContext();
             }
         }
 
@@ -408,7 +402,7 @@ final class Company extends SnipeModel
             $activeCompanyContextIds = self::activeCompanyContextIds();
 
             if (count($activeCompanyContextIds) === 0) {
-                return true;
+                return $authContext['can_view_all_tenants'];
             }
 
             if (is_null($template->company_id)) {
@@ -455,7 +449,8 @@ final class Company extends SnipeModel
             $activeCompanyContextIds = self::activeCompanyContextIds();
 
             return (count($activeCompanyContextIds) === 0)
-                || (! is_null($template->company_id) && in_array((int) $template->company_id, $activeCompanyContextIds, true));
+                ? $authContext['can_view_all_tenants']
+                : (! is_null($template->company_id) && in_array((int) $template->company_id, $activeCompanyContextIds, true));
         }
 
         if (is_null($template->company_id)) {
@@ -570,7 +565,7 @@ final class Company extends SnipeModel
             return [];
         }
 
-        if ($authContext['is_superuser']) {
+        if ($authContext['is_superuser'] || $authContext['can_view_all_tenants']) {
             return Tenant::activeTenantCompanyIds();
         }
 
@@ -622,7 +617,7 @@ final class Company extends SnipeModel
             return self::currentUserAncestorCompanyIds();
         }
 
-        if ($authContext['is_superuser']) {
+        if ($authContext['is_superuser'] || $authContext['can_view_all_tenants']) {
             return [];
         }
 
@@ -684,7 +679,7 @@ final class Company extends SnipeModel
             return [$companyId, self::normalizeTemplateVisibility($companyId, $visibilityType)];
         }
 
-        if ($authContext['is_superuser']) {
+        if ($authContext['is_superuser'] && Tenant::canCurrentUserUseGlobalTenantContext()) {
             return [$companyId, self::normalizeTemplateVisibility($companyId, $visibilityType)];
         }
 
@@ -724,11 +719,7 @@ final class Company extends SnipeModel
      */
     public static function getIdForUser($unescaped_input)
     {
-        if (self::currentAuthContext()['is_superuser']) {
-            return self::getIdFromInput($unescaped_input);
-        } else {
-            return self::getIdForCurrentUser($unescaped_input);
-        }
+        return self::getIdForCurrentUser($unescaped_input);
     }
 
     public function users()
@@ -812,7 +803,7 @@ final class Company extends SnipeModel
             return $query;
         }
 
-        if (self::currentAuthContext()['is_superuser'] && is_null(Tenant::activeTenantId())) {
+        if (Tenant::canCurrentUserUseGlobalTenantContext()) {
             return $query;
         }
 
@@ -862,7 +853,7 @@ final class Company extends SnipeModel
             return $query;
         }
 
-        if (self::currentAuthContext()['is_superuser'] && is_null(Tenant::activeTenantId())) {
+        if (Tenant::canCurrentUserUseGlobalTenantContext()) {
             return $query;
         }
 
@@ -904,7 +895,7 @@ final class Company extends SnipeModel
 
         if (count($companyable_names) == 0) {
             throw new Exception('No Companyable Children to scope');
-        } elseif (Auth::hasUser() && self::currentAuthContext()['is_superuser']) {
+        } elseif (Auth::hasUser() && Tenant::canCurrentUserUseGlobalTenantContext()) {
             return $query;
         } else {
             $f = function ($q) {
@@ -965,6 +956,15 @@ final class Company extends SnipeModel
             return self::$descendantCompanyIdsCache[$companyId];
         }
 
+        $rootTenantId = self::withoutGlobalScopes()
+            ->whereNull('deleted_at')
+            ->where('id', $companyId)
+            ->value('tenant_id');
+
+        if (! self::withoutGlobalScopes()->whereNull('deleted_at')->where('id', $companyId)->exists()) {
+            return self::$descendantCompanyIdsCache[$companyId] = [];
+        }
+
         $allIds = [$companyId];
         $frontier = [$companyId];
 
@@ -972,6 +972,7 @@ final class Company extends SnipeModel
             $children = self::withoutGlobalScopes()
                 ->whereNull('deleted_at')
                 ->whereIn('parent_id', $frontier)
+                ->when(! is_null($rootTenantId), fn ($query) => $query->where('tenant_id', $rootTenantId))
                 ->pluck('id')
                 ->map(fn ($id) => (int) $id)
                 ->all();
@@ -1005,8 +1006,9 @@ final class Company extends SnipeModel
         $visited = [];
         $currentCompany = self::withoutGlobalScopes()
             ->whereNull('deleted_at')
-            ->select(['id', 'parent_id'])
+            ->select(['id', 'parent_id', 'tenant_id'])
             ->find($companyId);
+        $rootTenantId = $currentCompany?->tenant_id ? (int) $currentCompany->tenant_id : null;
 
         while ($currentCompany?->parent_id) {
             $parentId = (int) $currentCompany->parent_id;
@@ -1016,11 +1018,20 @@ final class Company extends SnipeModel
             }
 
             $visited[] = $parentId;
-            $ancestorIds[] = $parentId;
             $currentCompany = self::withoutGlobalScopes()
                 ->whereNull('deleted_at')
-                ->select(['id', 'parent_id'])
+                ->select(['id', 'parent_id', 'tenant_id'])
                 ->find($parentId);
+
+            if (! $currentCompany) {
+                break;
+            }
+
+            if (! is_null($rootTenantId) && (int) ($currentCompany->tenant_id ?? 0) !== $rootTenantId) {
+                break;
+            }
+
+            $ancestorIds[] = $parentId;
         }
 
         self::$ancestorCompanyIdsCache[$companyId] = $ancestorIds;
@@ -1133,7 +1144,9 @@ final class Company extends SnipeModel
         if ($authContext['is_superuser']) {
             $activeCompanyContextIds = self::activeCompanyContextIds();
 
-            return (count($activeCompanyContextIds) === 0) || in_array((int) $companyId, $activeCompanyContextIds, true);
+            return (count($activeCompanyContextIds) === 0)
+                ? $authContext['can_view_all_tenants']
+                : in_array((int) $companyId, $activeCompanyContextIds, true);
         }
 
         if (is_null($authContext['company_id'])) {
@@ -1155,5 +1168,54 @@ final class Company extends SnipeModel
             ->pluck('id')
             ->map(fn ($id) => (int) $id)
             ->all();
+    }
+
+    private static function currentAuthUserHasPermission(object $user, string $permission): bool
+    {
+        $directPermissions = json_decode((string) ($user->permissions ?? '{}'), true) ?: [];
+
+        if (array_key_exists($permission, $directPermissions)) {
+            if (self::permissionValueAllows($directPermissions[$permission])) {
+                return true;
+            }
+
+            if (self::permissionValueDenies($directPermissions[$permission])) {
+                return false;
+            }
+        }
+
+        return self::currentAuthUserGroupPermissionAllows((int) $user->id, $permission);
+    }
+
+    private static function currentAuthUserDeniedPermission(object $user, string $permission): bool
+    {
+        $directPermissions = json_decode((string) ($user->permissions ?? '{}'), true) ?: [];
+
+        return array_key_exists($permission, $directPermissions)
+            && self::permissionValueDenies($directPermissions[$permission]);
+    }
+
+    private static function currentAuthUserGroupPermissionAllows(int $userId, string $permission): bool
+    {
+        return DB::table('users_groups')
+            ->join('permission_groups', 'permission_groups.id', '=', 'users_groups.group_id')
+            ->where('users_groups.user_id', $userId)
+            ->pluck('permission_groups.permissions')
+            ->contains(function ($permissionsJson) use ($permission) {
+                $permissions = json_decode((string) $permissionsJson, true) ?: [];
+
+                return array_key_exists($permission, $permissions)
+                    && self::permissionValueAllows($permissions[$permission]);
+            });
+    }
+
+    private static function permissionValueAllows(mixed $value): bool
+    {
+        return (string) $value === '1';
+    }
+
+    private static function permissionValueDenies(mixed $value): bool
+    {
+        return (string) $value === '-1';
     }
 }

@@ -14,7 +14,7 @@ trait LoadsTicketOperators
         $query = User::withoutGlobalScopes()
             ->whereNull('deleted_at');
 
-        if (! auth()->user()?->isSuperUser()) {
+        if (! auth()->user()?->isSuperAdmin()) {
             $query->withoutPlatformSuperAdmins();
         }
 

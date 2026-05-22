@@ -45,7 +45,6 @@ class UsersController extends Controller
     public function index(FilterRequest $request): array
     {
         $this->authorize('view', User::class);
-        $authenticatedUser = auth()->user();
 
         $users = User::select([
             'users.activated',
@@ -105,10 +104,6 @@ class UsersController extends Controller
                 'managesUsers as manages_users_count',
                 'managedLocations as manages_locations_count',
             ]);
-
-        if (! $authenticatedUser->isSuperUser()) {
-            $users->withoutPlatformSuperAdmins();
-        }
 
         $allowed_columns =
             [
@@ -397,8 +392,6 @@ class UsersController extends Controller
      */
     public function selectlist(Request $request): array
     {
-        $authenticatedUser = auth()->user();
-
         $users = User::select(
             [
                 'users.id',
@@ -413,7 +406,7 @@ class UsersController extends Controller
             ]
         )->where('show_in_list', '=', '1');
 
-        if (($request->boolean('exclude_superusers')) || (! $authenticatedUser->isSuperUser())) {
+        if ($request->boolean('exclude_superusers')) {
             $users->withoutPlatformSuperAdmins();
         }
 
@@ -508,7 +501,7 @@ class UsersController extends Controller
 
             }
 
-            if (($request->has('groups')) && (auth()->user()->isSuperUser())) {
+            if (($request->has('groups')) && (auth()->user()->isSuperAdmin())) {
 
                 $validator = Validator::make($request->only('groups'), [
                     'groups.*' => 'integer|exists:permission_groups,id',
@@ -628,7 +621,7 @@ class UsersController extends Controller
 
         if ($user->save()) {
             // Check if the request has groups passed and has a value, AND that the user us a superuser
-            if (($request->has('groups')) && (auth()->user()->isSuperUser())) {
+            if (($request->has('groups')) && (auth()->user()->isSuperAdmin())) {
 
                 $validator = Validator::make($request->only('groups'), [
                     'groups.*' => 'integer|exists:permission_groups,id',
@@ -664,6 +657,10 @@ class UsersController extends Controller
         if ($user = User::withTrashed()->find($id)) {
 
             $this->authorize('delete', $user);
+
+            if (auth()->id() === (int) $user->id) {
+                return response()->json(Helper::formatStandardApiResponse('error', null, trans('admin/users/message.error.cannot_delete_yourself')));
+            }
 
             if (auth()->user()->can('canEditAuthFields', $user) && auth()->user()->can('editableOnDemo')) {
 

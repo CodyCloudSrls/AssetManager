@@ -51,16 +51,18 @@ class DocumentsBulkUiTest extends TestCase
         $this->assertStringNotContainsString('$reviewStart', $view);
     }
 
-    public function test_requirement_coverage_counts_assigned_primary_documents_until_obsolete_or_archived(): void
+    public function test_requirement_coverage_counts_only_valid_current_primary_documents_with_files(): void
     {
         $model = $this->repoFile('app/Models/Document.php');
         $form = $this->repoFile('resources/lang/it-IT/admin/documents/form.php');
 
-        $this->assertStringContainsString('whereNotIn(\'documents.status\'', $model);
-        $this->assertStringContainsString('self::STATUS_OBSOLETE', $model);
-        $this->assertStringContainsString('self::STATUS_ARCHIVED', $model);
-        $this->assertStringNotContainsString("where('documents.status', self::STATUS_ACTIVE)", $model);
-        $this->assertStringContainsString('non sono obsoleti o archiviati', $form);
+        $this->assertStringContainsString("where('documents.status', self::STATUS_ACTIVE)", $model);
+        $this->assertStringContainsString('hasCoverageUpload()', $model);
+        $this->assertStringContainsString('public function hasCoverageUpload(): bool', $model);
+        $this->assertStringContainsString('coverage_uploads', $model);
+        $this->assertStringContainsString("where('coverage_uploads.action_type', 'uploaded')", $model);
+        $this->assertStringContainsString("where('coverage_upload_deletions.action_type', 'upload deleted')", $model);
+        $this->assertStringContainsString('validi, in corso di validità e hanno almeno un allegato caricato', $form);
     }
 
     private function repoPath(string $relativePath): string

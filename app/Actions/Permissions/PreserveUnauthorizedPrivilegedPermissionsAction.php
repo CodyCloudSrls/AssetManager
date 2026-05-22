@@ -15,7 +15,17 @@ final class PreserveUnauthorizedPrivilegedPermissionsAction
      */
     public static function run(array $requestedPermissions, User $authenticatedUser, array $originalPermissions = []): array
     {
-        if (! $authenticatedUser->isSuperUser()) {
+        if (! $authenticatedUser->isSuperAdmin()) {
+            foreach (['superadmin', 'tenants.view_all'] as $privilegedPermission) {
+                if (array_key_exists($privilegedPermission, $originalPermissions)) {
+                    $requestedPermissions[$privilegedPermission] = $originalPermissions[$privilegedPermission];
+                } else {
+                    unset($requestedPermissions[$privilegedPermission]);
+                }
+            }
+        }
+
+        if ((! $authenticatedUser->isSuperAdmin()) && (! $authenticatedUser->isSuperUser())) {
             if (array_key_exists('superuser', $originalPermissions)) {
                 $requestedPermissions['superuser'] = $originalPermissions['superuser'];
             } else {
@@ -23,7 +33,7 @@ final class PreserveUnauthorizedPrivilegedPermissionsAction
             }
         }
 
-        if ((! $authenticatedUser->isAdmin()) && (! $authenticatedUser->isSuperUser())) {
+        if ((! $authenticatedUser->isAdmin()) && (! $authenticatedUser->isSuperAdmin()) && (! $authenticatedUser->isSuperUser())) {
             if (array_key_exists('admin', $originalPermissions)) {
                 $requestedPermissions['admin'] = $originalPermissions['admin'];
             } else {

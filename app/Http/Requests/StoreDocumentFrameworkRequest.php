@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Company;
 use App\Models\DocumentFramework;
+use App\Models\Tenant;
 use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
@@ -60,8 +61,16 @@ class StoreDocumentFrameworkRequest extends FormRequest
         $validator->after(function ($validator) {
             $documentFrameworkId = $this->route('documentframework')?->id ?? $this->route('documentframework');
 
-            if (is_null($this->input('company_id'))) {
+            if (is_null($this->input('company_id')) && $this->input('visibility_type') !== DocumentFramework::VISIBILITY_GLOBAL) {
                 $validator->errors()->add('company_id', trans('validation.required', ['attribute' => trans('general.company')]));
+            }
+
+            if ($this->input('visibility_type') === DocumentFramework::VISIBILITY_GLOBAL) {
+                $canManageGlobalFramework = Tenant::canCurrentUserUseGlobalTenantContext();
+
+                if (! $canManageGlobalFramework) {
+                    $validator->errors()->add('visibility_type', trans('validation.in', ['attribute' => trans('general.template_visibility.label')]));
+                }
             }
 
             foreach (['name', 'slug'] as $column) {

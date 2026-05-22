@@ -50,7 +50,8 @@ class TenantsController extends Controller
     {
         abort_unless(auth()->user()->hasAccessToTenantAdminArea(), 403);
 
-        $tenantIds = auth()->user()->isSuperUser()
+        $authContext = Company::currentAuthContext();
+        $tenantIds = ($authContext['can_view_all_tenants'] || $authContext['is_superuser'])
             ? Tenant::accessibleTenantIdsForCurrentUser()
             : Tenant::explicitMembershipTenantIdsForCurrentUser();
 
@@ -78,7 +79,7 @@ class TenantsController extends Controller
 
     public function create(): View
     {
-        abort_unless(auth()->user()->isSuperUser(), 403);
+        abort_unless(auth()->user()->isSuperAdmin(), 403);
 
         return view('tenants.create', [
             'item' => new Company,
@@ -88,7 +89,7 @@ class TenantsController extends Controller
 
     public function store(ImageUploadRequest $request): RedirectResponse
     {
-        abort_unless(auth()->user()->isSuperUser(), 403);
+        abort_unless(auth()->user()->isSuperAdmin(), 403);
 
         $request->validate([
             'name' => 'required|string|max:255|unique:companies,name',
@@ -183,7 +184,7 @@ class TenantsController extends Controller
 
         $members = $tenant->members()
             ->with('company')
-            ->when(! auth()->user()->isSuperUser(), fn ($query) => $query->withoutPlatformSuperAdmins())
+            ->when(! auth()->user()->isSuperAdmin(), fn ($query) => $query->withoutPlatformSuperAdmins())
             ->orderBy('display_name')
             ->orderBy('last_name')
             ->orderBy('first_name')
@@ -241,7 +242,7 @@ class TenantsController extends Controller
 
     public function destroy(Tenant $tenant): RedirectResponse
     {
-        abort_unless(auth()->user()->isSuperUser(), 403);
+        abort_unless(auth()->user()->isSuperAdmin(), 403);
 
         if (! $tenant->isDeletable()) {
             return redirect()->route('tenants.index')->with('error', trans('admin/tenants/message.delete.not_deletable'));
@@ -418,7 +419,7 @@ class TenantsController extends Controller
         ]);
 
         $user = User::withoutGlobalScopes()->findOrFail($payload['user_id']);
-        abort_if($user->isSuperUser(), 403);
+        abort_if($user->isSuperAdmin(), 403);
 
         $tenant->members()->syncWithoutDetaching([
             $user->id => [
@@ -435,7 +436,7 @@ class TenantsController extends Controller
     public function updateMember(Request $request, Tenant $tenant, User $user): RedirectResponse
     {
         abort_unless(auth()->user()->canManageTenant($tenant), 403);
-        abort_if($user->isSuperUser(), 403);
+        abort_if($user->isSuperAdmin(), 403);
 
         $payload = $request->validate([
             'role' => 'required|string|in:'.Tenant::ROLE_ADMIN.','.Tenant::ROLE_VIEWER,
@@ -453,7 +454,7 @@ class TenantsController extends Controller
     public function destroyMember(Tenant $tenant, User $user): RedirectResponse
     {
         abort_unless(auth()->user()->canManageTenant($tenant), 403);
-        abort_if($user->isSuperUser(), 403);
+        abort_if($user->isSuperAdmin(), 403);
 
         $tenant->members()->detach($user->id);
 

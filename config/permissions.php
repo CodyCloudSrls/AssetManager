@@ -8,6 +8,13 @@
 
 return [
 
+    'Superadmin' => [
+        [
+            'permission' => 'superadmin',
+            'display' => true,
+        ],
+    ],
+
     'Superuser' => [
         [
             'permission' => 'superuser',
@@ -18,6 +25,13 @@ return [
     'Admin' => [
         [
             'permission' => 'admin',
+            'display' => true,
+        ],
+    ],
+
+    'Tenants' => [
+        [
+            'permission' => 'tenants.view_all',
             'display' => true,
         ],
     ],

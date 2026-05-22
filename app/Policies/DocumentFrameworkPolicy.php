@@ -19,7 +19,7 @@ class DocumentFrameworkPolicy extends SnipePermissionsPolicy
         if ($item instanceof DocumentFramework && is_null($item->company_id)) {
             return $item->isSystemTemplate()
                 ? $this->allowsSystemTemplateAbility($user, $ability)
-                : $user->isSuperUser() && is_null(Tenant::activeTenantId());
+                : Tenant::canCurrentUserUseGlobalTenantContext();
         }
 
         return parent::before($user, $ability, $item);
@@ -30,7 +30,7 @@ class DocumentFrameworkPolicy extends SnipePermissionsPolicy
         if ($item instanceof DocumentFramework && is_null($item->company_id)) {
             return $item->isSystemTemplate()
                 ? $this->allowsSystemTemplateAbility($user, 'view')
-                : $user->isSuperUser() && is_null(Tenant::activeTenantId());
+                : Tenant::canCurrentUserUseGlobalTenantContext();
         }
 
         return parent::view($user, $item);
@@ -60,6 +60,6 @@ class DocumentFrameworkPolicy extends SnipePermissionsPolicy
             return false;
         }
 
-        return $user->isSuperUser() && is_null(Tenant::activeTenantId());
+        return Tenant::canCurrentUserUseGlobalTenantContext();
     }
 }

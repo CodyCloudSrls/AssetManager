@@ -22,7 +22,7 @@ class ActionlogSeeder extends Seeder
             $this->call(LocationSeeder::class);
         }
 
-        $admin = User::where('permissions->superuser', '1')->first() ?? User::factory()->firstAdmin()->create();
+        $admin = User::where('permissions->superadmin', '1')->first() ?? User::factory()->firstAdmin()->create();
 
         Actionlog::factory()
             ->count(300)

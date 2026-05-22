@@ -37,7 +37,13 @@ abstract class SnipePermissionsPolicy
 
     public function before(User $user, $ability, $item)
     {
-        if (($item instanceof User) && $item->isSuperUser() && (! $user->isSuperUser())) {
+        $readOnlyUserAbilities = ['view', 'history', 'journal'];
+
+        if (($item instanceof User) && $item->isSuperAdmin() && (! $user->isSuperAdmin()) && ! in_array($ability, $readOnlyUserAbilities, true)) {
+            return false;
+        }
+
+        if (($item instanceof User) && $item->isSuperUser() && (! $user->isSuperUser()) && ! in_array($ability, $readOnlyUserAbilities, true)) {
             return false;
         }
 
@@ -49,7 +55,7 @@ abstract class SnipePermissionsPolicy
          * accessories, etc (anything other than users) will result in a Forbidden error, whereas the users
          * area will redirect with "That user doesn't exist" since the scoping is handled directly on those queries.
          *
-         * The *superuser* global permission gets handled in the AuthServiceProvider before() method.
+         * The *superadmin* global permission gets handled in the AuthServiceProvider before() method.
          *
          * @see https://snipe-it.readme.io/docs/permissions
          */

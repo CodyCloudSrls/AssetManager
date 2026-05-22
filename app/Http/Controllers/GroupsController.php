@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Permissions\NormalizePermissionsPayloadAction;
+use App\Actions\Permissions\PreserveUnauthorizedPrivilegedPermissionsAction;
 use App\Helpers\Helper;
 use App\Models\Group;
 use App\Models\User;
@@ -83,7 +84,10 @@ class GroupsController extends Controller
         $group->permissions = json_encode(
             Helper::selectedPermissionsArray(
                 config('permissions'),
-                NormalizePermissionsPayloadAction::run($request->input('permission'))
+                PreserveUnauthorizedPrivilegedPermissionsAction::run(
+                    requestedPermissions: NormalizePermissionsPayloadAction::run($request->input('permission')),
+                    authenticatedUser: auth()->user()
+                )
             )
         );
         $group->created_by = auth()->id();
@@ -169,10 +173,15 @@ class GroupsController extends Controller
         $group->notes = $request->input('notes');
 
         if ($request->has('permission')) {
+            $originalPermissions = NormalizePermissionsPayloadAction::run($group->permissions);
             $group->permissions = json_encode(
                 Helper::selectedPermissionsArray(
                     config('permissions'),
-                    NormalizePermissionsPayloadAction::run($request->input('permission'))
+                    PreserveUnauthorizedPrivilegedPermissionsAction::run(
+                        requestedPermissions: NormalizePermissionsPayloadAction::run($request->input('permission')),
+                        authenticatedUser: auth()->user(),
+                        originalPermissions: $originalPermissions
+                    )
                 )
             );
         }

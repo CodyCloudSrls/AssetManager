@@ -42,7 +42,7 @@ class LicenseSeeder extends Seeder
 
         $supplierIds = Supplier::all()->pluck('id');
 
-        $admin = User::where('permissions->superuser', '1')->first() ?? User::factory()->firstAdmin()->create();
+        $admin = User::where('permissions->superadmin', '1')->first() ?? User::factory()->firstAdmin()->create();
 
         License::factory()->count(1)->photoshop()->create([
             'category_id' => $graphicsSoftwareCategory->id,

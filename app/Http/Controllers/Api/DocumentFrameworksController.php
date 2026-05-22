@@ -79,7 +79,7 @@ class DocumentFrameworksController extends Controller
         if (! $request->boolean('system_templates')) {
             $documentFrameworks->operational();
         } else {
-            abort_unless(auth()->user()?->isSuperUser() && is_null(\App\Models\Tenant::activeTenantId()), 403);
+            abort_unless(\App\Models\Tenant::canCurrentUserUseGlobalTenantContext(), 403);
             $documentFrameworks->systemTemplates();
         }
 

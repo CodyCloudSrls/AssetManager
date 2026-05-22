@@ -1,15 +1,30 @@
 <?php
 
 return array (
+  'superadmin' =>
+  array (
+    'name' => 'Superadmin piattaforma',
+    'note' => 'Determina se l\'utente ha accesso a livello piattaforma, incluse impostazioni di sistema e amministrazione globale. Solo i superadmin piattaforma possono vedere tutti i tenant.',
+  ),
   'superuser' =>
   array (
-    'name' => 'Super User',
-    'note' => 'Determina se l\'utente ha accesso completo a tutti gli aspetti dell\'amministrazione. Questa impostazione sostituisce TUTTE le autorizzazioni più specifiche e restrittive nel sistema ',
+    'name' => 'Superadmin tenant',
+    'note' => 'Determina se l\'utente ha accesso amministrativo completo nel proprio tenant. Non concede accesso a livello piattaforma o cross-tenant.',
   ),
   'admin' =>
   array (
     'name' => 'Accesso Amministratore',
     'note' => 'Determina se l\'utente ha accesso alla maggior parte degli aspetti del sistema, TRANNE le Impostazioni di Amministrazione di Sistema. Questi utenti potranno gestire utenti, sedi, categorie, ecc., ma SONO vincolati dal Supporto Completo per Più Aziende, se abilitato.',
+  ),
+  'tenants' =>
+  array (
+    'name' => 'Tenant',
+    'note' => 'Controlla la visibilità cross-tenant. Senza questa autorizzazione, gli utenti possono entrare solo nei tenant assegnati direttamente o nel tenant della propria azienda.',
+  ),
+  'tenantsview-all' =>
+  array (
+    'name' => 'Vede tutti i tenant',
+    'note' => 'Consente a un superadmin piattaforma di vedere e cambiare su tutti i tenant. Questa autorizzazione non ha effetto per superuser tenant o utenti vincolati a tenant.',
   ),
   'import' =>
   array (

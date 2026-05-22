@@ -324,7 +324,7 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
      */
     public function hasAccess($section)
     {
-        if ($this->isSuperUser()) {
+        if ($this->isSuperAdmin() || $this->isSuperUser()) {
             return true;
         }
 
@@ -333,6 +333,16 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         }
 
         return $this->hasTenantRoleAccess($section);
+    }
+
+    /**
+     * Checks if the user is a platform SuperAdmin.
+     *
+     * @return bool
+     */
+    public function isSuperAdmin()
+    {
+        return $this->checkPermissionSection('superadmin');
     }
 
     /**
@@ -346,7 +356,7 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
      */
     public function isSuperUser()
     {
-        return $this->checkPermissionSection('superuser');
+        return $this->isSuperAdmin() || $this->checkPermissionSection('superuser');
     }
 
     /**
@@ -394,6 +404,7 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
     {
 
         return Gate::allows('delete', $this)
+            && (auth()->id() !== (int) $this->id)
             && (($this->assets_count ?? $this->assets()->count()) === 0)
             && (($this->accessories_count ?? $this->accessories()->count()) === 0)
             && (($this->licenses_count ?? $this->licenses()->count()) === 0)
@@ -1070,12 +1081,12 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
     public function scopeOnlySuperAdmins($query)
     {
 
-        return $query->where('users.permissions', 'LIKE', '%"superuser":"1"%')
-            ->orWhere('users.permissions', 'LIKE', '%"superuser":1%')
+        return $query->where('users.permissions', 'LIKE', '%"superadmin":"1"%')
+            ->orWhere('users.permissions', 'LIKE', '%"superadmin":1%')
             ->orWhereHas(
                 'groups', function ($query) {
-                    $query->where('permission_groups.permissions', 'LIKE', '%"superuser":"1"%')
-                        ->orWhere('permission_groups.permissions', 'LIKE', '%"superuser":1%');
+                    $query->where('permission_groups.permissions', 'LIKE', '%"superadmin":"1"%')
+                        ->orWhere('permission_groups.permissions', 'LIKE', '%"superadmin":1%');
                 }
             );
 
@@ -1086,12 +1097,12 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         return $query->where(function ($subquery) {
             $subquery->whereNull('users.permissions')
                 ->orWhere(function ($permissionsQuery) {
-                    $permissionsQuery->where('users.permissions', 'NOT LIKE', '%"superuser":"1"%')
-                        ->where('users.permissions', 'NOT LIKE', '%"superuser":1%');
+                    $permissionsQuery->where('users.permissions', 'NOT LIKE', '%"superadmin":"1"%')
+                        ->where('users.permissions', 'NOT LIKE', '%"superadmin":1%');
                 });
         })->whereDoesntHave('groups', function ($groupQuery) {
-            $groupQuery->where('permission_groups.permissions', 'LIKE', '%"superuser":"1"%')
-                ->orWhere('permission_groups.permissions', 'LIKE', '%"superuser":1%');
+            $groupQuery->where('permission_groups.permissions', 'LIKE', '%"superadmin":"1"%')
+                ->orWhere('permission_groups.permissions', 'LIKE', '%"superadmin":1%');
         });
     }
 
@@ -1103,14 +1114,14 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
     public function scopeOnlyAdminsAndSuperAdmins($query)
     {
 
-        return $query->where('users.permissions', 'LIKE', '%"superuser":"1"%')
-            ->orWhere('users.permissions', 'LIKE', '%"superuser":1%')
+        return $query->where('users.permissions', 'LIKE', '%"superadmin":"1"%')
+            ->orWhere('users.permissions', 'LIKE', '%"superadmin":1%')
             ->orWhere('users.permissions', 'LIKE', '%"admin":1%')
             ->orWhere('users.permissions', 'LIKE', '%"admin":"1"%')
             ->orWhereHas(
                 'groups', function ($query) {
-                    $query->where('permission_groups.permissions', 'LIKE', '%"superuser":"1"%')
-                        ->orWhere('permission_groups.permissions', 'LIKE', '%"superuser":1%')
+                    $query->where('permission_groups.permissions', 'LIKE', '%"superadmin":"1"%')
+                        ->orWhere('permission_groups.permissions', 'LIKE', '%"superadmin":1%')
                         ->orWhere('permission_groups.permissions', 'LIKE', '%"admin":1%')
                         ->orWhere('permission_groups.permissions', 'LIKE', '%"admin":"1"%');
                 }

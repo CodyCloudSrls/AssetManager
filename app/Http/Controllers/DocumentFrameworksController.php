@@ -6,6 +6,7 @@ use App\Http\Requests\StoreDocumentFrameworkRequest;
 use App\Models\Document;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
+use App\Models\Tenant;
 use App\Support\Compliance\ConsultantFrameworkTransfer;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -71,6 +72,20 @@ class DocumentFrameworksController extends Controller
             'company_id' => 'nullable|integer|exists:companies,id',
             'visibility_type' => 'required|string|in:private,descendants,global',
         ]);
+
+        if (($validated['visibility_type'] ?? null) === DocumentFramework::VISIBILITY_GLOBAL) {
+            $canManageGlobalFramework = Tenant::canCurrentUserUseGlobalTenantContext();
+
+            if (! $canManageGlobalFramework) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['visibility_type' => trans('validation.in', ['attribute' => trans('general.template_visibility.label')])]);
+            }
+        } elseif (blank($validated['company_id'] ?? null)) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['company_id' => trans('validation.required', ['attribute' => trans('general.company')])]);
+        }
 
         try {
             $result = $transfer->import($request->file('file'), $validated, auth()->id());
@@ -238,7 +253,21 @@ class DocumentFrameworksController extends Controller
             'statusOptions' => DocumentFramework::getStatusOptions(),
             'frameworkTypeOptions' => DocumentFramework::getFrameworkTypeOptions(),
             'complianceDomainOptions' => DocumentFramework::complianceDomainOptions(),
+            'visibilityOptions' => $this->visibilityOptions(),
         ];
+    }
+
+    private function visibilityOptions(): array
+    {
+        $options = DocumentFramework::visibilityOptions();
+
+        if (Tenant::canCurrentUserUseGlobalTenantContext()) {
+            return $options;
+        }
+
+        unset($options[DocumentFramework::VISIBILITY_GLOBAL]);
+
+        return $options;
     }
 
     private function requirementMatrixRows(Collection $requirements, int $reviewWarningDays): Collection
@@ -316,6 +345,15 @@ class DocumentFrameworksController extends Controller
                 'label' => trans('admin/documentframeworkrequirements/general.matrix.review_overdue'),
                 'class' => 'label label-danger',
                 'document' => $overduePrimary,
+            ];
+        }
+
+        $missingUploadPrimary = $primaryDocuments->first(fn (Document $document) => ! $document->hasCoverageUpload());
+        if ($missingUploadPrimary) {
+            return [
+                'label' => trans('admin/documentframeworkrequirements/general.matrix.review_missing_upload'),
+                'class' => 'label label-danger',
+                'document' => $missingUploadPrimary,
             ];
         }
 

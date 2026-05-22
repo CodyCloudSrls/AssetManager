@@ -12,6 +12,7 @@ use App\Models\DocumentFrameworkRequirement;
 use App\Models\User;
 use App\Support\Reports\NisRealCoverageReport;
 use App\Support\Reports\NisRiskMatrixReport;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
@@ -100,6 +101,7 @@ class NisRiskMatrixReportTest extends TestCase
             'company_id' => $company->id,
             'status' => Document::STATUS_ACTIVE,
         ]);
+        $this->logCoverageUpload($document);
 
         $requirement->documents()->attach($document->id, [
             'coverage_role' => Document::COVERAGE_PRIMARY,
@@ -143,6 +145,7 @@ class NisRiskMatrixReportTest extends TestCase
             'effective_at' => now()->toDateString(),
             'next_review_at' => now()->addMonth()->toDateString(),
         ]);
+        $this->logCoverageUpload($document);
 
         $requirement->documents()->attach($document->id, [
             'coverage_role' => Document::COVERAGE_PRIMARY,
@@ -185,6 +188,7 @@ class NisRiskMatrixReportTest extends TestCase
             'effective_at' => now()->toDateString(),
             'next_review_at' => now()->addMonth()->toDateString(),
         ]);
+        $this->logCoverageUpload($currentDocument);
 
         $futureDocument = Document::create([
             'name' => 'Future primary evidence',
@@ -193,6 +197,7 @@ class NisRiskMatrixReportTest extends TestCase
             'effective_at' => now()->addDay()->toDateString(),
             'next_review_at' => now()->addMonth()->toDateString(),
         ]);
+        $this->logCoverageUpload($futureDocument);
 
         $requirement->documents()->attach([$currentDocument->id, $futureDocument->id], [
             'coverage_role' => Document::COVERAGE_PRIMARY,
@@ -208,5 +213,102 @@ class NisRiskMatrixReportTest extends TestCase
         $this->assertSame(1, $report['summary']['healthy_primary_documents']);
         $this->assertSame(1, $report['summary']['document_shortfall_count']);
         $this->assertSame(DocumentFrameworkRequirement::COVERAGE_AT_RISK, $report['requirementRows']->first()['requirement']->coverage_status);
+    }
+
+    public function test_nis_real_coverage_excludes_primary_documents_without_uploaded_file()
+    {
+        $company = Company::factory()->create();
+        $framework = DocumentFramework::factory()->for($company)->create([
+            'name' => 'NIS2 Tenant Missing Upload',
+            'slug' => 'nis2-tenant-missing-upload',
+            'framework_code' => 'NIS2',
+            'compliance_domain' => 'nis2',
+        ]);
+
+        $requirement = DocumentFrameworkRequirement::create([
+            'document_framework_id' => $framework->id,
+            'code' => 'NIS2-REQ-04',
+            'title' => 'Uploaded evidence requirement',
+            'delegation_level' => 'owner_review',
+            'risk_level' => 'not_applicable',
+            'minimum_required_documents' => 1,
+        ]);
+
+        $document = Document::create([
+            'name' => 'Active evidence without file',
+            'company_id' => $company->id,
+            'status' => Document::STATUS_ACTIVE,
+            'effective_at' => now()->toDateString(),
+            'next_review_at' => now()->addMonth()->toDateString(),
+        ]);
+
+        $requirement->documents()->attach($document->id, [
+            'coverage_role' => Document::COVERAGE_PRIMARY,
+            'covered_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $report = (new NisRealCoverageReport)->build([$company->id]);
+
+        $this->assertSame(0, $report['summary']['covered']);
+        $this->assertSame(1, $report['summary']['at_risk']);
+        $this->assertSame(0, $report['summary']['healthy_primary_documents']);
+        $this->assertSame(DocumentFrameworkRequirement::COVERAGE_AT_RISK, $report['requirementRows']->first()['requirement']->coverage_status);
+    }
+
+    public function test_nis_real_coverage_excludes_draft_primary_documents_even_with_uploaded_file()
+    {
+        $company = Company::factory()->create();
+        $framework = DocumentFramework::factory()->for($company)->create([
+            'name' => 'NIS2 Tenant Draft Document',
+            'slug' => 'nis2-tenant-draft-document',
+            'framework_code' => 'NIS2',
+            'compliance_domain' => 'nis2',
+        ]);
+
+        $requirement = DocumentFrameworkRequirement::create([
+            'document_framework_id' => $framework->id,
+            'code' => 'NIS2-REQ-05',
+            'title' => 'Valid evidence requirement',
+            'delegation_level' => 'owner_review',
+            'risk_level' => 'not_applicable',
+            'minimum_required_documents' => 1,
+        ]);
+
+        $document = Document::create([
+            'name' => 'Draft evidence with file',
+            'company_id' => $company->id,
+            'status' => Document::STATUS_DRAFT,
+            'effective_at' => now()->toDateString(),
+            'next_review_at' => now()->addMonth()->toDateString(),
+        ]);
+        $this->logCoverageUpload($document);
+
+        $requirement->documents()->attach($document->id, [
+            'coverage_role' => Document::COVERAGE_PRIMARY,
+            'covered_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $report = (new NisRealCoverageReport)->build([$company->id]);
+
+        $this->assertSame(0, $report['summary']['covered']);
+        $this->assertSame(1, $report['summary']['at_risk']);
+        $this->assertSame(0, $report['summary']['healthy_primary_documents']);
+        $this->assertSame(DocumentFrameworkRequirement::COVERAGE_AT_RISK, $report['requirementRows']->first()['requirement']->coverage_status);
+    }
+
+    private function logCoverageUpload(Document $document): void
+    {
+        DB::table('action_logs')->insert([
+            'item_type' => Document::class,
+            'item_id' => $document->id,
+            'action_type' => 'uploaded',
+            'filename' => 'evidence-'.$document->id.'.pdf',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

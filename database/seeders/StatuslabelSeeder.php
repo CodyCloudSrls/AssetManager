@@ -12,7 +12,7 @@ class StatuslabelSeeder extends Seeder
     {
         Statuslabel::truncate();
 
-        $admin = User::where('permissions->superuser', '1')->first() ?? User::factory()->firstAdmin()->create();
+        $admin = User::where('permissions->superadmin', '1')->first() ?? User::factory()->firstAdmin()->create();
 
         Statuslabel::factory()->rtd()->create([
             'name' => 'Ready to Deploy',

@@ -192,7 +192,7 @@ final class CompaniesController extends Controller
     private function fillCompany(Company $company, Request $request): void
     {
         $company->name = $request->input('name');
-        $company->parent_id = $request->input('parent_id');
+        $company->parent_id = $this->normalizedParentId($company, $request);
         $company->phone = $request->input('phone');
         $company->fax = $request->input('fax');
         $company->email = $request->input('email');
@@ -206,6 +206,29 @@ final class CompaniesController extends Controller
         $company->footer_text = $request->input('footer_text');
         $company->privacy_policy_link = $request->input('privacy_policy_link');
         $company->custom_css = $request->input('custom_css');
+    }
+
+    private function normalizedParentId(Company $company, Request $request): ?int
+    {
+        if (! $request->has('parent_id') && $company->exists) {
+            return $company->parent_id ? (int) $company->parent_id : null;
+        }
+
+        $parentId = Company::getIdFromInput($request->input('parent_id'));
+
+        if (! is_null($parentId) && (int) $parentId === (int) ($company->id ?? 0)) {
+            return null;
+        }
+
+        if (! is_null($parentId) && Company::canCurrentUserSwitchToCompany((int) $parentId)) {
+            return (int) $parentId;
+        }
+
+        if (! $company->exists && ! Company::currentAuthContext()['can_view_all_tenants']) {
+            return Company::activeCompanyId();
+        }
+
+        return null;
     }
 
     private function handleBrandingUploads(ImageUploadRequest $request, Company $company): void

@@ -13,7 +13,7 @@
         'translated_name' => trans('general.template_visibility.label'),
         'fieldname' => 'visibility_type',
         'item' => $item,
-        'visibilityOptions' => array_diff_key(\App\Models\DocumentFramework::visibilityOptions(), [\App\Models\DocumentFramework::VISIBILITY_GLOBAL => true]),
+        'visibilityOptions' => $visibilityOptions,
         'defaultVisibility' => \App\Models\DocumentFramework::VISIBILITY_PRIVATE,
     ])
 

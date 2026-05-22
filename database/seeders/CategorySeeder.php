@@ -12,7 +12,7 @@ class CategorySeeder extends Seeder
     {
         Category::truncate();
 
-        $admin = User::where('permissions->superuser', '1')->first() ?? User::factory()->firstAdmin()->create();
+        $admin = User::where('permissions->superadmin', '1')->first() ?? User::factory()->firstAdmin()->create();
 
         Category::factory()->count(1)->assetLaptopCategory()->create(['created_by' => $admin->id]);
         Category::factory()->count(1)->assetDesktopCategory()->create(['created_by' => $admin->id]);

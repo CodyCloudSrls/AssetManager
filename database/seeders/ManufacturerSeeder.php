@@ -14,7 +14,7 @@ class ManufacturerSeeder extends Seeder
     {
         Manufacturer::truncate();
 
-        $admin = User::where('permissions->superuser', '1')->first() ?? User::factory()->firstAdmin()->create();
+        $admin = User::where('permissions->superadmin', '1')->first() ?? User::factory()->firstAdmin()->create();
 
         Manufacturer::factory()->count(1)->apple()->create(['created_by' => $admin->id]);
         Manufacturer::factory()->count(1)->microsoft()->create(['created_by' => $admin->id]);

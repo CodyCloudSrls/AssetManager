@@ -160,7 +160,7 @@ class UsersController extends Controller
 
             }
 
-            if (auth()->user()->can('canEditAuthFields', $user) && auth()->user()->can('editableOnDemo')) {
+            if (auth()->user()->isSuperAdmin() && auth()->user()->can('editableOnDemo')) {
                 $user->groups()->sync($this->selectedGroupIds($request));
             }
 
@@ -325,8 +325,8 @@ class UsersController extends Controller
                 originalPermissions: $orig_permissions_array,
             ));
 
-            // Only save groups if the user is a superuser
-            if (auth()->user()->isSuperUser()) {
+            // Only platform superadmins can assign global permission groups.
+            if (auth()->user()->isSuperAdmin()) {
                 $user->groups()->sync($this->selectedGroupIds($request));
             }
         }
@@ -368,6 +368,11 @@ class UsersController extends Controller
         if ($user = User::find($id)) {
 
             $this->authorize('delete', $user);
+
+            if (auth()->id() === (int) $user->id) {
+                return redirect()->route('users.index')->with('error', trans('admin/users/message.error.cannot_delete_yourself'));
+            }
+
             if (auth()->user()->can('canEditAuthFields', $user) && auth()->user()->can('editableOnDemo')) {
 
                 if ($user->delete()) {
@@ -592,7 +597,9 @@ class UsersController extends Controller
 
                         $permissionstring = '';
 
-                        if ($user->isSuperUser()) {
+                        if ($user->isSuperAdmin()) {
+                            $permissionstring = trans('general.superadmin');
+                        } elseif ($user->isSuperUser()) {
                             $permissionstring = trans('general.superuser');
                         } elseif ($user->hasAccess('admin')) {
                             $permissionstring = trans('general.admin');

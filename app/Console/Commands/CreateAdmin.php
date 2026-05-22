@@ -61,7 +61,7 @@ class CreateAdmin extends Command
             $user->last_name = $last_name;
             $user->username = $username;
             $user->email = $email;
-            $user->permissions = '{"admin":1,"user":1,"superuser":1,"reports.view":1, "licenses.keys":1}';
+            $user->permissions = '{"admin":1,"user":1,"superadmin":1,"superuser":1,"tenants.view_all":1,"reports.view":1, "licenses.keys":1}';
             $user->password = bcrypt($password);
             $user->activated = 1;
 

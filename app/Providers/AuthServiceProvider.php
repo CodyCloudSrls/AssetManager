@@ -130,7 +130,7 @@ class AuthServiceProvider extends ServiceProvider
             if ($globalFramework) {
                 return $globalFramework->isSystemTemplate()
                     ? $this->allowsSystemDocumentFrameworkAbility($user, $ability)
-                    : $user->isSuperUser() && is_null(Tenant::activeTenantId());
+                    : Tenant::canCurrentUserUseGlobalTenantContext();
             }
 
             // Disallow even superadmins to edit non-editable things when in demo mode.
@@ -138,7 +138,7 @@ class AuthServiceProvider extends ServiceProvider
             if (($ability == 'editableOnDemo') && (config('app.lock_passwords'))) {
                 return false;
             }
-            if ($user->isSuperUser()) {
+            if ($user->isSuperAdmin()) {
                 return true;
             }
         });
@@ -156,7 +156,7 @@ class AuthServiceProvider extends ServiceProvider
                 // if they can only edit users, deny them if the user is admin or superadmin
                 if (! $user->isAdmin()) {
 
-                    if ($item->isAdmin() || $item->isSuperUser()) {
+                    if ($item->isAdmin() || $item->isSuperUser() || $item->isSuperAdmin()) {
                         return false;
                     }
 
@@ -165,7 +165,7 @@ class AuthServiceProvider extends ServiceProvider
 
                 // if they are an admin, deny them only if the user is a superadmin
                 if ($user->hasAccess('admin')) {
-                    if ($item->isSuperUser()) {
+                    if ($item->isSuperAdmin() && ! $user->isSuperAdmin()) {
                         return false;
                     }
 
@@ -187,6 +187,14 @@ class AuthServiceProvider extends ServiceProvider
             }
 
             return true;
+        });
+
+        Gate::define('superadmin', function ($user) {
+            return $user->isSuperAdmin();
+        });
+
+        Gate::define('superuser', function ($user) {
+            return $user->isSuperUser();
         });
 
         Gate::define('admin', function ($user) {
@@ -327,6 +335,6 @@ class AuthServiceProvider extends ServiceProvider
             return false;
         }
 
-        return $user->isSuperUser() && is_null(Tenant::activeTenantId());
+        return Tenant::canCurrentUserUseGlobalTenantContext();
     }
 }

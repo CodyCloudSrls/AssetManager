@@ -262,10 +262,7 @@ class Document extends SnipeModel
 
     public function scopeCurrentForCoverage($query)
     {
-        return $query->whereNotIn('documents.status', [
-                self::STATUS_OBSOLETE,
-                self::STATUS_ARCHIVED,
-            ])
+        return $query->where('documents.status', self::STATUS_ACTIVE)
             ->where(function ($nested) {
                 $nested->whereNull('documents.effective_at')
                     ->orWhereDate('documents.effective_at', '<=', Carbon::today());
@@ -273,7 +270,44 @@ class Document extends SnipeModel
             ->where(function ($nested) {
                 $nested->whereNull('documents.next_review_at')
                     ->orWhereDate('documents.next_review_at', '>=', Carbon::today());
-            });
+            })
+            ->hasCoverageUpload();
+    }
+
+    public function scopeHasCoverageUpload($query)
+    {
+        return $query->whereExists(function ($uploadQuery) {
+            $uploadQuery
+                ->selectRaw('1')
+                ->from('action_logs as coverage_uploads')
+                ->whereColumn('coverage_uploads.item_id', 'documents.id')
+                ->where('coverage_uploads.item_type', self::class)
+                ->where('coverage_uploads.action_type', 'uploaded')
+                ->whereNotNull('coverage_uploads.filename')
+                ->whereNull('coverage_uploads.deleted_at')
+                ->whereNotExists(function ($deletedUploadQuery) {
+                    $deletedUploadQuery
+                        ->selectRaw('1')
+                        ->from('action_logs as coverage_upload_deletions')
+                        ->whereColumn('coverage_upload_deletions.item_id', 'coverage_uploads.item_id')
+                        ->whereColumn('coverage_upload_deletions.filename', 'coverage_uploads.filename')
+                        ->where('coverage_upload_deletions.item_type', self::class)
+                        ->where('coverage_upload_deletions.action_type', 'upload deleted')
+                        ->whereNull('coverage_upload_deletions.deleted_at');
+                });
+        });
+    }
+
+    public function hasCoverageUpload(): bool
+    {
+        if (! $this->exists) {
+            return false;
+        }
+
+        return static::withoutGlobalScopes()
+            ->whereKey($this->id)
+            ->hasCoverageUpload()
+            ->exists();
     }
 
     public function scopeOrderByCompany($query, $order)

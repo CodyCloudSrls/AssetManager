@@ -447,7 +447,7 @@ class DocumentAssignmentManager
             ? Company::withoutGlobalScopes()->where('id', $user->company_id)->value('tenant_id')
             : null;
 
-        if (! $user->isSuperUser() && (int) ($userTenantId ?? 0) !== (int) ($documentTenantId ?? 0)) {
+        if (! $user->isSuperAdmin() && (int) ($userTenantId ?? 0) !== (int) ($documentTenantId ?? 0)) {
             $validator->errors()->add($field, $tenantErrorMessage);
         }
     }

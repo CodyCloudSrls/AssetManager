@@ -18,7 +18,7 @@ class CheckForDebug
     {
         view()->share('debug_in_production', false);
 
-        if ((Company::currentAuthContext()['is_superuser']) && (app()->environment() == 'production') && (config('app.warn_debug') === true) && (config('app.debug') === true)) {
+        if ((Company::currentAuthContext()['is_superadmin']) && (app()->environment() == 'production') && (config('app.warn_debug') === true) && (config('app.debug') === true)) {
             view()->share('debug_in_production', true);
         }
 

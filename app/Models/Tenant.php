@@ -424,7 +424,7 @@ class Tenant extends Model
             return [];
         }
 
-        if ($authContext['is_superuser']) {
+        if ($authContext['can_view_all_tenants']) {
             return Company::withoutGlobalScopes()
                 ->whereNull('deleted_at')
                 ->whereNotNull('tenant_id')
@@ -484,6 +484,15 @@ class Tenant extends Model
     public static function shouldShowGlobalTenantContextOption(): bool
     {
         return false;
+    }
+
+    public static function canCurrentUserUseGlobalTenantContext(): bool
+    {
+        $authContext = Company::currentAuthContext();
+
+        return ! is_null($authContext['id'])
+            && $authContext['can_view_all_tenants']
+            && is_null(static::activeTenantId());
     }
 
     public static function canCurrentUserSwitchToTenant(?int $tenantId): bool
@@ -638,11 +647,8 @@ class Tenant extends Model
             return false;
         }
 
-        if ($authContext['is_superuser']) {
-            return true;
-        }
-
-        return in_array(static::currentUserRoleForTenant((int) $tenant->id), [static::ROLE_ADMIN, static::ROLE_VIEWER], true);
+        return in_array((int) $tenant->id, static::accessibleTenantIdsForCurrentUser(), true)
+            || in_array(static::currentUserRoleForTenant((int) $tenant->id), [static::ROLE_ADMIN, static::ROLE_VIEWER], true);
     }
 
     public static function canCurrentUserManageTenant(self $tenant): bool
@@ -653,7 +659,13 @@ class Tenant extends Model
             return false;
         }
 
-        if ($authContext['is_superuser']) {
+        if ($authContext['is_superadmin'] && $authContext['can_view_all_tenants']) {
+            return true;
+        }
+
+        $currentCompanyTenantId = static::currentUserCompanyTenantId($authContext);
+
+        if ($authContext['is_superuser'] && (int) ($currentCompanyTenantId ?? 0) === (int) $tenant->id) {
             return true;
         }
 
@@ -668,7 +680,8 @@ class Tenant extends Model
             return false;
         }
 
-        return $authContext['is_superuser']
+        return $authContext['can_view_all_tenants']
+            || ($authContext['is_superuser'] && ! is_null(static::currentUserCompanyTenantId($authContext)))
             || (count(static::explicitMembershipTenantIdsForCurrentUser()) > 0);
     }
 
@@ -737,5 +750,18 @@ class Tenant extends Model
         }
 
         session([static::ACTIVE_TENANT_SESSION_KEY => (int) $defaultTenantId]);
+    }
+
+    private static function currentUserCompanyTenantId(array $authContext): ?int
+    {
+        if (is_null($authContext['company_id'])) {
+            return null;
+        }
+
+        $tenantId = Company::withoutGlobalScopes()
+            ->where('id', $authContext['company_id'])
+            ->value('tenant_id');
+
+        return $tenantId ? (int) $tenantId : null;
     }
 }

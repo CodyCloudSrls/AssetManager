@@ -240,7 +240,7 @@ class BulkUsersController extends Controller
             $groupIds = $this->selectedGroupIds($request);
 
             foreach ($users as $user) {
-                if (auth()->user()->can('canEditAuthFields', $user) && auth()->user()->can('editableOnDemo')) {
+                if (auth()->user()->isSuperAdmin() && auth()->user()->can('editableOnDemo')) {
                     $user->groups()->sync($groupIds);
                 }
             }
