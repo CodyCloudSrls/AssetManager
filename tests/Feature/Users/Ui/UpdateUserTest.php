@@ -259,6 +259,7 @@ class UpdateUserTest extends TestCase
         ]);
 
         $this->actingAs($editingUser)
+            ->from(route('users.index'))
             ->put(route('users.update', $targetUser), [
                 'first_name' => $targetUser->first_name,
                 'username' => $targetUser->username,
@@ -269,13 +270,14 @@ class UpdateUserTest extends TestCase
                 ],
                 'redirect_option' => 'index',
             ])
+            ->assertSessionHas('error')
             ->assertRedirect(route('users.index'));
 
         $decoded = (array) $targetUser->refresh()->decodePermissions();
 
         $this->assertArrayNotHasKey('admin', $decoded, 'Non-admin user should not be able to grant admin');
         $this->assertArrayNotHasKey('superuser', $decoded, 'Non-admin user should not be able to grant superuser');
-        $this->assertEquals(1, $decoded['users.view'] ?? null, 'Non-privileged permissions should still be updateable');
+        $this->assertArrayNotHasKey('users.view', $decoded, 'Non-admin user should not be able to update permission payloads');
     }
 
     public function test_admin_cannot_escalate_empty_permissions_user_to_superuser_via_ui()

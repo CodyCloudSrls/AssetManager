@@ -10,6 +10,9 @@ use App\Http\Requests\StoreDocumentFrameworkRequest;
 use App\Http\Transformers\DocumentFrameworksTransformer;
 use App\Http\Transformers\SelectlistTransformer;
 use App\Models\DocumentFramework;
+use App\Models\Tenant;
+use App\Support\Compliance\ComplianceDomainAccess;
+use App\Support\Documents\DocumentAreaAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -47,19 +50,19 @@ class DocumentFrameworksController extends Controller
             'slug',
             'authority_name',
             'framework_code',
-                'framework_type',
-                'compliance_domain',
-                'jurisdiction',
+            'framework_type',
+            'compliance_domain',
+            'jurisdiction',
             'version',
             'effective_from',
             'effective_to',
             'owner_id',
             'review_cadence_months',
             'status',
-                'external_reference_url',
-                'description',
-                'compliance_objective',
-                'sort_order',
+            'external_reference_url',
+            'description',
+            'compliance_objective',
+            'sort_order',
             'is_active',
             'is_system_template',
             'source_framework_id',
@@ -74,12 +77,15 @@ class DocumentFrameworksController extends Controller
             'deleted_at',
         ])
             ->with('adminuser', 'company', 'owner')
-            ->withCount(['documents as documents_count', 'requirements as requirements_count']);
+            ->withCount([
+                'documents as documents_count' => fn ($query) => $this->applyVisibleDocumentScope($query, $request),
+                'requirements as requirements_count',
+            ]);
 
         if (! $request->boolean('system_templates')) {
             $documentFrameworks->operational();
         } else {
-            abort_unless(\App\Models\Tenant::canCurrentUserUseGlobalTenantContext(), 403);
+            abort_unless(Tenant::canCurrentUserUseGlobalTenantContext(), 403);
             $documentFrameworks->systemTemplates();
         }
 
@@ -98,9 +104,10 @@ class DocumentFrameworksController extends Controller
         }
 
         $this->applyTenantCompanyFilter($documentFrameworks, $request, 'company_id');
+        ComplianceDomainAccess::applyFrameworkScope($documentFrameworks, $request->user(), 'compliance_domain');
 
         $limit = app('api_limit_value');
-        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $documentFrameworks->count(), $limit);
+        $offset = Helper::clampPaginationOffset($request->input('offset'), $documentFrameworks->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sortOverride = $request->input('sort');
         $columnSort = in_array($sortOverride, $allowedColumns) ? $sortOverride : 'sort_order';
@@ -138,7 +145,10 @@ class DocumentFrameworksController extends Controller
     {
         $this->authorize('view', $documentframework);
 
-        $documentframework->load('adminuser', 'owner')->loadCount(['documents', 'requirements']);
+        $documentframework->load('adminuser', 'owner')->loadCount([
+            'documents' => fn ($query) => $this->applyVisibleDocumentScope($query, request()),
+            'requirements',
+        ]);
 
         return (new DocumentFrameworksTransformer)->transformDocumentFramework($documentframework);
     }
@@ -194,10 +204,18 @@ class DocumentFrameworksController extends Controller
             'name',
         ])->operational()->active()->ordered();
 
+        ComplianceDomainAccess::applyFrameworkScope($documentFrameworks, $request->user(), 'compliance_domain');
+
         if ($request->filled('search')) {
             $documentFrameworks->where('name', 'LIKE', '%'.$request->input('search').'%');
         }
 
         return (new SelectlistTransformer)->transformSelectlist($documentFrameworks->paginate(50));
+    }
+
+    private function applyVisibleDocumentScope($query, Request $request): void
+    {
+        ComplianceDomainAccess::applyDocumentScope($query, $request->user());
+        DocumentAreaAccess::applyDocumentScope($query, $request->user());
     }
 }

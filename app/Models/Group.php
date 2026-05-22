@@ -65,7 +65,13 @@ class Group extends SnipeModel
     public function isDeletable()
     {
         return Gate::allows('delete', $this)
+            && (! $this->isSystemGroup())
             && (($this->users_count ?? $this->users()->count()) === 0);
+    }
+
+    public function isSystemGroup(): bool
+    {
+        return filled($this->system_key);
     }
 
     /**

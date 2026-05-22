@@ -46,6 +46,8 @@ class DocumentsTransformer
             'reference' => e($document->reference),
             'version' => e($document->version),
             'status' => e(Document::getStatusOptions()[$document->status] ?? $document->status),
+            'document_area' => e($document->document_area),
+            'document_area_label' => e(Document::documentAreaOptions()[$document->document_area] ?? $document->document_area),
             'classification' => e($document->classification),
             'retention_period' => e($document->retention_period),
             'scope' => e($document->scope),
@@ -82,7 +84,8 @@ class DocumentsTransformer
         $array['available_actions'] = [
             'update' => ($document->deleted_at == '' && Gate::allows('update', $document)),
             'delete' => ($document->deleted_at == '' && Gate::allows('delete', $document)),
-            'restore' => ($document->deleted_at != '' && Gate::allows('create', Document::class)),
+            'restore' => ($document->deleted_at != '' && Gate::allows('restore', $document)),
+            'force_delete' => ($document->deleted_at != '' && Gate::allows('forceDelete', $document)),
         ];
         $array['available_actions']['bulk_selectable'] = [
             'edit' => $array['available_actions']['update'],

@@ -658,6 +658,58 @@
                   </p>
 
                   <div class="col-md-12">
+                      <fieldset>
+                          <x-form.legend>{{ trans('admin/users/general.compliance_scope') }}</x-form.legend>
+
+                          <div class="form-group">
+                              <div class="col-md-8 col-md-offset-3">
+                                  <input type="hidden" name="compliance_scope_restricted" value="0">
+                                  <label class="form-control">
+                                      <input
+                                          type="checkbox"
+                                          name="compliance_scope_restricted"
+                                          id="compliance_scope_restricted"
+                                          value="1"
+                                          @checked(old('compliance_scope_restricted', $user->compliance_scope_restricted))
+                                      >
+                                      {{ trans('admin/users/general.compliance_scope_restricted') }}
+                                  </label>
+                                  <p class="help-block">{{ trans('admin/users/general.compliance_scope_restricted_help') }}</p>
+                              </div>
+                          </div>
+
+                          <div class="form-group">
+                              <label class="col-md-3 control-label" for="compliance_domain_ids">
+                                  {{ trans('admin/users/general.compliance_domains') }}
+                              </label>
+                              <div class="col-md-8">
+                                  @php
+                                      $selectedComplianceDomainIds = collect(old('compliance_domain_ids', $userComplianceDomainIds ?? []))
+                                          ->filter(fn ($id) => filled($id))
+                                          ->map(fn ($id) => (int) $id)
+                                          ->all();
+                                  @endphp
+                                  <input type="hidden" name="compliance_domain_ids[]" value="">
+                                  <select
+                                      name="compliance_domain_ids[]"
+                                      id="compliance_domain_ids"
+                                      multiple="multiple"
+                                      class="form-control select2"
+                                      style="width: 100%;"
+                                      aria-label="{{ trans('admin/users/general.compliance_domains') }}">
+                                      @foreach (($complianceDomains ?? collect()) as $domain)
+                                          <option value="{{ $domain->id }}" @selected(in_array((int) $domain->id, $selectedComplianceDomainIds, true))>
+                                              {{ $domain->name }}
+                                          </option>
+                                      @endforeach
+                                  </select>
+                                  <p class="help-block">{{ trans('admin/users/general.compliance_domains_help') }}</p>
+                              </div>
+                          </div>
+                      </fieldset>
+                  </div>
+
+                  <div class="col-md-12">
                     @include('partials.forms.edit.permissions-base', ['use_inherit' => true, 'groupPermissions' => $userPermissions])
                   </div>
 

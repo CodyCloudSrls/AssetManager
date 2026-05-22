@@ -169,6 +169,70 @@ return [
         'name' => 'Manage Document Files',
         'note' => 'Allows the user to upload, download, and delete files associated with documents.',
     ],
+    'documentsrestore' => [
+        'name' => 'Restore Documents',
+        'note' => 'Allows the user to restore soft-deleted documents.',
+    ],
+    'documentsforce-delete' => [
+        'name' => 'Permanently Delete Documents',
+        'note' => 'Allows the user to permanently remove documents from the deleted-items view.',
+    ],
+    'documentsrequirementsmap' => [
+        'name' => 'Map Documents To Requirements',
+        'note' => 'Allows the user to link documents to framework requirements and change evidence mapping details.',
+    ],
+    'documentsareaadministrationview' => [
+        'name' => 'View Administration Documents',
+    ],
+    'documentsareaadministrationedit' => [
+        'name' => 'Edit Administration Documents',
+    ],
+    'documentsareaadministrationfilesview' => [
+        'name' => 'View Administration Document Files',
+    ],
+    'documentsareaadministrationfiles' => [
+        'name' => 'Manage Administration Document Files',
+    ],
+    'documentsareaitview' => [
+        'name' => 'View IT Documents',
+    ],
+    'documentsareaitedit' => [
+        'name' => 'Edit IT Documents',
+    ],
+    'documentsareaitfilesview' => [
+        'name' => 'View IT Document Files',
+    ],
+    'documentsareaitfiles' => [
+        'name' => 'Manage IT Document Files',
+    ],
+    'documentsareacybersecurityview' => [
+        'name' => 'View Cybersecurity Documents',
+    ],
+    'documentsareacybersecurityedit' => [
+        'name' => 'Edit Cybersecurity Documents',
+    ],
+    'documentsareacybersecurityfilesview' => [
+        'name' => 'View Cybersecurity Document Files',
+    ],
+    'documentsareacybersecurityfiles' => [
+        'name' => 'Manage Cybersecurity Document Files',
+    ],
+    'compliancedomains' => [
+        'name' => 'Compliance Domains',
+        'note' => 'Controls the configurable compliance domains used to scope frameworks, requirements, documents, and reports.',
+    ],
+    'compliancedomainsview' => [
+        'name' => 'View Compliance Domains',
+    ],
+    'compliancedomainscreate' => [
+        'name' => 'Create Compliance Domains',
+    ],
+    'compliancedomainsedit' => [
+        'name' => 'Edit Compliance Domains',
+    ],
+    'compliancedomainsdelete' => [
+        'name' => 'Delete Compliance Domains',
+    ],
     'tickets' => [
         'name' => 'Tickets',
         'note' => 'Grants access to the Tickets section of the application.',

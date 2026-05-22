@@ -2,9 +2,7 @@
 
 use App\Http\Controllers\Documents\DocumentAssignmentsController;
 use App\Http\Controllers\Documents\DocumentsController;
-use App\Models\Document;
 use Illuminate\Support\Facades\Route;
-use Tabuna\Breadcrumbs\Trail;
 
 Route::group(
     [
@@ -22,6 +20,9 @@ Route::group(
 
         Route::post('{document}/restore', [DocumentsController::class, 'restore'])
             ->name('documents.restore')
+            ->withTrashed();
+        Route::post('{document}/force-delete', [DocumentsController::class, 'forceDelete'])
+            ->name('documents.force-delete')
             ->withTrashed();
 
         Route::post('{document}/assignments', [DocumentAssignmentsController::class, 'store'])

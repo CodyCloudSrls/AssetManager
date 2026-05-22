@@ -31,4 +31,17 @@ class DeleteGroupsTest extends TestCase implements TestsPermissionsRequirement
 
         $this->assertDatabaseMissing('permission_groups', ['id' => $group->id]);
     }
+
+    public function test_cannot_delete_system_group()
+    {
+        $group = Group::factory()->create([
+            'system_key' => 'default_system_group',
+        ]);
+
+        $this->actingAsForApi(User::factory()->superuser()->create())
+            ->deleteJson(route('api.groups.destroy', $group))
+            ->assertStatusMessageIs('error');
+
+        $this->assertDatabaseHas('permission_groups', ['id' => $group->id]);
+    }
 }

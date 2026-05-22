@@ -169,6 +169,23 @@ class GroupsController extends Controller
      */
     public function update(Request $request, Group $group): RedirectResponse
     {
+        if (config('app.lock_passwords')) {
+            return redirect()->route('groups.index')->with('error', trans('general.feature_disabled'));
+        }
+
+        if ($group->isSystemGroup() && $this->requestChangesGroupDefinition($request)) {
+            return redirect()->route('groups.index')->with('error', trans('admin/groups/message.delete.update'));
+        }
+
+        if ($group->isSystemGroup()) {
+            if ($request->has('users_to_sync')) {
+                $associated_users = explode(',', $request->input('users_to_sync'));
+                $group->users()->sync($associated_users);
+            }
+
+            return redirect()->route('groups.index')->with('success', trans('admin/groups/message.success.update'));
+        }
+
         $group->name = $request->input('name');
         $group->notes = $request->input('notes');
 
@@ -186,21 +203,17 @@ class GroupsController extends Controller
             );
         }
 
-        if (! config('app.lock_passwords')) {
-            if ($group->save()) {
+        if ($group->save()) {
 
-                if ($request->has('users_to_sync')) {
-                    $associated_users = explode(',', $request->input('users_to_sync'));
-                    $group->users()->sync($associated_users);
-                }
-
-                return redirect()->route('groups.index')->with('success', trans('admin/groups/message.success.update'));
+            if ($request->has('users_to_sync')) {
+                $associated_users = explode(',', $request->input('users_to_sync'));
+                $group->users()->sync($associated_users);
             }
 
-            return redirect()->back()->withInput()->withErrors($group->getErrors());
+            return redirect()->route('groups.index')->with('success', trans('admin/groups/message.success.update'));
         }
 
-        return redirect()->route('groups.index')->with('error', trans('general.feature_disabled'));
+        return redirect()->back()->withInput()->withErrors($group->getErrors());
     }
 
     /**
@@ -220,6 +233,10 @@ class GroupsController extends Controller
 
             if (! $group = Group::find($id)) {
                 return redirect()->route('groups.index')->with('error', trans('admin/groups/message.group_not_found', ['id' => $id]));
+            }
+
+            if ($group->isSystemGroup()) {
+                return redirect()->route('groups.index')->with('error', trans('admin/groups/message.delete.delete'));
             }
 
             if (! $group->isDeletable()) {
@@ -247,5 +264,10 @@ class GroupsController extends Controller
     public function show(Group $group): View|RedirectResponse
     {
         return view('groups/view', compact('group'));
+    }
+
+    private function requestChangesGroupDefinition(Request $request): bool
+    {
+        return $request->hasAny(['name', 'notes', 'permission']);
     }
 }

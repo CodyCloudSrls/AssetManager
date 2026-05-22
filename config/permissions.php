@@ -129,11 +129,90 @@ return [
             'display' => true,
         ],
         [
+            'permission' => 'documents.restore',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.force_delete',
+            'display' => true,
+        ],
+        [
             'permission' => 'documents.files.view',
             'display' => true,
         ],
         [
             'permission' => 'documents.files',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.requirements.map',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.area.administration.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.area.administration.edit',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.area.administration.files.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.area.administration.files',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.area.it.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.area.it.edit',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.area.it.files.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.area.it.files',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.area.cybersecurity.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.area.cybersecurity.edit',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.area.cybersecurity.files.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'documents.area.cybersecurity.files',
+            'display' => true,
+        ],
+    ],
+
+    'ComplianceDomains' => [
+        [
+            'permission' => 'compliancedomains.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'compliancedomains.create',
+            'display' => true,
+        ],
+        [
+            'permission' => 'compliancedomains.edit',
+            'display' => true,
+        ],
+        [
+            'permission' => 'compliancedomains.delete',
             'display' => true,
         ],
     ],
@@ -293,6 +372,37 @@ return [
         ],
         [
             'permission' => 'licenses.files',
+            'display' => true,
+        ],
+    ],
+
+    'Components' => [
+        [
+            'permission' => 'components.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'components.create',
+            'display' => true,
+        ],
+        [
+            'permission' => 'components.edit',
+            'display' => true,
+        ],
+        [
+            'permission' => 'components.delete',
+            'display' => true,
+        ],
+        [
+            'permission' => 'components.checkout',
+            'display' => true,
+        ],
+        [
+            'permission' => 'components.checkin',
+            'display' => true,
+        ],
+        [
+            'permission' => 'components.files',
             'display' => true,
         ],
     ],

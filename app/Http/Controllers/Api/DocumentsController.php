@@ -9,7 +9,13 @@ use App\Http\Requests\FilterRequest;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Transformers\ActionlogsTransformer;
 use App\Http\Transformers\DocumentsTransformer;
+use App\Models\Asset;
 use App\Models\Document;
+use App\Models\Location;
+use App\Models\Supplier;
+use App\Models\User;
+use App\Support\Compliance\ComplianceDomainAccess;
+use App\Support\Documents\DocumentAreaAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -23,6 +29,9 @@ class DocumentsController extends Controller
 
         $documents = Document::select('documents.*')
             ->with('company', 'owner', 'framework', 'type', 'adminuser', 'frameworkRequirements', 'documentAssignments.assignable', 'documentAssignments.reviewer');
+
+        ComplianceDomainAccess::applyDocumentScope($documents, $request->user());
+        DocumentAreaAccess::applyDocumentScope($documents, $request->user());
 
         if ($request->filled('filter') || $request->filled('search')) {
             $documents->TextSearch($request->input('filter') ?: $request->input('search'));
@@ -58,6 +67,10 @@ class DocumentsController extends Controller
             $documents->where('documents.document_type_id', '=', $request->input('document_type_id'));
         }
 
+        if ($request->filled('document_area')) {
+            $documents->where('documents.document_area', '=', $request->input('document_area'));
+        }
+
         if ($request->filled('document_framework_id')) {
             $documents->where('documents.document_framework_id', '=', $request->input('document_framework_id'));
         }
@@ -70,28 +83,28 @@ class DocumentsController extends Controller
 
         if ($request->filled('assigned_user_id')) {
             $documents->whereHas('documentAssignments', function ($query) use ($request) {
-                $query->where('assignable_type', \App\Models\User::class)
+                $query->where('assignable_type', User::class)
                     ->where('assignable_id', '=', (int) $request->input('assigned_user_id'));
             });
         }
 
         if ($request->filled('assigned_asset_id')) {
             $documents->whereHas('documentAssignments', function ($query) use ($request) {
-                $query->where('assignable_type', \App\Models\Asset::class)
+                $query->where('assignable_type', Asset::class)
                     ->where('assignable_id', '=', (int) $request->input('assigned_asset_id'));
             });
         }
 
         if ($request->filled('assigned_location_id')) {
             $documents->whereHas('documentAssignments', function ($query) use ($request) {
-                $query->where('assignable_type', \App\Models\Location::class)
+                $query->where('assignable_type', Location::class)
                     ->where('assignable_id', '=', (int) $request->input('assigned_location_id'));
             });
         }
 
         if ($request->filled('assigned_supplier_id')) {
             $documents->whereHas('documentAssignments', function ($query) use ($request) {
-                $query->where('assignable_type', \App\Models\Supplier::class)
+                $query->where('assignable_type', Supplier::class)
                     ->where('assignable_id', '=', (int) $request->input('assigned_supplier_id'));
             });
         }
@@ -102,6 +115,7 @@ class DocumentsController extends Controller
             'document_number',
             'version',
             'status',
+            'document_area',
             'classification',
             'issued_at',
             'effective_at',
@@ -115,7 +129,7 @@ class DocumentsController extends Controller
         ];
 
         $limit = app('api_limit_value');
-        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $documents->count(), $limit);
+        $offset = Helper::clampPaginationOffset($request->input('offset'), $documents->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sort = in_array($request->input('sort'), $allowedColumns) ? $request->input('sort') : 'created_at';
 
@@ -160,6 +174,7 @@ class DocumentsController extends Controller
 
         if ($document->save()) {
             $this->syncRequirementMappings($document, $request);
+
             return response()->json(Helper::formatStandardApiResponse('success', (new DocumentsTransformer)->transformDocument($document), trans('admin/documents/message.create.success')));
         }
 
@@ -174,6 +189,7 @@ class DocumentsController extends Controller
 
         if ($document->save()) {
             $this->syncRequirementMappings($document, $request);
+
             return response()->json(Helper::formatStandardApiResponse('success', (new DocumentsTransformer)->transformDocument($document), trans('admin/documents/message.update.success')));
         }
 
@@ -189,6 +205,19 @@ class DocumentsController extends Controller
         return response()->json(Helper::formatStandardApiResponse('success', null, trans('admin/documents/message.delete.success')));
     }
 
+    public function forceDelete(Document $document): JsonResponse|array
+    {
+        $this->authorize('forceDelete', $document);
+
+        if (! $document->trashed()) {
+            return response()->json(Helper::formatStandardApiResponse('error', null, trans('admin/documents/message.force_delete.not_deleted')), 422);
+        }
+
+        $document->forceDelete();
+
+        return response()->json(Helper::formatStandardApiResponse('success', null, trans('admin/documents/message.force_delete.success')));
+    }
+
     public function history(Request $request, Document $document): JsonResponse|array
     {
         $this->authorize('view', $document);
@@ -202,6 +231,12 @@ class DocumentsController extends Controller
 
     private function syncRequirementMappings(Document $document, StoreDocumentRequest $request): void
     {
+        if (! $request->mappingSubmitted()) {
+            return;
+        }
+
+        $this->authorize('mapRequirements', $document);
+
         $syncData = [];
         $evidence = collect($request->input('requirement_evidence', []));
 

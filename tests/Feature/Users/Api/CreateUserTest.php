@@ -134,15 +134,12 @@ class CreateUserTest extends TestCase
                 'password_confirmation' => 'testpassword1235!!',
                 'permissions' => '{"admin":"1","superuser":"1","users.view":"1"}',
             ])
-            ->assertOk()
-            ->assertStatusMessageIs('success');
+            ->assertForbidden()
+            ->assertStatusMessageIs('error');
 
-        $createdUser = User::where('username', 'taylor-create-api')->firstOrFail();
-        $decoded = (array) $createdUser->decodePermissions();
-
-        $this->assertArrayNotHasKey('admin', $decoded, 'Non-admin user should not be able to grant admin during create');
-        $this->assertArrayNotHasKey('superuser', $decoded, 'Non-admin user should not be able to grant superuser during create');
-        $this->assertEquals(1, $decoded['users.view'] ?? null, 'Non-privileged permissions should still be createable');
+        $this->assertDatabaseMissing('users', [
+            'username' => 'taylor-create-api',
+        ]);
     }
 
     public function test_admin_cannot_grant_superuser_permission_when_creating_user_via_api()

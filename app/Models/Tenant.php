@@ -18,15 +18,25 @@ class Tenant extends Model
     use HasFactory;
 
     public const ACTIVE_TENANT_SESSION_KEY = 'active_tenant_id';
+
     public const ROLE_ADMIN = 'admin';
+
     public const ROLE_VIEWER = 'viewer';
+
     public const MAIL_EVENT_TICKET_CREATED = 'ticket_created';
+
     public const MAIL_EVENT_TICKET_PUBLIC_REPLY = 'ticket_public_reply';
+
     public const MAIL_EVENT_TICKET_ASSIGNED = 'ticket_assigned';
+
     public const MAIL_EVENT_TICKET_SLA_ALERT = 'ticket_sla_alert';
+
     public const MAIL_EVENT_DOCUMENT_REVIEW_DUE = 'document_review_due';
+
     public const MAIL_EVENT_DOCUMENT_ASSIGNMENT_REMINDER = 'document_assignment_reminder';
+
     public const COMPLIANCE_JURISDICTION_EU = ComplianceJurisdictions::EU;
+
     public const COMPLIANCE_JURISDICTION_IT = ComplianceJurisdictions::IT;
 
     protected static ?array $currentUserTenantRolesCache = null;
@@ -691,10 +701,14 @@ class Tenant extends Model
             'import',
             'reports.view', 'reports.nis_risk_matrix.view', 'reports.nis_real_coverage.view',
             'assets.view', 'assets.create', 'assets.edit', 'assets.delete', 'assets.checkin', 'assets.checkout', 'assets.audit', 'assets.view.requestable', 'assets.view.encrypted_custom_fields', 'assets.files',
-            'documents.view', 'documents.create', 'documents.edit', 'documents.delete', 'documents.files.view', 'documents.files',
+            'documents.view', 'documents.create', 'documents.edit', 'documents.delete', 'documents.restore', 'documents.force_delete', 'documents.files.view', 'documents.files', 'documents.requirements.map',
+            'documents.area.administration.view', 'documents.area.administration.edit', 'documents.area.administration.files.view', 'documents.area.administration.files',
+            'documents.area.it.view', 'documents.area.it.edit', 'documents.area.it.files.view', 'documents.area.it.files',
+            'documents.area.cybersecurity.view', 'documents.area.cybersecurity.edit', 'documents.area.cybersecurity.files.view', 'documents.area.cybersecurity.files',
             'tickets.view', 'tickets.create', 'tickets.operate', 'tickets.edit', 'tickets.delete', 'tickets.files',
             'documenttypes.view', 'documenttypes.create', 'documenttypes.edit', 'documenttypes.delete',
             'documentframeworks.view', 'documentframeworks.create', 'documentframeworks.edit', 'documentframeworks.delete',
+            'compliancedomains.view',
             'accessories.view', 'accessories.create', 'accessories.edit', 'accessories.delete', 'accessories.checkout', 'accessories.checkin', 'accessories.files',
             'consumables.view', 'consumables.create', 'consumables.edit', 'consumables.delete', 'consumables.checkout', 'consumables.files',
             'licenses.view', 'licenses.create', 'licenses.edit', 'licenses.delete', 'licenses.checkout', 'licenses.checkin', 'licenses.keys', 'licenses.files',

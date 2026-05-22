@@ -102,6 +102,25 @@
                             </div>
                         </div>
 
+                        <div class="form-group {{ $errors->has('document_area') ? ' has-error' : '' }}">
+                            <label for="document_area" class="col-md-3 control-label">{{ trans('admin/documents/form.document_area') }}</label>
+                            <div class="col-md-5">
+                                <select class="form-control select2" name="document_area" id="document_area" aria-label="document_area">
+                                    <option value="">{{ trans('general.do_not_change') }}</option>
+                                    @foreach ($documentAreaOptions as $areaValue => $areaLabel)
+                                        <option value="{{ $areaValue }}" @selected(old('document_area') === $areaValue)>{{ $areaLabel }}</option>
+                                    @endforeach
+                                </select>
+                                {!! $errors->first('document_area', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-control">
+                                    <input type="checkbox" name="apply_document_area" value="1" @checked(old('apply_document_area'))>
+                                    {{ trans('general.apply') }}
+                                </label>
+                            </div>
+                        </div>
+
                         @foreach (['classification', 'retention_period', 'scope'] as $textField)
                             <div class="form-group {{ $errors->has($textField) ? ' has-error' : '' }}">
                                 <label for="{{ $textField }}" class="col-md-3 control-label">{{ trans('admin/documents/form.'.$textField) }}</label>
@@ -171,6 +190,7 @@
                 status: 'apply_status',
                 owner_id: 'apply_owner_id',
                 document_type_id: 'apply_document_type_id',
+                document_area: 'apply_document_area',
                 classification: 'apply_classification',
                 retention_period: 'apply_retention_period',
                 scope: 'apply_scope',

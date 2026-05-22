@@ -7,6 +7,7 @@ use App\Http\Requests\StoreDocumentFrameworkRequirementRequest;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\DocumentType;
+use App\Support\Compliance\ComplianceDomainAccess;
 use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -33,7 +34,9 @@ class DocumentFrameworkRequirementsController extends Controller
                 ? $query->whereRaw('1 = 0')
                 : $query->whereIn('company_id', $tenantCompanyIds))
             ->ordered()
-            ->get(['id', 'name', 'company_id', 'visibility_type', 'is_system_template']);
+            ->get(['id', 'name', 'company_id', 'visibility_type', 'is_system_template', 'compliance_domain'])
+            ->filter(fn (DocumentFramework $framework) => ComplianceDomainAccess::canAccessFramework($framework, request()->user()))
+            ->values();
 
         $editableFrameworks = $frameworks
             ->filter(fn (DocumentFramework $framework) => Gate::allows('update', $framework))
@@ -288,6 +291,7 @@ class DocumentFrameworkRequirementsController extends Controller
 
                     if (! $parent || (int) $parent->document_framework_id !== (int) $framework->id) {
                         $validator->errors()->add('parent_ids', trans('validation.exists', ['attribute' => trans('admin/documentframeworkrequirements/table.parent')]));
+
                         continue;
                     }
 
@@ -297,6 +301,7 @@ class DocumentFrameworkRequirementsController extends Controller
                                 'attribute' => trans('admin/documentframeworkrequirements/table.parent'),
                                 'other' => trans('admin/documentframeworkrequirements/table.code'),
                             ]));
+
                             continue;
                         }
 

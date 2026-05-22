@@ -10,7 +10,6 @@ use App\Presenters\DocumentPresenter;
 use App\Presenters\Presentable;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Gate;
 use Watson\Validating\ValidatingTrait;
@@ -27,9 +26,13 @@ class Document extends SnipeModel
     use ValidatingTrait;
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_IN_REVIEW = 'in_review';
+
     public const STATUS_OBSOLETE = 'obsolete';
+
     public const STATUS_ARCHIVED = 'archived';
 
     protected $presenter = DocumentPresenter::class;
@@ -46,6 +49,7 @@ class Document extends SnipeModel
         'reference',
         'version',
         'status',
+        'document_area',
         'classification',
         'retention_period',
         'scope',
@@ -58,6 +62,7 @@ class Document extends SnipeModel
     ];
 
     public const COVERAGE_PRIMARY = 'primary';
+
     public const COVERAGE_SUPPORTING = 'supporting';
 
     protected $casts = [
@@ -81,6 +86,7 @@ class Document extends SnipeModel
         'reference' => 'nullable|string|max:255',
         'version' => 'nullable|string|max:50',
         'status' => 'required|string|in:draft,active,in_review,obsolete,archived',
+        'document_area' => 'nullable|string|in:administration,it,cybersecurity',
         'classification' => 'nullable|string|max:100',
         'retention_period' => 'nullable|string|max:100',
         'scope' => 'nullable|string|max:150',
@@ -98,6 +104,7 @@ class Document extends SnipeModel
         'reference',
         'version',
         'status',
+        'document_area',
         'classification',
         'retention_period',
         'scope',
@@ -122,6 +129,15 @@ class Document extends SnipeModel
             self::STATUS_IN_REVIEW => trans('admin/documents/general.statuses.in_review'),
             self::STATUS_OBSOLETE => trans('admin/documents/general.statuses.obsolete'),
             self::STATUS_ARCHIVED => trans('admin/documents/general.statuses.archived'),
+        ];
+    }
+
+    public static function documentAreaOptions(): array
+    {
+        return [
+            'administration' => trans('admin/documents/general.areas.administration'),
+            'it' => trans('admin/documents/general.areas.it'),
+            'cybersecurity' => trans('admin/documents/general.areas.cybersecurity'),
         ];
     }
 

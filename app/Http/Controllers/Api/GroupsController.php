@@ -27,7 +27,7 @@ class GroupsController extends Controller
 
         $this->authorize('view', Group::class);
 
-        $groups = Group::select(['id', 'name', 'permissions', 'notes', 'created_at', 'updated_at', 'created_by'])->with('adminuser')->withCount('users as users_count');
+        $groups = Group::select(['id', 'name', 'system_key', 'permissions', 'notes', 'created_at', 'updated_at', 'created_by'])->with('adminuser')->withCount('users as users_count');
 
         // This invokes the Searchable model trait scopeTextSearch and will handle input by search or by advanced search filter
         if ($request->filled('filter') || $request->filled('search')) {
@@ -39,7 +39,7 @@ class GroupsController extends Controller
         }
 
         $limit = app('api_limit_value');
-        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $groups->count(), $limit);
+        $offset = Helper::clampPaginationOffset($request->input('offset'), $groups->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
 
         switch ($request->input('sort')) {
@@ -133,6 +133,10 @@ class GroupsController extends Controller
         $this->authorize('superadmin');
         $group = Group::findOrFail($id);
 
+        if ($group->isSystemGroup()) {
+            return response()->json(Helper::formatStandardApiResponse('error', null, trans('admin/groups/message.delete.update')));
+        }
+
         // Fill only the keys present in the request, so PATCH skips absent fields naturally.
         $group->fill($request->only(['name', 'notes']));
 
@@ -171,6 +175,11 @@ class GroupsController extends Controller
     {
         $this->authorize('superadmin');
         $group = Group::findOrFail($id);
+        if ($group->isSystemGroup()) {
+            return response()
+                ->json(Helper::formatStandardApiResponse('error', null, trans('admin/groups/message.delete.delete')));
+        }
+
         if (! $group->isDeletable()) {
             return response()
                 ->json(Helper::formatStandardApiResponse('error', null, trans('admin/groups/message.assoc_users')));

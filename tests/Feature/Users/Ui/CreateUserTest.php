@@ -111,17 +111,14 @@ class CreateUserTest extends TestCase
                     'users.view' => '1',
                 ],
             ])
-            ->assertSessionHasNoErrors()
+            ->assertSessionHas('error')
             ->assertStatus(302)
             ->assertRedirect(route('users.index'));
 
-        $createdUser = User::where('username', 'taylor-create-ui')->firstOrFail();
-        $decoded = (array) $createdUser->decodePermissions();
-
-        $this->assertArrayNotHasKey('admin', $decoded, 'Non-admin user should not be able to grant admin during create');
-        $this->assertArrayNotHasKey('superuser', $decoded, 'Non-admin user should not be able to grant superuser during create');
-        $this->assertEquals(1, $decoded['users.view'] ?? null, 'Non-privileged permissions should still be createable');
-        $this->followRedirects($response)->assertSee('Success');
+        $this->assertDatabaseMissing('users', [
+            'username' => 'taylor-create-ui',
+        ]);
+        $this->followRedirects($response)->assertSee(trans('general.insufficient_permissions'));
     }
 
     public function test_admin_cannot_grant_superuser_permission_when_creating_user_via_ui()

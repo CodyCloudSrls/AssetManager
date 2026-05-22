@@ -57,4 +57,9 @@ return [
     'department_manager' => 'Responsabile di Reparto',
     'generate_password' => 'Genera password casuale',
     'individual_override' => 'Questo utente ha almeno un set di autorizzazioni individuali, che può sovrascrivere le autorizzazioni di gruppo.',
+    'compliance_scope' => 'Ambito compliance',
+    'compliance_scope_restricted' => 'Limita questo utente ai domini compliance selezionati',
+    'compliance_scope_restricted_help' => 'Se attivo, framework documentali, requisiti, documenti e report vengono limitati ai domini selezionati. Lascia disattivato per la normale visibilita su tutto il tenant.',
+    'compliance_domains' => 'Domini compliance consentiti',
+    'compliance_domains_help' => 'Seleziona i domini accessibili all utente, per esempio NIS2, GDPR o AI Act. Se il limite e attivo e non selezioni nulla, restano visibili solo i contenuti non classificati.',
 ];

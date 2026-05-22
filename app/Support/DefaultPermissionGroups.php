@@ -17,7 +17,7 @@ final class DefaultPermissionGroups
                     'reports.view',
                     'tickets.view', 'tickets.create', 'tickets.operate', 'tickets.files',
                     'assets.view',
-                    'documents.view',
+                    'documents.view', 'documents.files.view',
                     'users.view',
                     'locations.view',
                     'companies.view',
@@ -38,7 +38,7 @@ final class DefaultPermissionGroups
                     'reports.view',
                     'tickets.view', 'tickets.create', 'tickets.operate', 'tickets.edit', 'tickets.delete', 'tickets.files',
                     'assets.view', 'assets.files',
-                    'documents.view', 'documents.files',
+                    'documents.view', 'documents.files.view', 'documents.files',
                     'users.view',
                     'locations.view',
                     'companies.view',
@@ -63,7 +63,7 @@ final class DefaultPermissionGroups
                     'licenses.view', 'licenses.checkout', 'licenses.checkin',
                     'components.view', 'components.checkout', 'components.checkin',
                     'tickets.view', 'tickets.create',
-                    'documents.view',
+                    'documents.view', 'documents.files.view',
                     'users.view',
                     'locations.view',
                     'companies.view',
@@ -116,14 +116,87 @@ final class DefaultPermissionGroups
                 ]),
             ],
             [
+                'system_key' => 'default_administration_document_updater',
+                'name' => 'Default - Administration Document Updater',
+                'notes' => 'Tenant-scoped document updater for administrative records. Can create, update, and manage attachments only for administration-area documents without framework or document-type administration rights.',
+                'permissions' => self::permissionMap([
+                    'reports.view',
+                    'documents.view', 'documents.create', 'documents.edit', 'documents.files.view', 'documents.files',
+                    ...self::documentAreaPermissions(['administration'], true, true),
+                    'documenttypes.view',
+                    'documentframeworks.view',
+                    'tickets.view', 'tickets.create',
+                    'users.view',
+                    'locations.view',
+                    'companies.view',
+                ]),
+            ],
+            [
+                'system_key' => 'default_it_document_updater',
+                'name' => 'Default - IT Document Updater',
+                'notes' => 'Tenant-scoped document updater for IT evidence and operating records. Can maintain IT-area documents and attachments without changing frameworks, requirements, or document type settings.',
+                'permissions' => self::permissionMap([
+                    'reports.view',
+                    'documents.view', 'documents.create', 'documents.edit', 'documents.files.view', 'documents.files',
+                    ...self::documentAreaPermissions(['it'], true, true),
+                    'documenttypes.view',
+                    'documentframeworks.view',
+                    'tickets.view', 'tickets.create',
+                    'assets.view',
+                    'users.view',
+                    'locations.view',
+                    'companies.view',
+                ]),
+            ],
+            [
+                'system_key' => 'default_cybersecurity_document_updater',
+                'name' => 'Default - Cybersecurity Document Updater',
+                'notes' => 'Tenant-scoped document updater for cybersecurity evidence. Can maintain cybersecurity-area documents, view IT-area documents needed for compliance work, and cannot change framework or document type governance.',
+                'permissions' => self::permissionMap([
+                    'reports.view', 'reports.nis_risk_matrix.view', 'reports.nis_real_coverage.view',
+                    'documents.view', 'documents.create', 'documents.edit', 'documents.files.view', 'documents.files',
+                    ...self::documentAreaPermissions(['cybersecurity'], true, true),
+                    ...self::documentAreaPermissions(['it'], false, false),
+                    'documents.requirements.map',
+                    'documenttypes.view',
+                    'documentframeworks.view',
+                    'tickets.view', 'tickets.create', 'tickets.operate', 'tickets.files',
+                    'assets.view',
+                    'users.view',
+                    'locations.view',
+                    'companies.view',
+                ]),
+            ],
+            [
                 'system_key' => 'default_document_controller',
                 'name' => 'Default - Document Controller',
                 'notes' => 'Controlled-document administration role. Can manage document registers, framework libraries, requirement mappings, and related ticket operations without tenant-wide asset administration.',
                 'permissions' => self::permissionMap([
                     'reports.view',
-                    'documents.view', 'documents.create', 'documents.edit', 'documents.delete', 'documents.files',
+                    'documents.view', 'documents.create', 'documents.edit', 'documents.delete', 'documents.restore', 'documents.force_delete', 'documents.files.view', 'documents.files', 'documents.requirements.map',
+                    ...self::documentAreaPermissions(self::documentAreas(), true, true),
                     'documenttypes.view', 'documenttypes.create', 'documenttypes.edit', 'documenttypes.delete',
                     'documentframeworks.view', 'documentframeworks.create', 'documentframeworks.edit', 'documentframeworks.delete',
+                    'compliancedomains.view',
+                    'customers.view', 'contracts.view',
+                    'tickets.view', 'tickets.create', 'tickets.operate', 'tickets.files',
+                    'assets.view',
+                    'users.view',
+                    'locations.view',
+                    'companies.view',
+                ]),
+            ],
+            [
+                'system_key' => 'default_compliance_evidence_coordinator',
+                'name' => 'Default - Compliance Evidence Coordinator',
+                'notes' => 'Compliance evidence coordinator. Can update evidence documents, attachments, and requirement mappings across document areas while framework, requirement, and document-type governance remains read-only.',
+                'permissions' => self::permissionMap([
+                    'reports.view', 'reports.nis_risk_matrix.view', 'reports.nis_real_coverage.view',
+                    'documents.view', 'documents.create', 'documents.edit', 'documents.files.view', 'documents.files', 'documents.requirements.map',
+                    ...self::documentAreaPermissions(self::documentAreas(), true, true),
+                    'documenttypes.view',
+                    'documentframeworks.view',
+                    'compliancedomains.view',
                     'customers.view', 'contracts.view',
                     'tickets.view', 'tickets.create', 'tickets.operate', 'tickets.files',
                     'assets.view',
@@ -137,10 +210,12 @@ final class DefaultPermissionGroups
                 'name' => 'Default - Compliance Manager',
                 'notes' => 'Document and compliance operations role. Can manage document registers and related ticket workflows while keeping asset and user data in read-only mode.',
                 'permissions' => self::permissionMap([
-                    'reports.view',
-                    'documents.view', 'documents.create', 'documents.edit', 'documents.delete', 'documents.files',
+                    'reports.view', 'reports.nis_risk_matrix.view', 'reports.nis_real_coverage.view',
+                    'documents.view', 'documents.create', 'documents.edit', 'documents.delete', 'documents.restore', 'documents.files.view', 'documents.files', 'documents.requirements.map',
+                    ...self::documentAreaPermissions(self::documentAreas(), true, true),
                     'documenttypes.view', 'documenttypes.create', 'documenttypes.edit', 'documenttypes.delete',
                     'documentframeworks.view', 'documentframeworks.create', 'documentframeworks.edit', 'documentframeworks.delete',
+                    'compliancedomains.view',
                     'customers.view', 'customers.create', 'customers.edit', 'customers.delete', 'customers.files',
                     'contracts.view', 'contracts.create', 'contracts.edit', 'contracts.delete',
                     'tickets.view', 'tickets.create', 'tickets.operate', 'tickets.files',
@@ -157,7 +232,8 @@ final class DefaultPermissionGroups
                 'permissions' => self::permissionMap([
                     'reports.view',
                     'assets.view',
-                    'documents.view',
+                    'documents.view', 'documents.files.view',
+                    ...self::documentAreaPermissions(self::documentAreas(), false, false),
                     'tickets.view',
                     'documenttypes.view',
                     'documentframeworks.view',
@@ -187,7 +263,8 @@ final class DefaultPermissionGroups
                 'permissions' => self::permissionMap([
                     'reports.view',
                     'assets.view',
-                    'documents.view',
+                    'documents.view', 'documents.files.view',
+                    ...self::documentAreaPermissions(self::documentAreas(), false, false),
                     'tickets.view',
                     'documenttypes.view',
                     'documentframeworks.view',
@@ -236,9 +313,11 @@ final class DefaultPermissionGroups
                     'locations.view', 'locations.create', 'locations.edit', 'locations.delete', 'locations.files',
                     'departments.view', 'departments.create', 'departments.edit', 'departments.delete', 'departments.files',
                     'companies.view', 'companies.create', 'companies.edit', 'companies.delete', 'companies.files',
-                    'documents.view', 'documents.create', 'documents.edit', 'documents.delete', 'documents.files',
+                    'documents.view', 'documents.create', 'documents.edit', 'documents.delete', 'documents.restore', 'documents.force_delete', 'documents.files.view', 'documents.files', 'documents.requirements.map',
+                    ...self::documentAreaPermissions(self::documentAreas(), true, true),
                     'documenttypes.view', 'documenttypes.create', 'documenttypes.edit', 'documenttypes.delete',
                     'documentframeworks.view', 'documentframeworks.create', 'documentframeworks.edit', 'documentframeworks.delete',
+                    'compliancedomains.view',
                     'tickets.view', 'tickets.create', 'tickets.operate', 'tickets.edit', 'tickets.delete', 'tickets.files',
                 ]),
             ],
@@ -255,5 +334,37 @@ final class DefaultPermissionGroups
             config('permissions'),
             array_fill_keys($grantedPermissions, 1)
         );
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function documentAreas(): array
+    {
+        return ['administration', 'it', 'cybersecurity'];
+    }
+
+    /**
+     * @param  array<int, string>  $areas
+     * @return array<int, string>
+     */
+    private static function documentAreaPermissions(array $areas, bool $canEdit, bool $canManageFiles): array
+    {
+        $permissions = [];
+
+        foreach ($areas as $area) {
+            $permissions[] = "documents.area.{$area}.view";
+            $permissions[] = "documents.area.{$area}.files.view";
+
+            if ($canEdit) {
+                $permissions[] = "documents.area.{$area}.edit";
+            }
+
+            if ($canManageFiles) {
+                $permissions[] = "documents.area.{$area}.files";
+            }
+        }
+
+        return $permissions;
     }
 }

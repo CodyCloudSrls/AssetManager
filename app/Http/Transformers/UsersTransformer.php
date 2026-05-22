@@ -73,6 +73,14 @@ class UsersTransformer
             'notes' => Helper::parseEscapedMarkedownInline($user->notes),
             'role' => $role,
             'permissions' => $user->decodePermissions(),
+            'compliance_scope_restricted' => (bool) $user->compliance_scope_restricted,
+            'compliance_domains' => $user->relationLoaded('complianceDomains')
+                ? $user->complianceDomains->map(fn ($domain) => [
+                    'id' => (int) $domain->id,
+                    'key' => e($domain->key),
+                    'name' => e($domain->name),
+                ])->values()->all()
+                : null,
             'activated' => ($user->activated == '1') ? true : false,
             'autoassign_licenses' => ($user->autoassign_licenses == '1') ? true : false,
             'ldap_import' => ($user->ldap_import == '1') ? true : false,

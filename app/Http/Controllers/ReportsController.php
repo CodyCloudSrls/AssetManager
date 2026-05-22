@@ -17,6 +17,7 @@ use App\Models\AssetModel;
 use App\Models\Category;
 use App\Models\Checkoutable;
 use App\Models\CheckoutAcceptance;
+use App\Models\Company;
 use App\Models\Component;
 use App\Models\Consumable;
 use App\Models\CustomField;
@@ -37,6 +38,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Mail\Mailable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use League\Csv\EscapeFormula;
@@ -269,7 +271,8 @@ class ReportsController extends Controller
         $this->authorize('reports.nis_real_coverage.view');
 
         return view('reports/nis_real_coverage', $report->build(
-            $this->tenantCompanyIdsForReport($request)
+            $this->tenantCompanyIdsForReport($request),
+            $request->user()
         ));
     }
 
@@ -281,7 +284,43 @@ class ReportsController extends Controller
             return $companyIds;
         }
 
-        return Tenant::activeTenant()?->activeCompanyIds();
+        if ($activeTenant = Tenant::activeTenant()) {
+            return $activeTenant->activeCompanyIds();
+        }
+
+        $user = $request->user();
+
+        if ($user?->isSuperAdmin() && $user->hasAccess('tenants.view_all') && is_null($user->company_id)) {
+            return null;
+        }
+
+        if (! is_null($user?->company_id)) {
+            $tenantId = Company::withoutGlobalScopes()
+                ->where('id', $user->company_id)
+                ->value('tenant_id');
+
+            return $tenantId
+                ? Tenant::find((int) $tenantId)?->activeCompanyIds() ?? []
+                : [(int) $user->company_id];
+        }
+
+        $tenantIds = DB::table('tenant_users')
+            ->where('user_id', $user?->id)
+            ->pluck('tenant_id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        if ($tenantIds->isEmpty()) {
+            return [];
+        }
+
+        return Company::withoutGlobalScopes()
+            ->whereNull('deleted_at')
+            ->whereIn('tenant_id', $tenantIds->all())
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
     }
 
     /**

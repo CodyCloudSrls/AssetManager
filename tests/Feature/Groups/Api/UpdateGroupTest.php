@@ -77,4 +77,33 @@ class UpdateGroupTest extends TestCase
         $this->assertSame('Rename Only', $group->name);
         $this->assertSame('1', (string) ($decoded['admin'] ?? null));
     }
+
+    public function test_cannot_update_system_group_definition()
+    {
+        $group = Group::factory()->create([
+            'name' => 'System Group',
+            'notes' => 'Original notes',
+            'permissions' => json_encode(['reports.view' => '1']),
+            'system_key' => 'default_system_group',
+        ]);
+
+        $this->actingAsForApi(User::factory()->superuser()->create())
+            ->patchJson(route('api.groups.update', $group), [
+                'name' => 'Updated System Group',
+                'notes' => 'Updated notes',
+                'permissions' => [
+                    'admin' => '1',
+                ],
+            ])
+            ->assertOk()
+            ->assertStatusMessageIs('error');
+
+        $group->refresh();
+        $decoded = (array) $group->decodePermissions();
+
+        $this->assertSame('System Group', $group->name);
+        $this->assertSame('Original notes', $group->notes);
+        $this->assertSame('1', (string) ($decoded['reports.view'] ?? null));
+        $this->assertArrayNotHasKey('admin', $decoded);
+    }
 }

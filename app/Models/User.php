@@ -19,8 +19,8 @@ use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
@@ -99,6 +99,7 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         'manager_id' => 'integer',
         'location_id' => 'integer',
         'company_id' => 'integer',
+        'compliance_scope_restricted' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -712,6 +713,12 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
     public function groups()
     {
         return $this->belongsToMany(Group::class, 'users_groups');
+    }
+
+    public function complianceDomains()
+    {
+        return $this->belongsToMany(ComplianceDomain::class, 'user_compliance_domains')
+            ->withTimestamps();
     }
 
     public function tenants(): BelongsToMany

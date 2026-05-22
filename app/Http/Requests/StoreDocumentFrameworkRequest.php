@@ -3,8 +3,10 @@
 namespace App\Http\Requests;
 
 use App\Models\Company;
+use App\Models\ComplianceDomain;
 use App\Models\DocumentFramework;
 use App\Models\Tenant;
+use App\Support\Compliance\ComplianceDomainAccess;
 use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
@@ -27,6 +29,7 @@ class StoreDocumentFrameworkRequest extends FormRequest
             'company_id' => $companyId,
             'visibility_type' => $visibilityType,
             'slug' => $this->filled('slug') ? Str::slug($this->input('slug')) : Str::slug((string) $this->input('name')),
+            'compliance_domain' => ComplianceDomain::normalizeKey($this->input('compliance_domain')),
         ]);
     }
 
@@ -39,7 +42,7 @@ class StoreDocumentFrameworkRequest extends FormRequest
             'authority_name' => 'nullable|string|max:255',
             'framework_code' => 'nullable|string|max:80',
             'framework_type' => 'nullable|string|max:40',
-            'compliance_domain' => 'nullable|string|in:'.implode(',', array_keys(DocumentFramework::complianceDomainOptions())),
+            'compliance_domain' => 'nullable|string|max:80',
             'jurisdiction' => 'nullable|string|max:80',
             'version' => 'nullable|string|max:80',
             'effective_from' => 'nullable|date_format:Y-m-d',
@@ -70,6 +73,17 @@ class StoreDocumentFrameworkRequest extends FormRequest
 
                 if (! $canManageGlobalFramework) {
                     $validator->errors()->add('visibility_type', trans('validation.in', ['attribute' => trans('general.template_visibility.label')]));
+                }
+            }
+
+            if ($this->filled('compliance_domain')) {
+                $domainKey = ComplianceDomain::normalizeKey($this->input('compliance_domain'));
+                $this->merge(['compliance_domain' => $domainKey]);
+
+                if (! ComplianceDomain::isValidKey($domainKey)) {
+                    $validator->errors()->add('compliance_domain', trans('validation.exists', ['attribute' => trans('admin/documentframeworks/table.compliance_domain')]));
+                } elseif (! ComplianceDomainAccess::canAccessDomain($domainKey, $this->user())) {
+                    $validator->errors()->add('compliance_domain', trans('validation.exists', ['attribute' => trans('admin/documentframeworks/table.compliance_domain')]));
                 }
             }
 

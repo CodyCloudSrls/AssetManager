@@ -168,6 +168,27 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
         ])->name('api.cpvcodes.selectlist');
     });
 
+    Route::group(['prefix' => 'compliancedomains'], function () {
+        Route::get('selectlist', [
+            Api\ComplianceDomainsController::class,
+            'selectlist',
+        ])->name('api.compliancedomains.selectlist');
+    });
+
+    Route::resource('compliancedomains',
+        Api\ComplianceDomainsController::class,
+        ['names' => [
+            'index' => 'api.compliancedomains.index',
+            'show' => 'api.compliancedomains.show',
+            'update' => 'api.compliancedomains.update',
+            'store' => 'api.compliancedomains.store',
+            'destroy' => 'api.compliancedomains.destroy',
+        ],
+            'except' => ['create', 'edit'],
+            'parameters' => ['compliancedomains' => 'compliancedomain'],
+        ]
+    );
+
     /**
      * Document frameworks API routes
      */
@@ -693,6 +714,12 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
                 'history',
             ]
         )->name('api.documents.history')->withTrashed();
+        Route::delete('{document}/force-delete',
+            [
+                Api\DocumentsController::class,
+                'forceDelete',
+            ]
+        )->name('api.documents.force-delete')->withTrashed();
     });
 
     Route::patch('/documents/{document}', [Api\DocumentsController::class, 'update'])->name('api.documents.update');

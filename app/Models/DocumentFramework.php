@@ -6,8 +6,8 @@ use App\Models\Traits\Searchable;
 use App\Models\Traits\TenantTemplateTrait;
 use App\Presenters\Presentable;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Watson\Validating\ValidatingTrait;
@@ -139,15 +139,7 @@ class DocumentFramework extends SnipeModel
 
     public static function complianceDomainOptions(): array
     {
-        return [
-            'nis2' => trans('admin/documentframeworks/general.compliance_domains.nis2'),
-            'gdpr' => trans('admin/documentframeworks/general.compliance_domains.gdpr'),
-            'ai_act' => trans('admin/documentframeworks/general.compliance_domains.ai_act'),
-            'iso27001' => trans('admin/documentframeworks/general.compliance_domains.iso27001'),
-            'supplier_risk' => trans('admin/documentframeworks/general.compliance_domains.supplier_risk'),
-            'internal' => trans('admin/documentframeworks/general.compliance_domains.internal'),
-            'custom' => trans('admin/documentframeworks/general.compliance_domains.custom'),
-        ];
+        return ComplianceDomain::options();
     }
 
     public static function looksLikeNis2Domain(?string $complianceDomain, array $metadata = []): bool
@@ -191,6 +183,11 @@ class DocumentFramework extends SnipeModel
     public function requirements()
     {
         return $this->hasMany(DocumentFrameworkRequirement::class, 'document_framework_id');
+    }
+
+    public function complianceDomain()
+    {
+        return $this->belongsTo(ComplianceDomain::class, 'compliance_domain', 'key');
     }
 
     public function sourceFramework()

@@ -7,9 +7,12 @@ use App\Models\Document;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\DocumentType;
+use App\Support\Compliance\ComplianceDomainAccess;
+use App\Support\Documents\DocumentAreaAccess;
 use App\Support\Documents\DocumentAssignmentManager;
 use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 
 class StoreDocumentRequest extends FormRequest
@@ -38,6 +41,7 @@ class StoreDocumentRequest extends FormRequest
             'reference' => 'nullable|string|max:255',
             'version' => 'nullable|string|max:50',
             'status' => 'required|string|in:'.implode(',', array_keys(Document::getStatusOptions())),
+            'document_area' => 'nullable|string|in:'.implode(',', array_keys(Document::documentAreaOptions())),
             'classification' => 'nullable|string|max:100',
             'retention_period' => 'nullable|string|max:100',
             'scope' => 'nullable|string|max:150',
@@ -81,9 +85,14 @@ class StoreDocumentRequest extends FormRequest
                     ! $documentFramework
                     || $documentFramework->isSystemTemplate()
                     || ! TenantRecordGuard::templateCanBeAppliedToCompany($documentFramework, $effectiveCompanyId ? (int) $effectiveCompanyId : null)
+                    || ! ComplianceDomainAccess::canAccessFramework($documentFramework, $this->user())
                 ) {
                     $validator->errors()->add('document_framework_id', trans('validation.exists', ['attribute' => 'document framework']));
                 }
+            }
+
+            if ($this->filled('document_area') && ! DocumentAreaAccess::canSet($this->user(), $this->input('document_area'))) {
+                $validator->errors()->add('document_area', trans('validation.exists', ['attribute' => trans('admin/documents/form.document_area')]));
             }
 
             $frameworkId = $this->filled('document_framework_id') ? (int) $this->input('document_framework_id') : null;
@@ -107,6 +116,10 @@ class StoreDocumentRequest extends FormRequest
                 if ($validCount !== $requirementIds->count()) {
                     $validator->errors()->add('primary_requirement_ids', trans('admin/documents/message.invalid_requirements_for_framework'));
                 }
+            }
+
+            if ($this->mappingSubmitted() && ! Gate::allows('mapRequirements', $document ?: Document::class)) {
+                $validator->errors()->add('primary_requirement_ids', trans('general.insufficient_permissions'));
             }
 
             if (DocumentAssignmentManager::submissionRequested($this)) {
@@ -140,5 +153,12 @@ class StoreDocumentRequest extends FormRequest
                 }
             }
         });
+    }
+
+    public function mappingSubmitted(): bool
+    {
+        return $this->has('primary_requirement_ids')
+            || $this->has('supporting_requirement_ids')
+            || $this->has('requirement_evidence');
     }
 }

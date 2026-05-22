@@ -57,4 +57,9 @@ return [
     'department_manager' => 'Department Manager',
     'generate_password' => 'Generate random password',
     'individual_override' => 'This user has at least one individual permission set, which may override group permissions.',
+    'compliance_scope' => 'Compliance scope',
+    'compliance_scope_restricted' => 'Limit this user to selected compliance domains',
+    'compliance_scope_restricted_help' => 'When enabled, document frameworks, requirements, documents, and reports are limited to the selected domains. Leave disabled for normal tenant-wide visibility.',
+    'compliance_domains' => 'Allowed compliance domains',
+    'compliance_domains_help' => 'Select the domains this user can access, for example NIS2, GDPR, or AI Act. Empty selection with the limit enabled means only uncategorized content is visible.',
 ];

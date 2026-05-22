@@ -77,6 +77,14 @@ class DocumentPresenter extends Presenter
                 'visible' => true,
             ],
             [
+                'field' => 'document_area_label',
+                'searchable' => true,
+                'sortable' => true,
+                'switchable' => true,
+                'title' => trans('admin/documents/form.document_area'),
+                'visible' => false,
+            ],
+            [
                 'field' => 'version',
                 'searchable' => true,
                 'sortable' => true,

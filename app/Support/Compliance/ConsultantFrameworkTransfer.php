@@ -18,7 +18,9 @@ use ZipArchive;
 class ConsultantFrameworkTransfer
 {
     public const FORMAT_CSV = 'csv';
+
     public const FORMAT_XLSX = 'xlsx';
+
     public const FORMAT_DOCX = 'docx';
 
     private const FRAMEWORK_COLUMNS = [
@@ -150,6 +152,11 @@ class ConsultantFrameworkTransfer
 
         $frameworkRecord = $this->frameworkRecord($records);
         $frameworkData = $this->frameworkData($frameworkRecord, $companyId, $visibilityType, $createdBy);
+
+        if (! ComplianceDomainAccess::canAccessDomain($frameworkData['compliance_domain'] ?? null, auth()->user())) {
+            $this->fail(trans('validation.exists', ['attribute' => trans('admin/documentframeworks/table.compliance_domain')]));
+        }
+
         $requirementData = $this->requirementsData($records, $createdBy, DocumentFramework::looksLikeNis2Domain(
             $frameworkData['compliance_domain'] ?? null,
             $frameworkData

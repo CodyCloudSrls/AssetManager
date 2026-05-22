@@ -258,7 +258,7 @@ class UpdateUserTest extends TestCase
         $hashed_new = Hash::make('!ABCDEFGIJKL123!!!');
 
         $editing_user = User::factory()->admin()->create();
-        $superuser = User::factory()->superuser()->create(['username' => 'TestSuperUser', 'email' => 'superuser@example.org', 'password' => $hashed_original, 'activated' => 1]);
+        $superuser = User::factory()->tenantSuperuser()->create(['username' => 'TestSuperUser', 'email' => 'superuser@example.org', 'password' => $hashed_original, 'activated' => 1]);
 
         // The admin being edited
         $this->assertDatabaseHas('users', [
@@ -607,14 +607,14 @@ class UpdateUserTest extends TestCase
                     'users.view' => '1',
                 ],
             ])
-            ->assertOk()
-            ->assertStatusMessageIs('success');
+            ->assertForbidden()
+            ->assertStatusMessageIs('error');
 
         $decoded = (array) $targetUser->refresh()->decodePermissions();
 
         $this->assertArrayNotHasKey('admin', $decoded, 'Non-admin user should not be able to grant admin');
         $this->assertArrayNotHasKey('superuser', $decoded, 'Non-admin user should not be able to grant superuser');
-        $this->assertEquals(1, $decoded['users.view'] ?? null, 'Non-privileged permissions should still be updateable');
+        $this->assertArrayNotHasKey('users.view', $decoded, 'Non-admin user should not be able to update permission payloads');
     }
 
     public function test_admin_cannot_escalate_empty_permissions_user_to_superuser_via_api()

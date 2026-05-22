@@ -12,6 +12,7 @@ use App\Http\Requests\SaveUserRequest;
 use App\Models\Actionlog;
 use App\Models\Asset;
 use App\Models\Company;
+use App\Models\ComplianceDomain;
 use App\Models\Group;
 use App\Models\Setting;
 use App\Models\User;
@@ -80,8 +81,13 @@ class UsersController extends Controller
         $permissions = $this->filterDisplayable($permissions);
 
         $user = new User;
+        $complianceDomains = ComplianceDomain::query()->active()->ordered()->get(['id', 'key', 'name']);
+        $userComplianceDomainIds = collect($request->old('compliance_domain_ids', []))
+            ->filter(fn ($id) => filled($id))
+            ->map(fn ($id) => (int) $id)
+            ->values();
 
-        return view('users/edit', compact('groups', 'userGroups', 'permissions', 'userPermissions'))
+        return view('users/edit', compact('groups', 'userGroups', 'permissions', 'userPermissions', 'complianceDomains', 'userComplianceDomainIds'))
             ->with('user', $user);
     }
 
@@ -101,6 +107,11 @@ class UsersController extends Controller
         $this->authorize('create', User::class);
 
         $authenticatedUser = auth()->user();
+
+        if ($this->requestContainsPermissionManagement($request) && ! $this->canManageUserPermissions($authenticatedUser)) {
+            return redirect()->back()->withInput()->with('error', trans('general.insufficient_permissions'));
+        }
+
         $user = new User;
         // Username, email, and password need to be handled specially because the need to respect config values on an edit.
         $user->email = trim($request->input('email'));
@@ -134,10 +145,13 @@ class UsersController extends Controller
         $user->end_date = $request->input('end_date', null);
         $user->autoassign_licenses = $request->input('autoassign_licenses', 0);
 
-        $user->permissions = json_encode(PreserveUnauthorizedPrivilegedPermissionsAction::run(
-            requestedPermissions: NormalizePermissionsPayloadAction::run($request->input('permission')),
-            authenticatedUser: $authenticatedUser,
-        ));
+        if ($this->canManageUserPermissions($authenticatedUser)) {
+            $user->permissions = json_encode(PreserveUnauthorizedPrivilegedPermissionsAction::run(
+                requestedPermissions: NormalizePermissionsPayloadAction::run($request->input('permission')),
+                authenticatedUser: $authenticatedUser,
+            ));
+            $user->compliance_scope_restricted = $request->boolean('compliance_scope_restricted');
+        }
 
         // we have to invoke the form request here to handle image uploads
         app(ImageUploadRequest::class)->handleImages($user, 600, 'avatar', 'avatars', 'avatar');
@@ -162,6 +176,10 @@ class UsersController extends Controller
 
             if (auth()->user()->isSuperAdmin() && auth()->user()->can('editableOnDemo')) {
                 $user->groups()->sync($this->selectedGroupIds($request));
+            }
+
+            if ($this->canManageUserPermissions($authenticatedUser)) {
+                $user->complianceDomains()->sync($this->selectedComplianceDomainIds($request, $authenticatedUser));
             }
 
             return Helper::getRedirectOption($request, $user->id, 'Users')
@@ -192,6 +210,50 @@ class UsersController extends Controller
             ->filter(fn (int $id) => $id > 0)
             ->unique()
             ->values()
+            ->all();
+    }
+
+    private function requestContainsPermissionManagement(Request $request): bool
+    {
+        return $request->exists('permission')
+            || $request->exists('permissions')
+            || $this->requestContainsComplianceScope($request);
+    }
+
+    private function requestContainsComplianceScope(Request $request): bool
+    {
+        return $request->has('compliance_scope_restricted')
+            || $request->has('compliance_domain_ids');
+    }
+
+    private function canManageUserPermissions(?User $user): bool
+    {
+        return $user instanceof User && $user->hasAccess('admin') && $user->can('editableOnDemo');
+    }
+
+    private function selectedComplianceDomainIds(Request $request, User $authenticatedUser): array
+    {
+        if (! $request->boolean('compliance_scope_restricted')) {
+            return [];
+        }
+
+        $ids = collect($request->input('compliance_domain_ids', []))
+            ->flatten()
+            ->filter(fn ($id) => filled($id))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return [];
+        }
+
+        return ComplianceDomain::query()
+            ->active()
+            ->whereIn('id', $ids->all())
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
             ->all();
     }
 
@@ -229,8 +291,10 @@ class UsersController extends Controller
             $user->permissions = $user->decodePermissions();
             $userPermissions = Helper::selectedPermissionsArray($permissions, $user->permissions);
             $permissions = $this->filterDisplayable($permissions);
+            $complianceDomains = ComplianceDomain::query()->active()->ordered()->get(['id', 'key', 'name']);
+            $userComplianceDomainIds = $user->complianceDomains()->pluck('compliance_domains.id');
 
-            return view('users/edit', compact('user', 'groups', 'userGroups', 'permissions', 'userPermissions'))->with('item', $user);
+            return view('users/edit', compact('user', 'groups', 'userGroups', 'permissions', 'userPermissions', 'complianceDomains', 'userComplianceDomainIds'))->with('item', $user);
         }
 
     }
@@ -252,6 +316,10 @@ class UsersController extends Controller
         $this->authorize('update', $user);
 
         $authenticatedUser = auth()->user();
+
+        if ($this->requestContainsPermissionManagement($request) && ! $this->canManageUserPermissions($authenticatedUser)) {
+            return redirect()->back()->withInput()->with('error', trans('general.insufficient_permissions'));
+        }
 
         // This is a janky hack to prevent people from changing admin demo user data on the public demo.
         // The $ids 1 and 2 are special since they are seeded as superadmins in the demo seeder.
@@ -319,12 +387,16 @@ class UsersController extends Controller
                 $user->password = bcrypt($request->input('password'));
             }
 
-            if ($request->exists('permission')) {
+            if ($this->canManageUserPermissions($authenticatedUser) && $request->exists('permission')) {
                 $user->permissions = json_encode(PreserveUnauthorizedPrivilegedPermissionsAction::run(
                     requestedPermissions: NormalizePermissionsPayloadAction::run($request->input('permission')),
                     authenticatedUser: $authenticatedUser,
                     originalPermissions: $orig_permissions_array,
                 ));
+            }
+
+            if ($this->canManageUserPermissions($authenticatedUser) && $request->has('compliance_scope_restricted')) {
+                $user->compliance_scope_restricted = $request->boolean('compliance_scope_restricted');
             }
 
             // Only platform superadmins can assign global permission groups.
@@ -343,6 +415,10 @@ class UsersController extends Controller
         session()->put(['redirect_option' => $request->input('redirect_option')]);
 
         if ($user->save()) {
+            if ($this->canManageUserPermissions($authenticatedUser) && $this->requestContainsComplianceScope($request)) {
+                $user->complianceDomains()->sync($this->selectedComplianceDomainIds($request, $authenticatedUser));
+            }
+
             // Redirect to the user page
             return Helper::getRedirectOption($request, $user->id, 'Users')
                 ->with('success', trans('admin/users/message.success.update'));
@@ -520,7 +596,10 @@ class UsersController extends Controller
             $userPermissions = Helper::selectedPermissionsArray($permissions, $clonedPermissions);
 
             // Show the page
-            return view('users/edit', compact('permissions', 'userPermissions'))
+            $complianceDomains = ComplianceDomain::query()->active()->ordered()->get(['id', 'key', 'name']);
+            $userComplianceDomainIds = $user_to_clone->complianceDomains()->pluck('compliance_domains.id');
+
+            return view('users/edit', compact('permissions', 'userPermissions', 'complianceDomains', 'userComplianceDomainIds'))
                 ->with('user', $user)
                 ->with('groups', Group::pluck('name', 'id'))
                 ->with('userGroups', $userGroups)

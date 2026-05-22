@@ -11,14 +11,15 @@ use App\Http\Controllers\BulkManufacturersController;
 use App\Http\Controllers\BulkSuppliersController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\CompaniesController;
+use App\Http\Controllers\ComplianceDomainsController;
 use App\Http\Controllers\ComplianceFrameworkPacksController;
 use App\Http\Controllers\CustomerContractsController;
 use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentsController;
 use App\Http\Controllers\DepreciationsController;
-use App\Http\Controllers\DocumentFrameworksController;
 use App\Http\Controllers\DocumentFrameworkRequirementsController;
+use App\Http\Controllers\DocumentFrameworksController;
 use App\Http\Controllers\DocumentTypesController;
 use App\Http\Controllers\GroupsController;
 use App\Http\Controllers\HealthController;
@@ -53,6 +54,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('companies', CompaniesController::class, [
         'parameters' => ['company' => 'company_id'],
     ]);
+
+    Route::resource('compliancedomains', ComplianceDomainsController::class);
 
     /*
     * Categories

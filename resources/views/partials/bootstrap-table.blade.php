@@ -547,6 +547,18 @@
             }
         },
         @endcan
+        @can('view', \App\Models\ComplianceDomain::class)
+        btnManageComplianceDomains: {
+            text: '{{ trans('admin/compliancedomains/general.title') }}',
+            icon: 'fa-solid fa-layer-group',
+            event () {
+                window.location.href = '{{ route('compliancedomains.index') }}';
+            },
+            attributes: {
+                title: '{{ trans('admin/compliancedomains/general.title') }}',
+            }
+        },
+        @endcan
         btnShowDeleted: {
             text: '{{ (request()->input('status_type') == "Deleted") ? trans('general.list_all') : trans('general.deleted') }}',
             icon: 'fa-solid fa-trash',
@@ -737,6 +749,22 @@
         },
     });
     @endcan
+
+    window.complianceDomainButtons = () => ({
+        @can('create', \App\Models\ComplianceDomain::class)
+        btnAdd: {
+            text: '{{ trans('general.create') }}',
+            icon: 'fa fa-plus',
+            event () {
+                window.location.href = '{{ route('compliancedomains.create') }}';
+            },
+            attributes: {
+                class: 'btn-warning',
+                title: '{{ trans('general.create') }}',
+            }
+        },
+        @endcan
+    });
 
     @can('create', \App\Models\CustomField::class)
     // Accessory table buttons
@@ -1780,6 +1808,14 @@
                 actions += '<form style="display: inline;" method="POST" action="{{ config('app.url') }}/' + dest + '/' + row.id + '/restore"> ';
                 actions += '@csrf';
                 actions += '<button class="btn btn-sm btn-warning" data-tooltip="true" title="{{ trans('general.restore') }}"><x-icon type="restore" class="fa-fw" /><span class="sr-only">{{ trans('general.restore') }}</span></button>&nbsp;';
+                actions += '</form>';
+            }
+
+            if ((row.available_actions) && (row.available_actions.force_delete === true)) {
+                actions += '<form style="display: inline;" method="POST" action="{{ config('app.url') }}/' + dest + '/' + row.id + '/force-delete" onsubmit="return confirm(\'{{ trans('admin/documents/message.force_delete.confirm') }}\')"> ';
+                actions += '@csrf';
+                actions += '<button class="btn btn-sm btn-danger" data-tooltip="true" title="{{ trans('admin/documents/message.force_delete.action') }}"><x-icon type="delete" class="fa-fw" /><span class="sr-only">{{ trans('admin/documents/message.force_delete.action') }}</span></button>&nbsp;';
+                actions += '</form>';
             }
 
             actions +='</nobr>';
@@ -1967,6 +2003,7 @@
         'accessories',
         'categories',
         'companies',
+        'compliancedomains',
         'components',
         'consumables',
         'contracts',

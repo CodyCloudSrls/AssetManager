@@ -78,4 +78,60 @@ class UpdateGroupTest extends TestCase
         $this->assertSame('Group Name Only', $group->name);
         $this->assertSame('1', (string) ($decoded['admin'] ?? null));
     }
+
+    public function test_user_cannot_edit_system_group_definition()
+    {
+        $group = Group::factory()->create([
+            'name' => 'System Group',
+            'notes' => 'Original notes',
+            'permissions' => json_encode(['reports.view' => '1']),
+            'system_key' => 'default_system_group',
+        ]);
+
+        $this->actingAs(User::factory()->superuser()->create())
+            ->put(route('groups.update', ['group' => $group]), [
+                'name' => 'Edited System Group',
+                'notes' => 'Edited notes',
+                'permission' => [
+                    'admin' => '1',
+                ],
+            ])
+            ->assertStatus(302)
+            ->assertRedirect(route('groups.index'));
+
+        $group->refresh();
+        $decoded = (array) $group->decodePermissions();
+
+        $this->assertSame('System Group', $group->name);
+        $this->assertSame('Original notes', $group->notes);
+        $this->assertSame('1', (string) ($decoded['reports.view'] ?? null));
+        $this->assertArrayNotHasKey('admin', $decoded);
+    }
+
+    public function test_user_can_sync_users_to_system_group_without_editing_definition()
+    {
+        $originalUser = User::factory()->create();
+        $syncedUser = User::factory()->create();
+        $group = Group::factory()->create([
+            'name' => 'System Group',
+            'notes' => 'Original notes',
+            'permissions' => json_encode(['reports.view' => '1']),
+            'system_key' => 'default_system_group',
+        ]);
+        $group->users()->attach($originalUser);
+
+        $this->actingAs(User::factory()->superuser()->create())
+            ->put(route('groups.update', ['group' => $group]), [
+                'users_to_sync' => (string) $syncedUser->id,
+            ])
+            ->assertStatus(302)
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('groups.index'));
+
+        $group->refresh();
+
+        $this->assertSame('System Group', $group->name);
+        $this->assertSame('Original notes', $group->notes);
+        $this->assertEqualsCanonicalizing([$syncedUser->id], $group->users()->pluck('users.id')->all());
+    }
 }

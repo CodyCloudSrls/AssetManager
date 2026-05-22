@@ -179,7 +179,7 @@
                                                 @can('view', $document)
                                                     <a href="{{ route('documents.show', $document) }}">{{ $document->name }}</a>
                                                 @else
-                                                    {{ $document->name }}
+                                                    <span class="requirements-matrix-muted">{{ trans('general.insufficient_permissions') }}</span>
                                                 @endcan
                                                 <div class="requirements-matrix-label-line">
                                                     <span class="label label-info">{{ $coverageRoleOptions[$role] ?? $role }}</span>

@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\Compliance\ComplianceDomainAccess;
 
 class DocumentFrameworkRequirementPolicy extends SnipePermissionsPolicy
 {
@@ -16,6 +17,10 @@ class DocumentFrameworkRequirementPolicy extends SnipePermissionsPolicy
 
     public function before(User $user, $ability, $item = null)
     {
+        if ($item instanceof DocumentFrameworkRequirement && ! ComplianceDomainAccess::canAccessRequirement($item, $user)) {
+            return false;
+        }
+
         if ($item instanceof DocumentFrameworkRequirement && $item->framework && is_null($item->framework->company_id)) {
             return $item->framework->isSystemTemplate()
                 ? $this->allowsSystemTemplateAbility($user, $ability)
@@ -27,6 +32,10 @@ class DocumentFrameworkRequirementPolicy extends SnipePermissionsPolicy
 
     public function view(User $user, $item = null)
     {
+        if ($item instanceof DocumentFrameworkRequirement && ! ComplianceDomainAccess::canAccessRequirement($item, $user)) {
+            return false;
+        }
+
         if ($item instanceof DocumentFrameworkRequirement && $item->framework && is_null($item->framework->company_id)) {
             return $item->framework->isSystemTemplate()
                 ? $this->allowsSystemTemplateAbility($user, 'view')

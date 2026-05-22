@@ -38,6 +38,7 @@
             || $errors->has('reference')
             || $errors->has('version')
             || (!$assignmentFormActive && $errors->has('status'))
+            || $errors->has('document_area')
             || $errors->has('classification')
             || $errors->has('retention_period')
             || $errors->has('scope')
@@ -143,6 +144,20 @@
                                 </div>
                             </div>
 
+                            <div class="form-group {{ $errors->has('document_area') ? ' has-error' : '' }}">
+                                <label for="document_area" class="col-md-3 control-label">{{ trans('admin/documents/form.document_area') }}</label>
+                                <div class="col-md-4">
+                                    <select class="form-control select2" name="document_area" id="document_area" aria-label="document_area">
+                                        <option value="">{{ trans('general.none') }}</option>
+                                        @foreach ($documentAreaOptions as $areaValue => $areaLabel)
+                                            <option value="{{ $areaValue }}" @selected(old('document_area', $document->document_area) === $areaValue)>{{ $areaLabel }}</option>
+                                        @endforeach
+                                    </select>
+                                    {!! $errors->first('document_area', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+                                </div>
+                            </div>
+
+                            @if ($canMapRequirements)
                             <div class="col-md-12 col-sm-12">
                                 <fieldset name="document-framework-coverage">
                                     <x-form.legend>
@@ -208,6 +223,7 @@
                                     </div>
                                 </fieldset>
                             </div>
+                            @endif
 
                             <div class="col-md-12 col-sm-12">
                                 <fieldset name="document-governance">

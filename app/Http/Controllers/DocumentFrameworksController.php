@@ -7,13 +7,15 @@ use App\Models\Document;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\Tenant;
-use App\Support\Compliance\ConsultantFrameworkTransfer;
+use App\Support\Compliance\ComplianceDomainAccess;
 use App\Support\Compliance\ComplianceFrameworkPackPurger;
+use App\Support\Compliance\ConsultantFrameworkTransfer;
+use App\Support\Documents\DocumentAreaAccess;
 use Carbon\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -109,16 +111,15 @@ class DocumentFrameworksController extends Controller
     {
         $this->authorize('view', $documentframework);
 
-        $documentframework->loadCount(['documents', 'requirements']);
+        $documentframework->loadCount([
+            'documents' => fn ($query) => $this->applyVisibleDocumentScope($query),
+            'requirements',
+        ]);
 
         $requirements = DocumentFrameworkRequirement::query()
             ->forFramework($documentframework->id)
             ->with(['owner', 'defaultDocumentType'])
-            ->withCount([
-                'documents',
-                'primaryDocuments as primary_documents_count',
-                'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query->currentForCoverage(),
-            ])
+            ->withCount($this->visibleDocumentCoverageCounts())
             ->ordered()
             ->get();
 
@@ -135,18 +136,23 @@ class DocumentFrameworksController extends Controller
         $this->authorize('view', $documentframework);
 
         $documentframework->loadMissing(['company.tenant', 'owner'])
-            ->loadCount(['documents', 'requirements']);
+            ->loadCount([
+                'documents' => fn ($query) => $this->applyVisibleDocumentScope($query),
+                'requirements',
+            ]);
 
         $requirementRelations = [
             'owner',
             'defaultDocumentType',
             'parent',
-            'documents' => fn ($query) => $query
-                ->with(['owner', 'type'])
-                ->orderByRaw("case document_framework_requirement_document.coverage_role when 'primary' then 0 else 1 end")
-                ->orderByRaw('case when documents.next_review_at is null then 1 else 0 end')
-                ->orderBy('documents.next_review_at')
-                ->orderBy('documents.name'),
+            'documents' => function ($query) {
+                $this->applyVisibleDocumentScope($query);
+                $query->with(['owner', 'type'])
+                    ->orderByRaw("case document_framework_requirement_document.coverage_role when 'primary' then 0 else 1 end")
+                    ->orderByRaw('case when documents.next_review_at is null then 1 else 0 end')
+                    ->orderBy('documents.next_review_at')
+                    ->orderBy('documents.name');
+            },
         ];
 
         if (DocumentFrameworkRequirement::parentPivotTableExists()) {
@@ -156,11 +162,7 @@ class DocumentFrameworksController extends Controller
         $requirements = DocumentFrameworkRequirement::query()
             ->forFramework($documentframework->id)
             ->with($requirementRelations)
-            ->withCount([
-                'documents',
-                'primaryDocuments as primary_documents_count',
-                'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query->currentForCoverage(),
-            ])
+            ->withCount($this->visibleDocumentCoverageCounts())
             ->ordered()
             ->get();
 
@@ -180,8 +182,7 @@ class DocumentFrameworksController extends Controller
         DocumentFramework $documentframework,
         string $format,
         ConsultantFrameworkTransfer $transfer
-    ): BinaryFileResponse|RedirectResponse
-    {
+    ): BinaryFileResponse|RedirectResponse {
         $this->authorize('view', $documentframework);
 
         try {
@@ -280,9 +281,16 @@ class DocumentFrameworksController extends Controller
             'item' => $item,
             'statusOptions' => DocumentFramework::getStatusOptions(),
             'frameworkTypeOptions' => DocumentFramework::getFrameworkTypeOptions(),
-            'complianceDomainOptions' => DocumentFramework::complianceDomainOptions(),
+            'complianceDomainOptions' => $this->complianceDomainOptions(),
             'visibilityOptions' => $this->visibilityOptions(),
         ];
+    }
+
+    private function complianceDomainOptions(): array
+    {
+        return collect(DocumentFramework::complianceDomainOptions())
+            ->filter(fn ($label, $key) => ComplianceDomainAccess::canAccessDomain((string) $key, auth()->user()))
+            ->all();
     }
 
     private function visibilityOptions(): array
@@ -318,6 +326,24 @@ class DocumentFrameworksController extends Controller
                 'review_state' => $this->matrixReviewState($requirement, $primaryDocuments, $reviewWarningDays),
             ];
         });
+    }
+
+    private function visibleDocumentCoverageCounts(): array
+    {
+        return [
+            'documents' => fn ($query) => $this->applyVisibleDocumentScope($query),
+            'primaryDocuments as primary_documents_count' => fn ($query) => $this->applyVisibleDocumentScope($query),
+            'primaryDocuments as healthy_primary_documents_count' => function ($query) {
+                $query->currentForCoverage();
+                $this->applyVisibleDocumentScope($query);
+            },
+        ];
+    }
+
+    private function applyVisibleDocumentScope($query): void
+    {
+        ComplianceDomainAccess::applyDocumentScope($query, request()->user());
+        DocumentAreaAccess::applyDocumentScope($query, request()->user());
     }
 
     private function coverageLabelClass(string $coverageStatus): string

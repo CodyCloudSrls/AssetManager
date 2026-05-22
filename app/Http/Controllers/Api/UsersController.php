@@ -20,6 +20,7 @@ use App\Models\Accessory;
 use App\Models\Actionlog;
 use App\Models\Asset;
 use App\Models\Company;
+use App\Models\ComplianceDomain;
 use App\Models\Consumable;
 use App\Models\License;
 use App\Models\Tenant;
@@ -73,6 +74,7 @@ class UsersController extends Controller
             'users.manager_id',
             'users.notes',
             'users.permissions',
+            'users.compliance_scope_restricted',
             'users.phone',
             'users.mobile',
             'users.state',
@@ -93,6 +95,7 @@ class UsersController extends Controller
             ->with('userloc')
             ->with('company')
             ->with('department')
+            ->with('complianceDomains')
             ->with('createdBy')
             ->withCount([
                 'assets as assets_count' => function (Builder $query) {
@@ -378,7 +381,7 @@ class UsersController extends Controller
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
         $limit = app('api_limit_value');
-        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $users->count(), $limit);
+        $offset = Helper::clampPaginationOffset($request->input('offset'), $users->count(), $limit);
 
         $total = $users->count();
         $users = $users->skip($offset)->take($limit)->get();
@@ -508,6 +511,49 @@ class UsersController extends Controller
             ->all();
     }
 
+    private function requestContainsPermissionManagement(Request $request): bool
+    {
+        return $request->has('permissions')
+            || $this->requestContainsComplianceScope($request);
+    }
+
+    private function requestContainsComplianceScope(Request $request): bool
+    {
+        return $request->has('compliance_scope_restricted')
+            || $request->has('compliance_domain_ids');
+    }
+
+    private function canManageUserPermissions(?User $user): bool
+    {
+        return $user instanceof User && $user->hasAccess('admin') && $user->can('editableOnDemo');
+    }
+
+    private function selectedComplianceDomainIds(Request $request): array
+    {
+        if (! $request->boolean('compliance_scope_restricted')) {
+            return [];
+        }
+
+        $ids = collect($request->input('compliance_domain_ids', []))
+            ->flatten()
+            ->filter(fn ($id) => filled($id))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return [];
+        }
+
+        return ComplianceDomain::query()
+            ->active()
+            ->whereIn('id', $ids->all())
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
     /**
      * Gets a paginated collection for the select2 menus
      *
@@ -594,16 +640,25 @@ class UsersController extends Controller
         $this->authorize('create', User::class);
 
         $authenticatedUser = auth()->user();
+
+        if ($this->requestContainsPermissionManagement($request) && ! $this->canManageUserPermissions($authenticatedUser)) {
+            return response()->json(Helper::formatStandardApiResponse('error', null, trans('general.insufficient_permissions')), 403);
+        }
+
         $user = new User;
         $user->fill($request->all());
         $user->company_id = Company::getIdForCurrentUser($request->input('company_id'));
         $user->created_by = auth()->id();
 
-        if ($request->has('permissions')) {
+        if ($this->canManageUserPermissions($authenticatedUser) && $request->has('permissions')) {
             $user->permissions = json_encode(PreserveUnauthorizedPrivilegedPermissionsAction::run(
                 requestedPermissions: NormalizePermissionsPayloadAction::run($request->input('permissions')),
                 authenticatedUser: $authenticatedUser,
             ));
+        }
+
+        if ($this->canManageUserPermissions($authenticatedUser)) {
+            $user->compliance_scope_restricted = $request->boolean('compliance_scope_restricted');
         }
 
         //
@@ -641,6 +696,12 @@ class UsersController extends Controller
                 $user->groups()->sync($request->input('groups'));
             }
 
+            if ($this->canManageUserPermissions($authenticatedUser)) {
+                $user->complianceDomains()->sync($this->selectedComplianceDomainIds($request));
+            }
+
+            $user->load('complianceDomains');
+
             return response()->json(Helper::formatStandardApiResponse('success', (new UsersTransformer)->transformUser($user), trans('admin/users/message.success.create')));
         }
 
@@ -658,7 +719,7 @@ class UsersController extends Controller
     {
         $this->authorize('view', User::class);
 
-        if ($user = User::withCount('assets as assets_count', 'licenses as licenses_count', 'accessories as accessories_count', 'consumables as consumables_count', 'documentAssignments as documents_count', 'assignedTickets as tickets_count', 'managesUsers as manages_users_count', 'managedLocations as manages_locations_count')->find($id)) {
+        if ($user = User::with('complianceDomains')->withCount('assets as assets_count', 'licenses as licenses_count', 'accessories as accessories_count', 'consumables as consumables_count', 'documentAssignments as documents_count', 'assignedTickets as tickets_count', 'managesUsers as manages_users_count', 'managedLocations as manages_locations_count')->find($id)) {
             $this->authorize('view', $user);
 
             return (new UsersTransformer)->transformUser($user);
@@ -683,6 +744,10 @@ class UsersController extends Controller
         $this->authorize('update', $user);
 
         $authenticatedUser = auth()->user();
+
+        if ($this->requestContainsPermissionManagement($request) && ! $this->canManageUserPermissions($authenticatedUser)) {
+            return response()->json(Helper::formatStandardApiResponse('error', null, trans('general.insufficient_permissions')), 403);
+        }
 
         /**
          * This is a janky hack to prevent people from changing admin demo user data on the public demo.
@@ -718,13 +783,17 @@ class UsersController extends Controller
                 $user->activated = $request->input('activated');
             }
 
-            if ($request->has('permissions')) {
+            if ($this->canManageUserPermissions($authenticatedUser) && $request->has('permissions')) {
                 // This is going to update the whole thing, not just what was passed.
                 $user->permissions = json_encode(PreserveUnauthorizedPrivilegedPermissionsAction::run(
                     requestedPermissions: NormalizePermissionsPayloadAction::run($request->input('permissions')),
                     authenticatedUser: $authenticatedUser,
                     originalPermissions: NormalizePermissionsPayloadAction::run($user->decodePermissions()),
                 ));
+            }
+
+            if ($this->canManageUserPermissions($authenticatedUser) && $request->has('compliance_scope_restricted')) {
+                $user->compliance_scope_restricted = $request->boolean('compliance_scope_restricted');
             }
 
         }
@@ -760,6 +829,12 @@ class UsersController extends Controller
                 // Sync the groups since the user is a superuser and the groups pass validation
                 $user->groups()->sync($request->input('groups'));
             }
+
+            if ($this->canManageUserPermissions($authenticatedUser) && $this->requestContainsComplianceScope($request)) {
+                $user->complianceDomains()->sync($this->selectedComplianceDomainIds($request));
+            }
+
+            $user->load('complianceDomains');
 
             return response()->json(Helper::formatStandardApiResponse('success', (new UsersTransformer)->transformUser($user), trans('admin/users/message.success.update')));
         }
@@ -1101,7 +1176,7 @@ class UsersController extends Controller
         $history = $user->getHistory($request);
         $total = $user->getHistory($request)->count();
         $limit = app('api_limit_value');
-        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $total, $limit);
+        $offset = Helper::clampPaginationOffset($request->input('offset'), $total, $limit);
         $history = $history->skip($offset)->take($limit)->get();
 
         return response()->json((new ActionlogsTransformer)->transformActionlogs($history, $total), 200, ['Content-Type' => 'application/json;charset=utf8'], JSON_UNESCAPED_UNICODE);

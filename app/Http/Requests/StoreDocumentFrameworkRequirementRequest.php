@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\DocumentType;
+use App\Support\Compliance\ComplianceDomainAccess;
 use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
@@ -116,6 +117,10 @@ class StoreDocumentFrameworkRequirementRequest extends FormRequest
                 $validator->errors()->add('document_framework_id', trans('validation.exists', ['attribute' => 'document framework']));
             }
 
+            if ($framework && ! ComplianceDomainAccess::canAccessFramework($framework, $this->user())) {
+                $validator->errors()->add('document_framework_id', trans('validation.exists', ['attribute' => 'document framework']));
+            }
+
             $parentIds = $this->parentIdsForValidation();
 
             if ($parentIds !== []) {
@@ -129,6 +134,7 @@ class StoreDocumentFrameworkRequirementRequest extends FormRequest
 
                     if (! $parent || (int) $parent->document_framework_id !== $frameworkId) {
                         $validator->errors()->add('parent_ids', trans('validation.exists', ['attribute' => trans('admin/documentframeworkrequirements/table.parent')]));
+
                         continue;
                     }
 
@@ -137,6 +143,7 @@ class StoreDocumentFrameworkRequirementRequest extends FormRequest
                             'attribute' => trans('admin/documentframeworkrequirements/table.parent'),
                             'other' => trans('admin/documentframeworkrequirements/table.code'),
                         ]));
+
                         continue;
                     }
 

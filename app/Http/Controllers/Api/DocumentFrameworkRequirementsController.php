@@ -10,7 +10,10 @@ use App\Http\Requests\StoreDocumentFrameworkRequirementRequest;
 use App\Http\Transformers\DocumentFrameworkRequirementsTransformer;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
+use App\Support\Compliance\ComplianceDomainAccess;
+use App\Support\Documents\DocumentAreaAccess;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class DocumentFrameworkRequirementsController extends Controller
 {
@@ -35,11 +38,8 @@ class DocumentFrameworkRequirementsController extends Controller
         $requirements = DocumentFrameworkRequirement::query()
             ->visibleThroughFramework()
             ->with($relations)
-            ->withCount([
-                'documents',
-                'primaryDocuments as primary_documents_count',
-                'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query->currentForCoverage(),
-            ]);
+            ->withCount($this->visibleDocumentCoverageCounts($request));
+        ComplianceDomainAccess::applyRequirementScope($requirements, $request->user());
 
         if ($request->input('deleted') === 'true') {
             $requirements->onlyTrashed();
@@ -65,6 +65,7 @@ class DocumentFrameworkRequirementsController extends Controller
 
         if ($request->filled('coverage_status')) {
             $requirements = $requirements->get()->filter(fn ($item) => $item->coverage_status === $request->input('coverage_status'));
+
             return (new DocumentFrameworkRequirementsTransformer)->transformRequirements($requirements->values(), $requirements->count());
         }
 
@@ -100,11 +101,7 @@ class DocumentFrameworkRequirementsController extends Controller
         }
 
         $documentframeworkrequirement->load($relations)
-            ->loadCount([
-                'documents',
-                'primaryDocuments as primary_documents_count',
-                'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query->currentForCoverage(),
-            ]);
+            ->loadCount($this->visibleDocumentCoverageCounts(request()));
 
         return (new DocumentFrameworkRequirementsTransformer)->transformRequirement($documentframeworkrequirement);
     }
@@ -196,5 +193,23 @@ class DocumentFrameworkRequirementsController extends Controller
         }
 
         $requirement->parents()->sync($parentIds);
+    }
+
+    private function visibleDocumentCoverageCounts(Request $request): array
+    {
+        return [
+            'documents' => fn ($query) => $this->applyVisibleDocumentScope($query, $request),
+            'primaryDocuments as primary_documents_count' => fn ($query) => $this->applyVisibleDocumentScope($query, $request),
+            'primaryDocuments as healthy_primary_documents_count' => function ($query) use ($request) {
+                $query->currentForCoverage();
+                $this->applyVisibleDocumentScope($query, $request);
+            },
+        ];
+    }
+
+    private function applyVisibleDocumentScope($query, Request $request): void
+    {
+        ComplianceDomainAccess::applyDocumentScope($query, $request->user());
+        DocumentAreaAccess::applyDocumentScope($query, $request->user());
     }
 }

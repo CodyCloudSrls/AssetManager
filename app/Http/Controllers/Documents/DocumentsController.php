@@ -14,6 +14,8 @@ use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\DocumentType;
 use App\Models\User;
+use App\Support\Compliance\ComplianceDomainAccess;
+use App\Support\Documents\DocumentAreaAccess;
 use App\Support\Documents\DocumentAssignmentManager;
 use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Contracts\View\View;
@@ -34,18 +36,24 @@ class DocumentsController extends Controller
 
         $tenantCompanyIds = $this->tenantCompanyIdsFromRequest(request());
 
-        $frameworks = DocumentFramework::query()
+        $frameworksQuery = DocumentFramework::query()
             ->operational()
-            ->active()
+            ->active();
+        ComplianceDomainAccess::applyFrameworkScope($frameworksQuery, request()->user(), 'document_frameworks.compliance_domain');
+
+        $frameworks = $frameworksQuery
             ->when(! is_null($tenantCompanyIds), fn ($query) => count($tenantCompanyIds) === 0
                 ? $query->whereRaw('1 = 0')
                 : $query->whereIn('company_id', $tenantCompanyIds))
             ->ordered()
             ->get(['id', 'name']);
 
-        $requirements = DocumentFrameworkRequirement::query()
+        $requirementsQuery = DocumentFrameworkRequirement::query()
             ->visibleThroughFramework()
-            ->active()
+            ->active();
+        ComplianceDomainAccess::applyRequirementScope($requirementsQuery, request()->user());
+
+        $requirements = $requirementsQuery
             ->when(! is_null($tenantCompanyIds), fn ($query) => count($tenantCompanyIds) === 0
                 ? $query->whereRaw('1 = 0')
                 : $query->whereHas('framework', fn ($frameworkQuery) => $frameworkQuery->whereIn('company_id', $tenantCompanyIds)))
@@ -171,13 +179,27 @@ class DocumentsController extends Controller
 
     public function restore($documentId): RedirectResponse
     {
-        $this->authorize('create', Document::class);
-
         $document = Document::withTrashed()->findOrFail($documentId);
+        $this->authorize('restore', $document);
         $document->restore();
 
         return redirect()->route('documents.show', $document)
             ->with('success', trans('admin/documents/message.restore.success'));
+    }
+
+    public function forceDelete(Document $document): RedirectResponse
+    {
+        $this->authorize('forceDelete', $document);
+
+        if (! $document->trashed()) {
+            return redirect()->route('documents.index')
+                ->with('error', trans('admin/documents/message.force_delete.not_deleted'));
+        }
+
+        $document->forceDelete();
+
+        return redirect()->route('documents.index')
+            ->with('success', trans('admin/documents/message.force_delete.success'));
     }
 
     public function bulkEdit(Request $request): View|RedirectResponse
@@ -231,6 +253,7 @@ class DocumentsController extends Controller
         return view('documents.bulk-edit', [
             'documents' => $documents,
             'documentStatuses' => Document::getStatusOptions(),
+            'documentAreaOptions' => Document::documentAreaOptions(),
         ]);
     }
 
@@ -251,6 +274,8 @@ class DocumentsController extends Controller
             'owner_id' => 'nullable|integer|exists:users,id',
             'apply_document_type_id' => 'nullable|boolean',
             'document_type_id' => 'nullable|integer|exists:document_types,id',
+            'apply_document_area' => 'nullable|boolean',
+            'document_area' => ['nullable', Rule::in(array_keys(Document::documentAreaOptions()))],
             'apply_classification' => 'nullable|boolean',
             'classification' => 'nullable|string|max:100',
             'apply_retention_period' => 'nullable|boolean',
@@ -297,6 +322,10 @@ class DocumentsController extends Controller
                     }
                 }
             }
+
+            if ($request->boolean('apply_document_area') && $request->filled('document_area') && ! DocumentAreaAccess::canSet($request->user(), $request->input('document_area'))) {
+                $validator->errors()->add('document_area', trans('validation.exists', ['attribute' => trans('admin/documents/form.document_area')]));
+            }
         });
 
         if ($validator->fails()) {
@@ -338,7 +367,8 @@ class DocumentsController extends Controller
 
         foreach ($documents as $document) {
             if ($action === 'restore') {
-                $this->authorize('create', Document::class);
+                $this->authorize('restore', $document);
+
                 continue;
             }
 
@@ -369,6 +399,7 @@ class DocumentsController extends Controller
             'apply_status',
             'apply_owner_id',
             'apply_document_type_id',
+            'apply_document_area',
             'apply_classification',
             'apply_retention_period',
             'apply_scope',
@@ -393,6 +424,7 @@ class DocumentsController extends Controller
             'status',
             'owner_id',
             'document_type_id',
+            'document_area',
             'classification',
             'retention_period',
             'scope',
@@ -436,9 +468,12 @@ class DocumentsController extends Controller
             ]);
         }
 
-        $allFrameworkRequirements = DocumentFrameworkRequirement::query()
+        $allFrameworkRequirementsQuery = DocumentFrameworkRequirement::query()
             ->visibleThroughFramework()
-            ->where('is_active', true)
+            ->where('is_active', true);
+        ComplianceDomainAccess::applyRequirementScope($allFrameworkRequirementsQuery, request()->user());
+
+        $allFrameworkRequirements = $allFrameworkRequirementsQuery
             ->with('framework')
             ->ordered()
             ->get();
@@ -473,6 +508,8 @@ class DocumentsController extends Controller
         return [
             'document' => $document,
             'documentStatuses' => Document::getStatusOptions(),
+            'documentAreaOptions' => Document::documentAreaOptions(),
+            'canMapRequirements' => auth()->user()?->can('mapRequirements', $document->exists ? $document : Document::class) ?? false,
             'frameworkRequirements' => $frameworkRequirements,
             'frameworkRequirementOptionsByFramework' => $frameworkRequirementOptionsByFramework,
             'selectedRequirementEvidence' => $selectedRequirementEvidence,
@@ -501,6 +538,12 @@ class DocumentsController extends Controller
 
     private function syncRequirementMappings(Document $document, StoreDocumentRequest $request): void
     {
+        if (! $request->mappingSubmitted()) {
+            return;
+        }
+
+        $this->authorize('mapRequirements', $document);
+
         $syncData = [];
         $evidence = collect($request->input('requirement_evidence', []));
 

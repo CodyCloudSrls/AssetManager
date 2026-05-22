@@ -4,14 +4,17 @@ namespace App\Support\Reports;
 
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
+use App\Models\User;
+use App\Support\Compliance\ComplianceDomainAccess;
+use App\Support\Documents\DocumentAreaAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class NisRealCoverageReport
 {
-    public function build(?array $companyIds = null): array
+    public function build(?array $companyIds = null, ?User $user = null): array
     {
-        $frameworks = $this->frameworks($companyIds);
+        $frameworks = $this->frameworks($companyIds, $user);
         $requirements = $frameworks->flatMap(fn (DocumentFramework $framework) => $framework->requirements);
 
         return [
@@ -21,10 +24,9 @@ class NisRealCoverageReport
         ];
     }
 
-    private function frameworks(?array $companyIds): Collection
+    private function frameworks(?array $companyIds, ?User $user): Collection
     {
-        return DocumentFramework::withoutGlobalScopes()
-            ->whereNull('deleted_at')
+        $frameworks = DocumentFramework::query()
             ->operational()
             ->where('is_active', true)
             ->where('status', 'active')
@@ -43,29 +45,44 @@ class NisRealCoverageReport
 
                 $query->whereIn('company_id', $companyIds);
             })
-            ->with(['company', 'requirements' => function ($query) {
+            ->with(['company', 'requirements' => function ($query) use ($user) {
                 $query->whereNull('deleted_at')
                     ->where('is_active', true)
                     ->with([
                         'owner',
-                        'primaryDocuments' => fn ($query) => $query->currentForCoverage(),
+                        'primaryDocuments' => function ($query) use ($user) {
+                            $query->currentForCoverage();
+                            $this->applyVisibleDocumentScope($query, $user);
+                        },
                     ])
-                    ->withCount($this->coverageCounts())
+                    ->withCount($this->coverageCounts($user))
                     ->ordered();
             }])
             ->withCount(['requirements'])
             ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get();
+            ->orderBy('name');
+
+        ComplianceDomainAccess::applyFrameworkScope($frameworks, $user, 'compliance_domain');
+
+        return $frameworks->get();
     }
 
-    private function coverageCounts(): array
+    private function coverageCounts(?User $user): array
     {
         return [
-            'documents',
-            'primaryDocuments as primary_documents_count',
-            'primaryDocuments as healthy_primary_documents_count' => fn ($query) => $query->currentForCoverage(),
+            'documents' => fn ($query) => $this->applyVisibleDocumentScope($query, $user),
+            'primaryDocuments as primary_documents_count' => fn ($query) => $this->applyVisibleDocumentScope($query, $user),
+            'primaryDocuments as healthy_primary_documents_count' => function ($query) use ($user) {
+                $query->currentForCoverage();
+                $this->applyVisibleDocumentScope($query, $user);
+            },
         ];
+    }
+
+    private function applyVisibleDocumentScope($query, ?User $user): void
+    {
+        ComplianceDomainAccess::applyDocumentScope($query, $user);
+        DocumentAreaAccess::applyDocumentScope($query, $user);
     }
 
     private function summary(Collection $requirements): array

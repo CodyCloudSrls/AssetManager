@@ -7,6 +7,7 @@ use App\Models\Asset;
 use App\Models\AssetModel;
 use App\Models\Category;
 use App\Models\Company;
+use App\Models\ComplianceDomain;
 use App\Models\Component;
 use App\Models\Consumable;
 use App\Models\Customer;
@@ -33,6 +34,7 @@ use App\Policies\AssetModelPolicy;
 use App\Policies\AssetPolicy;
 use App\Policies\CategoryPolicy;
 use App\Policies\CompanyPolicy;
+use App\Policies\ComplianceDomainPolicy;
 use App\Policies\ComponentPolicy;
 use App\Policies\ConsumablePolicy;
 use App\Policies\CustomerContractPolicy;
@@ -41,9 +43,9 @@ use App\Policies\CustomFieldPolicy;
 use App\Policies\CustomFieldsetPolicy;
 use App\Policies\DepartmentPolicy;
 use App\Policies\DepreciationPolicy;
-use App\Policies\DocumentPolicy;
 use App\Policies\DocumentFrameworkPolicy;
 use App\Policies\DocumentFrameworkRequirementPolicy;
+use App\Policies\DocumentPolicy;
 use App\Policies\DocumentTypePolicy;
 use App\Policies\LicensePolicy;
 use App\Policies\LocationPolicy;
@@ -75,6 +77,7 @@ class AuthServiceProvider extends ServiceProvider
         Asset::class => AssetPolicy::class,
         AssetModel::class => AssetModelPolicy::class,
         Category::class => CategoryPolicy::class,
+        ComplianceDomain::class => ComplianceDomainPolicy::class,
         Component::class => ComponentPolicy::class,
         Consumable::class => ConsumablePolicy::class,
         Customer::class => CustomerPolicy::class,
