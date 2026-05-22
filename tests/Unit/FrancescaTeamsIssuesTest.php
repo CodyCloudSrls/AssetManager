@@ -169,6 +169,45 @@ class FrancescaTeamsIssuesTest extends TestCase
         $this->assertStringContainsString("Gate::allows('files', \$file->item)", $transformer);
     }
 
+    public function test_unused_bootstrap_framework_cleanup_is_available_and_guarded(): void
+    {
+        $purger = $this->repoFile('app/Support/Compliance/ComplianceFrameworkPackPurger.php');
+        $dashboard = $this->repoFile('app/Support/Compliance/ComplianceFrameworkPackDashboard.php');
+        $packController = $this->repoFile('app/Http/Controllers/ComplianceFrameworkPacksController.php');
+        $frameworkController = $this->repoFile('app/Http/Controllers/DocumentFrameworksController.php');
+        $routes = $this->repoFile('routes/web.php');
+        $packView = $this->repoFile('resources/views/compliancepacks/show.blade.php');
+        $frameworkView = $this->repoFile('resources/views/documentframeworks/view.blade.php');
+        $event = $this->repoFile('app/Models/ComplianceFrameworkPackEvent.php');
+        $itPackTranslations = $this->repoFile('resources/lang/it-IT/admin/compliancepacks/general.php');
+        $itFrameworkMessages = $this->repoFile('resources/lang/it-IT/admin/documentframeworks/message.php');
+
+        $this->assertStringContainsString('class ComplianceFrameworkPackPurger', $purger);
+        $this->assertStringContainsString("where('is_system_template', false)", $purger);
+        $this->assertStringContainsString("where('source_pack_key', \$packKey)", $purger);
+        $this->assertStringContainsString("where('document_framework_id', \$framework->id)", $purger);
+        $this->assertStringContainsString('document_framework_requirement_document', $purger);
+        $this->assertStringContainsString('forceDelete()', $purger);
+        $this->assertStringContainsString('EVENT_TENANT_PURGE', $purger);
+        $this->assertStringContainsString("config('compliance_frameworks.packs', [])", $purger);
+        $this->assertStringContainsString("\$row['can_apply'] || \$row['can_purge']", $dashboard);
+        $this->assertStringContainsString('public const EVENT_TENANT_PURGE', $event);
+        $this->assertStringContainsString("\$context['actor_id'] ?? auth()->id()", $event);
+
+        $this->assertStringContainsString('purgeTenant(', $packController);
+        $this->assertStringContainsString('confirm_purge_unused_bootstrap', $packController);
+        $this->assertStringContainsString('purgeUnusedBootstrap(', $frameworkController);
+        $this->assertStringContainsString('canPurgeUnusedBootstrap', $frameworkController);
+        $this->assertStringContainsString('purge-unused-bootstrap', $routes);
+        $this->assertStringContainsString('settings.compliance_framework_packs.tenants.purge_unused_bootstrap', $routes);
+        $this->assertStringContainsString('documentframeworks.purge-unused-bootstrap', $routes);
+        $this->assertStringContainsString('purge_unused_bootstrap', $packView);
+        $this->assertStringContainsString('canPurgeUnusedBootstrap', $frameworkView);
+        $this->assertStringContainsString('purge-unused-bootstrap', $frameworkView);
+        $this->assertStringContainsString('tenant_purge', $itPackTranslations);
+        $this->assertStringContainsString('purge_unused_bootstrap', $itFrameworkMessages);
+    }
+
     private function repoPath(string $relativePath): string
     {
         return dirname(__DIR__, 2).'/'.$relativePath;

@@ -79,6 +79,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('{id}/restore', [DocumentFrameworksController::class, 'restore'])->name('documentframeworks.restore');
         Route::get('import', [DocumentFrameworksController::class, 'importForm'])->name('documentframeworks.import');
         Route::post('import', [DocumentFrameworksController::class, 'import'])->name('documentframeworks.import.store');
+        Route::post('{documentframework}/purge-unused-bootstrap', [DocumentFrameworksController::class, 'purgeUnusedBootstrap'])->name('documentframeworks.purge-unused-bootstrap');
         Route::get('{documentframework}/export/{format}', [DocumentFrameworksController::class, 'export'])
             ->whereIn('format', ['csv', 'xlsx', 'docx'])
             ->name('documentframeworks.export');
@@ -236,6 +237,10 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'authorize:superadmi
     Route::post('compliance-framework-packs/{packKey}/tenants/{tenant}', [ComplianceFrameworkPacksController::class, 'applyTenant'])
         ->where('packKey', '[A-Za-z0-9_-]+')
         ->name('settings.compliance_framework_packs.tenants.apply');
+
+    Route::post('compliance-framework-packs/{packKey}/tenants/{tenant}/purge-unused-bootstrap', [ComplianceFrameworkPacksController::class, 'purgeTenant'])
+        ->where('packKey', '[A-Za-z0-9_-]+')
+        ->name('settings.compliance_framework_packs.tenants.purge_unused_bootstrap');
 
     Route::get('settings', [SettingsController::class, 'getSettings'])
         ->name('settings.general.index')

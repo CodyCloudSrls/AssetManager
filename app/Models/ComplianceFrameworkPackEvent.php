@@ -17,6 +17,7 @@ class ComplianceFrameworkPackEvent extends SnipeModel
     public const EVENT_SYSTEM_SYNC = 'system_sync';
     public const EVENT_TENANT_SYNC = 'tenant_sync';
     public const EVENT_TENANT_BOOTSTRAP = 'tenant_bootstrap';
+    public const EVENT_TENANT_PURGE = 'tenant_purge';
 
     protected $table = 'compliance_framework_pack_events';
 
@@ -119,7 +120,7 @@ class ComplianceFrameworkPackEvent extends SnipeModel
             'pack_key' => $packKey,
             'pack_version' => $pack['pack_version'] ?? data_get($pack, 'framework.version'),
             'pack_checksum' => self::checksumForPack($pack),
-            'actor_id' => auth()->id(),
+            'actor_id' => $context['actor_id'] ?? auth()->id(),
             'diff_before' => $context['diff_before'] ?? null,
             'diff_after' => $context['diff_after'] ?? null,
             'result_summary' => $resultSummary,

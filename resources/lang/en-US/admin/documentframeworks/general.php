@@ -13,6 +13,8 @@ return array (
   'import_section' => 'Framework File',
   'import_file' => 'File',
   'requirements_tab' => 'Requirements',
+  'purge_unused_bootstrap' => 'Clean unused bootstrap copy',
+  'purge_unused_bootstrap_confirm' => 'Confirm permanent removal of this unused bootstrap copy and its unlinked requirements?',
   'months_interval' => ':count month interval',
   'coverage' =>
   array (

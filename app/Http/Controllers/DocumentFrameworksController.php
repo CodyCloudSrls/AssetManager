@@ -8,6 +8,7 @@ use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\Tenant;
 use App\Support\Compliance\ConsultantFrameworkTransfer;
+use App\Support\Compliance\ComplianceFrameworkPackPurger;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Contracts\View\View;
@@ -104,7 +105,7 @@ class DocumentFrameworksController extends Controller
             ->with('success', trans('admin/documentframeworks/message.import.success', ['count' => $result['requirements_count']]));
     }
 
-    public function show(DocumentFramework $documentframework): View
+    public function show(DocumentFramework $documentframework, ComplianceFrameworkPackPurger $purger): View
     {
         $this->authorize('view', $documentframework);
 
@@ -123,7 +124,10 @@ class DocumentFrameworksController extends Controller
 
         $documentframework->setRelation('requirements', $requirements);
 
-        return view('documentframeworks.view', compact('documentframework'));
+        return view('documentframeworks.view', [
+            'documentframework' => $documentframework,
+            'canPurgeUnusedBootstrap' => $purger->canPurgeFramework($documentframework),
+        ]);
     }
 
     public function requirementsMatrix(DocumentFramework $documentframework): View
@@ -230,6 +234,30 @@ class DocumentFrameworksController extends Controller
         $documentframework->delete();
 
         return redirect()->route('documentframeworks.index')->with('success', trans('admin/documentframeworks/message.delete.success'));
+    }
+
+    public function purgeUnusedBootstrap(Request $request, DocumentFramework $documentframework, ComplianceFrameworkPackPurger $purger): RedirectResponse
+    {
+        $this->authorize('delete', $documentframework);
+
+        $request->validate([
+            'confirm_purge_unused_bootstrap' => 'accepted',
+        ]);
+
+        $result = $purger->purgeFramework($documentframework, auth()->id());
+
+        if (($result['status'] ?? null) === 'purged') {
+            return redirect()
+                ->route('documentframeworks.index')
+                ->with('success', trans('admin/documentframeworks/message.purge_unused_bootstrap.success', [
+                    'frameworks' => data_get($result, 'summary.frameworks_purged', 0),
+                    'requirements' => data_get($result, 'summary.requirements_purged', 0),
+                ]));
+        }
+
+        return redirect()
+            ->route('documentframeworks.show', $documentframework)
+            ->with('error', trans('admin/documentframeworks/message.purge_unused_bootstrap.blocked'));
     }
 
     public function restore(int $id): RedirectResponse

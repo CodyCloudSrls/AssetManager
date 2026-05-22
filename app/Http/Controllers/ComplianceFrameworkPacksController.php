@@ -6,6 +6,7 @@ use App\Models\ComplianceFrameworkPackEvent;
 use App\Models\Tenant;
 use App\Support\Compliance\ComplianceFrameworkInstaller;
 use App\Support\Compliance\ComplianceFrameworkPackDashboard;
+use App\Support\Compliance\ComplianceFrameworkPackPurger;
 use App\Support\Compliance\ComplianceFrameworkPackSync;
 use App\Support\Compliance\ComplianceFrameworkPackTenantUpdater;
 use Illuminate\Contracts\View\View;
@@ -124,6 +125,42 @@ class ComplianceFrameworkPacksController extends Controller
         return redirect()
             ->route('settings.compliance_framework_packs.show', $packKey)
             ->with('success', trans('admin/compliancepacks/general.messages.tenant_applied'));
+    }
+
+    public function purgeTenant(
+        Request $request,
+        string $packKey,
+        Tenant $tenant,
+        ComplianceFrameworkPackDashboard $dashboard,
+        ComplianceFrameworkPackPurger $purger
+    ): RedirectResponse {
+        $this->authorizeGlobalPackManagement();
+
+        $request->validate([
+            'confirm_purge_unused_bootstrap' => 'accepted',
+        ]);
+
+        $pack = $this->packOrAbort($dashboard, $packKey);
+        $result = $purger->purgeTenantPack($tenant, $packKey, $pack, auth()->id());
+
+        if (($result['status'] ?? null) === 'purged') {
+            return redirect()
+                ->route('settings.compliance_framework_packs.show', $packKey)
+                ->with('success', trans('admin/compliancepacks/general.messages.tenant_purged', [
+                    'frameworks' => data_get($result, 'summary.frameworks_purged', 0),
+                    'requirements' => data_get($result, 'summary.requirements_purged', 0),
+                ]));
+        }
+
+        if (($result['status'] ?? null) === 'blocked') {
+            return redirect()
+                ->route('settings.compliance_framework_packs.show', $packKey)
+                ->with('error', trans('admin/compliancepacks/general.messages.tenant_purge_blocked'));
+        }
+
+        return redirect()
+            ->route('settings.compliance_framework_packs.show', $packKey)
+            ->with('error', trans('admin/compliancepacks/general.messages.tenant_purge_skipped'));
     }
 
     public function applyTenantsBulk(

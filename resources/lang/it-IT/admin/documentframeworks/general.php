@@ -13,6 +13,8 @@ return array (
   'import_section' => 'File framework',
   'import_file' => 'File',
   'requirements_tab' => 'Requisiti',
+  'purge_unused_bootstrap' => 'Pulisci copia bootstrap inutilizzata',
+  'purge_unused_bootstrap_confirm' => 'Confermi la rimozione definitiva di questa copia bootstrap inutilizzata e dei suoi requisiti non collegati?',
   'months_interval' => 'intervallo di :count mesi',
   'coverage' =>
   array (

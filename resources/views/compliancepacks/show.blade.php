@@ -155,6 +155,21 @@
                                     @else
                                         <span class="label label-danger">{{ trans('admin/compliancepacks/general.manual_review') }}</span>
                                     @endif
+                                    @if ($row['can_purge'])
+                                        <form
+                                            method="POST"
+                                            action="{{ route('settings.compliance_framework_packs.tenants.purge_unused_bootstrap', [$packKey, $tenant]) }}"
+                                            style="display: inline-block; margin-top: 4px;"
+                                            onsubmit="return confirm('{{ trans('admin/compliancepacks/general.purge_tenant_confirm') }}');"
+                                        >
+                                            @csrf
+                                            <input type="hidden" name="confirm_purge_unused_bootstrap" value="1">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <x-icon type="delete" />
+                                                {{ trans('admin/compliancepacks/general.purge_tenant') }}
+                                            </button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

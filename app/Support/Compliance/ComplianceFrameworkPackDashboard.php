@@ -15,6 +15,7 @@ class ComplianceFrameworkPackDashboard
     public function __construct(
         private ComplianceFrameworkInstaller $installer,
         private ComplianceFrameworkPackSync $sync,
+        private ComplianceFrameworkPackPurger $purger,
     ) {
     }
 
@@ -264,6 +265,8 @@ class ComplianceFrameworkPackDashboard
                     'framework' => $framework,
                     'diff' => $diff,
                     'can_apply' => $this->canApplyTenantDiff($diff),
+                    'can_purge' => $this->purger->canPurgeTenantPack($tenant, $packKey),
+                    'purgeable_frameworks_count' => $this->purger->purgeableTenantFrameworks($tenant, $packKey)->count(),
                 ];
             })->values();
     }
@@ -283,7 +286,7 @@ class ComplianceFrameworkPackDashboard
             $status = $row['diff']['status'] ?? 'missing_framework';
             $counts[$status] = ($counts[$status] ?? 0) + 1;
 
-            if ($row['can_apply']) {
+            if ($row['can_apply'] || $row['can_purge']) {
                 $counts['actionable']++;
             }
         }

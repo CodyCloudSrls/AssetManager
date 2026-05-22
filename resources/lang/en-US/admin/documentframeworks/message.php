@@ -11,6 +11,10 @@ return [
         'success' => 'Document framework deleted successfully.',
         'associated_documents' => 'This document framework is still linked to one or more documents or requirements and cannot be deleted.',
     ],
+    'purge_unused_bootstrap' => [
+        'success' => 'Unused bootstrap copy removed: :frameworks framework(s) and :requirements requirement(s) deleted.',
+        'blocked' => 'This framework cannot be cleaned because it is not an unused tenant bootstrap copy or has linked documents/evidence.',
+    ],
     'restore' => [
         'success' => 'Document framework restored successfully.',
     ],

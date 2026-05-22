@@ -206,6 +206,27 @@
                                     <x-icon type="delete" class="fa-fw" />
                                 </a>
                             @endif
+                            @if ($canPurgeUnusedBootstrap ?? false)
+                                <form
+                                    method="POST"
+                                    action="{{ route('documentframeworks.purge-unused-bootstrap', $documentframework) }}"
+                                    class="pull-right"
+                                    style="margin-right: 8px;"
+                                    onsubmit="return confirm('{{ trans('admin/documentframeworks/general.purge_unused_bootstrap_confirm') }}');"
+                                >
+                                    @csrf
+                                    <input type="hidden" name="confirm_purge_unused_bootstrap" value="1">
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-danger"
+                                        title="{{ trans('admin/documentframeworks/general.purge_unused_bootstrap') }}"
+                                        data-tooltip="true"
+                                    >
+                                        <i class="fa-solid fa-broom" aria-hidden="true"></i>
+                                        <span class="sr-only">{{ trans('admin/documentframeworks/general.purge_unused_bootstrap') }}</span>
+                                    </button>
+                                </form>
+                            @endif
                         @endcan
                     </div>
 
