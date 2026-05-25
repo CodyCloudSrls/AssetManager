@@ -981,6 +981,66 @@
             background-color: light-dark(hsl(from var(--main-theme-color) h s calc(l + 40)),hsl(from var(--main-theme-color) h s calc(l - 40))) !important;
         }
 
+        .bootstrap-table {
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        .bootstrap-table .fixed-table-toolbar {
+            align-items: center;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: flex-end;
+            max-width: 100%;
+            min-width: 0;
+            width: 100%;
+        }
+
+        .bootstrap-table .fixed-table-toolbar::before,
+        .bootstrap-table .fixed-table-toolbar::after {
+            content: none;
+        }
+
+        .bootstrap-table .fixed-table-toolbar .bs-bars,
+        .bootstrap-table .fixed-table-toolbar .search,
+        .bootstrap-table .fixed-table-toolbar .columns {
+            float: none !important;
+            margin-bottom: 6px;
+            margin-top: 6px;
+        }
+
+        .bootstrap-table .fixed-table-toolbar .bs-bars {
+            margin-right: auto;
+        }
+
+        .bootstrap-table .fixed-table-toolbar .search input {
+            max-width: 100%;
+        }
+
+        .bootstrap-table .fixed-table-pagination {
+            align-items: center;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 12px;
+            justify-content: space-between;
+            max-width: 100%;
+            min-width: 0;
+            width: 100%;
+        }
+
+        .bootstrap-table .fixed-table-pagination::before,
+        .bootstrap-table .fixed-table-pagination::after {
+            content: none;
+        }
+
+        .bootstrap-table .fixed-table-pagination .pagination-detail,
+        .bootstrap-table .fixed-table-pagination div.pagination {
+            float: none !important;
+            margin-bottom: 6px;
+            margin-top: 6px;
+        }
+
         tr.success > td {
             background-color: #00a65a !important;
             color: white !important;

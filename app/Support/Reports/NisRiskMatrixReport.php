@@ -194,7 +194,7 @@ class NisRiskMatrixReport
     private function exposureScore(?string $scope): int
     {
         return match ($scope) {
-            'network', 'server', 'cloud' => 3,
+            'network', 'vpn', 'network_flow', 'server', 'cloud' => 3,
             'security', 'identity', 'backup' => 2,
             'endpoint', 'facility', 'other' => 1,
             default => 0,

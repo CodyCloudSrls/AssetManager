@@ -42,10 +42,15 @@
                             <label for="document_requirement_filter" class="sr-only">{{ trans('admin/documents/form.framework_requirements') }}</label>
                             <select class="form-control select2" name="document_framework_requirement_id" id="document_requirement_filter" aria-label="{{ trans('admin/documents/form.framework_requirements') }}" style="min-width: 280px;">
                                 <option value="">{{ trans('admin/documents/form.all_requirements') }}</option>
-                                @foreach ($requirements as $requirement)
-                                    <option value="{{ $requirement->id }}" data-framework-id="{{ $requirement->document_framework_id }}" @selected((int) request('document_framework_requirement_id') === (int) $requirement->id)>
-                                        {{ $requirement->code }} - {{ $requirement->title }}
-                                    </option>
+                                @foreach ($requirements->groupBy('document_framework_id') as $frameworkRequirements)
+                                    @php($framework = $frameworkRequirements->first()?->framework)
+                                    <optgroup label="{{ $framework?->name ?: trans('admin/documents/form.framework') }}">
+                                        @foreach ($frameworkRequirements as $requirement)
+                                            <option value="{{ $requirement->id }}" data-framework-id="{{ $requirement->document_framework_id }}" @selected((int) request('document_framework_requirement_id') === (int) $requirement->id)>
+                                                {{ $requirement->code }} - {{ $requirement->title }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
                                 @endforeach
                             </select>
                         </div>

@@ -25,6 +25,8 @@ return [
     'nis_inventory_scope' => 'NIS2 Inventory Scope',
     'nis_inventory_scopes' => [
         'network' => 'Network',
+        'vpn' => 'VPN',
+        'network_flow' => 'Network flows',
         'server' => 'Server',
         'endpoint' => 'Endpoint',
         'cloud' => 'Cloud',

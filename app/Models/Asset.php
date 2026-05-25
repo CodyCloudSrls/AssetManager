@@ -141,7 +141,7 @@ class Asset extends Depreciable
         'assigned_type' => ['nullable', 'required_with:assigned_to', 'in:'.User::class.','.Location::class.','.Asset::class],
         'requestable' => ['nullable', 'boolean'],
         'nis_relevant' => ['nullable', 'boolean'],
-        'nis_inventory_scope' => ['nullable', 'string', 'in:network,server,endpoint,cloud,security,identity,backup,facility,other'],
+        'nis_inventory_scope' => ['nullable', 'string', 'in:network,vpn,network_flow,server,endpoint,cloud,security,identity,backup,facility,other'],
         'nis_service_impact' => ['nullable', 'string', 'in:unknown,low,medium,high,critical'],
         'nis_notes' => ['nullable', 'string', 'max:65535'],
         'assigned_user' => ['integer', 'nullable', 'exists:users,id,deleted_at,NULL'],

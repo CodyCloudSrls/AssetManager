@@ -2,6 +2,7 @@
 
 namespace App\Support\Exports;
 
+use App\Models\CpvCode;
 use App\Models\Supplier;
 use DOMDocument;
 use DOMElement;
@@ -64,6 +65,7 @@ class AcnSupplierOdsExporter
     private function supplierRows(Supplier $supplier): array
     {
         $cpvCodes = Supplier::cpvCodesFromText($supplier->cpv_codes);
+        $criteriaByCpvCode = $this->criteriaByCpvCode($supplier, $cpvCodes);
 
         if ($cpvCodes === []) {
             $cpvCodes = [''];
@@ -74,7 +76,7 @@ class AcnSupplierOdsExporter
             $this->cellText($supplier->tax_code),
             $this->cellText($supplier->name),
             $this->cellText($cpvCode),
-            $this->supplierNotes($supplier),
+            $this->supplierNotes($supplier, $cpvCode, $criteriaByCpvCode),
             $this->acnRelevanceType($supplier->nis_relevance_type),
         ])->all();
     }
@@ -197,15 +199,67 @@ class AcnSupplierOdsExporter
         return preg_match('/^[A-Z]{2}$/', $country) ? $country : '';
     }
 
-    private function supplierNotes(Supplier $supplier): string
+    private function supplierNotes(Supplier $supplier, ?string $cpvCode = null, array $criteriaByCpvCode = []): string
     {
+        $criteria = $cpvCode && array_key_exists($cpvCode, $criteriaByCpvCode)
+            ? $criteriaByCpvCode[$cpvCode]
+            : $supplier->nis_relevance_criteria;
+
         return collect([
-            $supplier->nis_relevance_criteria,
+            $criteria,
             $supplier->notes,
         ])
             ->map(fn ($value) => $this->cellText($value))
             ->filter()
             ->implode(' | ');
+    }
+
+    private function criteriaByCpvCode(Supplier $supplier, array $cpvCodes): array
+    {
+        $criteriaLines = $this->nonEmptyLines($supplier->nis_relevance_criteria);
+
+        if ($criteriaLines === []) {
+            return [];
+        }
+
+        $rawCodes = $this->cpvCodesPreservingOrder($supplier->cpv_codes);
+        $mapped = [];
+
+        if (count($rawCodes) === count($criteriaLines)) {
+            foreach ($rawCodes as $index => $code) {
+                $mapped[$code] ??= $criteriaLines[$index];
+            }
+
+            return $mapped;
+        }
+
+        if (count($cpvCodes) === count($criteriaLines)) {
+            foreach (array_values($cpvCodes) as $index => $code) {
+                $mapped[$code] ??= $criteriaLines[$index];
+            }
+        }
+
+        return $mapped;
+    }
+
+    private function cpvCodesPreservingOrder(?string $value): array
+    {
+        preg_match_all('/\b\d{8}-?\d\b/', (string) $value, $matches);
+
+        return collect($matches[0] ?? [])
+            ->map(fn ($code) => CpvCode::normalizeCode($code))
+            ->filter(fn ($code) => is_string($code) && preg_match('/^\d{8}-\d$/', $code))
+            ->values()
+            ->all();
+    }
+
+    private function nonEmptyLines(?string $value): array
+    {
+        return collect(preg_split('/\R/u', (string) $value) ?: [])
+            ->map(fn ($line) => $this->cellText($line))
+            ->filter()
+            ->values()
+            ->all();
     }
 
     private function cellText($value): string

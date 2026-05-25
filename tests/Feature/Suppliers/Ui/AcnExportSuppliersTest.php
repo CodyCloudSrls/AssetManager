@@ -15,17 +15,18 @@ class AcnExportSuppliersTest extends TestCase
     public function test_acn_export_can_be_limited_to_selected_suppliers()
     {
         $selectedRelevantSupplier = Supplier::factory()->create([
-            'name' => 'TIM S.p.A.',
-            'tax_code' => '00488410010',
+            'name' => 'Selected ICT Supplier S.p.A.',
+            'tax_code' => '00000000001',
             'nis_relevant' => true,
             'nis_relevance_type' => 'ict_supply',
             'cpv_codes' => "72000000-5\n72200000-7",
             'country' => 'IT',
-            'nis_relevance_criteria' => 'Servizi di connettivita',
+            'nis_relevance_criteria' => "Servizi di connettivita\nServizi applicativi",
+            'notes' => null,
         ]);
         $selectedNonRelevantSupplier = Supplier::factory()->create([
-            'name' => 'CodyCloud Srl',
-            'tax_code' => '12345678901',
+            'name' => 'Selected Non Relevant Supplier Srl',
+            'tax_code' => '00000000002',
             'nis_relevant' => false,
             'nis_relevance_type' => 'ict_and_non_fungible',
             'cpv_codes' => '72200000-7',
@@ -59,6 +60,9 @@ class AcnExportSuppliersTest extends TestCase
         $taxCodes = $rows->map(fn (array $row) => $row[1])->values();
         $cpvCodes = $rows->map(fn (array $row) => $row[3])->values();
         $relevanceTypes = $rows->map(fn (array $row) => $row[5])->values();
+        $selectedSupplierNotes = $rows->filter(fn (array $row) => $row[2] === 'Selected ICT Supplier S.p.A.')
+            ->map(fn (array $row) => $row[4])
+            ->values();
 
         $this->assertSame([
             'Paese',
@@ -69,13 +73,14 @@ class AcnExportSuppliersTest extends TestCase
             'Criterio di rilevanza',
         ], array_slice($header, 0, 6));
         $this->assertCount(3, $names);
-        $this->assertContains('TIM S.p.A.', $names);
-        $this->assertContains('CodyCloud Srl', $names);
+        $this->assertContains('Selected ICT Supplier S.p.A.', $names);
+        $this->assertContains('Selected Non Relevant Supplier Srl', $names);
         $this->assertNotContains('Unselected Relevant Supplier', $names);
-        $this->assertContains('00488410010', $taxCodes);
-        $this->assertContains('12345678901', $taxCodes);
+        $this->assertContains('00000000001', $taxCodes);
+        $this->assertContains('00000000002', $taxCodes);
         $this->assertContains('72000000-5', $cpvCodes);
         $this->assertContains('72200000-7', $cpvCodes);
+        $this->assertSame(['Servizi di connettivita', 'Servizi applicativi'], $selectedSupplierNotes->all());
         $this->assertContains('Fornitura ICT', $relevanceTypes);
         $this->assertContains('Fornitura ICT non fungibile', $relevanceTypes);
     }

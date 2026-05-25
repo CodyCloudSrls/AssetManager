@@ -169,8 +169,8 @@ class ActionlogsTransformer
 
                 foreach ($meta_array as $fieldname => $fieldata) {
 
-                    $clean_meta[$fieldname]['old'] = $this->clean_field($fieldata->old);
-                    $clean_meta[$fieldname]['new'] = $this->clean_field($fieldata->new);
+                    $clean_meta[$fieldname] = $this->cleanMetaChange($fieldata);
+                    $fielddataObject = (is_object($fieldata) || is_array($fieldata)) ? (object) $fieldata : null;
 
                     // this is a custom field
                     if (str_starts_with($fieldname, '_snipeit_')) {
@@ -190,17 +190,17 @@ class ActionlogsTransformer
                                     $enc_old = '';
                                     $enc_new = '';
 
-                                    if ($this->clean_field($fieldata->old != '')) {
+                                    if ($this->clean_field(($fielddataObject->old ?? '') != '')) {
                                         try {
-                                            $enc_old = Crypt::decryptString($this->clean_field($fieldata->old));
+                                            $enc_old = Crypt::decryptString($this->clean_field($fielddataObject->old ?? ''));
                                         } catch (\Exception $e) {
                                             Log::debug('Could not decrypt old field value - maybe the key changed?');
                                         }
                                     }
 
-                                    if ($this->clean_field($fieldata->new != '')) {
+                                    if ($this->clean_field(($fielddataObject->new ?? '') != '')) {
                                         try {
-                                            $enc_new = Crypt::decryptString($this->clean_field($fieldata->new));
+                                            $enc_new = Crypt::decryptString($this->clean_field($fielddataObject->new ?? ''));
                                         } catch (\Exception $e) {
                                             Log::debug('Could not decrypt new field value - maybe the key changed?');
                                         }
@@ -291,6 +291,25 @@ class ActionlogsTransformer
         // dd($array);
 
         return $array;
+    }
+
+    private function cleanMetaChange($fielddata): array
+    {
+        if (is_object($fielddata) || is_array($fielddata)) {
+            $fielddata = (object) $fielddata;
+
+            if (property_exists($fielddata, 'old') || property_exists($fielddata, 'new')) {
+                return [
+                    'old' => $this->clean_field($fielddata->old ?? null),
+                    'new' => $this->clean_field($fielddata->new ?? null),
+                ];
+            }
+        }
+
+        return [
+            'old' => '',
+            'new' => $this->clean_field($fielddata),
+        ];
     }
 
     public function transformCheckedoutActionlog(Collection $accessories_checkout, $total)

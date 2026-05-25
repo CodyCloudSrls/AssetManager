@@ -4,7 +4,7 @@ namespace Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
-class FrancescaTeamsIssuesTest extends TestCase
+class ReportedIssuesRegressionTest extends TestCase
 {
     public function test_document_framework_global_template_validation_is_scoped_to_platform_superadmins(): void
     {
@@ -206,6 +206,28 @@ class FrancescaTeamsIssuesTest extends TestCase
         $this->assertStringContainsString('purge-unused-bootstrap', $frameworkView);
         $this->assertStringContainsString('tenant_purge', $itPackTranslations);
         $this->assertStringContainsString('purge_unused_bootstrap', $itFrameworkMessages);
+    }
+
+    public function test_document_and_supplier_regressions_have_targeted_fixes(): void
+    {
+        $documentsIndex = $this->repoFile('resources/views/documents/index.blade.php');
+        $layout = $this->repoFile('resources/views/layouts/default.blade.php');
+        $acnExporter = $this->repoFile('app/Support/Exports/AcnSupplierOdsExporter.php');
+        $category = $this->repoFile('app/Models/Category.php');
+        $asset = $this->repoFile('app/Models/Asset.php');
+        $riskReport = $this->repoFile('app/Support/Reports/NisRiskMatrixReport.php');
+        $actionlogsTransformer = $this->repoFile('app/Http/Transformers/ActionlogsTransformer.php');
+
+        $this->assertStringContainsString("<optgroup label=\"{{ \$framework?->name", $documentsIndex);
+        $this->assertStringContainsString('.bootstrap-table .fixed-table-toolbar', $layout);
+        $this->assertStringContainsString('display: flex;', $layout);
+        $this->assertStringContainsString('criteriaByCpvCode', $acnExporter);
+        $this->assertStringContainsString('cpvCodesPreservingOrder', $acnExporter);
+        $this->assertStringContainsString("'vpn' =>", $category);
+        $this->assertStringContainsString("'network_flow' =>", $category);
+        $this->assertStringContainsString('in:network,vpn,network_flow,server', $asset);
+        $this->assertStringContainsString("'network', 'vpn', 'network_flow'", $riskReport);
+        $this->assertStringContainsString('cleanMetaChange', $actionlogsTransformer);
     }
 
     private function repoPath(string $relativePath): string
