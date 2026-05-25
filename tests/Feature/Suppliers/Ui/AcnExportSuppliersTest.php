@@ -85,7 +85,7 @@ class AcnExportSuppliersTest extends TestCase
         $this->assertContains('Fornitura ICT non fungibile', $relevanceTypes);
     }
 
-    public function test_acn_export_deduplicates_tax_code_cpv_and_normalizes_country_aliases()
+    public function test_acn_export_keeps_distinct_suppliers_when_tax_code_and_cpv_match()
     {
         $firstSupplier = Supplier::factory()->create([
             'name' => 'Duplicate ICT Supplier Ltd',
@@ -120,14 +120,17 @@ class AcnExportSuppliersTest extends TestCase
         $records = collect($this->odsRows($response->streamedContent(), 'Fornitori'));
         $rows = $records->slice(1)->filter(fn (array $row) => collect($row)->filter()->isNotEmpty())->values();
 
-        $this->assertCount(1, $rows);
+        $this->assertCount(2, $rows);
         $this->assertSame('GB', $rows[0][0]);
+        $this->assertSame('GB', $rows[1][0]);
         $this->assertSame('00000000003', $rows[0][1]);
+        $this->assertSame('00000000003', $rows[1][1]);
         $this->assertSame('72720000-3', $rows[0][3]);
+        $this->assertSame('72720000-3', $rows[1][3]);
         $this->assertStringContainsString('Primary network criterion', $rows[0][4]);
         $this->assertStringContainsString('Primary note', $rows[0][4]);
-        $this->assertStringContainsString('Secondary network criterion', $rows[0][4]);
-        $this->assertStringContainsString('Secondary note', $rows[0][4]);
+        $this->assertStringContainsString('Secondary network criterion', $rows[1][4]);
+        $this->assertStringContainsString('Secondary note', $rows[1][4]);
     }
 
     private function odsRows(string $content, string $sheetName): array

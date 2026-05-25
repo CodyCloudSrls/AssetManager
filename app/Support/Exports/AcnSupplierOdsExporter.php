@@ -46,12 +46,9 @@ class AcnSupplierOdsExporter
         }
 
         $exportRows = [];
-        $exportRowIndexesByKey = [];
-        $query->chunkById(200, function ($suppliers) use (&$exportRows, &$exportRowIndexesByKey) {
+        $query->chunkById(200, function ($suppliers) use (&$exportRows) {
             foreach ($suppliers as $supplier) {
-                foreach ($this->supplierRows($supplier) as $supplierRow) {
-                    $this->appendSupplierRow($exportRows, $exportRowIndexesByKey, $supplierRow);
-                }
+                array_push($exportRows, ...$this->supplierRows($supplier));
             }
         }, 'suppliers.id', 'id');
 
@@ -101,49 +98,6 @@ class AcnSupplierOdsExporter
             $this->supplierNotes($supplier, $cpvCode, $criteriaByCpvCode),
             $this->acnRelevanceType($supplier->nis_relevance_type),
         ])->all();
-    }
-
-    private function appendSupplierRow(array &$exportRows, array &$exportRowIndexesByKey, array $supplierRow): void
-    {
-        $deduplicationKey = $this->supplierRowDeduplicationKey($supplierRow);
-
-        if ($deduplicationKey && array_key_exists($deduplicationKey, $exportRowIndexesByKey)) {
-            $existingIndex = $exportRowIndexesByKey[$deduplicationKey];
-            $exportRows[$existingIndex] = $this->mergeSupplierRows($exportRows[$existingIndex], $supplierRow);
-
-            return;
-        }
-
-        if ($deduplicationKey) {
-            $exportRowIndexesByKey[$deduplicationKey] = count($exportRows);
-        }
-
-        $exportRows[] = $supplierRow;
-    }
-
-    private function supplierRowDeduplicationKey(array $supplierRow): ?string
-    {
-        $taxCode = strtoupper($this->cellText($supplierRow[1] ?? ''));
-        $cpvCode = strtoupper($this->cellText($supplierRow[3] ?? ''));
-
-        if ($taxCode === '' || $cpvCode === '') {
-            return null;
-        }
-
-        return $taxCode.'|'.$cpvCode;
-    }
-
-    private function mergeSupplierRows(array $existingRow, array $duplicateRow): array
-    {
-        foreach ([0, 2, 5] as $index) {
-            if (($existingRow[$index] ?? '') === '' && ($duplicateRow[$index] ?? '') !== '') {
-                $existingRow[$index] = $duplicateRow[$index];
-            }
-        }
-
-        $existingRow[4] = $this->mergeNotes($existingRow[4] ?? '', $duplicateRow[4] ?? '');
-
-        return $existingRow;
     }
 
     private function contentXmlWithSupplierRows(string $contentXml, array $exportRows): string
@@ -287,17 +241,6 @@ class AcnSupplierOdsExporter
         ])
             ->map(fn ($value) => $this->cellText($value))
             ->filter()
-            ->implode(' | ');
-    }
-
-    private function mergeNotes(string $existingNotes, string $duplicateNotes): string
-    {
-        return collect([$existingNotes, $duplicateNotes])
-            ->flatMap(fn ($notes) => explode(' | ', $notes))
-            ->map(fn ($notes) => $this->cellText($notes))
-            ->filter()
-            ->unique()
-            ->values()
             ->implode(' | ');
     }
 
