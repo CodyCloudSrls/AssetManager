@@ -20,6 +20,7 @@ use App\Models\Document;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\DocumentType;
+use App\Models\Group;
 use App\Models\License;
 use App\Models\Location;
 use App\Models\Manufacturer;
@@ -47,6 +48,7 @@ use App\Policies\DocumentFrameworkPolicy;
 use App\Policies\DocumentFrameworkRequirementPolicy;
 use App\Policies\DocumentPolicy;
 use App\Policies\DocumentTypePolicy;
+use App\Policies\GroupPolicy;
 use App\Policies\LicensePolicy;
 use App\Policies\LocationPolicy;
 use App\Policies\ManufacturerPolicy;
@@ -90,6 +92,7 @@ class AuthServiceProvider extends ServiceProvider
         DocumentFramework::class => DocumentFrameworkPolicy::class,
         DocumentFrameworkRequirement::class => DocumentFrameworkRequirementPolicy::class,
         DocumentType::class => DocumentTypePolicy::class,
+        Group::class => GroupPolicy::class,
         License::class => LicensePolicy::class,
         Location::class => LocationPolicy::class,
         PredefinedKit::class => PredefinedKitPolicy::class,

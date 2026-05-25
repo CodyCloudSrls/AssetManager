@@ -8,8 +8,10 @@ use App\Models\Document;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\DocumentType;
+use App\Models\Group;
 use App\Models\User;
 use App\Support\Compliance\ComplianceDomainAccess;
+use App\Support\DefaultPermissionGroups;
 use App\Support\Reports\NisRealCoverageReport;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -39,6 +41,54 @@ class DocumentAccessScopeTest extends TestCase
             ->assertJsonPath('total', 1)
             ->assertJsonPath('rows.0.id', $visible->id)
             ->assertJsonPath('rows.0.name', 'Visible cyber NIS2');
+    }
+
+    public function test_group_with_all_document_areas_can_see_legacy_unassigned_framework_documents(): void
+    {
+        $company = Company::factory()->create();
+        $type = DocumentType::factory()->create();
+        $actor = $this->groupBackedDocumentUser($company, 'default_read_only_auditor');
+        $framework = $this->framework($company, 'nis2', 'nis2-legacy-unassigned-documents');
+
+        $this->assertTrue($actor->hasAccess('documents.view'));
+        $this->assertTrue($actor->hasAccess('documents.area.administration.view'));
+        $this->assertTrue($actor->hasAccess('documents.area.it.view'));
+        $this->assertTrue($actor->hasAccess('documents.area.cybersecurity.view'));
+
+        $legacy = $this->document($company, $type, $framework, 'Legacy unassigned evidence', null);
+        $administration = $this->document($company, $type, $framework, 'Administration evidence', 'administration');
+
+        $this->actingAsForApi($actor)
+            ->getJson(route('api.documents.index', ['document_framework_id' => $framework->id]))
+            ->assertOk()
+            ->assertJsonPath('total', 2)
+            ->assertJsonFragment(['id' => $legacy->id, 'name' => 'Legacy unassigned evidence'])
+            ->assertJsonFragment(['id' => $administration->id, 'name' => 'Administration evidence']);
+    }
+
+    public function test_single_area_user_still_cannot_see_legacy_unassigned_documents(): void
+    {
+        $company = Company::factory()->create();
+        $type = DocumentType::factory()->create();
+        $actor = User::factory()->create([
+            'company_id' => $company->id,
+            'permissions' => json_encode([
+                'documents.view' => '1',
+                'documents.area.cybersecurity.view' => '1',
+            ]),
+        ]);
+        $framework = $this->framework($company, 'nis2', 'nis2-single-area-legacy-scope');
+
+        $legacy = $this->document($company, $type, $framework, 'Legacy unassigned evidence', null);
+        $cybersecurity = $this->document($company, $type, $framework, 'Cybersecurity evidence', 'cybersecurity');
+
+        $response = $this->actingAsForApi($actor)
+            ->getJson(route('api.documents.index', ['document_framework_id' => $framework->id]))
+            ->assertOk()
+            ->assertJsonPath('total', 1)
+            ->assertJsonFragment(['id' => $cybersecurity->id, 'name' => 'Cybersecurity evidence']);
+
+        $this->assertNotContains($legacy->id, collect($response->json('rows'))->pluck('id')->all());
     }
 
     public function test_requirement_document_counts_use_document_visibility_scope(): void
@@ -218,6 +268,31 @@ class DocumentAccessScopeTest extends TestCase
         $user->complianceDomains()->sync($domainIds);
 
         return $user;
+    }
+
+    private function groupBackedDocumentUser(Company $company, string $systemKey): User
+    {
+        $definition = collect(DefaultPermissionGroups::definitions())
+            ->firstWhere('system_key', $systemKey);
+
+        $group = Group::query()->where('system_key', $systemKey)->first()
+            ?: Group::factory()->create([
+                'name' => $definition['name'].' Test '.uniqid(),
+                'system_key' => 'test_'.$definition['system_key'].'_'.uniqid(),
+                'permissions' => json_encode($definition['permissions']),
+            ]);
+
+        $user = User::factory()->create([
+            'company_id' => $company->id,
+            'permissions' => '{}',
+        ]);
+
+        DB::table('users_groups')->insert([
+            'user_id' => $user->id,
+            'group_id' => $group->id,
+        ]);
+
+        return $user->refresh()->load('groups');
     }
 
     private function framework(Company $company, string $domain, string $slug): DocumentFramework

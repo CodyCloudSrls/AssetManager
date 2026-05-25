@@ -129,6 +129,26 @@ class ReportedIssuesRegressionTest extends TestCase
         $this->assertStringContainsString("Gate::allows('update', \$user)", $usersTransformer);
     }
 
+    public function test_group_management_uses_real_group_policy_and_keeps_system_groups_editable(): void
+    {
+        $authProvider = $this->repoFile('app/Providers/AuthServiceProvider.php');
+        $policy = $this->repoFile('app/Policies/GroupPolicy.php');
+        $controller = $this->repoFile('app/Http/Controllers/GroupsController.php');
+        $apiController = $this->repoFile('app/Http/Controllers/Api/GroupsController.php');
+        $transformer = $this->repoFile('app/Http/Transformers/GroupsTransformer.php');
+        $bootstrapTable = $this->repoFile('resources/views/partials/bootstrap-table.blade.php');
+
+        $this->assertStringContainsString('Group::class => GroupPolicy::class', $authProvider);
+        $this->assertStringContainsString('class GroupPolicy', $policy);
+        $this->assertStringContainsString('return $user->isSuperAdmin();', $policy);
+        $this->assertStringContainsString('! $item instanceof Group || ! $item->isSystemGroup()', $policy);
+        $this->assertStringNotContainsString('requestChangesGroupDefinition', $controller);
+        $this->assertStringNotContainsString('delete.update', $apiController);
+        $this->assertStringContainsString("Gate::allows('update', \$group)", $transformer);
+        $this->assertStringContainsString('\\App\\Models\\Group::class', $bootstrapTable);
+        $this->assertStringNotContainsString('\\App\\Models\\Groups::class', $bootstrapTable);
+    }
+
     public function test_nis_reports_have_granular_permissions_without_unlocking_all_reports(): void
     {
         $permissions = $this->repoFile('config/permissions.php');

@@ -13,6 +13,7 @@
 .env.testing
 phpstan.neon
 .idea
+.codex-memory/
 /bin/
 /bootstrap/compiled.php
 /node_modules
@@ -49,6 +50,7 @@ public/uploads/categories/*
 public/uploads/users/*
 storage/app/private_uploads/users/*
 storage/private_uploads/documents/*
+storage/private_uploads/customers/*
 public/uploads/departments/*
 storage/debugbar/
 storage/dumps/*

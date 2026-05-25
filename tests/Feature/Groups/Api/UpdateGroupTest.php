@@ -78,7 +78,7 @@ class UpdateGroupTest extends TestCase
         $this->assertSame('1', (string) ($decoded['admin'] ?? null));
     }
 
-    public function test_cannot_update_system_group_definition()
+    public function test_can_update_system_group_definition()
     {
         $group = Group::factory()->create([
             'name' => 'System Group',
@@ -96,14 +96,13 @@ class UpdateGroupTest extends TestCase
                 ],
             ])
             ->assertOk()
-            ->assertStatusMessageIs('error');
+            ->assertStatusMessageIs('success');
 
         $group->refresh();
         $decoded = (array) $group->decodePermissions();
 
-        $this->assertSame('System Group', $group->name);
-        $this->assertSame('Original notes', $group->notes);
-        $this->assertSame('1', (string) ($decoded['reports.view'] ?? null));
-        $this->assertArrayNotHasKey('admin', $decoded);
+        $this->assertSame('Updated System Group', $group->name);
+        $this->assertSame('Updated notes', $group->notes);
+        $this->assertSame('1', (string) ($decoded['admin'] ?? null));
     }
 }

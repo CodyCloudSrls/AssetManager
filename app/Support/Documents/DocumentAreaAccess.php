@@ -18,7 +18,7 @@ final class DocumentAreaAccess
         }
 
         if ($area === '') {
-            return ! self::hasAreaRestriction($user);
+            return self::canAccessUnassignedArea($user, $ability);
         }
 
         return match ($ability) {
@@ -40,7 +40,7 @@ final class DocumentAreaAccess
         }
 
         if ($area === '') {
-            return ! self::hasAreaRestriction($user);
+            return ! self::hasAreaRestriction($user) || self::canPerformAcrossAllAreas($user, 'update');
         }
 
         return $user->hasAccess("documents.area.{$area}.edit");
@@ -64,22 +64,38 @@ final class DocumentAreaAccess
             ->all();
 
         $hasAreaRestriction = self::hasAreaRestriction($user);
+        $canViewUnassigned = ! $hasAreaRestriction || self::canPerformAcrossAllAreas($user, 'view');
 
         if ($hasAreaRestriction && $allowedAreas === []) {
             return $query->whereRaw('1 = 0');
         }
 
-        return $query->where(function (Builder $areaQuery) use ($allowedAreas, $hasAreaRestriction) {
-            if (! $hasAreaRestriction) {
+        return $query->where(function (Builder $areaQuery) use ($allowedAreas, $canViewUnassigned) {
+            if ($canViewUnassigned) {
                 $areaQuery->whereNull('documents.document_area')
                     ->orWhere('documents.document_area', '');
             }
 
             if ($allowedAreas !== []) {
-                $method = $hasAreaRestriction ? 'whereIn' : 'orWhereIn';
+                $method = $canViewUnassigned ? 'orWhereIn' : 'whereIn';
                 $areaQuery->{$method}('documents.document_area', $allowedAreas);
             }
         });
+    }
+
+    private static function canAccessUnassignedArea(User $user, string $ability): bool
+    {
+        if (! self::hasAreaRestriction($user)) {
+            return true;
+        }
+
+        return match ($ability) {
+            'view', 'index', 'history', 'journal' => self::canPerformAcrossAllAreas($user, 'view'),
+            'update', 'edit', 'delete', 'restore', 'forceDelete' => self::canPerformAcrossAllAreas($user, 'update'),
+            'files' => self::canPerformAcrossAllAreas($user, 'files'),
+            'viewFiles' => self::canPerformAcrossAllAreas($user, 'viewFiles'),
+            default => self::canPerformAcrossAllAreas($user, 'view'),
+        };
     }
 
     private static function canView(User $user, string $area): bool
@@ -88,6 +104,26 @@ final class DocumentAreaAccess
             || $user->hasAccess("documents.area.{$area}.edit")
             || $user->hasAccess("documents.area.{$area}.files.view")
             || $user->hasAccess("documents.area.{$area}.files");
+    }
+
+    private static function canPerformAcrossAllAreas(User $user, string $ability): bool
+    {
+        foreach (array_keys(Document::documentAreaOptions()) as $area) {
+            $allowed = match ($ability) {
+                'view' => self::canView($user, $area),
+                'update' => $user->hasAccess("documents.area.{$area}.edit"),
+                'files' => $user->hasAccess("documents.area.{$area}.files"),
+                'viewFiles' => $user->hasAccess("documents.area.{$area}.files.view")
+                    || $user->hasAccess("documents.area.{$area}.files"),
+                default => self::canView($user, $area),
+            };
+
+            if (! $allowed) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static function hasAreaRestriction(User $user): bool

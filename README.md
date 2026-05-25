@@ -17,6 +17,7 @@ This repository intentionally excludes live runtime material such as:
 - `.env` and host-specific secrets
 - uploaded media and tenant data
 - local backups, dumps, and operational artifacts
+- local automation memory and operator notes
 
 Those assets stay outside Git and are managed per environment.
 
@@ -108,11 +109,17 @@ The repository seeds production-oriented baseline groups that can be reused or a
 - `Default - Inventory Operator`
 - `Default - Asset Manager`
 - `Default - Procurement And Catalog Manager`
+- `Default - Administration Document Updater`
+- `Default - IT Document Updater`
+- `Default - Cybersecurity Document Updater`
 - `Default - Document Controller`
+- `Default - Compliance Evidence Coordinator`
 - `Default - Compliance Manager`
 - `Default - Executive Read Only`
 - `Default - Read Only Auditor`
 - `Default - Tenant Operations Admin`
+
+The maintained scope model for these 14 groups is documented in [docs/default-permission-groups.md](docs/default-permission-groups.md).
 
 ## Localization
 

@@ -442,7 +442,7 @@
     @endcan
 
 
-    @can('create', \App\Models\Groups::class)
+    @can('create', \App\Models\Group::class)
     // Groups table buttons
     window.groupButtons = () => ({
         btnAdd: {

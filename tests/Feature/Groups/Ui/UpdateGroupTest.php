@@ -79,7 +79,7 @@ class UpdateGroupTest extends TestCase
         $this->assertSame('1', (string) ($decoded['admin'] ?? null));
     }
 
-    public function test_user_cannot_edit_system_group_definition()
+    public function test_user_can_edit_system_group_definition()
     {
         $group = Group::factory()->create([
             'name' => 'System Group',
@@ -97,15 +97,15 @@ class UpdateGroupTest extends TestCase
                 ],
             ])
             ->assertStatus(302)
+            ->assertSessionHasNoErrors()
             ->assertRedirect(route('groups.index'));
 
         $group->refresh();
         $decoded = (array) $group->decodePermissions();
 
-        $this->assertSame('System Group', $group->name);
-        $this->assertSame('Original notes', $group->notes);
-        $this->assertSame('1', (string) ($decoded['reports.view'] ?? null));
-        $this->assertArrayNotHasKey('admin', $decoded);
+        $this->assertSame('Edited System Group', $group->name);
+        $this->assertSame('Edited notes', $group->notes);
+        $this->assertSame('1', (string) ($decoded['admin'] ?? null));
     }
 
     public function test_user_can_sync_users_to_system_group_without_editing_definition()
@@ -133,5 +133,18 @@ class UpdateGroupTest extends TestCase
         $this->assertSame('System Group', $group->name);
         $this->assertSame('Original notes', $group->notes);
         $this->assertEqualsCanonicalizing([$syncedUser->id], $group->users()->pluck('users.id')->all());
+    }
+
+    public function test_non_superadmin_cannot_edit_groups()
+    {
+        $group = Group::factory()->create(['name' => 'Tenant Group']);
+
+        $this->actingAs(User::factory()->tenantSuperuser()->create())
+            ->put(route('groups.update', ['group' => $group]), [
+                'name' => 'Changed By Tenant Superuser',
+            ])
+            ->assertForbidden();
+
+        $this->assertSame('Tenant Group', $group->refresh()->name);
     }
 }

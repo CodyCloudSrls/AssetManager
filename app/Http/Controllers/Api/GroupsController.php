@@ -23,8 +23,6 @@ class GroupsController extends Controller
      */
     public function index(FilterRequest $request): JsonResponse|array
     {
-        $this->authorize('superadmin');
-
         $this->authorize('view', Group::class);
 
         $groups = Group::select(['id', 'name', 'system_key', 'permissions', 'notes', 'created_at', 'updated_at', 'created_by'])->with('adminuser')->withCount('users as users_count');
@@ -77,7 +75,7 @@ class GroupsController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $this->authorize('superadmin');
+        $this->authorize('create', Group::class);
         $group = new Group;
         $defaultPermissions = Helper::selectedPermissionsArray(config('permissions'), config('permissions'));
 
@@ -113,8 +111,8 @@ class GroupsController extends Controller
      */
     public function show($id): array
     {
-        $this->authorize('superadmin');
         $group = Group::findOrFail($id);
+        $this->authorize('view', $group);
 
         return (new GroupsTransformer)->transformGroup($group);
     }
@@ -130,12 +128,8 @@ class GroupsController extends Controller
      */
     public function update(Request $request, $id): JsonResponse
     {
-        $this->authorize('superadmin');
         $group = Group::findOrFail($id);
-
-        if ($group->isSystemGroup()) {
-            return response()->json(Helper::formatStandardApiResponse('error', null, trans('admin/groups/message.delete.update')));
-        }
+        $this->authorize('update', $group);
 
         // Fill only the keys present in the request, so PATCH skips absent fields naturally.
         $group->fill($request->only(['name', 'notes']));
@@ -173,7 +167,7 @@ class GroupsController extends Controller
      */
     public function destroy($id): JsonResponse
     {
-        $this->authorize('superadmin');
+        $this->authorize('delete', Group::class);
         $group = Group::findOrFail($id);
         if ($group->isSystemGroup()) {
             return response()

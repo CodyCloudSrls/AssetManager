@@ -30,6 +30,8 @@ class GroupsController extends Controller
      */
     public function index(): View
     {
+        $this->authorize('view', Group::class);
+
         return view('groups/index');
     }
 
@@ -43,6 +45,8 @@ class GroupsController extends Controller
      */
     public function create(Request $request): View
     {
+        $this->authorize('create', Group::class);
+
         $group = new Group;
         // Get all the available permissions
         $permissions = config('permissions');
@@ -78,6 +82,8 @@ class GroupsController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $this->authorize('create', Group::class);
+
         // create a new group instance
         $group = new Group;
         $group->name = $request->input('name');
@@ -119,6 +125,8 @@ class GroupsController extends Controller
      */
     public function edit(Group $group): View|RedirectResponse
     {
+        $this->authorize('update', $group);
+
         $permissions = config('permissions');
         $groupPermissions = $group->decodePermissions();
 
@@ -169,25 +177,19 @@ class GroupsController extends Controller
      */
     public function update(Request $request, Group $group): RedirectResponse
     {
+        $this->authorize('update', $group);
+
         if (config('app.lock_passwords')) {
             return redirect()->route('groups.index')->with('error', trans('general.feature_disabled'));
         }
 
-        if ($group->isSystemGroup() && $this->requestChangesGroupDefinition($request)) {
-            return redirect()->route('groups.index')->with('error', trans('admin/groups/message.delete.update'));
+        if ($request->has('name')) {
+            $group->name = $request->input('name');
         }
 
-        if ($group->isSystemGroup()) {
-            if ($request->has('users_to_sync')) {
-                $associated_users = explode(',', $request->input('users_to_sync'));
-                $group->users()->sync($associated_users);
-            }
-
-            return redirect()->route('groups.index')->with('success', trans('admin/groups/message.success.update'));
+        if ($request->has('notes')) {
+            $group->notes = $request->input('notes');
         }
-
-        $group->name = $request->input('name');
-        $group->notes = $request->input('notes');
 
         if ($request->has('permission')) {
             $originalPermissions = NormalizePermissionsPayloadAction::run($group->permissions);
@@ -229,6 +231,8 @@ class GroupsController extends Controller
      */
     public function destroy($id): RedirectResponse
     {
+        $this->authorize('delete', Group::class);
+
         if (! config('app.lock_passwords')) {
 
             if (! $group = Group::find($id)) {
@@ -263,11 +267,8 @@ class GroupsController extends Controller
      */
     public function show(Group $group): View|RedirectResponse
     {
-        return view('groups/view', compact('group'));
-    }
+        $this->authorize('view', $group);
 
-    private function requestChangesGroupDefinition(Request $request): bool
-    {
-        return $request->hasAny(['name', 'notes', 'permission']);
+        return view('groups/view', compact('group'));
     }
 }
