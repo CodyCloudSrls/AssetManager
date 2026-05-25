@@ -176,10 +176,15 @@
                                             <label for="primary_requirement_ids" class="col-md-3 control-label">{{ trans('admin/documents/form.primary_requirements') }}</label>
                                             <div class="col-md-7">
                                                 <select class="form-control select2 document-requirement-select" multiple name="primary_requirement_ids[]" id="primary_requirement_ids" aria-label="primary_requirement_ids" {{ $hasFrameworkSelected ? '' : 'disabled' }}>
-                                                    @foreach ($frameworkRequirements as $requirement)
-                                                        <option value="{{ $requirement->id }}" @selected(in_array($requirement->id, old('primary_requirement_ids', $selectedPrimaryRequirementIds), true))>
-                                                            {{ $requirement->code }} - {{ $requirement->title }}
-                                                        </option>
+                                                    @foreach ($frameworkRequirements->groupBy('document_framework_id') as $frameworkRequirementGroup)
+                                                        @php($framework = $frameworkRequirementGroup->first()?->framework)
+                                                        <optgroup label="{{ $framework?->name ?: trans('admin/documents/form.framework') }}">
+                                                            @foreach ($frameworkRequirementGroup as $requirement)
+                                                                <option value="{{ $requirement->id }}" @selected(in_array($requirement->id, old('primary_requirement_ids', $selectedPrimaryRequirementIds), true))>
+                                                                    {{ $requirement->code }} - {{ $requirement->title }}
+                                                                </option>
+                                                            @endforeach
+                                                        </optgroup>
                                                     @endforeach
                                                 </select>
                                                 <p class="help-block">{{ trans('admin/documents/form.primary_requirements_help') }}</p>
@@ -190,10 +195,15 @@
                                             <label for="supporting_requirement_ids" class="col-md-3 control-label">{{ trans('admin/documents/form.supporting_requirements') }}</label>
                                             <div class="col-md-7">
                                                 <select class="form-control select2 document-requirement-select" multiple name="supporting_requirement_ids[]" id="supporting_requirement_ids" aria-label="supporting_requirement_ids" {{ $hasFrameworkSelected ? '' : 'disabled' }}>
-                                                    @foreach ($frameworkRequirements as $requirement)
-                                                        <option value="{{ $requirement->id }}" @selected(in_array($requirement->id, old('supporting_requirement_ids', $selectedSupportingRequirementIds), true))>
-                                                            {{ $requirement->code }} - {{ $requirement->title }}
-                                                        </option>
+                                                    @foreach ($frameworkRequirements->groupBy('document_framework_id') as $frameworkRequirementGroup)
+                                                        @php($framework = $frameworkRequirementGroup->first()?->framework)
+                                                        <optgroup label="{{ $framework?->name ?: trans('admin/documents/form.framework') }}">
+                                                            @foreach ($frameworkRequirementGroup as $requirement)
+                                                                <option value="{{ $requirement->id }}" @selected(in_array($requirement->id, old('supporting_requirement_ids', $selectedSupportingRequirementIds), true))>
+                                                                    {{ $requirement->code }} - {{ $requirement->title }}
+                                                                </option>
+                                                            @endforeach
+                                                        </optgroup>
                                                     @endforeach
                                                 </select>
                                                 <p class="help-block">{{ trans('admin/documents/form.supporting_requirements_help') }}</p>
@@ -548,12 +558,22 @@
             primarySelect.empty();
             supportingSelect.empty();
 
+            const defaultFrameworkName = @json(trans('admin/documents/form.framework'));
+            const frameworkName = options.length ? (options[0].framework_name || defaultFrameworkName) : defaultFrameworkName;
+            const primaryGroup = $('<optgroup>').attr('label', frameworkName);
+            const supportingGroup = $('<optgroup>').attr('label', frameworkName);
+
             $.each(options, function (_, requirement) {
                 const label = requirement.code + ' - ' + requirement.title;
                 const optionValue = String(requirement.id);
-                primarySelect.append(new Option(label, optionValue, false, selectedPrimary.includes(optionValue)));
-                supportingSelect.append(new Option(label, optionValue, false, selectedSupporting.includes(optionValue)));
+                primaryGroup.append(new Option(label, optionValue, false, selectedPrimary.includes(optionValue)));
+                supportingGroup.append(new Option(label, optionValue, false, selectedSupporting.includes(optionValue)));
             });
+
+            if (options.length) {
+                primarySelect.append(primaryGroup);
+                supportingSelect.append(supportingGroup);
+            }
 
             primarySelect.trigger('change.select2');
             supportingSelect.trigger('change.select2');

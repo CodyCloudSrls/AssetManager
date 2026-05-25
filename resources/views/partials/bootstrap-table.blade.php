@@ -78,6 +78,16 @@
             return ids;
         }
 
+        window.snipeTableMarkResponsiveShell = function ($table) {
+            var $tableWrapper = $table.closest('.bootstrap-table');
+
+            if ($tableWrapper.length == 0) {
+                return;
+            }
+
+            $tableWrapper.parent('.table-responsive').addClass('bootstrap-table-responsive-shell');
+        }
+
         window.snipeTableUrlWithSelectedRowIds = function (url, $table) {
             var selectedIds = window.snipeTableSelectedRowIdsForExport($table);
             if (selectedIds.length === 0) {
@@ -340,6 +350,12 @@
                     return '{{ trans('table.no_matching_records') }}';
                 }
 
+            });
+
+            window.snipeTableMarkResponsiveShell($table);
+
+            $table.on('post-body.bs.table reset-view.bs.table column-switch.bs.table', function () {
+                window.snipeTableMarkResponsiveShell($table);
             });
 
         });

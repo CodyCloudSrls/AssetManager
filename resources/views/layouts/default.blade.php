@@ -986,6 +986,10 @@
             min-width: 0;
         }
 
+        .table-responsive.bootstrap-table-responsive-shell {
+            overflow-x: visible;
+        }
+
         .bootstrap-table .fixed-table-toolbar {
             align-items: center;
             display: flex;

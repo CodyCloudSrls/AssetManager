@@ -211,16 +211,23 @@ class ReportedIssuesRegressionTest extends TestCase
     public function test_document_and_supplier_regressions_have_targeted_fixes(): void
     {
         $documentsIndex = $this->repoFile('resources/views/documents/index.blade.php');
+        $documentsEdit = $this->repoFile('resources/views/documents/edit.blade.php');
         $layout = $this->repoFile('resources/views/layouts/default.blade.php');
+        $bootstrapTablePartial = $this->repoFile('resources/views/partials/bootstrap-table.blade.php');
         $acnExporter = $this->repoFile('app/Support/Exports/AcnSupplierOdsExporter.php');
         $category = $this->repoFile('app/Models/Category.php');
         $asset = $this->repoFile('app/Models/Asset.php');
         $riskReport = $this->repoFile('app/Support/Reports/NisRiskMatrixReport.php');
         $actionlogsTransformer = $this->repoFile('app/Http/Transformers/ActionlogsTransformer.php');
+        $documentsController = $this->repoFile('app/Http/Controllers/Documents/DocumentsController.php');
 
         $this->assertStringContainsString("<optgroup label=\"{{ \$framework?->name", $documentsIndex);
+        $this->assertStringContainsString("<optgroup label=\"{{ \$framework?->name", $documentsEdit);
+        $this->assertStringContainsString("'framework_name' => \$requirement->framework?->name", $documentsController);
         $this->assertStringContainsString('.bootstrap-table .fixed-table-toolbar', $layout);
+        $this->assertStringContainsString('.table-responsive.bootstrap-table-responsive-shell', $layout);
         $this->assertStringContainsString('display: flex;', $layout);
+        $this->assertStringContainsString('snipeTableMarkResponsiveShell', $bootstrapTablePartial);
         $this->assertStringContainsString('criteriaByCpvCode', $acnExporter);
         $this->assertStringContainsString('cpvCodesPreservingOrder', $acnExporter);
         $this->assertStringContainsString("'vpn' =>", $category);

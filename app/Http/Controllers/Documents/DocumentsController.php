@@ -489,6 +489,7 @@ class DocumentsController extends Controller
                 'code' => $requirement->code,
                 'title' => $requirement->title,
                 'domain' => $requirement->domain,
+                'framework_name' => $requirement->framework?->name,
             ])->values())
             ->toArray();
 
