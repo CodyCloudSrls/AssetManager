@@ -180,6 +180,11 @@ class DocumentFrameworkRequirement extends SnipeModel
         return $this->documents()->wherePivot('coverage_role', 'primary');
     }
 
+    public function healthyPrimaryDocuments()
+    {
+        return $this->primaryDocuments()->currentForCoverage();
+    }
+
     public function supportingDocuments()
     {
         return $this->documents()->wherePivot('coverage_role', 'supporting');

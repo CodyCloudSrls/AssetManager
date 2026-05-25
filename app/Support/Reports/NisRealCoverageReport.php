@@ -51,6 +51,9 @@ class NisRealCoverageReport
                     ->with([
                         'owner',
                         'primaryDocuments' => function ($query) use ($user) {
+                            $this->applyVisibleDocumentScope($query, $user);
+                        },
+                        'healthyPrimaryDocuments' => function ($query) use ($user) {
                             $query->currentForCoverage();
                             $this->applyVisibleDocumentScope($query, $user);
                         },
@@ -88,6 +91,7 @@ class NisRealCoverageReport
     private function summary(Collection $requirements): array
     {
         $coverageCounts = $requirements->countBy(fn (DocumentFrameworkRequirement $requirement) => $requirement->coverage_status);
+        $primaryDocumentCounts = $this->primaryDocumentCounts($requirements);
         $documentTypeCounts = $this->documentTypeCounts($requirements);
 
         $covered = (int) $coverageCounts->get(DocumentFrameworkRequirement::COVERAGE_COVERED, 0);
@@ -103,9 +107,47 @@ class NisRealCoverageReport
             'minimum_required_documents' => (int) $requirements->sum(fn (DocumentFrameworkRequirement $requirement) => $requirement->minimum_required_documents),
             'healthy_primary_documents' => (int) $requirements->sum(fn (DocumentFrameworkRequirement $requirement) => (int) ($requirement->healthy_primary_documents_count ?? 0)),
             'document_shortfall_count' => (int) $requirements->sum(fn (DocumentFrameworkRequirement $requirement) => $requirement->document_shortfall_count),
+            'required_documents_count' => $primaryDocumentCounts['required'],
+            'healthy_required_documents_count' => $primaryDocumentCounts['healthy'],
+            'missing_required_documents_count' => $primaryDocumentCounts['missing'],
             'required_document_types_count' => $documentTypeCounts['required'],
             'healthy_required_document_types_count' => $documentTypeCounts['healthy'],
             'missing_required_document_types_count' => $documentTypeCounts['missing'],
+        ];
+    }
+
+    private function primaryDocumentCounts(Collection $requirements): array
+    {
+        $requiredDocumentIds = $requirements
+            ->flatMap(function (DocumentFrameworkRequirement $requirement) {
+                $documents = $requirement->relationLoaded('primaryDocuments')
+                    ? $requirement->primaryDocuments
+                    : $requirement->primaryDocuments()->get(['documents.id']);
+
+                return $documents->pluck('id');
+            })
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $healthyDocumentIds = $requirements
+            ->flatMap(function (DocumentFrameworkRequirement $requirement) {
+                $documents = $requirement->relationLoaded('healthyPrimaryDocuments')
+                    ? $requirement->healthyPrimaryDocuments
+                    : $requirement->healthyPrimaryDocuments()->get(['documents.id']);
+
+                return $documents->pluck('id');
+            })
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        return [
+            'required' => $requiredDocumentIds->count(),
+            'healthy' => $requiredDocumentIds->intersect($healthyDocumentIds)->count(),
+            'missing' => $requiredDocumentIds->diff($healthyDocumentIds)->count(),
         ];
     }
 
@@ -120,8 +162,8 @@ class NisRealCoverageReport
 
         $healthyTypeIds = $requirements
             ->flatMap(function (DocumentFrameworkRequirement $requirement) {
-                $documents = $requirement->relationLoaded('primaryDocuments')
-                    ? $requirement->primaryDocuments
+                $documents = $requirement->relationLoaded('healthyPrimaryDocuments')
+                    ? $requirement->healthyPrimaryDocuments
                     : $requirement->healthyPrimaryDocumentsQuery()->get(['documents.id', 'documents.document_type_id']);
 
                 return $documents->pluck('document_type_id');
