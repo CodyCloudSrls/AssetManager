@@ -17,6 +17,25 @@ class AcnSupplierOdsExporter
     private const TABLE_NS = 'urn:oasis:names:tc:opendocument:xmlns:table:1.0';
     private const TEXT_NS = 'urn:oasis:names:tc:opendocument:xmlns:text:1.0';
     private const MAX_SHEET_ROWS = 1048576;
+    private const COUNTRY_ALIASES = [
+        'EL' => 'GR',
+        'GREAT BRITAIN' => 'GB',
+        'GRECIA' => 'GR',
+        'GREECE' => 'GR',
+        'ITALIA' => 'IT',
+        'ITALY' => 'IT',
+        'NORTHERN IRELAND' => 'GB',
+        'REGNO UNITO' => 'GB',
+        'SCOTLAND' => 'GB',
+        'STATI UNITI' => 'US',
+        'STATI UNITI D AMERICA' => 'US',
+        'UK' => 'GB',
+        'UNITED KINGDOM' => 'GB',
+        'UNITED STATES' => 'US',
+        'UNITED STATES OF AMERICA' => 'US',
+        'USA' => 'US',
+        'WALES' => 'GB',
+    ];
 
     public function buildFromQuery(Builder $query): string
     {
@@ -27,9 +46,12 @@ class AcnSupplierOdsExporter
         }
 
         $exportRows = [];
-        $query->chunkById(200, function ($suppliers) use (&$exportRows) {
+        $exportRowIndexesByKey = [];
+        $query->chunkById(200, function ($suppliers) use (&$exportRows, &$exportRowIndexesByKey) {
             foreach ($suppliers as $supplier) {
-                array_push($exportRows, ...$this->supplierRows($supplier));
+                foreach ($this->supplierRows($supplier) as $supplierRow) {
+                    $this->appendSupplierRow($exportRows, $exportRowIndexesByKey, $supplierRow);
+                }
             }
         }, 'suppliers.id', 'id');
 
@@ -79,6 +101,49 @@ class AcnSupplierOdsExporter
             $this->supplierNotes($supplier, $cpvCode, $criteriaByCpvCode),
             $this->acnRelevanceType($supplier->nis_relevance_type),
         ])->all();
+    }
+
+    private function appendSupplierRow(array &$exportRows, array &$exportRowIndexesByKey, array $supplierRow): void
+    {
+        $deduplicationKey = $this->supplierRowDeduplicationKey($supplierRow);
+
+        if ($deduplicationKey && array_key_exists($deduplicationKey, $exportRowIndexesByKey)) {
+            $existingIndex = $exportRowIndexesByKey[$deduplicationKey];
+            $exportRows[$existingIndex] = $this->mergeSupplierRows($exportRows[$existingIndex], $supplierRow);
+
+            return;
+        }
+
+        if ($deduplicationKey) {
+            $exportRowIndexesByKey[$deduplicationKey] = count($exportRows);
+        }
+
+        $exportRows[] = $supplierRow;
+    }
+
+    private function supplierRowDeduplicationKey(array $supplierRow): ?string
+    {
+        $taxCode = strtoupper($this->cellText($supplierRow[1] ?? ''));
+        $cpvCode = strtoupper($this->cellText($supplierRow[3] ?? ''));
+
+        if ($taxCode === '' || $cpvCode === '') {
+            return null;
+        }
+
+        return $taxCode.'|'.$cpvCode;
+    }
+
+    private function mergeSupplierRows(array $existingRow, array $duplicateRow): array
+    {
+        foreach ([0, 2, 5] as $index) {
+            if (($existingRow[$index] ?? '') === '' && ($duplicateRow[$index] ?? '') !== '') {
+                $existingRow[$index] = $duplicateRow[$index];
+            }
+        }
+
+        $existingRow[4] = $this->mergeNotes($existingRow[4] ?? '', $duplicateRow[4] ?? '');
+
+        return $existingRow;
     }
 
     private function contentXmlWithSupplierRows(string $contentXml, array $exportRows): string
@@ -194,9 +259,20 @@ class AcnSupplierOdsExporter
 
     private function normalizeCountry(?string $value): string
     {
-        $country = strtoupper(trim((string) $value));
+        $country = $this->countryLookupKey($value);
 
-        return preg_match('/^[A-Z]{2}$/', $country) ? $country : '';
+        if ($country === '') {
+            return '';
+        }
+
+        $country = self::COUNTRY_ALIASES[$country] ?? $country;
+        $knownCountryCodes = $this->knownCountryCodes();
+
+        if (preg_match('/^[A-Z]{2}$/', $country)) {
+            return $knownCountryCodes === [] || in_array($country, $knownCountryCodes, true) ? $country : '';
+        }
+
+        return $this->countryCodeFromName($country, $knownCountryCodes);
     }
 
     private function supplierNotes(Supplier $supplier, ?string $cpvCode = null, array $criteriaByCpvCode = []): string
@@ -212,6 +288,90 @@ class AcnSupplierOdsExporter
             ->map(fn ($value) => $this->cellText($value))
             ->filter()
             ->implode(' | ');
+    }
+
+    private function mergeNotes(string $existingNotes, string $duplicateNotes): string
+    {
+        return collect([$existingNotes, $duplicateNotes])
+            ->flatMap(fn ($notes) => explode(' | ', $notes))
+            ->map(fn ($notes) => $this->cellText($notes))
+            ->filter()
+            ->unique()
+            ->values()
+            ->implode(' | ');
+    }
+
+    private function knownCountryCodes(): array
+    {
+        static $countryCodes = null;
+
+        if (is_array($countryCodes)) {
+            return $countryCodes;
+        }
+
+        $templatePath = base_path('docs/ACN_Template_fornitori.ods');
+        if (! is_file($templatePath)) {
+            return $countryCodes = [];
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($templatePath) !== true) {
+            return $countryCodes = [];
+        }
+
+        $contentXml = $zip->getFromName('content.xml');
+        $zip->close();
+
+        if ($contentXml === false) {
+            return $countryCodes = [];
+        }
+
+        $dom = new DOMDocument();
+        $dom->loadXML($contentXml);
+
+        $xpath = new DOMXPath($dom);
+        $xpath->registerNamespace('table', self::TABLE_NS);
+
+        $countryCodes = [];
+        $rows = $xpath->query('//table:table[@table:name="DATA_VALIDATION"]/table:table-row');
+
+        foreach ($rows as $index => $row) {
+            if ($index === 0) {
+                continue;
+            }
+
+            $cell = $xpath->query('table:table-cell', $row)->item(0);
+            $code = $cell ? $this->cellText($cell->textContent) : '';
+
+            if (preg_match('/^[A-Z]{2}$/', $code)) {
+                $countryCodes[] = $code;
+            }
+        }
+
+        return $countryCodes = array_values(array_unique($countryCodes));
+    }
+
+    private function countryCodeFromName(string $country, array $knownCountryCodes): string
+    {
+        $countries = trans('localizations.countries');
+
+        if (! is_array($countries)) {
+            return '';
+        }
+
+        foreach ($countries as $code => $name) {
+            $code = self::COUNTRY_ALIASES[$this->countryLookupKey($code)] ?? (string) $code;
+
+            if ($knownCountryCodes !== [] && ! in_array($code, $knownCountryCodes, true)) {
+                continue;
+            }
+
+            if ($this->countryLookupKey($name) === $country) {
+                return $code;
+            }
+        }
+
+        return '';
     }
 
     private function criteriaByCpvCode(Supplier $supplier, array $cpvCodes): array
@@ -260,6 +420,14 @@ class AcnSupplierOdsExporter
             ->filter()
             ->values()
             ->all();
+    }
+
+    private function countryLookupKey($value): string
+    {
+        $country = strtoupper($this->cellText($value));
+        $country = preg_replace('/[^\p{L}\p{N}]+/u', ' ', $country) ?? '';
+
+        return trim(preg_replace('/\s+/u', ' ', $country) ?? '');
     }
 
     private function cellText($value): string

@@ -230,6 +230,8 @@ class ReportedIssuesRegressionTest extends TestCase
         $this->assertStringContainsString('snipeTableMarkResponsiveShell', $bootstrapTablePartial);
         $this->assertStringContainsString('criteriaByCpvCode', $acnExporter);
         $this->assertStringContainsString('cpvCodesPreservingOrder', $acnExporter);
+        $this->assertStringContainsString('supplierRowDeduplicationKey', $acnExporter);
+        $this->assertStringContainsString('COUNTRY_ALIASES', $acnExporter);
         $this->assertStringContainsString("'vpn' =>", $category);
         $this->assertStringContainsString("'network_flow' =>", $category);
         $this->assertStringContainsString('in:network,vpn,network_flow,server', $asset);

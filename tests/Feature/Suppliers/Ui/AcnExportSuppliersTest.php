@@ -85,6 +85,51 @@ class AcnExportSuppliersTest extends TestCase
         $this->assertContains('Fornitura ICT non fungibile', $relevanceTypes);
     }
 
+    public function test_acn_export_deduplicates_tax_code_cpv_and_normalizes_country_aliases()
+    {
+        $firstSupplier = Supplier::factory()->create([
+            'name' => 'Duplicate ICT Supplier Ltd',
+            'tax_code' => '00000000003',
+            'nis_relevant' => true,
+            'nis_relevance_type' => 'ict_supply',
+            'cpv_codes' => '72720000-3',
+            'country' => 'UK',
+            'nis_relevance_criteria' => 'Primary network criterion',
+            'notes' => 'Primary note',
+        ]);
+        $duplicateSupplier = Supplier::factory()->create([
+            'name' => 'Duplicate ICT Supplier Branch',
+            'tax_code' => '00000000003',
+            'nis_relevant' => true,
+            'nis_relevance_type' => 'ict_supply',
+            'cpv_codes' => '72720000-3',
+            'country' => 'GB',
+            'nis_relevance_criteria' => 'Secondary network criterion',
+            'notes' => 'Secondary note',
+        ]);
+
+        $response = $this->actingAs(User::factory()->superuser()->create())
+            ->get(route('suppliers.acn_export', [
+                'ids' => [
+                    $firstSupplier->id,
+                    $duplicateSupplier->id,
+                ],
+            ]))
+            ->assertOk();
+
+        $records = collect($this->odsRows($response->streamedContent(), 'Fornitori'));
+        $rows = $records->slice(1)->filter(fn (array $row) => collect($row)->filter()->isNotEmpty())->values();
+
+        $this->assertCount(1, $rows);
+        $this->assertSame('GB', $rows[0][0]);
+        $this->assertSame('00000000003', $rows[0][1]);
+        $this->assertSame('72720000-3', $rows[0][3]);
+        $this->assertStringContainsString('Primary network criterion', $rows[0][4]);
+        $this->assertStringContainsString('Primary note', $rows[0][4]);
+        $this->assertStringContainsString('Secondary network criterion', $rows[0][4]);
+        $this->assertStringContainsString('Secondary note', $rows[0][4]);
+    }
+
     private function odsRows(string $content, string $sheetName): array
     {
         $temporaryPath = tempnam(sys_get_temp_dir(), 'acn-export-test-');
