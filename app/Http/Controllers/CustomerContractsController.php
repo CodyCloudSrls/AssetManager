@@ -277,9 +277,11 @@ class CustomerContractsController extends Controller
 
     private function reloadContractForAudit(CustomerContract $contract): CustomerContract
     {
-        return CustomerContract::withoutGlobalScopes()
+        $reloadedContract = CustomerContract::withoutGlobalScopes()
             ->with(['subscriptions.costLines'])
-            ->findOrFail($contract->id);
+            ->find($contract->id);
+
+        return $reloadedContract ?: $contract->load('subscriptions.costLines');
     }
 
     private function fillContract(CustomerContract $contract, Request $request): void

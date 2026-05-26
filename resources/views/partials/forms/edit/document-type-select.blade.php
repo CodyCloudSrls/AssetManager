@@ -1,11 +1,12 @@
 @php
     $selectedTypeId = old($fieldname, (isset($item)) ? $item->{$fieldname} : '');
     $selectedType = $selectedTypeId ? \App\Models\DocumentType::withTrashed()->find($selectedTypeId) : null;
+    $documentTypeCompanyId = old('company_id', (isset($item)) ? $item->company_id : null);
 @endphp
 <div id="{{ $fieldname }}" class="form-group{{ $errors->has($fieldname) ? ' has-error' : '' }}">
     <label for="{{ $fieldname }}_select" class="col-md-3 control-label">{{ $translated_name }}</label>
     <div class="col-md-7">
-        <select class="js-data-ajax" data-endpoint="documenttypes" data-placeholder="{{ trans('admin/documents/form.select_type') }}" name="{{ $fieldname }}" style="width: 100%" id="{{ $fieldname }}_select" aria-label="{{ $fieldname }}"{{ ((isset($required)) && ($required == 'true')) ? ' required' : '' }}>
+        <select class="js-data-ajax" data-endpoint="documenttypes" data-placeholder="{{ trans('admin/documents/form.select_type') }}" name="{{ $fieldname }}" style="width: 100%" id="{{ $fieldname }}_select" aria-label="{{ $fieldname }}"{{ $documentTypeCompanyId ? ' data-company-id="'.(int) $documentTypeCompanyId.'"' : '' }}{{ ((isset($required)) && ($required == 'true')) ? ' required' : '' }}>
             @if ($selectedType)
                 <option value="{{ $selectedType->id }}" selected="selected" role="option" aria-selected="true">
                     {{ $selectedType->name }}

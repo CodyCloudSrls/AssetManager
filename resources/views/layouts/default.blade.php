@@ -987,7 +987,7 @@
         }
 
         .table-responsive.bootstrap-table-responsive-shell {
-            overflow-x: visible;
+            overflow-x: auto;
         }
 
         .bootstrap-table .fixed-table-toolbar {
@@ -1020,6 +1020,20 @@
 
         .bootstrap-table .fixed-table-toolbar .search input {
             max-width: 100%;
+        }
+
+        .bootstrap-table .checkincheckout-column,
+        .bootstrap-table .actions-column {
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .bootstrap-table .checkincheckout-column {
+            min-width: 120px;
+        }
+
+        .bootstrap-table .actions-column {
+            min-width: 150px;
         }
 
         .bootstrap-table .fixed-table-pagination {

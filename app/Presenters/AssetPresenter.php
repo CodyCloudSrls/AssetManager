@@ -381,7 +381,7 @@ class AssetPresenter extends Presenter
             'visible' => true,
             'formatter' => 'hardwareInOutFormatter',
             'printIgnore' => true,
-            'class' => 'hidden-print',
+            'class' => 'hidden-print checkincheckout-column',
         ];
 
         $layout[] = [
@@ -392,7 +392,7 @@ class AssetPresenter extends Presenter
             'title' => trans('table.actions'),
             'formatter' => 'hardwareActionsFormatter',
             'printIgnore' => true,
-            'class' => 'hidden-print',
+            'class' => 'hidden-print actions-column',
         ];
 
         return json_encode($layout);

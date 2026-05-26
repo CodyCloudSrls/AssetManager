@@ -9,8 +9,11 @@ use App\Http\Requests\StoreDocumentTypeRequest;
 use App\Http\Transformers\DocumentTypesTransformer;
 use App\Http\Transformers\SelectlistTransformer;
 use App\Models\DocumentType;
+use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class DocumentTypesController extends Controller
 {
@@ -147,15 +150,43 @@ class DocumentTypesController extends Controller
     {
         $this->authorize('view.selectlists');
 
+        $companyId = $request->integer('company_id') ?: $request->integer('companyId') ?: null;
         $documentTypes = DocumentType::select([
             'id',
             'name',
-        ])->active()->ordered();
+            'sort_order',
+            'company_id',
+            'visibility_type',
+        ])->active();
 
         if ($request->filled('search')) {
             $documentTypes->where('name', 'LIKE', '%'.$request->input('search').'%');
         }
 
-        return (new SelectlistTransformer)->transformSelectlist($documentTypes->paginate(50));
+        if ($companyId) {
+            $documentTypes->orderByRaw(
+                'CASE WHEN company_id = ? THEN 0 WHEN company_id IS NULL THEN 2 ELSE 1 END',
+                [$companyId]
+            );
+        }
+
+        $documentTypes = $documentTypes->ordered()
+            ->get()
+            ->when($companyId, fn ($types) => $types->filter(
+                fn (DocumentType $type) => TenantRecordGuard::templateCanBeAppliedToCompany($type, $companyId)
+            ))
+            ->unique(fn (DocumentType $type) => Str::lower(Str::squish($type->name)))
+            ->values();
+
+        $perPage = 50;
+        $page = LengthAwarePaginator::resolveCurrentPage();
+
+        return (new SelectlistTransformer)->transformSelectlist(new LengthAwarePaginator(
+            $documentTypes->forPage($page, $perPage)->values(),
+            $documentTypes->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        ));
     }
 }

@@ -246,6 +246,9 @@ class ReportedIssuesRegressionTest extends TestCase
         $this->assertStringContainsString("'framework_name' => \$requirement->framework?->name", $documentsController);
         $this->assertStringContainsString('.bootstrap-table .fixed-table-toolbar', $layout);
         $this->assertStringContainsString('.table-responsive.bootstrap-table-responsive-shell', $layout);
+        $this->assertStringContainsString('overflow-x: auto;', $layout);
+        $this->assertStringContainsString('.bootstrap-table .checkincheckout-column', $layout);
+        $this->assertStringContainsString('.bootstrap-table .actions-column', $layout);
         $this->assertStringContainsString('display: flex;', $layout);
         $this->assertStringContainsString('snipeTableMarkResponsiveShell', $bootstrapTablePartial);
         $this->assertStringContainsString("'table.snipe-table').not('.bootstrap-table table')", $bootstrapTablePartial);
@@ -264,14 +267,35 @@ class ReportedIssuesRegressionTest extends TestCase
     public function test_customer_contract_audit_reload_is_not_blocked_by_company_scopes(): void
     {
         $controller = $this->repoFile('app/Http/Controllers/CustomerContractsController.php');
+        $handler = $this->repoFile('app/Exceptions/Handler.php');
 
         $this->assertStringContainsString('private function reloadContractForAudit(CustomerContract $contract): CustomerContract', $controller);
         $this->assertStringContainsString('CustomerContract::withoutGlobalScopes()', $controller);
         $this->assertStringContainsString("->with(['subscriptions.costLines'])", $controller);
         $this->assertStringContainsString('CustomerContractEvent::snapshot($contractForAudit)', $controller);
         $this->assertStringContainsString('$afterContract = $this->reloadContractForAudit($contract);', $controller);
+        $this->assertStringContainsString('$reloadedContract ?: $contract->load', $controller);
         $this->assertStringNotContainsString("\$contract = \$contract->fresh(['subscriptions.costLines'])", $controller);
         $this->assertStringNotContainsString("\$afterContract = \$contract->fresh(['subscriptions.costLines'])", $controller);
+        $this->assertStringNotContainsString('->findOrFail($contract->id)', $controller);
+        $this->assertStringContainsString("\$route === 'customercontracts.index'", $handler);
+        $this->assertStringContainsString("\$route = 'contracts.index'", $handler);
+    }
+
+    public function test_document_type_selectlist_and_asset_action_columns_are_stable(): void
+    {
+        $documentTypeSelect = $this->repoFile('resources/views/partials/forms/edit/document-type-select.blade.php');
+        $documentTypesApi = $this->repoFile('app/Http/Controllers/Api/DocumentTypesController.php');
+        $assetTable = $this->repoFile('resources/views/blade/table/assets.blade.php');
+        $assetPresenter = $this->repoFile('app/Presenters/AssetPresenter.php');
+
+        $this->assertStringContainsString('data-company-id', $documentTypeSelect);
+        $this->assertStringContainsString('TenantRecordGuard::templateCanBeAppliedToCompany', $documentTypesApi);
+        $this->assertStringContainsString('->unique(fn (DocumentType $type) => Str::lower(Str::squish($type->name)))', $documentTypesApi);
+        $this->assertStringContainsString('new LengthAwarePaginator', $documentTypesApi);
+        $this->assertStringContainsString("'fixed_right_number' => 1", $assetTable);
+        $this->assertStringContainsString("'class' => 'hidden-print checkincheckout-column'", $assetPresenter);
+        $this->assertStringContainsString("'class' => 'hidden-print actions-column'", $assetPresenter);
     }
 
     private function repoPath(string $relativePath): string

@@ -175,6 +175,8 @@ class Handler extends ExceptionHandler
                 $route = 'fields.index';
             } elseif ($route == 'actionlogs.index') {
                 $route = 'home';
+            } elseif ($route === 'customercontracts.index') {
+                $route = 'contracts.index';
             }
 
             return redirect()

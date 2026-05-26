@@ -2,7 +2,7 @@
     'route' => route('api.assets.index'),
     'name' => 'default',
     'presenter' => \App\Presenters\AssetPresenter::dataTableLayout(),
-    'fixed_right_number' => 2,
+    'fixed_right_number' => 1,
     'fixed_number' => 1,
     'table_header' => trans('general.assets'),
 ])

@@ -48,4 +48,11 @@ class ModelNotFoundRedirectTest extends TestCase
             ->get(route('report-templates.show', 9999))
             ->assertRedirectToRoute('reports/custom');
     }
+
+    public function test_handles_customer_contract404()
+    {
+        $this->actingAs(User::factory()->superadmin()->create())
+            ->get(route('contracts.show', 9999))
+            ->assertRedirectToRoute('contracts.index');
+    }
 }
