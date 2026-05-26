@@ -248,6 +248,8 @@ class ReportedIssuesRegressionTest extends TestCase
         $this->assertStringContainsString('.table-responsive.bootstrap-table-responsive-shell', $layout);
         $this->assertStringContainsString('display: flex;', $layout);
         $this->assertStringContainsString('snipeTableMarkResponsiveShell', $bootstrapTablePartial);
+        $this->assertStringContainsString("'table.snipe-table').not('.bootstrap-table table')", $bootstrapTablePartial);
+        $this->assertStringNotContainsString("$('.snipe-table').bootstrapTable('destroy')", $bootstrapTablePartial);
         $this->assertStringContainsString('criteriaByCpvCode', $acnExporter);
         $this->assertStringContainsString('cpvCodesPreservingOrder', $acnExporter);
         $this->assertStringContainsString('COUNTRY_ALIASES', $acnExporter);
@@ -257,6 +259,19 @@ class ReportedIssuesRegressionTest extends TestCase
         $this->assertStringContainsString('in:network,vpn,network_flow,server', $asset);
         $this->assertStringContainsString("'network', 'vpn', 'network_flow'", $riskReport);
         $this->assertStringContainsString('cleanMetaChange', $actionlogsTransformer);
+    }
+
+    public function test_customer_contract_audit_reload_is_not_blocked_by_company_scopes(): void
+    {
+        $controller = $this->repoFile('app/Http/Controllers/CustomerContractsController.php');
+
+        $this->assertStringContainsString('private function reloadContractForAudit(CustomerContract $contract): CustomerContract', $controller);
+        $this->assertStringContainsString('CustomerContract::withoutGlobalScopes()', $controller);
+        $this->assertStringContainsString("->with(['subscriptions.costLines'])", $controller);
+        $this->assertStringContainsString('CustomerContractEvent::snapshot($contractForAudit)', $controller);
+        $this->assertStringContainsString('$afterContract = $this->reloadContractForAudit($contract);', $controller);
+        $this->assertStringNotContainsString("\$contract = \$contract->fresh(['subscriptions.costLines'])", $controller);
+        $this->assertStringNotContainsString("\$afterContract = \$contract->fresh(['subscriptions.costLines'])", $controller);
     }
 
     private function repoPath(string $relativePath): string

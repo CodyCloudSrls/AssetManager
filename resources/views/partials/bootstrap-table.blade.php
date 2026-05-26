@@ -137,7 +137,7 @@
 
         /** End handling the responsive tab UI on view detail pages **/
 
-        $('.snipe-table').bootstrapTable('destroy').each(function () {
+        $('table.snipe-table').not('.bootstrap-table table').bootstrapTable('destroy').each(function () {
 
             var $table = $(this);
             var data_export_options = $table.attr('data-export-options');

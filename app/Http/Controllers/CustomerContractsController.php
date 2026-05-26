@@ -55,13 +55,13 @@ class CustomerContractsController extends Controller
             $contract->save();
 
             $this->syncSubscriptionRows($contract, $request->input('subscriptions', []));
-            $contract = $contract->fresh(['subscriptions.costLines']);
+            $contractForAudit = $this->reloadContractForAudit($contract);
 
             CustomerContractEvent::log(
-                $contract,
+                $contractForAudit,
                 CustomerContractEvent::EVENT_CREATED,
                 [],
-                CustomerContractEvent::snapshot($contract)
+                CustomerContractEvent::snapshot($contractForAudit)
             );
         });
 
@@ -108,7 +108,7 @@ class CustomerContractsController extends Controller
             $contract->save();
             $this->syncSubscriptionRows($contract, $request->input('subscriptions', []));
 
-            $afterContract = $contract->fresh(['subscriptions.costLines']);
+            $afterContract = $this->reloadContractForAudit($contract);
             [$oldValues, $newValues] = CustomerContractEvent::changes(
                 $before,
                 CustomerContractEvent::snapshot($afterContract)
@@ -273,6 +273,13 @@ class CustomerContractsController extends Controller
         });
 
         return $validator;
+    }
+
+    private function reloadContractForAudit(CustomerContract $contract): CustomerContract
+    {
+        return CustomerContract::withoutGlobalScopes()
+            ->with(['subscriptions.costLines'])
+            ->findOrFail($contract->id);
     }
 
     private function fillContract(CustomerContract $contract, Request $request): void
