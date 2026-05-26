@@ -52,7 +52,9 @@ class CustomerContractsController extends Controller
         DB::transaction(function () use ($request, $contract) {
             $this->fillContract($contract, $request);
             $contract->created_by = auth()->id();
-            $contract->save();
+            if (! $contract->save()) {
+                $contract->throwValidationException();
+            }
 
             $this->syncSubscriptionRows($contract, $request->input('subscriptions', []));
             $contractForAudit = $this->reloadContractForAudit($contract);
@@ -105,7 +107,9 @@ class CustomerContractsController extends Controller
             $before = CustomerContractEvent::snapshot($contract);
 
             $this->fillContract($contract, $request);
-            $contract->save();
+            if (! $contract->save()) {
+                $contract->throwValidationException();
+            }
             $this->syncSubscriptionRows($contract, $request->input('subscriptions', []));
 
             $afterContract = $this->reloadContractForAudit($contract);
@@ -343,7 +347,9 @@ class CustomerContractsController extends Controller
             $subscription->ends_at = $row['ends_at'] ?: null;
             $subscription->is_active = ! array_key_exists('is_active', $row) || (bool) $row['is_active'];
             $subscription->created_by = $subscription->created_by ?: auth()->id();
-            $subscription->save();
+            if (! $subscription->save()) {
+                $subscription->throwValidationException();
+            }
 
             $this->syncSingleCostLine($subscription, $row);
             $keptIds[] = $subscription->id;
@@ -387,7 +393,9 @@ class CustomerContractsController extends Controller
         $costLine->ends_at = $row['cost_ends_at'] ?: null;
         $costLine->is_active = ! array_key_exists('cost_is_active', $row) || (bool) $row['cost_is_active'];
         $costLine->created_by = $costLine->created_by ?: auth()->id();
-        $costLine->save();
+        if (! $costLine->save()) {
+            $costLine->throwValidationException();
+        }
 
         $subscription->costLines()
             ->where('id', '!=', $costLine->id)

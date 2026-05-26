@@ -40,7 +40,7 @@
         data-fixed-number="{{ $fixed_number }}"
     @endif
 
-    @if ($fixed_right_number)
+    @if (! is_null($fixed_right_number))
         data-fixed-right-number="{{ $fixed_right_number }}"
     @endif
 

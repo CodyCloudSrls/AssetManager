@@ -275,6 +275,7 @@ class ReportedIssuesRegressionTest extends TestCase
         $this->assertStringContainsString('CustomerContractEvent::snapshot($contractForAudit)', $controller);
         $this->assertStringContainsString('$afterContract = $this->reloadContractForAudit($contract);', $controller);
         $this->assertStringContainsString('$reloadedContract ?: $contract->load', $controller);
+        $this->assertStringContainsString('if (! $contract->save())', $controller);
         $this->assertStringNotContainsString("\$contract = \$contract->fresh(['subscriptions.costLines'])", $controller);
         $this->assertStringNotContainsString("\$afterContract = \$contract->fresh(['subscriptions.costLines'])", $controller);
         $this->assertStringNotContainsString('->findOrFail($contract->id)', $controller);
@@ -293,7 +294,8 @@ class ReportedIssuesRegressionTest extends TestCase
         $this->assertStringContainsString('TenantRecordGuard::templateCanBeAppliedToCompany', $documentTypesApi);
         $this->assertStringContainsString('->unique(fn (DocumentType $type) => Str::lower(Str::squish($type->name)))', $documentTypesApi);
         $this->assertStringContainsString('new LengthAwarePaginator', $documentTypesApi);
-        $this->assertStringContainsString("'fixed_right_number' => 1", $assetTable);
+        $this->assertStringContainsString("'fixed_right_number' => 0", $assetTable);
+        $this->assertStringContainsString('! is_null($fixed_right_number)', $this->repoFile('resources/views/blade/table/index.blade.php'));
         $this->assertStringContainsString("'class' => 'hidden-print checkincheckout-column'", $assetPresenter);
         $this->assertStringContainsString("'class' => 'hidden-print actions-column'", $assetPresenter);
     }

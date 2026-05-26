@@ -56,8 +56,8 @@ class ContractSubscription extends SnipeModel
         'quantity' => 'required|numeric|gte:0',
         'unit_price' => 'required|numeric|gte:0',
         'billing_frequency' => 'required|string|in:monthly,quarterly,annual,one_time',
-        'starts_at' => 'nullable|date_format:Y-m-d',
-        'ends_at' => 'nullable|date_format:Y-m-d|after_or_equal:starts_at',
+        'starts_at' => 'nullable|date',
+        'ends_at' => 'nullable|date|after_or_equal:starts_at',
         'is_active' => 'boolean',
     ];
 
