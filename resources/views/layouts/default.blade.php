@@ -1387,6 +1387,15 @@
                                                     {{ trans('general.tenants') }}
                                                 </a>
                                             </li>
+                                            @php($navbarServicesTenant = $navbarActiveTenant ?? $navbarCurrentTenant ?? null)
+                                            @if ($navbarServicesTenant)
+                                                <li>
+                                                    <a href="{{ route('tenants.services.index', $navbarServicesTenant) }}">
+                                                        <i class="fa-solid fa-list-check fa-fw" aria-hidden="true"></i>
+                                                        {{ trans('admin/tenantservices/general.title') }}
+                                                    </a>
+                                                </li>
+                                            @endif
                                         @endif
                                     </ul>
                                 </li>

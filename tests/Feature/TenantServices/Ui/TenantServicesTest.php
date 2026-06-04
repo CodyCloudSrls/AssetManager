@@ -24,6 +24,12 @@ class TenantServicesTest extends TestCase
         $this->get(route('tenants.services.create', $tenant))
             ->assertOk()
             ->assertSee('Create service');
+        $this->get(route('tenants.index'))
+            ->assertOk()
+            ->assertSee(route('tenants.services.index', $tenant), false);
+        $this->get(route('settings.index'))
+            ->assertOk()
+            ->assertSee(route('tenants.services.index', $tenant), false);
 
         $this->post(route('tenants.services.store', $tenant), [
             'macro_area' => TenantService::MACRO_PRODUCTION_GOODS_SERVICES,

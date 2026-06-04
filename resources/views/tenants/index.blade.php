@@ -49,6 +49,14 @@
                                     <x-icon type="edit" class="fa-fw" />
                                 </a>
 
+                                <a href="{{ route('tenants.services.index', $row->tenant) }}"
+                                   class="btn btn-sm btn-info"
+                                   data-tooltip="true"
+                                   data-placement="top"
+                                   title="{{ trans('admin/tenantservices/general.title') }}">
+                                    <i class="fa-solid fa-list-check fa-fw" aria-hidden="true"></i>
+                                </a>
+
                                 @if (auth()->user()->isSuperAdmin())
                                     @if ($row->tenant->isDeletable())
                                         <form method="POST"
