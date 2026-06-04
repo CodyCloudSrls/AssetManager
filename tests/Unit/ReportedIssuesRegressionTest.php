@@ -271,7 +271,7 @@ class ReportedIssuesRegressionTest extends TestCase
 
         $this->assertStringContainsString('private function reloadContractForAudit(CustomerContract $contract): CustomerContract', $controller);
         $this->assertStringContainsString('CustomerContract::withoutGlobalScopes()', $controller);
-        $this->assertStringContainsString("->with(['subscriptions.costLines'])", $controller);
+        $this->assertStringContainsString("->with(['subscriptions.costLines', 'tenantServices'])", $controller);
         $this->assertStringContainsString('CustomerContractEvent::snapshot($contractForAudit)', $controller);
         $this->assertStringContainsString('$afterContract = $this->reloadContractForAudit($contract);', $controller);
         $this->assertStringContainsString('$reloadedContract ?: $contract->load', $controller);

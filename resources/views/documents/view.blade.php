@@ -173,6 +173,18 @@
                                 <x-data-row :label="trans('admin/documents/form.classification')">{{ $document->classification }}</x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.retention_period')">{{ $document->retention_period }}</x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.scope')">{{ $document->scope }}</x-data-row>
+                                <x-data-row :label="trans('admin/tenantservices/general.field_label')">
+                                    @if ($document->tenantServices->count() > 0)
+                                        <ul style="padding-left: 18px; margin-bottom: 0;">
+                                            @foreach ($document->tenantServices as $tenantService)
+                                                <li>
+                                                    <a href="{{ route('tenants.services.index', $tenantService->tenant_id) }}">{{ $tenantService->name }}</a>
+                                                    <span class="text-muted">({{ $tenantService->macro_area_label }}, {{ $tenantService->assigned_relevance_label }})</span>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    @endif
+                                </x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.issued_at')">{{ Helper::getFormattedDateObject($document->issued_at, 'date', false) }}</x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.effective_at')">{{ Helper::getFormattedDateObject($document->effective_at, 'date', false) }}</x-data-row>
                                 <x-data-row :label="trans('admin/documents/form.next_review_at')">

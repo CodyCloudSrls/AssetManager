@@ -21,6 +21,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class TenantsController extends Controller
 {
@@ -193,8 +194,10 @@ class TenantsController extends Controller
         $canManageTenant = auth()->user()->canManageTenant($tenant);
         $publicTicketTypes = $tenant->publicHelpdeskSelectedTicketTypes();
         $complianceSummary = $this->tenantComplianceSummary($tenant, $companies->pluck('id')->map(fn ($id) => (int) $id)->all());
+        $servicesCount = Schema::hasTable('tenant_services') ? $tenant->services()->count() : 0;
+        $activeServicesCount = Schema::hasTable('tenant_services') ? $tenant->services()->active()->count() : 0;
 
-        return view('tenants.show', compact('tenant', 'rootCompany', 'companies', 'members', 'canManageTenant', 'publicTicketTypes', 'complianceSummary'));
+        return view('tenants.show', compact('tenant', 'rootCompany', 'companies', 'members', 'canManageTenant', 'publicTicketTypes', 'complianceSummary', 'servicesCount', 'activeServicesCount'));
     }
 
     public function editSettings(Tenant $tenant): View

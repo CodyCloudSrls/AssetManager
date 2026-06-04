@@ -85,6 +85,23 @@
     </div>
 </div>
 
+<div class="form-group {{ $errors->has('tenant_service_ids') ? ' has-error' : '' }}">
+    <label for="tenant_service_ids" class="col-md-3 control-label">{{ trans('admin/tenantservices/general.field_label') }}</label>
+    <div class="col-md-7">
+        @php($selectedTenantServiceIdsForForm = array_map('intval', old('tenant_service_ids', $selectedTenantServiceIds ?? [])))
+        <input type="hidden" name="tenant_service_ids_present" value="1">
+        <select class="form-control select2" multiple name="tenant_service_ids[]" id="tenant_service_ids" aria-label="tenant_service_ids">
+            @foreach ($tenantServices as $tenantService)
+                <option value="{{ $tenantService->id }}" @selected(in_array((int) $tenantService->id, $selectedTenantServiceIdsForForm, true))>
+                    {{ $tenantService->macro_area_label }} - {{ $tenantService->name }}
+                </option>
+            @endforeach
+        </select>
+        <p class="help-block">{{ trans('admin/tenantservices/general.contract_field_help') }}</p>
+        {!! $errors->first('tenant_service_ids', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+    </div>
+</div>
+
 <div class="form-group {{ $errors->has('contract_number') ? ' has-error' : '' }}">
     <label for="contract_number" class="col-md-3 control-label">{{ trans('admin/contracts/general.contract_number') }}</label>
     <div class="col-md-4">
@@ -196,6 +213,7 @@
 
         $('select[name="company_id"]').on('change', function () {
             $('#customer_select').attr('data-company-id', $(this).val()).val(null).trigger('change');
+            $('#tenant_service_ids').val(null).trigger('change');
         });
     });
 </script>

@@ -42,6 +42,7 @@
             || $errors->has('classification')
             || $errors->has('retention_period')
             || $errors->has('scope')
+            || $errors->has('tenant_service_ids')
             || (!$assignmentFormActive && $errors->has('issued_at'))
             || (!$assignmentFormActive && $errors->has('effective_at'))
             || $errors->has('next_review_at')
@@ -268,6 +269,23 @@
                                                 <input class="form-control" type="text" name="scope" id="scope" value="{{ old('scope', $document->scope) }}" placeholder="{{ trans('admin/documents/form.scope_placeholder') }}">
                                                 <p class="help-block">{{ trans('admin/documents/form.scope_help') }}</p>
                                                 {!! $errors->first('scope', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group {{ $errors->has('tenant_service_ids') ? ' has-error' : '' }}">
+                                            <label for="tenant_service_ids" class="col-md-3 control-label">{{ trans('admin/tenantservices/general.field_label') }}</label>
+                                            <div class="col-md-7">
+                                                @php($selectedTenantServiceIdsForForm = array_map('intval', old('tenant_service_ids', $selectedTenantServiceIds ?? [])))
+                                                <input type="hidden" name="tenant_service_ids_present" value="1">
+                                                <select class="form-control select2" multiple name="tenant_service_ids[]" id="tenant_service_ids" aria-label="tenant_service_ids">
+                                                    @foreach ($tenantServices as $tenantService)
+                                                        <option value="{{ $tenantService->id }}" @selected(in_array((int) $tenantService->id, $selectedTenantServiceIdsForForm, true))>
+                                                            {{ $tenantService->macro_area_label }} - {{ $tenantService->name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                <p class="help-block">{{ trans('admin/tenantservices/general.document_field_help') }}</p>
+                                                {!! $errors->first('tenant_service_ids', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
                                             </div>
                                         </div>
 
@@ -594,6 +612,7 @@
 
         $('select[name="company_id"]').on('change', function () {
             syncAssignmentCompanyContext($(this).val());
+            $('#tenant_service_ids').val(null).trigger('change');
         });
 
         $('input[name="assignment_assignable_type"]').on('change', syncAssignableSelectors);

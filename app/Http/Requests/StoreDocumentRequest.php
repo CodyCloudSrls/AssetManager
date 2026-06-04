@@ -7,6 +7,7 @@ use App\Models\Document;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\DocumentType;
+use App\Models\TenantService;
 use App\Support\Compliance\ComplianceDomainAccess;
 use App\Support\Documents\DocumentAreaAccess;
 use App\Support\Documents\DocumentAssignmentManager;
@@ -58,6 +59,9 @@ class StoreDocumentRequest extends FormRequest
             'requirement_evidence' => 'nullable|array',
             'requirement_evidence.*.covered_at' => 'nullable|date_format:Y-m-d',
             'requirement_evidence.*.notes' => 'nullable|string|max:65535',
+            'tenant_service_ids_present' => 'nullable|boolean',
+            'tenant_service_ids' => 'nullable|array',
+            'tenant_service_ids.*' => 'integer',
         ];
     }
 
@@ -93,6 +97,15 @@ class StoreDocumentRequest extends FormRequest
 
             if ($this->filled('document_area') && ! DocumentAreaAccess::canSet($this->user(), $this->input('document_area'))) {
                 $validator->errors()->add('document_area', trans('validation.exists', ['attribute' => trans('admin/documents/form.document_area')]));
+            }
+
+            $tenantServiceIds = $this->normalizedTenantServiceIds();
+            if (count($tenantServiceIds) > 0) {
+                $validTenantServiceIds = TenantService::validIdsForCompany($tenantServiceIds, $effectiveCompanyId ? (int) $effectiveCompanyId : null);
+
+                if (count($validTenantServiceIds) !== count($tenantServiceIds)) {
+                    $validator->errors()->add('tenant_service_ids', trans('admin/tenantservices/general.invalid_for_company'));
+                }
             }
 
             $frameworkId = $this->filled('document_framework_id') ? (int) $this->input('document_framework_id') : null;
@@ -160,5 +173,21 @@ class StoreDocumentRequest extends FormRequest
         return $this->has('primary_requirement_ids')
             || $this->has('supporting_requirement_ids')
             || $this->has('requirement_evidence');
+    }
+
+    public function tenantServicesSubmitted(): bool
+    {
+        return $this->has('tenant_service_ids_present');
+    }
+
+    public function normalizedTenantServiceIds(): array
+    {
+        return collect($this->input('tenant_service_ids', []))
+            ->filter(fn ($id) => $id !== null && $id !== '')
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
     }
 }

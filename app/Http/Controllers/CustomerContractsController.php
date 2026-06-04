@@ -9,6 +9,8 @@ use App\Models\CustomerContract;
 use App\Models\CustomerContractEvent;
 use App\Models\Document;
 use App\Models\Supplier;
+use App\Models\TenantService;
+use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -57,6 +59,7 @@ class CustomerContractsController extends Controller
             }
 
             $this->syncSubscriptionRows($contract, $request->input('subscriptions', []));
+            $this->syncTenantServices($contract, $request);
             $contractForAudit = $this->reloadContractForAudit($contract);
 
             CustomerContractEvent::log(
@@ -79,6 +82,7 @@ class CustomerContractsController extends Controller
             'document',
             'owner',
             'subscriptions.costLines.supplier',
+            'tenantServices',
             'events.actor',
         ]);
 
@@ -111,6 +115,7 @@ class CustomerContractsController extends Controller
                 $contract->throwValidationException();
             }
             $this->syncSubscriptionRows($contract, $request->input('subscriptions', []));
+            $this->syncTenantServices($contract, $request);
 
             $afterContract = $this->reloadContractForAudit($contract);
             [$oldValues, $newValues] = CustomerContractEvent::changes(
@@ -158,6 +163,7 @@ class CustomerContractsController extends Controller
     private function formData(CustomerContract $contract): array
     {
         $companyId = old('company_id', $contract->company_id);
+        $contract->loadMissing('tenantServices');
         $documents = Document::query()
             ->select(['id', 'name', 'document_number', 'company_id'])
             ->when($companyId, fn ($query) => $query->where('company_id', (int) $companyId))
@@ -170,11 +176,20 @@ class CustomerContractsController extends Controller
             ->orderBy('name')
             ->get();
 
+        $selectedTenantServices = $contract->exists ? $contract->tenantServices : collect();
+        $tenantServices = TenantService::activeForCompanyId($companyId ? (int) $companyId : null)
+            ->merge($selectedTenantServices)
+            ->unique('id')
+            ->sortBy(fn (TenantService $service) => $service->macro_area_label.' '.$service->name)
+            ->values();
+
         return [
             'item' => $contract,
             'contract' => $contract,
             'documents' => $documents,
             'suppliers' => $suppliers,
+            'tenantServices' => $tenantServices,
+            'selectedTenantServiceIds' => $selectedTenantServices->pluck('id')->map(fn ($id) => (int) $id)->all(),
             'statusOptions' => CustomerContract::statusOptions(),
             'frequencyOptions' => ContractSubscription::frequencyOptions(),
         ];
@@ -214,6 +229,9 @@ class CustomerContractsController extends Controller
             'subscriptions.*.cost_frequency' => ['nullable', 'string', Rule::in(array_keys(ContractSubscription::frequencyOptions()))],
             'subscriptions.*.cost_starts_at' => 'nullable|date_format:Y-m-d',
             'subscriptions.*.cost_ends_at' => 'nullable|date_format:Y-m-d',
+            'tenant_service_ids_present' => 'nullable|boolean',
+            'tenant_service_ids' => 'nullable|array',
+            'tenant_service_ids.*' => 'integer',
         ]);
 
         $validator->after(function ($validator) use ($request, $contract) {
@@ -228,6 +246,18 @@ class CustomerContractsController extends Controller
                 $document = Document::withoutGlobalScopes()->find((int) $request->input('document_id'));
                 if ($document && (int) $document->company_id !== $companyId) {
                     $validator->errors()->add('document_id', trans('admin/contracts/general.document_wrong_company'));
+                }
+            }
+
+            $tenantServiceIds = $this->normalizedTenantServiceIds($request);
+            if (count($tenantServiceIds) > 0) {
+                $tenantId = TenantRecordGuard::companyTenantId($companyId);
+                $validTenantServiceIds = $tenantId
+                    ? TenantService::validIdsForCompany($tenantServiceIds, $companyId)
+                    : [];
+
+                if (count($validTenantServiceIds) !== count($tenantServiceIds)) {
+                    $validator->errors()->add('tenant_service_ids', trans('admin/tenantservices/general.invalid_for_company'));
                 }
             }
 
@@ -282,10 +312,10 @@ class CustomerContractsController extends Controller
     private function reloadContractForAudit(CustomerContract $contract): CustomerContract
     {
         $reloadedContract = CustomerContract::withoutGlobalScopes()
-            ->with(['subscriptions.costLines'])
+            ->with(['subscriptions.costLines', 'tenantServices'])
             ->find($contract->id);
 
-        return $reloadedContract ?: $contract->load('subscriptions.costLines');
+        return $reloadedContract ?: $contract->load('subscriptions.costLines', 'tenantServices');
     }
 
     private function fillContract(CustomerContract $contract, Request $request): void
@@ -365,6 +395,18 @@ class CustomerContractsController extends Controller
             });
     }
 
+    private function syncTenantServices(CustomerContract $contract, Request $request): void
+    {
+        if (! $request->has('tenant_service_ids_present')) {
+            return;
+        }
+
+        $tenantServiceIds = $this->normalizedTenantServiceIds($request);
+        $validTenantServiceIds = TenantService::validIdsForCompany($tenantServiceIds, $contract->company_id ? (int) $contract->company_id : null);
+
+        $contract->tenantServices()->sync($validTenantServiceIds);
+    }
+
     private function syncSingleCostLine(ContractSubscription $subscription, array $row): void
     {
         $hasCost = ! blank($row['cost_description'] ?? null)
@@ -426,5 +468,16 @@ class CustomerContractsController extends Controller
         $value = trim((string) $value);
 
         return $value === '' ? null : $value;
+    }
+
+    private function normalizedTenantServiceIds(Request $request): array
+    {
+        return collect($request->input('tenant_service_ids', []))
+            ->filter(fn ($id) => $id !== null && $id !== '')
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
     }
 }

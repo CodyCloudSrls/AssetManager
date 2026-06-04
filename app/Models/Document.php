@@ -168,6 +168,14 @@ class Document extends SnipeModel
             ->withTimestamps();
     }
 
+    public function tenantServices()
+    {
+        return $this->belongsToMany(TenantService::class, 'document_tenant_service')
+            ->withTimestamps()
+            ->orderBy('tenant_services.macro_area')
+            ->orderBy('tenant_services.name');
+    }
+
     public function documentAssignments()
     {
         return $this->hasMany(DocumentAssignment::class, 'document_id')->orderBy('effective_at')->orderBy('created_at');

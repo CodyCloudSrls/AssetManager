@@ -30,6 +30,18 @@
                             <x-data-row :label="trans('admin/contracts/general.renewal_due_at')">{{ \App\Helpers\Helper::getFormattedDateObject($contract->renewal_due_at, 'date', false) }}</x-data-row>
                             <x-data-row :label="trans('admin/contracts/general.notice_due_at')">{{ \App\Helpers\Helper::getFormattedDateObject($contract->notice_due_at, 'date', false) }}</x-data-row>
                             <x-data-row :label="trans('admin/contracts/general.scope')">{{ $contract->scope }}</x-data-row>
+                            <x-data-row :label="trans('admin/tenantservices/general.field_label')">
+                                @if ($contract->tenantServices->count() > 0)
+                                    <ul style="padding-left: 18px; margin-bottom: 0;">
+                                        @foreach ($contract->tenantServices as $tenantService)
+                                            <li>
+                                                <a href="{{ route('tenants.services.index', $tenantService->tenant_id) }}">{{ $tenantService->name }}</a>
+                                                <span class="text-muted">({{ $tenantService->macro_area_label }}, {{ $tenantService->assigned_relevance_label }})</span>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            </x-data-row>
                             <x-data-row :label="trans('general.notes')">{!! $contract->notes ? \App\Helpers\Helper::parseEscapedMarkedownInline($contract->notes) : '' !!}</x-data-row>
                         </x-page-data>
                     </x-tabs.pane>

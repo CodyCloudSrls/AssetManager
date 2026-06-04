@@ -79,6 +79,11 @@ class Tenant extends Model
             ->withTimestamps();
     }
 
+    public function services(): HasMany
+    {
+        return $this->hasMany(TenantService::class, 'tenant_id');
+    }
+
     public function rootCompany(): ?Company
     {
         return Company::withoutGlobalScopes()
@@ -103,12 +108,16 @@ class Tenant extends Model
     {
         $companyIds = $this->activeCompanyIds();
 
-        if (count($companyIds) === 0) {
-            return true;
-        }
-
         if ($this->members()->exists()) {
             return false;
+        }
+
+        if (Schema::hasTable('tenant_services') && $this->services()->exists()) {
+            return false;
+        }
+
+        if (count($companyIds) === 0) {
+            return true;
         }
 
         $scopedTables = [

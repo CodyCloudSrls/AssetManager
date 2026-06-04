@@ -125,6 +125,17 @@
                                 </td>
                             </tr>
                             <tr>
+                                <th>{{ trans('admin/tenantservices/general.title') }}</th>
+                                <td>
+                                    <a href="{{ route('tenants.services.index', $tenant) }}" class="btn btn-default btn-sm">
+                                        {{ trans('admin/tenantservices/general.inventory_title') }}
+                                    </a>
+                                    <span class="text-muted" style="margin-left: 8px;">
+                                        {{ number_format($activeServicesCount) }} / {{ number_format($servicesCount) }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
                                 <th>{{ trans('admin/tenants/general.helpdesk.public_url') }}</th>
                                 <td><code>{{ $tenant->publicHelpdeskUrl() }}</code></td>
                             </tr>

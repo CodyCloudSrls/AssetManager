@@ -92,7 +92,7 @@ class CustomerContractEvent extends SnipeModel
 
     public static function snapshot(CustomerContract $contract): array
     {
-        $contract->loadMissing('subscriptions.costLines');
+        $contract->loadMissing('subscriptions.costLines', 'tenantServices');
 
         return [
             'company_id' => $contract->company_id,
@@ -110,6 +110,7 @@ class CustomerContractEvent extends SnipeModel
             'notice_due_at' => self::dateValue($contract->notice_due_at),
             'scope' => $contract->scope,
             'notes' => $contract->notes,
+            'tenant_service_ids' => $contract->tenantServices->pluck('id')->map(fn ($id) => (int) $id)->sort()->values()->all(),
             'subscriptions' => $contract->subscriptions->map(fn (ContractSubscription $subscription) => [
                 'id' => $subscription->id,
                 'name' => $subscription->name,

@@ -13,6 +13,7 @@ use App\Models\DocumentAssignmentEvent;
 use App\Models\DocumentFramework;
 use App\Models\DocumentFrameworkRequirement;
 use App\Models\DocumentType;
+use App\Models\TenantService;
 use App\Models\User;
 use App\Support\Compliance\ComplianceDomainAccess;
 use App\Support\Documents\DocumentAreaAccess;
@@ -100,6 +101,7 @@ class DocumentsController extends Controller
             $assignmentCreated = DB::transaction(function () use ($request, $document) {
                 $this->persistDocument($document);
                 $this->syncRequirementMappings($document, $request);
+                $this->syncTenantServices($document, $request);
 
                 return $this->persistInlineAssignment($request, $document);
             });
@@ -132,6 +134,7 @@ class DocumentsController extends Controller
             'documentAssignments.events.actor',
             'documentAssignmentEvents.actor',
             'documentAssignmentEvents.documentAssignment.assignable',
+            'tenantServices',
         ]);
 
         return view('documents.view', compact('document'));
@@ -154,6 +157,7 @@ class DocumentsController extends Controller
             $assignmentCreated = DB::transaction(function () use ($request, $document) {
                 $this->persistDocument($document);
                 $this->syncRequirementMappings($document, $request);
+                $this->syncTenantServices($document, $request);
 
                 return $this->persistInlineAssignment($request, $document);
             });
@@ -448,6 +452,7 @@ class DocumentsController extends Controller
 
     private function formData(Document $document): array
     {
+        $companyId = old('company_id', $document->company_id);
         $documentAssignment = new DocumentAssignment;
         $assignableTypeToken = DocumentAssignment::ASSIGNABLE_USER;
 
@@ -465,6 +470,7 @@ class DocumentsController extends Controller
                 'documentAssignments.company',
                 'documentAssignments.adminuser',
                 'documentAssignments.events.actor',
+                'tenantServices',
             ]);
         }
 
@@ -506,6 +512,13 @@ class DocumentsController extends Controller
             })->all()
             : [];
 
+        $selectedTenantServices = $document->exists ? $document->tenantServices : collect();
+        $tenantServices = TenantService::activeForCompanyId($companyId ? (int) $companyId : null)
+            ->merge($selectedTenantServices)
+            ->unique('id')
+            ->sortBy(fn (TenantService $service) => $service->macro_area_label.' '.$service->name)
+            ->values();
+
         return [
             'document' => $document,
             'documentStatuses' => Document::getStatusOptions(),
@@ -520,6 +533,8 @@ class DocumentsController extends Controller
             'selectedSupportingRequirementIds' => $document->exists
                 ? $document->frameworkRequirements()->wherePivot('coverage_role', Document::COVERAGE_SUPPORTING)->pluck('document_framework_requirements.id')->all()
                 : [],
+            'tenantServices' => $tenantServices,
+            'selectedTenantServiceIds' => $selectedTenantServices->pluck('id')->map(fn ($id) => (int) $id)->all(),
             'documentAssignment' => $documentAssignment,
             'assignableTypeToken' => $assignableTypeToken,
         ];
@@ -569,6 +584,18 @@ class DocumentsController extends Controller
         }
 
         $document->frameworkRequirements()->sync($syncData);
+    }
+
+    private function syncTenantServices(Document $document, StoreDocumentRequest $request): void
+    {
+        if (! $request->tenantServicesSubmitted()) {
+            return;
+        }
+
+        $tenantServiceIds = $request->normalizedTenantServiceIds();
+        $validTenantServiceIds = TenantService::validIdsForCompany($tenantServiceIds, $document->company_id ? (int) $document->company_id : null);
+
+        $document->tenantServices()->sync($validTenantServiceIds);
     }
 
     private function persistDocument(Document $document): void

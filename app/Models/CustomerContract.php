@@ -130,6 +130,14 @@ class CustomerContract extends SnipeModel
         return $this->belongsTo(Document::class, 'document_id')->withTrashed();
     }
 
+    public function tenantServices()
+    {
+        return $this->belongsToMany(TenantService::class, 'customer_contract_tenant_service')
+            ->withTimestamps()
+            ->orderBy('tenant_services.macro_area')
+            ->orderBy('tenant_services.name');
+    }
+
     public function owner()
     {
         return $this->belongsTo(User::class, 'owner_id')->withTrashed();
