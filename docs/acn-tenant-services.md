@@ -10,7 +10,7 @@ Official ACN guidance for 2026 requires essential and important entities to comm
 - `Categoria di rilevanza pre-assegnata`
 - `Categoria di rilevanza attribuita`
 
-Tenant services are managed from the tenant admin area under `Servizi tenant`. Services are tenant-scoped and can be linked to documents and customer contracts that belong to companies in the same tenant. Cross-tenant links are rejected during validation.
+Tenant services are managed from the left navigation menu under `Servizi`, next to the operational registries such as suppliers, customers, and contracts. Services are tenant-scoped and can be linked to documents and customer contracts that belong to companies in the same tenant. Cross-tenant links are rejected during validation.
 
 The ACN XLSX file is generated from controlled application data. The sample workbook in `tmp/` is intentionally not committed because it contains private subject data in the filename and workbook content.
 

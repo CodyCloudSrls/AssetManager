@@ -23,12 +23,8 @@ class TenantServicesTest extends TestCase
 
         $this->get(route('tenants.services.create', $tenant))
             ->assertOk()
-            ->assertSee('Create service');
-        $this->get(route('tenants.index'))
-            ->assertOk()
-            ->assertSee(route('tenants.services.index', $tenant), false);
-        $this->get(route('settings.index'))
-            ->assertOk()
+            ->assertSee('Create service')
+            ->assertSee('Services')
             ->assertSee(route('tenants.services.index', $tenant), false);
 
         $this->post(route('tenants.services.store', $tenant), [

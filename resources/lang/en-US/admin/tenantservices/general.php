@@ -2,6 +2,7 @@
 
 return [
     'title' => 'Tenant services',
+    'sidebar_title' => 'Services',
     'inventory_title' => 'Services inventory',
     'create' => 'Create service',
     'update' => 'Update service',

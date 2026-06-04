@@ -100,8 +100,6 @@
   <div class="row">
     <!-- search filter list -->
     <div class="list clearfix">
-        @php($settingsTenant = \App\Models\Tenant::activeTenant())
-
         <div class="col-md-4 col-lg-3 col-sm-6 col-xl-1">
           <div class="admin box box-default">
             <div class="box-body text-center">
@@ -116,23 +114,6 @@
             </div>
           </div>
         </div>
-
-        @if (auth()->check() && auth()->user()->hasAccessToTenantAdminArea() && $settingsTenant)
-        <div class="col-md-4 col-lg-3 col-sm-6 col-xl-1">
-          <div class="admin box box-default">
-            <div class="box-body text-center">
-              <h5>
-              <a href="{{ route('tenants.services.index', $settingsTenant) }}" class="settings_button">
-                <i class="fa-solid fa-list-check fa-4x" aria-hidden="true"></i>
-                <br><br>
-                <span class="name">{{ trans('admin/tenantservices/general.title') }}</span>
-              </a>
-              </h5>
-              <p class="index-block">{{ trans('admin/tenantservices/general.help') }}</p>
-            </div>
-          </div>
-        </div>
-        @endif
 
         <div class="col-md-4 col-lg-3 col-sm-6 col-xl-1">
           <div class="admin box box-default">
