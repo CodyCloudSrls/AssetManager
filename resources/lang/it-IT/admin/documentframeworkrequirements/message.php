@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'framework_missing' => 'Il framework associato a questo requisito non è più disponibile.',
     'create' => [
         'success' => 'Requisito framework creato correttamente.',
     ],

@@ -122,13 +122,19 @@ class DocumentFrameworkRequirementsController extends Controller
         ]);
     }
 
-    public function edit(DocumentFrameworkRequirement $documentframeworkrequirement): View
+    public function edit(DocumentFrameworkRequirement $documentframeworkrequirement): View|RedirectResponse
     {
         $this->authorize('update', $documentframeworkrequirement);
 
+        $framework = $documentframeworkrequirement->framework;
+
+        if (! $framework) {
+            return $this->redirectMissingFramework();
+        }
+
         return view('documentframeworkrequirements.edit', $this->formData(
             $documentframeworkrequirement,
-            $documentframeworkrequirement->framework
+            $framework
         ));
     }
 
@@ -344,11 +350,16 @@ class DocumentFrameworkRequirementsController extends Controller
     {
         $this->authorize('delete', $documentframeworkrequirement);
 
-        if (! $documentframeworkrequirement->isDeletable()) {
-            return redirect()->route('documentframeworks.show', $documentframeworkrequirement->framework)->with('error', trans('admin/documentframeworkrequirements/message.delete.associated_documents'));
+        $documentframework = $documentframeworkrequirement->framework;
+
+        if (! $documentframework) {
+            return $this->redirectMissingFramework();
         }
 
-        $documentframework = $documentframeworkrequirement->framework;
+        if (! $documentframeworkrequirement->isDeletable()) {
+            return redirect()->route('documentframeworks.show', $documentframework)->with('error', trans('admin/documentframeworkrequirements/message.delete.associated_documents'));
+        }
+
         $documentframeworkrequirement->delete();
 
         return redirect()->route('documentframeworks.show', $documentframework)->with('success', trans('admin/documentframeworkrequirements/message.delete.success'));
@@ -363,7 +374,18 @@ class DocumentFrameworkRequirementsController extends Controller
             return redirect()->route('documentframeworkrequirements.show', $requirement)->with('success', trans('admin/documentframeworkrequirements/message.restore.success'));
         }
 
+        if (! $requirement->framework) {
+            return $this->redirectMissingFramework();
+        }
+
         return redirect()->route('documentframeworks.show', $requirement->framework)->with('error', trans('general.could_not_restore', ['item_type' => trans('general.document_framework_requirement'), 'error' => $requirement->getErrors()->first()]));
+    }
+
+    private function redirectMissingFramework(): RedirectResponse
+    {
+        return redirect()
+            ->route('documentframeworkrequirements.index')
+            ->with('error', trans('admin/documentframeworkrequirements/message.framework_missing'));
     }
 
     private function formData(DocumentFrameworkRequirement $requirement, DocumentFramework $framework): array

@@ -62,4 +62,29 @@ class RequirementMatrixTest extends TestCase
             ->assertSee('Primary supplier evidence.')
             ->assertSee($owner->display_name);
     }
+
+    public function test_requirement_edit_redirects_when_framework_is_missing_instead_of_500(): void
+    {
+        $company = Company::factory()->create();
+        $admin = User::factory()->superuser()->for($company)->create();
+        $framework = DocumentFramework::factory()->for($company)->create();
+
+        $requirement = DocumentFrameworkRequirement::create([
+            'document_framework_id' => $framework->id,
+            'code' => 'ORPHAN-01',
+            'title' => 'Requirement with unavailable framework',
+            'delegation_level' => 'owner_review',
+            'risk_level' => 'medium',
+            'is_active' => true,
+            'is_mandatory' => true,
+            'created_by' => $admin->id,
+        ]);
+
+        $framework->delete();
+
+        $this->actingAs($admin)
+            ->get(route('documentframeworkrequirements.edit', $requirement))
+            ->assertRedirect(route('documentframeworkrequirements.index'))
+            ->assertSessionHas('error', trans('admin/documentframeworkrequirements/message.framework_missing'));
+    }
 }
