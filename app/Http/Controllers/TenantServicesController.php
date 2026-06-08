@@ -18,8 +18,16 @@ class TenantServicesController extends Controller
     {
         abort_unless(Tenant::canCurrentUserViewTenant($tenant), 403);
 
+        $companyIds = $tenant->activeCompanyIds();
         $services = $tenant->services()
-            ->withCount(['documents', 'contracts'])
+            ->withCount([
+                'documents' => fn ($query) => count($companyIds) === 0
+                    ? $query->whereRaw('1 = 0')
+                    : $query->withoutGlobalScopes()->whereIn('documents.company_id', $companyIds),
+                'contracts' => fn ($query) => count($companyIds) === 0
+                    ? $query->whereRaw('1 = 0')
+                    : $query->withoutGlobalScopes()->whereIn('customer_contracts.company_id', $companyIds),
+            ])
             ->orderBy('macro_area')
             ->orderBy('name')
             ->get();
@@ -123,15 +131,21 @@ class TenantServicesController extends Controller
             'tenant' => $tenant,
             'service' => $service,
             'item' => $service,
-            'macroAreaOptions' => TenantService::macroAreaOptions(),
+            'macroAreaOptions' => TenantService::macroAreaOptions($service->macro_area),
             'impactOptions' => TenantService::impactOptions(),
         ];
     }
 
     private function validator(Request $request, Tenant $tenant, ?TenantService $service = null)
     {
+        $macroAreaKeys = TenantService::selectableMacroAreaKeys();
+        if ($service?->macro_area && in_array($service->macro_area, TenantService::macroAreaKeys(), true)) {
+            $macroAreaKeys[] = $service->macro_area;
+            $macroAreaKeys = array_values(array_unique($macroAreaKeys));
+        }
+
         return Validator::make($request->all(), [
-            'macro_area' => ['required', 'string', Rule::in(TenantService::macroAreaKeys())],
+            'macro_area' => ['required', 'string', Rule::in($macroAreaKeys)],
             'name' => [
                 'required',
                 'string',
@@ -144,6 +158,7 @@ class TenantServicesController extends Controller
                     ->ignore($service?->id),
             ],
             'description' => 'nullable|string|max:65535',
+            'acn_subject_basis' => 'nullable|string|max:65535',
             'relevance_override' => ['nullable', 'string', Rule::in(TenantService::impactKeys())],
             'is_active' => 'nullable|boolean',
         ]);
@@ -155,6 +170,7 @@ class TenantServicesController extends Controller
         $service->macro_area = $request->input('macro_area');
         $service->name = trim((string) $request->input('name'));
         $service->description = $request->input('description');
+        $service->acn_subject_basis = $request->input('acn_subject_basis');
         $service->relevance_override = $request->input('relevance_override');
         $service->is_active = $request->boolean('is_active');
     }

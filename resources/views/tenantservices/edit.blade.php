@@ -40,6 +40,15 @@
         </div>
     </div>
 
+    <div class="form-group {{ $errors->has('acn_subject_basis') ? ' has-error' : '' }}">
+        <label for="acn_subject_basis" class="col-md-3 control-label">{{ trans('admin/tenantservices/general.acn_subject_basis') }}</label>
+        <div class="col-md-7">
+            <textarea class="form-control" name="acn_subject_basis" id="acn_subject_basis" rows="3">{{ old('acn_subject_basis', $service->acn_subject_basis) }}</textarea>
+            <p class="help-block">{{ trans('admin/tenantservices/general.acn_subject_basis_help') }}</p>
+            {!! $errors->first('acn_subject_basis', '<span class="alert-msg">:message</span>') !!}
+        </div>
+    </div>
+
     <div class="form-group {{ $errors->has('relevance_override') ? ' has-error' : '' }}">
         <label for="relevance_override" class="col-md-3 control-label">{{ trans('admin/tenantservices/general.relevance_override') }}</label>
         <div class="col-md-5">

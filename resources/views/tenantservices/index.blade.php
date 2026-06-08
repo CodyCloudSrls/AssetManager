@@ -29,6 +29,7 @@
             <div class="box-body">
                 <div class="callout callout-info">
                     <p>{{ trans('admin/tenantservices/general.help') }}</p>
+                    <p>{{ trans('admin/tenantservices/general.linking_guidance') }}</p>
                 </div>
 
                 <div class="table-responsive">
@@ -56,6 +57,9 @@
                                         @if ($service->description)
                                             <br><span class="text-muted">{{ \Illuminate\Support\Str::limit($service->description, 160) }}</span>
                                         @endif
+                                        @if ($service->acn_subject_basis)
+                                            <br><span class="text-muted"><strong>{{ trans('admin/tenantservices/general.acn_subject_basis') }}:</strong> {{ \Illuminate\Support\Str::limit($service->acn_subject_basis, 160) }}</span>
+                                        @endif
                                     </td>
                                     <td>{{ $service->pre_assigned_relevance_label }}</td>
                                     <td>{{ $service->assigned_relevance_label }}</td>
@@ -64,8 +68,16 @@
                                             {{ $service->is_active ? trans('admin/tenantservices/general.active') : trans('admin/tenantservices/general.inactive') }}
                                         </span>
                                     </td>
-                                    <td>{{ number_format($service->documents_count) }}</td>
-                                    <td>{{ number_format($service->contracts_count) }}</td>
+                                    <td>
+                                        <a href="{{ route('documents.index', ['tenant_id' => $tenant->id, 'tenant_service_id' => $service->id]) }}">
+                                            {{ number_format($service->documents_count) }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('contracts.index', ['tenant_id' => $tenant->id, 'tenant_service_id' => $service->id]) }}">
+                                            {{ number_format($service->contracts_count) }}
+                                        </a>
+                                    </td>
                                     @if ($canManageTenant)
                                         <td class="text-right">
                                             <a href="{{ route('tenants.services.edit', [$tenant, $service]) }}" class="btn btn-warning btn-sm">

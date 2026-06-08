@@ -12,7 +12,7 @@
                 name="contract"
                 buttons="contractButtons"
                 fixed_right_number="1"
-                api_url="{{ route('api.contracts.index', request()->only(['tenant_id', 'company_id', 'customer_id', 'status', 'renewal_status'])) }}"
+                api_url="{{ route('api.contracts.index', request()->only(['tenant_id', 'company_id', 'customer_id', 'status', 'renewal_status', 'tenant_service_id'])) }}"
                 :presenter="\App\Presenters\CustomerContractPresenter::dataTableLayout()"
                 export_filename="export-contracts-{{ date('Y-m-d') }}"
             />

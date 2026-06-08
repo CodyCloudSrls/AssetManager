@@ -79,6 +79,12 @@ class CustomerContractsController extends Controller
             $contracts->where('company_id', (int) $request->input('company_id'));
         }
 
+        if ($request->filled('tenant_service_id')) {
+            $contracts->whereHas('tenantServices', function ($query) use ($request) {
+                $query->where('tenant_services.id', '=', (int) $request->input('tenant_service_id'));
+            });
+        }
+
         if ($request->filled('renewal_status')) {
             if ($request->input('renewal_status') === 'due') {
                 $contracts->whereNotNull('renewal_due_at')

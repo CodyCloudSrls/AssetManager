@@ -81,6 +81,12 @@ class DocumentsController extends Controller
             });
         }
 
+        if ($request->filled('tenant_service_id')) {
+            $documents->whereHas('tenantServices', function ($query) use ($request) {
+                $query->where('tenant_services.id', '=', (int) $request->input('tenant_service_id'));
+            });
+        }
+
         if ($request->filled('assigned_user_id')) {
             $documents->whereHas('documentAssignments', function ($query) use ($request) {
                 $query->where('assignable_type', User::class)

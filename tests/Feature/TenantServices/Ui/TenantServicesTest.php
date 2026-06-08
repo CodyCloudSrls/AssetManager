@@ -25,12 +25,17 @@ class TenantServicesTest extends TestCase
             ->assertOk()
             ->assertSee('Create service')
             ->assertSee('Services')
+            ->assertSee('Produzione di beni e servizi - Infrastrutture digitali')
+            ->assertSee('Produzione di beni e servizi - Gestione dei servizi TIC')
+            ->assertSee('Produzione di beni e servizi - Fornitori di servizi digitali')
+            ->assertDontSee('value="'.TenantService::MACRO_PRODUCTION_GOODS_SERVICES.'"', false)
             ->assertSee(route('tenants.services.index', $tenant), false);
 
         $this->post(route('tenants.services.store', $tenant), [
-            'macro_area' => TenantService::MACRO_PRODUCTION_GOODS_SERVICES,
+            'macro_area' => TenantService::MACRO_PRODUCTION_DIGITAL_INFRASTRUCTURES,
             'name' => 'Managed SOC',
             'description' => 'Security operations service',
+            'acn_subject_basis' => 'DNISA: Infrastrutture digitali - DNS',
             'relevance_override' => TenantService::IMPACT_HIGH,
             'is_active' => '1',
         ])
@@ -39,8 +44,9 @@ class TenantServicesTest extends TestCase
 
         $this->assertDatabaseHas('tenant_services', [
             'tenant_id' => $tenant->id,
-            'macro_area' => TenantService::MACRO_PRODUCTION_GOODS_SERVICES,
+            'macro_area' => TenantService::MACRO_PRODUCTION_DIGITAL_INFRASTRUCTURES,
             'name' => 'Managed SOC',
+            'acn_subject_basis' => 'DNISA: Infrastrutture digitali - DNS',
             'relevance_override' => TenantService::IMPACT_HIGH,
             'is_active' => 1,
         ]);
@@ -48,7 +54,8 @@ class TenantServicesTest extends TestCase
         $service = TenantService::where('tenant_id', $tenant->id)->where('name', 'Managed SOC')->firstOrFail();
         $this->get(route('tenants.services.index', $tenant))
             ->assertOk()
-            ->assertSee('Managed SOC');
+            ->assertSee('Managed SOC')
+            ->assertSee('DNISA: Infrastrutture digitali - DNS');
         $this->get(route('tenants.services.edit', [$tenant, $service]))
             ->assertOk()
             ->assertSee('Managed SOC');
@@ -60,7 +67,7 @@ class TenantServicesTest extends TestCase
 
         $this->assertStringContainsString('Macro-area', $sheetXml);
         $this->assertStringContainsString('Denominazione Attivit', $sheetXml);
-        $this->assertStringContainsString('Produzione di beni e servizi', $sheetXml);
+        $this->assertStringContainsString('Produzione di beni e servizi - Infrastrutture digitali', $sheetXml);
         $this->assertStringContainsString('Managed SOC', $sheetXml);
         $this->assertStringContainsString('Impatto medio', $sheetXml);
         $this->assertStringContainsString('Impatto alto', $sheetXml);
@@ -98,6 +105,59 @@ class TenantServicesTest extends TestCase
             'document_id' => $document->id,
             'tenant_service_id' => $service->id,
         ]);
+
+        $this->getJson(route('api.documents.index', [
+            'tenant_id' => $tenant->id,
+            'tenant_service_id' => $service->id,
+        ]))
+            ->assertOk()
+            ->assertJsonPath('total', 1)
+            ->assertJsonPath('rows.0.name', 'NIS service document');
+
+        $this->get(route('tenants.services.index', $tenant))
+            ->assertOk()
+            ->assertSee(route('documents.index', ['tenant_id' => $tenant->id, 'tenant_service_id' => $service->id]));
+    }
+
+    public function test_contracts_can_be_filtered_by_linked_tenant_service(): void
+    {
+        [$tenant, $company] = $this->tenantWithCompany();
+        $user = User::factory()->superuser()->for($company)->create();
+        $this->actingAs($user);
+
+        $service = $this->tenantService($tenant, [
+            'name' => 'Service linked to contract',
+        ]);
+
+        $customer = new Customer([
+            'company_id' => $company->id,
+            'name' => 'ACN Customer',
+        ]);
+        $customer->created_by = $user->id;
+        $this->assertTrue($customer->save(), $customer->getErrors()->toJson());
+
+        $contract = new CustomerContract([
+            'company_id' => $company->id,
+            'customer_id' => $customer->id,
+            'name' => 'Service delivery contract',
+            'status' => CustomerContract::STATUS_DRAFT,
+            'currency' => 'EUR',
+        ]);
+        $contract->created_by = $user->id;
+        $this->assertTrue($contract->save(), $contract->getErrors()->toJson());
+        $contract->tenantServices()->sync([$service->id]);
+
+        $this->getJson(route('api.contracts.index', [
+            'tenant_id' => $tenant->id,
+            'tenant_service_id' => $service->id,
+        ]))
+            ->assertOk()
+            ->assertJsonPath('total', 1)
+            ->assertJsonPath('rows.0.name', 'Service delivery contract');
+
+        $this->get(route('tenants.services.index', $tenant))
+            ->assertOk()
+            ->assertSee(route('contracts.index', ['tenant_id' => $tenant->id, 'tenant_service_id' => $service->id]));
     }
 
     public function test_contract_rejects_services_from_a_different_tenant(): void
@@ -155,7 +215,7 @@ class TenantServicesTest extends TestCase
     {
         $service = new TenantService(array_merge([
             'tenant_id' => $tenant->id,
-            'macro_area' => TenantService::MACRO_PRODUCTION_GOODS_SERVICES,
+            'macro_area' => TenantService::MACRO_PRODUCTION_DIGITAL_INFRASTRUCTURES,
             'name' => 'Inventory service '.Str::random(6),
             'description' => 'Service description',
             'is_active' => true,
