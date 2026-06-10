@@ -26,9 +26,13 @@ class CustomerContract extends SnipeModel
     use ValidatingTrait;
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_SUSPENDED = 'suspended';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const STATUS_TERMINATED = 'terminated';
 
     protected $presenter = CustomerContractPresenter::class;
