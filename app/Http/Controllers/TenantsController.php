@@ -44,7 +44,7 @@ class TenantsController extends Controller
 
         Company::flushHierarchyCache();
 
-        return redirect()->to($this->resolveSwitchRedirect($request));
+        return redirect()->to($this->resolveSwitchRedirect($request, (int) $tenantId));
     }
 
     public function index(): View
@@ -554,7 +554,7 @@ class TenantsController extends Controller
             ->with('success', trans('admin/tenants/message.mail.update.success'));
     }
 
-    private function resolveSwitchRedirect(Request $request): string
+    private function resolveSwitchRedirect(Request $request, int $tenantId): string
     {
         $fallbackUrl = route('home');
         $redirectTo = trim((string) $request->input('redirect_to'));
@@ -563,8 +563,8 @@ class TenantsController extends Controller
             return $this->appendTenantSwitchFlag($fallbackUrl);
         }
 
-        if (str_starts_with($redirectTo, '/')) {
-            return $this->appendTenantSwitchFlag($redirectTo);
+        if (str_starts_with($redirectTo, '/') && ! str_starts_with($redirectTo, '//')) {
+            return $this->appendTenantSwitchFlag($this->tenantAwareRedirectUrl($redirectTo, $tenantId));
         }
 
         $appUrl = parse_url(config('app.url'));
@@ -576,16 +576,124 @@ class TenantsController extends Controller
             && (($appUrl['host'] ?? null) === ($redirectUrl['host'] ?? null))
             && (($appUrl['scheme'] ?? null) === ($redirectUrl['scheme'] ?? null))
         ) {
-            return $this->appendTenantSwitchFlag($redirectTo);
+            return $this->appendTenantSwitchFlag($this->tenantAwareRedirectUrl($redirectTo, $tenantId));
         }
 
         return $this->appendTenantSwitchFlag($fallbackUrl);
     }
 
+    private function tenantAwareRedirectUrl(string $url, int $tenantId): string
+    {
+        $parts = parse_url($url) ?: [];
+        $query = $this->tenantAwareQueryString($parts['query'] ?? '', $tenantId);
+        $fragment = isset($parts['fragment']) ? '#'.$parts['fragment'] : '';
+        $tenantRoute = $this->tenantRouteForPath($parts['path'] ?? '', $tenantId);
+
+        if ($tenantRoute) {
+            return $this->withQueryAndFragment($tenantRoute, $query, $fragment);
+        }
+
+        return $this->withQueryAndFragment($this->urlWithoutQueryOrFragment($url), $query, $fragment);
+    }
+
+    private function tenantAwareQueryString(string $queryString, int $tenantId): string
+    {
+        parse_str($queryString, $query);
+        unset($query['tenant_switched']);
+
+        if (array_key_exists('tenant_id', $query)) {
+            $query['tenant_id'] = (string) $tenantId;
+        }
+
+        return http_build_query($query);
+    }
+
+    private function tenantRouteForPath(string $path, int $tenantId): ?string
+    {
+        $path = $this->pathWithoutAppBase($path);
+        $segments = array_values(array_filter(explode('/', trim($path, '/')), fn ($segment) => $segment !== ''));
+
+        if (($segments[0] ?? null) !== 'admin' || ($segments[1] ?? null) !== 'tenants') {
+            return null;
+        }
+
+        if (! isset($segments[2]) || ! ctype_digit($segments[2])) {
+            return null;
+        }
+
+        $tenantArea = array_slice($segments, 3);
+
+        if (count($tenantArea) === 0) {
+            return route('tenants.show', $tenantId);
+        }
+
+        if ($tenantArea[0] === 'services') {
+            if (($tenantArea[1] ?? null) === 'create') {
+                return route('tenants.services.create', $tenantId);
+            }
+
+            return route('tenants.services.index', $tenantId);
+        }
+
+        return match ($tenantArea[0]) {
+            'settings' => route('tenants.settings.edit', $tenantId),
+            'helpdesk' => route('tenants.helpdesk.edit', $tenantId),
+            'mail' => route('tenants.mail.edit', $tenantId),
+            default => route('tenants.show', $tenantId),
+        };
+    }
+
+    private function pathWithoutAppBase(string $path): string
+    {
+        $appPath = trim((string) (parse_url(config('app.url'), PHP_URL_PATH) ?: ''), '/');
+        $path = '/'.ltrim($path, '/');
+
+        if ($appPath === '') {
+            return $path;
+        }
+
+        $pathWithoutLeadingSlash = ltrim($path, '/');
+
+        if ($pathWithoutLeadingSlash === $appPath) {
+            return '/';
+        }
+
+        if (str_starts_with($pathWithoutLeadingSlash, $appPath.'/')) {
+            return '/'.substr($pathWithoutLeadingSlash, strlen($appPath) + 1);
+        }
+
+        return $path;
+    }
+
+    private function urlWithoutQueryOrFragment(string $url): string
+    {
+        return preg_replace('/[?#].*$/', '', $url) ?: $url;
+    }
+
+    private function withQueryAndFragment(string $url, string $query, string $fragment): string
+    {
+        return $url.($query !== '' ? '?'.$query : '').$fragment;
+    }
+
     private function appendTenantSwitchFlag(string $url): string
     {
-        $separator = str_contains($url, '?') ? '&' : '?';
+        $fragment = '';
 
-        return $url.$separator.'tenant_switched=1';
+        if (str_contains($url, '#')) {
+            [$url, $fragment] = explode('#', $url, 2);
+            $fragment = '#'.$fragment;
+        }
+
+        $baseUrl = $url;
+        $query = [];
+
+        if (str_contains($url, '?')) {
+            [$baseUrl, $queryString] = explode('?', $url, 2);
+            parse_str($queryString, $query);
+        }
+
+        $query['tenant_switched'] = '1';
+
+        return $baseUrl.'?'.http_build_query($query).$fragment;
     }
 }

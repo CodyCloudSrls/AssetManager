@@ -12,6 +12,8 @@ use App\Http\Transformers\TicketsTransformer;
 use App\Models\Ticket;
 use App\Models\TicketPriority;
 use App\Models\TicketStatus;
+use App\Support\Compliance\ComplianceDomainAccess;
+use App\Support\Documents\DocumentAreaAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -24,7 +26,17 @@ class TicketsController extends Controller
         $this->authorize('index', Ticket::class);
 
         $tickets = Ticket::select('tickets.*')
-            ->with('company', 'requester', 'assignee', 'type', 'status', 'priority', 'asset', 'document', 'adminuser');
+            ->with([
+                'company',
+                'requester',
+                'assignee',
+                'type',
+                'status',
+                'priority',
+                'asset',
+                'document' => fn ($query) => $this->applyVisibleDocumentScope($query, $request),
+                'adminuser',
+            ]);
 
         if ($request->filled('filter') || $request->filled('search')) {
             $tickets->TextSearch($request->input('filter') ?: $request->input('search'));
@@ -161,6 +173,17 @@ class TicketsController extends Controller
     public function show(Ticket $ticket): JsonResponse|array
     {
         $this->authorize('view', $ticket);
+        $ticket->load([
+            'company',
+            'requester',
+            'assignee',
+            'type',
+            'status',
+            'priority',
+            'asset',
+            'document' => fn ($query) => $this->applyVisibleDocumentScope($query, request()),
+            'adminuser',
+        ]);
 
         return response()->json((new TicketsTransformer)->transformTicket($ticket));
     }
@@ -213,5 +236,11 @@ class TicketsController extends Controller
         $history = $history->skip(app('api_offset_value'))->take(app('api_limit_value'))->get();
 
         return response()->json((new ActionlogsTransformer)->transformActionlogs($history, $total), 200, ['Content-Type' => 'application/json;charset=utf8'], JSON_UNESCAPED_UNICODE);
+    }
+
+    private function applyVisibleDocumentScope($query, Request $request): void
+    {
+        ComplianceDomainAccess::applyDocumentScope($query, $request->user());
+        DocumentAreaAccess::applyDocumentScope($query, $request->user());
     }
 }

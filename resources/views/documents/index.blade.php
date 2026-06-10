@@ -24,7 +24,7 @@
             <div class="row" style="margin-bottom: 15px;">
                 <div class="col-md-12">
                     <form method="get" action="{{ route('documents.index') }}" class="form-inline" role="search">
-                        @foreach (request()->only(['status', 'review_status', 'status_type', 'company_id', 'tenant_id', 'owner_id', 'document_type_id', 'tenant_service_id']) as $filterName => $filterValue)
+                        @foreach (request()->only(['review_status', 'status_type', 'company_id', 'tenant_id', 'owner_id', 'document_type_id', 'tenant_service_id']) as $filterName => $filterValue)
                             <input type="hidden" name="{{ $filterName }}" value="{{ $filterValue }}">
                         @endforeach
 
@@ -51,6 +51,16 @@
                                             </option>
                                         @endforeach
                                     </optgroup>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="document_status_filter" class="sr-only">{{ trans('general.status') }}</label>
+                            <select class="form-control select2" name="status" id="document_status_filter" aria-label="{{ trans('general.status') }}" style="min-width: 180px;">
+                                <option value="">{{ trans('admin/documents/form.all_statuses') }}</option>
+                                @foreach (\App\Models\Document::getStatusOptions() as $statusValue => $statusLabel)
+                                    <option value="{{ $statusValue }}" @selected(request('status') === $statusValue)>{{ $statusLabel }}</option>
                                 @endforeach
                             </select>
                         </div>

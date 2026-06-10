@@ -11,6 +11,7 @@
     'fixed_right_number' => null,
     'sort_order' => 'asc',
     'sort_field' => 'name',
+    'sort_reset' => false,
     'nosticky' => false,
 ])
 
@@ -20,6 +21,9 @@
     data-cookie-id-table="{{ $name }}ListingTable"
     data-id-table="{{ $name }}ListingTable"
     data-sort-order="{{ $sort_order }}"
+    @if (filter_var($sort_reset, FILTER_VALIDATE_BOOLEAN))
+        data-sort-reset="true"
+    @endif
     data-toolbar="#{{ Illuminate\Support\Str::camel($name) }}Toolbar"
     data-bulk-button-id="#{{ Illuminate\Support\Str::camel($name) }}Button"
     data-bulk-form-id="#{{ Illuminate\Support\Str::camel($name) }}Form"

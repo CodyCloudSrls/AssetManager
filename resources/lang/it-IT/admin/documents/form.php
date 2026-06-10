@@ -65,6 +65,7 @@ return [
     'evidence_notes' => 'Note evidenza',
     'all_frameworks' => 'Tutti i framework',
     'all_requirements' => 'Tutti i requisiti',
+    'all_statuses' => 'Tutti gli stati',
     'apply_filters' => 'Applica filtri',
     'clear_filters' => 'Pulisci filtri',
     'assignment_approval_status' => 'Stato approvazione',

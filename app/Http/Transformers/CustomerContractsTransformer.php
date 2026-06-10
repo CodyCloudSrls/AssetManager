@@ -43,6 +43,7 @@ class CustomerContractsTransformer
             ] : null,
             'status' => e($contract->status),
             'status_label' => e($contract->status_label),
+            'service_code' => e($contract->subscriptions->pluck('service_code')->filter()->implode(', ')),
             'currency' => e($contract->currency),
             'monthly_revenue' => Helper::formatCurrencyOutput($monthlyRevenue),
             'monthly_cost' => Helper::formatCurrencyOutput($monthlyCost),
@@ -52,6 +53,7 @@ class CustomerContractsTransformer
             'ends_at' => Helper::getFormattedDateObject($contract->ends_at, 'date'),
             'renewal_due_at' => Helper::getFormattedDateObject($contract->renewal_due_at, 'date'),
             'notice_due_at' => Helper::getFormattedDateObject($contract->notice_due_at, 'date'),
+            'created_at' => Helper::getFormattedDateObject($contract->created_at, 'datetime'),
             'available_actions' => [
                 'update' => Gate::allows('update', $contract),
                 'delete' => Gate::allows('delete', $contract) && $contract->isDeletable(),

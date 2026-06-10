@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\CompanyableTrait;
+use App\Models\Traits\HasUploads;
 use App\Models\Traits\Loggable;
 use App\Models\Traits\Searchable;
 use App\Presenters\CustomerContractPresenter;
@@ -17,6 +18,7 @@ class CustomerContract extends SnipeModel
 {
     use CompanyableTrait;
     use HasFactory;
+    use HasUploads;
     use Loggable;
     use Presentable;
     use Searchable;

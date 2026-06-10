@@ -13,6 +13,7 @@ use App\Models\TicketType;
 use App\Models\User;
 use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
 class StoreTicketRequest extends FormRequest
 {
@@ -90,6 +91,12 @@ class StoreTicketRequest extends FormRequest
 
                 $record = $modelClass::find($this->input($field));
                 if (! TenantRecordGuard::recordBelongsToTenant($record, $tenantId)) {
+                    $validator->errors()->add($field, trans('validation.exists', ['attribute' => $field]));
+
+                    continue;
+                }
+
+                if ($field === 'document_id' && ! Gate::allows('view', $record)) {
                     $validator->errors()->add($field, trans('validation.exists', ['attribute' => $field]));
                 }
             }

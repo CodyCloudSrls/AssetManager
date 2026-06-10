@@ -15,6 +15,61 @@ use ZipArchive;
 
 class TenantServicesTest extends TestCase
 {
+    public function test_tenant_switch_from_services_index_redirects_to_selected_tenant_inventory(): void
+    {
+        [$codyCloudTenant, $codyCloudCompany] = $this->tenantWithCompanyName('CodyCloud');
+        [$italwayTenant] = $this->tenantWithCompanyName('Italway Srl');
+        $user = User::factory()->superuser()->for($codyCloudCompany)->create();
+        $this->actingAs($user);
+
+        $redirectLocation = route('tenants.services.index', $italwayTenant).'?tenant_switched=1';
+
+        $this->post(route('tenants.switch-context'), [
+            'tenant_id' => $italwayTenant->id,
+            'redirect_to' => route('tenants.services.index', $codyCloudTenant),
+        ])
+            ->assertSessionHas(Tenant::ACTIVE_TENANT_SESSION_KEY, $italwayTenant->id)
+            ->assertRedirect($redirectLocation);
+
+        $this->get($redirectLocation)
+            ->assertOk()
+            ->assertSee('Services inventory - Italway Srl')
+            ->assertDontSee('Services inventory - CodyCloud');
+    }
+
+    public function test_tenant_switch_from_old_tenant_service_edit_redirects_to_selected_tenant_inventory(): void
+    {
+        [$codyCloudTenant, $codyCloudCompany] = $this->tenantWithCompanyName('CodyCloud');
+        [$italwayTenant] = $this->tenantWithCompanyName('Italway Srl');
+        $service = $this->tenantService($codyCloudTenant, [
+            'name' => 'Legacy service',
+        ]);
+        $user = User::factory()->superuser()->for($codyCloudCompany)->create();
+        $this->actingAs($user);
+
+        $this->post(route('tenants.switch-context'), [
+            'tenant_id' => $italwayTenant->id,
+            'redirect_to' => route('tenants.services.edit', [$codyCloudTenant, $service]),
+        ])
+            ->assertSessionHas(Tenant::ACTIVE_TENANT_SESSION_KEY, $italwayTenant->id)
+            ->assertRedirect(route('tenants.services.index', $italwayTenant).'?tenant_switched=1');
+    }
+
+    public function test_tenant_switch_rejects_protocol_relative_redirects(): void
+    {
+        [$codyCloudTenant, $codyCloudCompany] = $this->tenantWithCompanyName('CodyCloud');
+        [$italwayTenant] = $this->tenantWithCompanyName('Italway Srl');
+        $user = User::factory()->superuser()->for($codyCloudCompany)->create();
+        $this->actingAs($user);
+
+        $this->post(route('tenants.switch-context'), [
+            'tenant_id' => $italwayTenant->id,
+            'redirect_to' => '//evil.example/admin/tenants/'.$codyCloudTenant->id.'/services',
+        ])
+            ->assertSessionHas(Tenant::ACTIVE_TENANT_SESSION_KEY, $italwayTenant->id)
+            ->assertRedirect(route('home').'?tenant_switched=1');
+    }
+
     public function test_tenant_service_can_be_created_and_exported_as_acn_xlsx(): void
     {
         [$tenant, $company] = $this->tenantWithCompany();
@@ -206,6 +261,17 @@ class TenantServicesTest extends TestCase
         $company = Company::factory()->create([
             'tenant_id' => $tenant->id,
             'name' => $companyName.' '.Str::random(6),
+        ]);
+
+        return [$tenant, $company];
+    }
+
+    private function tenantWithCompanyName(string $companyName): array
+    {
+        $tenant = Tenant::create(['uuid' => (string) Str::uuid()]);
+        $company = Company::factory()->create([
+            'tenant_id' => $tenant->id,
+            'name' => $companyName,
         ]);
 
         return [$tenant, $company];

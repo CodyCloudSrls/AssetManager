@@ -65,6 +65,7 @@ return [
     'evidence_notes' => 'Evidence Notes',
     'all_frameworks' => 'All frameworks',
     'all_requirements' => 'All requirements',
+    'all_statuses' => 'All statuses',
     'apply_filters' => 'Apply filters',
     'clear_filters' => 'Clear filters',
     'assignment_approval_status' => 'Approval Status',

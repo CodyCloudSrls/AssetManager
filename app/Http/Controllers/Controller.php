@@ -30,6 +30,7 @@ use App\Models\Company;
 use App\Models\Component;
 use App\Models\Consumable;
 use App\Models\Customer;
+use App\Models\CustomerContract;
 use App\Models\Department;
 use App\Models\Document;
 use App\Models\License;
@@ -61,6 +62,7 @@ abstract class Controller extends BaseController
         'components' => Component::class,
         'consumables' => Consumable::class,
         'customers' => Customer::class,
+        'contracts' => CustomerContract::class,
         'hardware' => Asset::class,
         'licenses' => License::class,
         'locations' => Location::class,
@@ -81,6 +83,7 @@ abstract class Controller extends BaseController
         'components' => 'private_uploads/components/',
         'consumables' => 'private_uploads/consumables/',
         'customers' => 'private_uploads/customers/',
+        'contracts' => 'private_uploads/contracts/',
         'hardware' => 'private_uploads/assets/',
         'licenses' => 'private_uploads/licenses/',
         'locations' => 'private_uploads/locations/',
@@ -101,6 +104,7 @@ abstract class Controller extends BaseController
         'components' => 'component',
         'consumables' => 'consumable',
         'customers' => 'customer',
+        'contracts' => 'contract',
         'hardware' => 'asset',
         'licenses' => 'license',
         'locations' => 'location',

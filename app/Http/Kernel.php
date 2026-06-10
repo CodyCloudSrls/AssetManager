@@ -13,6 +13,7 @@ use App\Http\Middleware\CheckUserIsActivated;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\NoSessionStore;
 use App\Http\Middleware\PreventBackHistory;
+use App\Http\Middleware\RejectEmailHeaderInjection;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetAPIResponseHeaders;
@@ -53,6 +54,7 @@ class Kernel extends HttpKernel
         CheckForDebug::class,
         ConvertEmptyStringsToNull::class,
         TrimStrings::class,
+        RejectEmailHeaderInjection::class,
         SecurityHeaders::class,
         PreventBackHistory::class,
         HandleCors::class,

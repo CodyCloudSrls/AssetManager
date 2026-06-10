@@ -34,6 +34,14 @@ return [
             'permission' => 'tenants.view_all',
             'display' => true,
         ],
+        [
+            'permission' => 'tenants.services.view',
+            'display' => true,
+        ],
+        [
+            'permission' => 'tenants.services.manage',
+            'display' => true,
+        ],
     ],
 
     'Import' => [
@@ -615,6 +623,10 @@ return [
         ],
         [
             'permission' => 'contracts.delete',
+            'display' => true,
+        ],
+        [
+            'permission' => 'contracts.files',
             'display' => true,
         ],
     ],

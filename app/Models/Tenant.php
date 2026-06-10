@@ -733,6 +733,7 @@ class Tenant extends Model
             'statuslabels.view', 'statuslabels.create', 'statuslabels.edit', 'statuslabels.delete',
             'depreciations.view', 'depreciations.create', 'depreciations.edit', 'depreciations.delete',
             'customfields.view', 'customfields.create', 'customfields.edit', 'customfields.delete',
+            'tenants.services.view', 'tenants.services.manage',
         ];
     }
 

@@ -31,14 +31,14 @@ class TenantServicesController extends Controller
             ->orderBy('macro_area')
             ->orderBy('name')
             ->get();
-        $canManageTenant = auth()->user()->canManageTenant($tenant);
+        $canManageTenant = $this->canManageServices($tenant);
 
         return view('tenantservices.index', compact('tenant', 'services', 'canManageTenant'));
     }
 
     public function create(Tenant $tenant): View
     {
-        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+        abort_unless($this->canManageServices($tenant), 403);
 
         $service = new TenantService([
             'tenant_id' => $tenant->id,
@@ -50,7 +50,7 @@ class TenantServicesController extends Controller
 
     public function store(Request $request, Tenant $tenant): RedirectResponse
     {
-        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+        abort_unless($this->canManageServices($tenant), 403);
 
         $validator = $this->validator($request, $tenant);
         if ($validator->fails()) {
@@ -71,7 +71,7 @@ class TenantServicesController extends Controller
 
     public function edit(Tenant $tenant, TenantService $tenantService): View
     {
-        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+        abort_unless($this->canManageServices($tenant), 403);
         $tenantService = $this->serviceForTenant($tenant, $tenantService);
 
         return view('tenantservices.edit', $this->formData($tenant, $tenantService));
@@ -79,7 +79,7 @@ class TenantServicesController extends Controller
 
     public function update(Request $request, Tenant $tenant, TenantService $tenantService): RedirectResponse
     {
-        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+        abort_unless($this->canManageServices($tenant), 403);
         $tenantService = $this->serviceForTenant($tenant, $tenantService);
 
         $validator = $this->validator($request, $tenant, $tenantService);
@@ -99,7 +99,7 @@ class TenantServicesController extends Controller
 
     public function destroy(Tenant $tenant, TenantService $tenantService): RedirectResponse
     {
-        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+        abort_unless($this->canManageServices($tenant), 403);
         $tenantService = $this->serviceForTenant($tenant, $tenantService);
 
         if ($tenantService->documents()->exists() || $tenantService->contracts()->exists()) {
@@ -180,5 +180,18 @@ class TenantServicesController extends Controller
         abort_unless((int) $service->tenant_id === (int) $tenant->id, 404);
 
         return $service;
+    }
+
+    /**
+     * Tenant services can be managed either by a tenant admin (existing behaviour)
+     * or by a user holding the global `tenants.services.manage` granular permission,
+     * but only for tenants they can already reach (tenant isolation preserved).
+     */
+    private function canManageServices(Tenant $tenant): bool
+    {
+        $user = auth()->user();
+
+        return $user->canManageTenant($tenant)
+            || (Tenant::canCurrentUserViewTenant($tenant) && $user->hasAccess('tenants.services.manage'));
     }
 }

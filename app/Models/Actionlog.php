@@ -539,6 +539,10 @@ class Actionlog extends SnipeModel
             $object = 'models';
         }
 
+        if ($object == 'customer_contracts') {
+            $object = 'contracts';
+        }
+
         if ($this->action_type == 'audit') {
             $object = 'audits';
         }
@@ -575,6 +579,8 @@ class Actionlog extends SnipeModel
                 return 'private_uploads/consumables/'.$this->filename;
             case Customer::class:
                 return 'private_uploads/customers/'.$this->filename;
+            case CustomerContract::class:
+                return 'private_uploads/contracts/'.$this->filename;
             case Department::class:
                 return 'private_uploads/departments/'.$this->filename;
             case Document::class:

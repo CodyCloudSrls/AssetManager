@@ -8,6 +8,13 @@ class CustomerContractPresenter extends Presenter
     {
         $layout = [
             [
+                'field' => 'checkbox',
+                'checkbox' => true,
+                'titleTooltip' => trans('general.select_all_none'),
+                'printIgnore' => true,
+                'class' => 'hidden-print',
+            ],
+            [
                 'field' => 'id',
                 'searchable' => false,
                 'sortable' => true,
@@ -46,6 +53,14 @@ class CustomerContractPresenter extends Presenter
                 'visible' => true,
             ],
             [
+                'field' => 'service_code',
+                'searchable' => false,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('admin/contracts/general.service_code'),
+                'visible' => false,
+            ],
+            [
                 'field' => 'monthly_revenue',
                 'searchable' => false,
                 'sortable' => false,
@@ -79,6 +94,15 @@ class CustomerContractPresenter extends Presenter
                 'searchable' => false,
                 'sortable' => true,
                 'title' => trans('admin/contracts/general.ends_at'),
+                'visible' => true,
+                'formatter' => 'dateDisplayFormatter',
+            ],
+            [
+                'field' => 'created_at',
+                'searchable' => false,
+                'sortable' => true,
+                'switchable' => true,
+                'title' => trans('general.created_at'),
                 'visible' => true,
                 'formatter' => 'dateDisplayFormatter',
             ],

@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\BulkCategoriesController;
+use App\Http\Controllers\BulkCustomerContractsController;
 use App\Http\Controllers\BulkCustomersController;
 use App\Http\Controllers\BulkManufacturersController;
 use App\Http\Controllers\BulkSuppliersController;
@@ -40,7 +41,6 @@ use App\Http\Controllers\TenantsController;
 use App\Http\Controllers\UploadedFilesController;
 use App\Http\Controllers\ViewAssetsController;
 use App\Livewire\Importer;
-use App\Mail\CheckoutComponentMail;
 use App\Models\ReportTemplate;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
@@ -108,11 +108,6 @@ Route::group(['middleware' => 'auth'], function () {
         [LabelsController::class, 'show']
     )->where('labelName', '.*')->name('labels.show');
 
-    Route::get('/test-email', function () {
-        $mailable = new CheckoutComponentMail;
-
-        return $mailable->render(); // dumps HTML
-    });
     /*
     * Manufacturers
     */
@@ -140,6 +135,8 @@ Route::group(['middleware' => 'auth'], function () {
     */
     Route::resource('customers', CustomersController::class);
     Route::post('customers/bulk/delete', [BulkCustomersController::class, 'destroy'])->name('customers.bulk.delete');
+    Route::post('contracts/bulkedit', [BulkCustomerContractsController::class, 'edit'])->name('contracts.bulkedit');
+    Route::post('contracts/bulkeditsave', [BulkCustomerContractsController::class, 'update'])->name('contracts.bulkeditsave');
     Route::resource('contracts', CustomerContractsController::class)->parameters(['contracts' => 'contract']);
 
     /*
@@ -782,7 +779,7 @@ Route::group(['middleware' => 'web'], function () {
             'show',
         ]
     )->name('ui.files.show')
-        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|customers|components|companies|departments|documents|tickets']);
+        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|customers|components|companies|departments|documents|tickets|contracts']);
 
     // Upload files(s)
     Route::post('{object_type}/{id}/files',
@@ -791,7 +788,7 @@ Route::group(['middleware' => 'web'], function () {
             'store',
         ]
     )->name('ui.files.store')
-        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|customers|components|companies|departments|documents|tickets']);
+        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|customers|components|companies|departments|documents|tickets|contracts']);
 
     // Delete files(s)
     Route::delete('{object_type}/{id}/files/{file_id}/delete',
@@ -800,7 +797,7 @@ Route::group(['middleware' => 'web'], function () {
             'destroy',
         ]
     )->name('ui.files.destroy')
-        ->where(['object_type' => 'assets|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|customers|components|companies|departments|documents|tickets']);
+        ->where(['object_type' => 'assets|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|customers|components|companies|departments|documents|tickets|contracts']);
 });
 
 /*

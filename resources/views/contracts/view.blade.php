@@ -13,6 +13,8 @@
                     <x-tabs.nav-item name="details" icon="fa-solid fa-file-signature fa-fw" label="{{ trans('general.details') }}" tooltip="{{ trans('general.details') }}" />
                     <x-tabs.nav-item name="subscriptions" icon="fa-solid fa-repeat fa-fw" label="{{ trans('admin/contracts/general.subscriptions') }}" tooltip="{{ trans('admin/contracts/general.subscriptions') }}" count="{{ $contract->subscriptions->count() }}" />
                     <x-tabs.nav-item name="audit" icon="fa-solid fa-fingerprint fa-fw" label="{{ trans('admin/contracts/general.audit_events') }}" tooltip="{{ trans('admin/contracts/general.audit_events') }}" count="{{ $contract->events->count() }}" />
+                    <x-tabs.files-tab :item="$contract" count="{{ $contract->uploads()->count() }}"/>
+                    <x-tabs.upload-tab :item="$contract"/>
                 </x-slot:tabnav>
 
                 <x-slot:tabpanes>
@@ -109,6 +111,10 @@
                             </table>
                         </div>
                     </x-tabs.pane>
+
+                    <x-tabs.pane name="files" class="{{ $contract->uploads->count() == 0 ? 'hidden-print' : '' }}">
+                        <x-table.files object_type="contracts" :object="$contract"/>
+                    </x-tabs.pane>
                 </x-slot:tabpanes>
             </x-tabs>
         </x-page-column>
@@ -133,4 +139,12 @@
             </x-box>
         </x-page-column>
     </x-container>
+@endsection
+
+@section('moar_scripts')
+    @can('files', $contract)
+        @include('modals.upload-file', ['item_type' => 'contracts', 'item_id' => $contract->id])
+    @endcan
+
+    @include('partials.bootstrap-table', ['exportFile' => 'contract-' . $contract->name . '-export', 'search' => false])
 @endsection

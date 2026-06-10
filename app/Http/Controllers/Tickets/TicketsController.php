@@ -18,6 +18,8 @@ use App\Models\TicketStatus;
 use App\Models\TicketType;
 use App\Models\TicketWorklog;
 use App\Models\User;
+use App\Support\Compliance\ComplianceDomainAccess;
+use App\Support\Documents\DocumentAreaAccess;
 use App\Support\Tenants\TenantMailNotificationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -91,7 +93,7 @@ class TicketsController extends Controller
             'assignee',
             'relatedUser',
             'asset',
-            'document',
+            'document' => fn ($query) => $this->applyVisibleDocumentScope($query),
             'location',
             'type',
             'status',
@@ -262,12 +264,26 @@ class TicketsController extends Controller
             'ticketStatuses' => TicketStatus::active()->ordered()->get(),
             'ticketPriorities' => TicketPriority::active()->ordered()->get(),
             'ticketTypes' => TicketType::active()->ordered()->get(),
-            'documents' => Document::orderBy('name')->limit(200)->get(),
+            'documents' => $this->visibleDocumentsForTickets(),
             'linkedAsset' => $ticket->asset_id ? Asset::find($ticket->asset_id) : null,
             'linkedRequester' => $ticket->requester_id ? User::find($ticket->requester_id) : null,
             'linkedAssignee' => $ticket->assignee_id ? User::find($ticket->assignee_id) : null,
             'linkedRelatedUser' => $ticket->related_user_id ? User::find($ticket->related_user_id) : null,
             'sources' => Ticket::sourceOptions(),
         ];
+    }
+
+    private function visibleDocumentsForTickets()
+    {
+        $documents = Document::query()->orderBy('name')->limit(200);
+        $this->applyVisibleDocumentScope($documents);
+
+        return $documents->get();
+    }
+
+    private function applyVisibleDocumentScope($query): void
+    {
+        ComplianceDomainAccess::applyDocumentScope($query, request()->user());
+        DocumentAreaAccess::applyDocumentScope($query, request()->user());
     }
 }
