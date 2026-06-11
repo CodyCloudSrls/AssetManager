@@ -90,11 +90,13 @@
     <div class="col-md-7">
         @php($selectedTenantServiceIdsForForm = array_map('intval', old('tenant_service_ids', $selectedTenantServiceIds ?? [])))
         <input type="hidden" name="tenant_service_ids_present" value="1">
-        <select class="form-control select2" multiple name="tenant_service_ids[]" id="tenant_service_ids" aria-label="tenant_service_ids">
+        <select class="js-data-ajax" data-endpoint="tenantservices" data-placeholder="{{ trans('admin/tenantservices/general.field_label') }}" multiple name="tenant_service_ids[]" id="tenant_service_ids" aria-label="tenant_service_ids" data-company-id="{{ old('company_id', $contract->company_id) }}">
             @foreach ($tenantServices as $tenantService)
-                <option value="{{ $tenantService->id }}" @selected(in_array((int) $tenantService->id, $selectedTenantServiceIdsForForm, true))>
-                    {{ $tenantService->macro_area_label }} - {{ $tenantService->name }}
-                </option>
+                @if (in_array((int) $tenantService->id, $selectedTenantServiceIdsForForm, true))
+                    <option value="{{ $tenantService->id }}" selected="selected">
+                        {{ $tenantService->macro_area_label }} - {{ $tenantService->name }}
+                    </option>
+                @endif
             @endforeach
         </select>
         <p class="help-block">{{ trans('admin/tenantservices/general.contract_field_help') }}</p>
@@ -213,7 +215,7 @@
 
         $('select[name="company_id"]').on('change', function () {
             $('#customer_select').attr('data-company-id', $(this).val()).val(null).trigger('change');
-            $('#tenant_service_ids').val(null).trigger('change');
+            $('#tenant_service_ids').removeData('company-id').attr('data-company-id', $(this).val()).val(null).trigger('change');
         });
     });
 </script>

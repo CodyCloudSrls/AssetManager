@@ -1244,6 +1244,20 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
 
     });
 
+    /**
+     * Tenant services API routes
+     */
+    Route::group(['prefix' => 'tenantservices'], function () {
+
+        Route::get('selectlist',
+            [
+                Api\TenantServicesController::class,
+                'selectlist',
+            ]
+        )->name('api.tenantservices.selectlist');
+
+    });
+
     Route::resource('customers',
         Api\CustomersController::class,
         ['names' => [

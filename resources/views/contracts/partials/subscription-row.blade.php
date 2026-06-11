@@ -45,11 +45,11 @@
             </div>
             <div class="col-md-3">
                 <label>{{ trans('admin/contracts/general.starts_at') }}</label>
-                <input class="form-control" name="subscriptions[{{ $rowKey }}][starts_at]" type="text" value="{{ $row['starts_at'] ?? '' }}" placeholder="YYYY-MM-DD">
+                <x-input.datepicker name="subscriptions[{{ $rowKey }}][starts_at]" :value="$row['starts_at'] ?? ''" />
             </div>
             <div class="col-md-3">
                 <label>{{ trans('admin/contracts/general.ends_at') }}</label>
-                <input class="form-control" name="subscriptions[{{ $rowKey }}][ends_at]" type="text" value="{{ $row['ends_at'] ?? '' }}" placeholder="YYYY-MM-DD">
+                <x-input.datepicker name="subscriptions[{{ $rowKey }}][ends_at]" :value="$row['ends_at'] ?? ''" />
             </div>
             <div class="col-md-3">
                 <label style="display:block;">{{ trans('general.active') }}</label>
@@ -104,11 +104,11 @@
             </div>
             <div class="col-md-3">
                 <label>{{ trans('admin/contracts/general.cost_starts_at') }}</label>
-                <input class="form-control" name="subscriptions[{{ $rowKey }}][cost_starts_at]" type="text" value="{{ $row['cost_starts_at'] ?? '' }}" placeholder="YYYY-MM-DD">
+                <x-input.datepicker name="subscriptions[{{ $rowKey }}][cost_starts_at]" :value="$row['cost_starts_at'] ?? ''" />
             </div>
             <div class="col-md-3">
                 <label>{{ trans('admin/contracts/general.cost_ends_at') }}</label>
-                <input class="form-control" name="subscriptions[{{ $rowKey }}][cost_ends_at]" type="text" value="{{ $row['cost_ends_at'] ?? '' }}" placeholder="YYYY-MM-DD">
+                <x-input.datepicker name="subscriptions[{{ $rowKey }}][cost_ends_at]" :value="$row['cost_ends_at'] ?? ''" />
             </div>
             <div class="col-md-3">
                 <label style="display:block;">{{ trans('admin/contracts/general.cost_active') }}</label>
