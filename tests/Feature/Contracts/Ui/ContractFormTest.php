@@ -21,6 +21,8 @@ class ContractFormTest extends TestCase
         // dropdown on creation) instead of a static server-rendered <select>.
         $response->assertSee('data-endpoint="tenantservices"', false);
         $response->assertSee('id="tenant_service_ids"', false);
+        // select2 needs an explicit full width when it is not a .form-control
+        $response->assertSee('id="tenant_service_ids" aria-label="tenant_service_ids" style="width: 100%"', false);
 
         // Subscription date fields use the datepicker component (calendar + manual,
         // yyyy-mm-dd) like the contract-level dates.
