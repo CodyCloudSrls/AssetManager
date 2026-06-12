@@ -8,6 +8,7 @@ use App\Support\Exports\AcnTenantServicesXlsxExporter;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -123,6 +124,108 @@ class TenantServicesController extends Controller
         return response()->download($path, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
+    }
+
+    public function bulkEdit(Request $request, Tenant $tenant): View|RedirectResponse
+    {
+        abort_unless($this->canManageServices($tenant), 403);
+
+        $services = $this->servicesFromRequest($request, $tenant);
+
+        if ($services->isEmpty()) {
+            return redirect()->route('tenants.services.index', $tenant)
+                ->with('error', trans('admin/tenantservices/message.bulk.nothing_selected'));
+        }
+
+        return view('tenantservices.bulk-edit', [
+            'tenant' => $tenant,
+            'services' => $services,
+            'impactOptions' => TenantService::impactOptions(),
+        ]);
+    }
+
+    public function bulkUpdate(Request $request, Tenant $tenant): RedirectResponse
+    {
+        abort_unless($this->canManageServices($tenant), 403);
+
+        $services = $this->servicesFromRequest($request, $tenant);
+
+        if ($services->isEmpty()) {
+            return redirect()->route('tenants.services.index', $tenant)
+                ->with('error', trans('admin/tenantservices/message.bulk.nothing_selected'));
+        }
+
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required|array',
+            'apply_relevance_override' => 'nullable|boolean',
+            'relevance_override' => ['nullable', Rule::in(TenantService::impactKeys())],
+            'apply_is_active' => 'nullable|boolean',
+            'is_active_state' => ['nullable', Rule::in(['0', '1'])],
+        ]);
+
+        $validator->after(function ($validator) use ($request) {
+            if (! $this->bulkHasSelectedFields($request)) {
+                $validator->errors()->add('bulk_actions', trans('admin/hardware/message.update.nothing_updated'));
+            }
+
+            if ($request->boolean('apply_is_active') && ! $request->filled('is_active_state')) {
+                $validator->errors()->add('is_active_state', trans('validation.required', ['attribute' => trans('general.status')]));
+            }
+        });
+
+        if ($validator->fails()) {
+            return redirect()->back()->withInput()->withErrors($validator);
+        }
+
+        $updates = [];
+
+        if ($request->boolean('apply_relevance_override')) {
+            $updates['relevance_override'] = $request->filled('relevance_override') ? $request->input('relevance_override') : null;
+        }
+
+        if ($request->boolean('apply_is_active')) {
+            $updates['is_active'] = $request->input('is_active_state') === '1';
+        }
+
+        DB::transaction(function () use ($services, $updates) {
+            foreach ($services as $service) {
+                $service->fill($updates);
+
+                if (! $service->save()) {
+                    $service->throwValidationException();
+                }
+            }
+        });
+
+        return redirect()->route('tenants.services.index', $tenant)
+            ->with('success', trans('admin/tenantservices/message.bulk.success'));
+    }
+
+    private function servicesFromRequest(Request $request, Tenant $tenant)
+    {
+        $ids = collect($request->input('ids', []))
+            ->filter(fn ($id) => is_numeric($id))
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($ids === []) {
+            return collect();
+        }
+
+        return TenantService::query()
+            ->whereIn('id', $ids)
+            ->where('tenant_id', $tenant->id)
+            ->orderBy('macro_area')
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function bulkHasSelectedFields(Request $request): bool
+    {
+        return $request->boolean('apply_relevance_override')
+            || $request->boolean('apply_is_active');
     }
 
     private function formData(Tenant $tenant, TenantService $service): array

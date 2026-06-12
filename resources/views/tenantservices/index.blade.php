@@ -32,10 +32,23 @@
                     <p>{{ trans('admin/tenantservices/general.linking_guidance') }}</p>
                 </div>
 
+                @if ($canManageTenant)
+                    <form id="bulkServicesForm" method="POST" action="{{ route('tenants.services.bulkedit', $tenant) }}" style="margin-bottom: 10px;">
+                        @csrf
+                        <button type="submit" class="btn btn-default btn-sm" id="bulkServicesButton">
+                            <x-icon type="edit" class="fa-fw" />
+                            {{ trans('general.bulk_edit') }}
+                        </button>
+                    </form>
+                @endif
+
                 <div class="table-responsive">
                     <table class="table table-striped snipe-table">
                         <thead>
                             <tr>
+                                @if ($canManageTenant)
+                                    <th style="width:1%;"><input type="checkbox" id="tenantServicesCheckAll" aria-label="{{ trans('general.select_all_none') }}"></th>
+                                @endif
                                 <th>{{ trans('admin/tenantservices/general.macro_area') }}</th>
                                 <th>{{ trans('admin/tenantservices/general.name') }}</th>
                                 <th>{{ trans('admin/tenantservices/general.relevance_preassigned') }}</th>
@@ -51,6 +64,9 @@
                         <tbody>
                             @forelse ($services as $service)
                                 <tr>
+                                    @if ($canManageTenant)
+                                        <td><input type="checkbox" name="ids[]" value="{{ $service->id }}" form="bulkServicesForm" class="tenant-service-checkbox" aria-label="{{ $service->name }}"></td>
+                                    @endif
                                     <td>{{ $service->macro_area_label }}</td>
                                     <td>
                                         <strong>{{ $service->name }}</strong>
@@ -97,7 +113,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ $canManageTenant ? 8 : 7 }}" class="text-muted">{{ trans('admin/tenantservices/general.no_services') }}</td>
+                                    <td colspan="{{ $canManageTenant ? 9 : 7 }}" class="text-muted">{{ trans('admin/tenantservices/general.no_services') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -108,3 +124,15 @@
     </div>
 </div>
 @endsection
+
+@if ($canManageTenant)
+@section('moar_scripts')
+    <script nonce="{{ csrf_token() }}">
+        $(function () {
+            $('#tenantServicesCheckAll').on('change', function () {
+                $('.tenant-service-checkbox').prop('checked', $(this).prop('checked'));
+            });
+        });
+    </script>
+@stop
+@endif

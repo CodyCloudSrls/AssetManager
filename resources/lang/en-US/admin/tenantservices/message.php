@@ -11,4 +11,8 @@ return [
         'success' => 'Tenant service deleted successfully.',
         'linked' => 'This service is linked to documents or contracts and cannot be deleted.',
     ],
+    'bulk' => [
+        'success' => 'Tenant services updated successfully.',
+        'nothing_selected' => 'No services selected.',
+    ],
 ];
