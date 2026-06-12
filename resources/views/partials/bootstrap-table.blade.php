@@ -2634,12 +2634,23 @@
                 destination = row.item.type;
             }
 
-            return '<a href="{{ config('app.url') }}/' + destination + '/' + row.item.id + '/files/' + row.id + '/delete" '
+            // Edit-note button. row.note is already HTML-escaped server-side, so it is safe to
+            // embed in a double-quoted attribute; the modal handler reads it back decoded.
+            var noteAttr = (row.note != null) ? row.note : '';
+            var editButton = '<a href="#" class="actions btn btn-default btn-sm edit-file-note" '
+                + ' data-toggle="modal" data-target="#editFileNoteModal"'
+                + ' data-object-type="' + destination + '" data-object-id="' + row.item.id + '" data-file-id="' + row.id + '"'
+                + ' data-note="' + noteAttr + '" data-tooltip="true" title="{{ trans('general.edit') }}">'
+                + '<x-icon type="edit" /><span class="sr-only">{{ trans('general.edit') }}</span></a>&nbsp;';
+
+            var deleteButton = '<a href="{{ config('app.url') }}/' + destination + '/' + row.item.id + '/files/' + row.id + '/delete" '
                 + ' data-target="#dataConfirmModal" class="actions btn btn-danger btn-sm delete-asset" data-tooltip="true"  '
                 + ' data-toggle="modal" data-icon="fa-trash"'
                 + ' data-content="{{ trans('general.file_upload_status.confirm_delete') }}: ' + row.filename + '?" '
                 + ' data-title="{{  trans('general.delete') }}" onClick="return false;" data-icon="fa-trash">'
                 + '<x-icon type="delete" /><span class="sr-only">{{ trans('general.delete') }}</span></a>&nbsp;';
+
+            return editButton + deleteButton;
         }
     }
 

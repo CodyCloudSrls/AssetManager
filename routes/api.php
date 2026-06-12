@@ -1602,6 +1602,15 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
     )->name('api.files.store')
         ->where(['object_type' => 'accessories|audits|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|customers|users|companies|departments|documents|tickets|contracts']);
 
+    // Update a file's note
+    Route::patch('{object_type}/{id}/files/{file_id}',
+        [
+            Api\UploadedFilesController::class,
+            'update',
+        ]
+    )->name('api.files.update')
+        ->where(['object_type' => 'accessories|audits|assets|components|consumables|hardware|licenses|locations|maintenances|models|suppliers|customers|users|companies|departments|documents|tickets|contracts']);
+
     // Delete files(s)
     Route::delete('{object_type}/{id}/files/{file_id}/delete',
         [

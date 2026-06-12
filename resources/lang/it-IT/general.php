@@ -786,6 +786,11 @@ return array (
       'success' => 'File cancellato con successo i file |:count eliminati con successo',
       'error' => 'Eliminazione file fallita |:count cancellazione file fallita',
     ),
+    'update' =>
+    array (
+      'success' => 'Nota del file aggiornata con successo',
+      'error' => 'Aggiornamento nota del file fallito',
+    ),
     'file_not_found' => 'Il file selezionato non è stato trovato sul server',
     'invalid_id' => 'L\'ID del file non è valido',
     'invalid_object' => 'L\'ID dell\'oggetto non è valido',

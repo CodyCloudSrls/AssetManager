@@ -9,6 +9,7 @@ use App\Models\Import;
 use App\Support\Files\FileIntegrity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -172,6 +173,36 @@ class UploadedFilesController extends Controller
         // The file doesn't seem to really exist, so report an error
         return redirect()->back()->withFragment('files')->with('error', trans_choice('general.file_upload_status.delete.error', 1));
 
+    }
+
+    /**
+     * Update the note of an already uploaded file. The note is metadata only,
+     * so the file content (and its integrity checksum) is left untouched.
+     */
+    public function update(Request $request, $object_type, $id, $file_id): RedirectResponse
+    {
+        $object = self::$map_object_type[$object_type]::withTrashed()->find($id);
+        $this->authorize('files', $object);
+
+        if (! $object) {
+            return redirect()->back()->withFragment('files')->with('error', trans('general.file_upload_status.invalid_object'));
+        }
+
+        $request->validate(['notes' => 'nullable|string|max:65535']);
+
+        $log = Actionlog::whereNotNull('filename')
+            ->where('item_type', self::$map_object_type[$object_type])
+            ->where('item_id', $object->id)
+            ->find($file_id);
+
+        if (! $log) {
+            return redirect()->back()->withFragment('files')->with('error', trans('general.file_upload_status.file_not_found'));
+        }
+
+        $log->note = $request->input('notes');
+        $log->save();
+
+        return redirect()->back()->withFragment('files')->with('success', trans('general.file_upload_status.update.success'));
     }
 
     public function downloadImport(Import $import)

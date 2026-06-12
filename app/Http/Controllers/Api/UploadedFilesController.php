@@ -54,7 +54,7 @@ class UploadedFilesController extends Controller
             ->with(['adminuser', 'item']);
 
         $limit = app('api_limit_value');
-        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $uploads->count(), $limit);
+        $offset = Helper::clampPaginationOffset($request->input('offset'), $uploads->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sort = in_array($request->input('sort'), $allowed_columns) ? $request->input('sort') : 'created_at';
 
@@ -235,5 +235,37 @@ class UploadedFilesController extends Controller
         // The file doesn't seem to really exist, so report an error
         return response()->json(Helper::formatStandardApiResponse('error', null, trans_choice('general.file_upload_status.delete.error', 1)), 500);
 
+    }
+
+    /**
+     * Update the note of an already uploaded file. The note is metadata only,
+     * so the file content (and its integrity checksum) is left untouched.
+     */
+    public function update(Request $request, $object_type, $id, $file_id): JsonResponse
+    {
+        $object = self::$map_object_type[$object_type]::withTrashed()->find($id);
+        $this->authorize('files', $object);
+
+        if (! $object) {
+            return response()->json(Helper::formatStandardApiResponse('error', null, trans('general.file_upload_status.invalid_object')));
+        }
+
+        $request->validate(['notes' => 'nullable|string|max:65535']);
+
+        $log = Actionlog::query()
+            ->whereNotNull('filename')
+            ->where('action_type', 'uploaded')
+            ->where('item_type', self::$map_object_type[$object_type])
+            ->where('item_id', $object->id)
+            ->find($file_id);
+
+        if (! $log) {
+            return response()->json(Helper::formatStandardApiResponse('error', null, trans('general.file_upload_status.file_not_found')), 404);
+        }
+
+        $log->note = $request->input('notes');
+        $log->save();
+
+        return response()->json(Helper::formatStandardApiResponse('success', null, trans('general.file_upload_status.update.success')), 200);
     }
 }

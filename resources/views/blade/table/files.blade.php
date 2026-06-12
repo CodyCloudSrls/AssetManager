@@ -33,5 +33,41 @@
     </table>
 
     <x-gallery-card/>
+
+    @can('files', $object)
+        <div class="modal fade" id="editFileNoteModal" tabindex="-1" role="dialog" aria-labelledby="editFileNoteModalLabel">
+            <div class="modal-dialog" role="document">
+                <form id="editFileNoteForm" method="POST" action="" accept-charset="UTF-8">
+                    @csrf
+                    @method('PATCH')
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="{{ trans('button.cancel') }}"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="editFileNoteModalLabel">{{ trans('general.edit') }} &mdash; {{ trans('general.notes') }}</h4>
+                        </div>
+                        <div class="modal-body">
+                            <label for="editFileNoteText" class="control-label" id="editFileNoteFilename"></label>
+                            <textarea class="form-control" name="notes" id="editFileNoteText" rows="4" maxlength="65535"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">{{ trans('button.cancel') }}</button>
+                            <button type="submit" class="btn btn-primary">{{ trans('general.save') }}</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script nonce="{{ csrf_token() }}">
+            $(function () {
+                $(document).on('click', '.edit-file-note', function () {
+                    var $btn = $(this);
+                    var action = '{{ url('/') }}/' + $btn.attr('data-object-type') + '/' + $btn.attr('data-object-id') + '/files/' + $btn.attr('data-file-id');
+                    $('#editFileNoteForm').attr('action', action);
+                    $('#editFileNoteText').val($btn.attr('data-note') || '');
+                });
+            });
+        </script>
+    @endcan
 @endif
 @endcan

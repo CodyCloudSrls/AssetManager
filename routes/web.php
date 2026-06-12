@@ -790,6 +790,15 @@ Route::group(['middleware' => 'web'], function () {
     )->name('ui.files.store')
         ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|customers|components|companies|departments|documents|tickets|contracts']);
 
+    // Update a file's note
+    Route::patch('{object_type}/{id}/files/{file_id}',
+        [
+            UploadedFilesController::class,
+            'update',
+        ]
+    )->name('ui.files.update')
+        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|customers|components|companies|departments|documents|tickets|contracts']);
+
     // Delete files(s)
     Route::delete('{object_type}/{id}/files/{file_id}/delete',
         [

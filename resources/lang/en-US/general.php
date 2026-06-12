@@ -792,6 +792,11 @@ return [
             'error' => 'File deletion failed |:count file deletions failed',
         ],
 
+        'update' => [
+            'success' => 'File note successfully updated',
+            'error' => 'File note update failed',
+        ],
+
         'file_not_found' => 'The selected file was not found on server',
         'invalid_id' => 'That file ID is invalid',
         'invalid_object' => 'That object ID is invalid',
