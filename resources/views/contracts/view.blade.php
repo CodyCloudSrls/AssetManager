@@ -113,6 +113,18 @@
                     </x-tabs.pane>
 
                     <x-tabs.pane name="files" class="{{ $contract->uploads->count() == 0 ? 'hidden-print' : '' }}">
+                        @can('files', $contract)
+                            @if ($contract->customer && $contract->customer->uploads()->exists())
+                                @can('files', $contract->customer)
+                                    <div class="text-right hidden-print" style="margin-bottom: 10px;">
+                                        <a href="#" class="btn btn-sm btn-default" data-toggle="modal" data-target="#moveCustomerFileModal">
+                                            <x-icon type="paperclip" class="fa-fw" />
+                                            {{ trans('admin/contracts/general.move_file_from_customer') }}
+                                        </a>
+                                    </div>
+                                @endcan
+                            @endif
+                        @endcan
                         <x-table.files object_type="contracts" :object="$contract"/>
                     </x-tabs.pane>
                 </x-slot:tabpanes>
@@ -144,6 +156,53 @@
 @section('moar_scripts')
     @can('files', $contract)
         @include('modals.upload-file', ['item_type' => 'contracts', 'item_id' => $contract->id])
+
+        @if ($contract->customer && $contract->customer->uploads()->exists())
+            @can('files', $contract->customer)
+                <div class="modal fade" id="moveCustomerFileModal" tabindex="-1" role="dialog" aria-labelledby="moveCustomerFileModalLabel">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="{{ trans('button.cancel') }}"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title" id="moveCustomerFileModalLabel">{{ trans('admin/contracts/general.move_file_from_customer') }}</h4>
+                            </div>
+                            <div class="modal-body">
+                                <p class="help-block">{{ trans('admin/contracts/general.move_file_help') }}</p>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>{{ trans('general.file_name') }}</th>
+                                                <th>{{ trans('general.notes') }}</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($contract->customer->uploads()->orderByDesc('created_at')->get() as $upload)
+                                                <tr>
+                                                    <td>{{ $upload->filename }}</td>
+                                                    <td>{{ $upload->note }}</td>
+                                                    <td class="text-right">
+                                                        <form method="POST" action="{{ route('contracts.files.move', $contract) }}">
+                                                            @csrf
+                                                            <input type="hidden" name="file_id" value="{{ $upload->id }}">
+                                                            <button type="submit" class="btn btn-sm btn-primary">{{ trans('admin/contracts/general.move') }}</button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">{{ trans('button.cancel') }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endcan
+        @endif
     @endcan
 
     @include('partials.bootstrap-table', ['exportFile' => 'contract-' . $contract->name . '-export', 'search' => false])

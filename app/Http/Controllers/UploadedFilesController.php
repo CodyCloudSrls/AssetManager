@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\StorageHelper;
 use App\Http\Requests\UploadFileRequest;
 use App\Models\Actionlog;
+use App\Models\CustomerContract;
 use App\Models\Import;
 use App\Support\Files\FileIntegrity;
 use Illuminate\Http\JsonResponse;
@@ -203,6 +204,62 @@ class UploadedFilesController extends Controller
         $log->save();
 
         return redirect()->back()->withFragment('files')->with('success', trans('general.file_upload_status.update.success'));
+    }
+
+    /**
+     * Move an attachment from the contract's customer onto the contract itself.
+     * The physical file is moved between storage dirs and the Actionlog is
+     * re-parented; integrity stays verifiable because verificationForLog()
+     * derives the path from item_type and the file content is unchanged.
+     */
+    public function moveToContract(Request $request, CustomerContract $contract): RedirectResponse
+    {
+        $this->authorize('files', $contract);
+
+        $customer = $contract->customer;
+
+        if (! $customer) {
+            return redirect()->route('contracts.show', $contract)->withFragment('files')
+                ->with('error', trans('general.file_upload_status.invalid_object'));
+        }
+
+        $this->authorize('files', $customer);
+
+        $request->validate(['file_id' => 'required|integer']);
+
+        $log = Actionlog::whereNotNull('filename')
+            ->where('action_type', 'uploaded')
+            ->where('item_type', self::$map_object_type['customers'])
+            ->where('item_id', $customer->id)
+            ->find($request->integer('file_id'));
+
+        if (! $log || FileIntegrity::uploadDeletionRecorded($log)) {
+            return redirect()->route('contracts.show', $contract)->withFragment('files')
+                ->with('error', trans('general.file_upload_status.file_not_found'));
+        }
+
+        $from = self::$map_storage_path['customers'].$log->filename;
+        $to = self::$map_storage_path['contracts'].$log->filename;
+
+        if (! Storage::exists($from)) {
+            return redirect()->route('contracts.show', $contract)->withFragment('files')
+                ->with('error', trans('general.file_upload_status.file_not_found'));
+        }
+
+        if (! Storage::exists(self::$map_storage_path['contracts'])) {
+            Storage::makeDirectory(self::$map_storage_path['contracts'], 775);
+        }
+
+        Storage::move($from, $to);
+
+        $log->item_type = self::$map_object_type['contracts'];
+        $log->item_id = $contract->id;
+        // Re-anchor the integrity record to the new location/owner.
+        $log->log_meta = json_encode(FileIntegrity::withAuditChain(FileIntegrity::metadataForStoredFile($to), $log));
+        $log->save();
+
+        return redirect()->route('contracts.show', $contract)->withFragment('files')
+            ->with('success', trans('admin/contracts/general.file_move_success'));
     }
 
     public function downloadImport(Import $import)

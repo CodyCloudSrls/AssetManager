@@ -137,6 +137,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('customers/bulk/delete', [BulkCustomersController::class, 'destroy'])->name('customers.bulk.delete');
     Route::post('contracts/bulkedit', [BulkCustomerContractsController::class, 'edit'])->name('contracts.bulkedit');
     Route::post('contracts/bulkeditsave', [BulkCustomerContractsController::class, 'update'])->name('contracts.bulkeditsave');
+    Route::post('contracts/{contract}/files/move', [UploadedFilesController::class, 'moveToContract'])->name('contracts.files.move');
     Route::resource('contracts', CustomerContractsController::class)->parameters(['contracts' => 'contract']);
 
     /*
