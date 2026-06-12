@@ -119,6 +119,27 @@
                             </div>
                         @endforeach
 
+                        {{-- Tenant services (only coherent when all selected contracts share one tenant) --}}
+                        <div class="form-group {{ $errors->has('tenant_service_ids') ? ' has-error' : '' }}">
+                            <label for="tenant_service_ids" class="col-md-3 control-label">{{ trans('admin/tenantservices/general.field_label') }}</label>
+                            <div class="col-md-5">
+                                @if ($commonCompanyId)
+                                    <input type="hidden" name="tenant_service_ids_present" value="1">
+                                    <select class="js-data-ajax" data-endpoint="tenantservices" data-placeholder="{{ trans('admin/tenantservices/general.field_label') }}" multiple name="tenant_service_ids[]" id="tenant_service_ids" aria-label="tenant_service_ids" style="width: 100%" data-company-id="{{ $commonCompanyId }}"></select>
+                                @else
+                                    <input type="text" class="form-control" disabled value="">
+                                    <p class="help-block">{{ trans('admin/contracts/general.bulk_services_multi_tenant_hint') }}</p>
+                                @endif
+                                {!! $errors->first('tenant_service_ids', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-control">
+                                    <input type="checkbox" name="apply_tenant_service_ids" value="1" @checked(old('apply_tenant_service_ids')) @disabled(! $commonCompanyId)>
+                                    {{ trans('general.apply') }}
+                                </label>
+                            </div>
+                        </div>
+
                         {!! $errors->first('bulk_actions', '<div class="col-md-8 col-md-offset-3"><span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span></div>') !!}
                     </div>
 
@@ -146,7 +167,8 @@
                 starts_at: 'apply_starts_at',
                 ends_at: 'apply_ends_at',
                 renewal_due_at: 'apply_renewal_due_at',
-                notice_due_at: 'apply_notice_due_at'
+                notice_due_at: 'apply_notice_due_at',
+                'tenant_service_ids[]': 'apply_tenant_service_ids'
             };
 
             $.each(bulkApplyFields, function (fieldName, applyFieldName) {

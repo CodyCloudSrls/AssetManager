@@ -35,6 +35,8 @@ return [
     'move_file_help' => 'Move an attachment uploaded on the customer onto this contract.',
     'move' => 'Move',
     'no_customer_files' => 'The customer has no attachments to move.',
+    'bulk_services_single_tenant' => 'Tenant services can only be assigned in bulk to contracts of the same tenant.',
+    'bulk_services_multi_tenant_hint' => 'Available only when the selected contracts belong to the same company/tenant.',
     'subscriptions' => 'Subscriptions',
     'subscription' => 'Subscription',
     'add_subscription' => 'Add Subscription',

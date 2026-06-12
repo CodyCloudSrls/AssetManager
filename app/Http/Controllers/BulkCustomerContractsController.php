@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CustomerContract;
 use App\Models\CustomerContractEvent;
+use App\Models\TenantService;
 use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -45,6 +46,7 @@ class BulkCustomerContractsController extends Controller
         return view('contracts.bulk-edit', [
             'contracts' => $contracts,
             'statusOptions' => CustomerContract::statusOptions(),
+            'commonCompanyId' => $this->commonCompanyId($contracts),
         ]);
     }
 
@@ -76,6 +78,9 @@ class BulkCustomerContractsController extends Controller
             'renewal_due_at' => 'nullable|date',
             'apply_notice_due_at' => 'nullable|boolean',
             'notice_due_at' => 'nullable|date',
+            'apply_tenant_service_ids' => 'nullable|boolean',
+            'tenant_service_ids' => 'nullable|array',
+            'tenant_service_ids.*' => 'integer',
         ]);
 
         $validator->after(function ($validator) use ($request, $contracts) {
@@ -102,6 +107,30 @@ class BulkCustomerContractsController extends Controller
                     }
                 }
             }
+
+            if ($request->boolean('apply_tenant_service_ids')) {
+                // Tenant services are tenant-scoped, so bulk assignment is only
+                // coherent when every selected contract shares one tenant.
+                $tenantIds = $contracts
+                    ->map(fn ($contract) => TenantRecordGuard::companyTenantId($contract->company_id ? (int) $contract->company_id : null))
+                    ->filter()
+                    ->unique();
+
+                if ($tenantIds->count() !== 1) {
+                    $validator->errors()->add('tenant_service_ids', trans('admin/contracts/general.bulk_services_single_tenant'));
+                } else {
+                    $serviceIds = $this->normalizedTenantServiceIds($request);
+
+                    if (count($serviceIds) > 0) {
+                        $companyId = (int) $contracts->first()->company_id;
+                        $validIds = TenantService::validIdsForCompany($serviceIds, $companyId);
+
+                        if (count($validIds) !== count($serviceIds)) {
+                            $validator->errors()->add('tenant_service_ids', trans('admin/tenantservices/general.invalid_for_company'));
+                        }
+                    }
+                }
+            }
         });
 
         if ($validator->fails()) {
@@ -109,8 +138,10 @@ class BulkCustomerContractsController extends Controller
         }
 
         $updates = $this->updatesFromRequest($request);
+        $syncServices = $request->boolean('apply_tenant_service_ids');
+        $serviceIds = $syncServices ? $this->normalizedTenantServiceIds($request) : [];
 
-        DB::transaction(function () use ($contracts, $updates) {
+        DB::transaction(function () use ($contracts, $updates, $syncServices, $serviceIds) {
             foreach ($contracts as $contract) {
                 $this->authorize('update', $contract);
 
@@ -119,6 +150,12 @@ class BulkCustomerContractsController extends Controller
 
                 if (! $contract->save()) {
                     $contract->throwValidationException();
+                }
+
+                if ($syncServices) {
+                    $validIds = TenantService::validIdsForCompany($serviceIds, $contract->company_id ? (int) $contract->company_id : null);
+                    $contract->tenantServices()->sync($validIds);
+                    $contract->load('tenantServices');
                 }
 
                 [$oldValues, $newValues] = CustomerContractEvent::changes(
@@ -167,7 +204,25 @@ class BulkCustomerContractsController extends Controller
             }
         }
 
-        return false;
+        return $request->boolean('apply_tenant_service_ids');
+    }
+
+    private function commonCompanyId($contracts): ?int
+    {
+        $companyIds = $contracts->pluck('company_id')->filter()->map(fn ($id) => (int) $id)->unique();
+
+        return $companyIds->count() === 1 ? (int) $companyIds->first() : null;
+    }
+
+    private function normalizedTenantServiceIds(Request $request): array
+    {
+        return collect($request->input('tenant_service_ids', []))
+            ->filter(fn ($id) => $id !== null && $id !== '')
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**

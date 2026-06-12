@@ -35,6 +35,8 @@ return [
     'move_file_help' => 'Sposta sul contratto un allegato caricato sul cliente.',
     'move' => 'Sposta',
     'no_customer_files' => 'Il cliente non ha allegati da spostare.',
+    'bulk_services_single_tenant' => 'I servizi tenant si possono assegnare in blocco solo a contratti dello stesso tenant.',
+    'bulk_services_multi_tenant_hint' => 'Disponibile solo quando i contratti selezionati appartengono alla stessa azienda/tenant.',
     'subscriptions' => 'Abbonamenti',
     'subscription' => 'Abbonamento',
     'add_subscription' => 'Aggiungi abbonamento',
