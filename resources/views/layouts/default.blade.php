@@ -1214,7 +1214,7 @@
 
     {{-- CodyCloud theme overlay (Cloudflare-style dark skin). Loaded after the inline
          branding styles so it can override them; remove this line to revert. --}}
-    <link rel="stylesheet" href="{{ url('css/codycloud-theme.css') }}?v=4">
+    <link rel="stylesheet" href="{{ url('css/codycloud-theme.css') }}?v=5">
 
     {{-- Custom CSS --}}
     @if (($snipeSettings) && ($snipeSettings->custom_css))
