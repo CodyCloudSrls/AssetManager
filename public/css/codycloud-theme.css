@@ -1,0 +1,404 @@
+/*
+ * CodyCloud theme overlay — Cloudflare/CerberoSOC-inspired dark skin.
+ *
+ * Loaded after css/dist/all.css in layouts/default.blade.php. This is a
+ * non-destructive override layer (no SCSS rebuild required): it only restyles
+ * colours, borders, radii, typography and accents of the existing AdminLTE/
+ * Bootstrap markup. Remove the <link> in the layout to revert.
+ *
+ * Phase 1 — palette, surfaces, header, sidebar, cards, buttons, tables, forms,
+ * badges. Structural/component redesign is a later phase.
+ */
+
+:root {
+    --cc-bg: #0b0c0f;
+    --cc-bg-elevated: #101218;
+    --cc-surface: #15171d;
+    --cc-surface-2: #1b1e26;
+    --cc-surface-hover: #21242d;
+    --cc-border: #262a33;
+    --cc-border-strong: #313643;
+    --cc-text: #e7e9ee;
+    --cc-text-muted: #939aa6;
+    --cc-text-dim: #6b7280;
+    --cc-primary: #3b6fe8;
+    --cc-primary-hover: #335fce;
+    --cc-danger: #f0616d;
+    --cc-warning: #f5a623;
+    --cc-success: #34c759;
+    --cc-info: #38bdf8;
+    --cc-radius: 10px;
+    --cc-radius-sm: 8px;
+    --cc-font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ---------- Base ---------- */
+body,
+.wrapper,
+.content-wrapper,
+.right-side {
+    background-color: var(--cc-bg) !important;
+    color: var(--cc-text);
+    font-family: var(--cc-font);
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    color: var(--cc-primary);
+}
+
+a:hover,
+a:focus {
+    color: var(--cc-primary-hover);
+}
+
+h1, h2, h3, h4, h5, .box-title {
+    color: var(--cc-text);
+    font-weight: 600;
+}
+
+.text-muted,
+small,
+.help-block {
+    color: var(--cc-text-muted) !important;
+}
+
+/* ---------- Top header ---------- */
+.main-header > .navbar,
+.main-header .logo,
+.main-header .navbar {
+    background-color: var(--cc-bg-elevated) !important;
+    border-bottom: 1px solid var(--cc-border) !important;
+    box-shadow: none !important;
+}
+
+.main-header .logo {
+    border-right: 1px solid var(--cc-border) !important;
+    font-weight: 700;
+}
+
+.main-header .navbar .nav > li > a {
+    color: var(--cc-text-muted) !important;
+}
+
+.main-header .navbar .nav > li > a:hover,
+.main-header .navbar .nav > .open > a {
+    background-color: var(--cc-surface-hover) !important;
+    color: var(--cc-text) !important;
+}
+
+/* ---------- Sidebar ---------- */
+.main-sidebar,
+.left-side,
+.sidebar {
+    background-color: var(--cc-bg-elevated) !important;
+    border-right: 1px solid var(--cc-border);
+}
+
+.sidebar-menu > li > a {
+    color: var(--cc-text-muted) !important;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-menu > li:hover > a,
+.sidebar-menu > li.menu-open > a {
+    background-color: var(--cc-surface) !important;
+    color: var(--cc-text) !important;
+}
+
+.sidebar-menu > li.active > a,
+.sidebar-menu > li.active:hover > a {
+    background-color: var(--cc-surface-2) !important;
+    color: #fff !important;
+    border-left-color: var(--cc-primary) !important;
+}
+
+.sidebar-menu .treeview-menu {
+    background-color: rgba(0, 0, 0, 0.18) !important;
+}
+
+.sidebar-menu .treeview-menu > li > a {
+    color: var(--cc-text-muted) !important;
+}
+
+.sidebar-menu .treeview-menu > li.active > a,
+.sidebar-menu .treeview-menu > li > a:hover {
+    color: #fff !important;
+}
+
+.sidebar .header,
+.sidebar-menu li.header {
+    background: transparent !important;
+    color: var(--cc-text-dim) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 11px;
+}
+
+/* ---------- Boxes / cards ---------- */
+.box,
+.nav-tabs-custom,
+.info-box,
+.small-box,
+.panel {
+    background-color: var(--cc-surface) !important;
+    border: 1px solid var(--cc-border) !important;
+    border-radius: var(--cc-radius) !important;
+    box-shadow: none !important;
+}
+
+.box.box-default,
+.box.box-primary,
+.box.box-solid {
+    border-top-color: var(--cc-border) !important;
+}
+
+.box-header {
+    color: var(--cc-text) !important;
+    border-bottom: 1px solid var(--cc-border) !important;
+}
+
+.box-header.with-border {
+    border-bottom: 1px solid var(--cc-border) !important;
+}
+
+.box-footer {
+    background-color: transparent !important;
+    border-top: 1px solid var(--cc-border) !important;
+}
+
+.side-box,
+.box.side-box {
+    background-color: var(--cc-surface) !important;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+    border-radius: var(--cc-radius-sm);
+    font-weight: 500;
+}
+
+.btn-primary,
+.btn-theme {
+    background-color: var(--cc-primary) !important;
+    border-color: var(--cc-primary) !important;
+    color: #fff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-theme:hover,
+.btn-theme:focus {
+    background-color: var(--cc-primary-hover) !important;
+    border-color: var(--cc-primary-hover) !important;
+}
+
+.btn-default {
+    background-color: var(--cc-surface-2) !important;
+    border-color: var(--cc-border-strong) !important;
+    color: var(--cc-text) !important;
+}
+
+.btn-default:hover,
+.btn-default:focus {
+    background-color: var(--cc-surface-hover) !important;
+    border-color: var(--cc-border-strong) !important;
+    color: #fff !important;
+}
+
+.btn-danger {
+    background-color: var(--cc-danger) !important;
+    border-color: var(--cc-danger) !important;
+}
+
+.btn-warning {
+    background-color: var(--cc-warning) !important;
+    border-color: var(--cc-warning) !important;
+    color: #1a1205 !important;
+}
+
+.btn-success {
+    background-color: var(--cc-success) !important;
+    border-color: var(--cc-success) !important;
+}
+
+/* ---------- Tables ---------- */
+.table,
+.snipe-table {
+    color: var(--cc-text);
+}
+
+.table > thead > tr > th,
+.snipe-table > thead > tr > th,
+.fixed-table-header th {
+    color: var(--cc-text-muted) !important;
+    border-bottom: 1px solid var(--cc-border) !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-size: 12px;
+}
+
+.table > tbody > tr > td,
+.snipe-table > tbody > tr > td {
+    border-top: 1px solid var(--cc-border) !important;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd),
+.table-striped > tbody > tr:nth-of-type(odd) > td {
+    background-color: rgba(255, 255, 255, 0.015) !important;
+}
+
+.table-hover > tbody > tr:hover,
+.table-hover > tbody > tr:hover > td {
+    background-color: var(--cc-surface-2) !important;
+}
+
+.bootstrap-table .fixed-table-container {
+    border-color: var(--cc-border) !important;
+}
+
+.fixed-table-toolbar .search input,
+.bootstrap-table .form-control {
+    border-radius: var(--cc-radius-sm);
+}
+
+/* ---------- Forms ---------- */
+.form-control,
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple,
+.input-group-addon {
+    background-color: var(--cc-bg-elevated) !important;
+    border: 1px solid var(--cc-border-strong) !important;
+    color: var(--cc-text) !important;
+    border-radius: var(--cc-radius-sm) !important;
+    box-shadow: none !important;
+}
+
+.form-control:focus {
+    border-color: var(--cc-primary) !important;
+    box-shadow: 0 0 0 3px rgba(59, 111, 232, 0.18) !important;
+}
+
+.form-control::placeholder {
+    color: var(--cc-text-dim) !important;
+}
+
+.select2-dropdown,
+.select2-container--default .select2-results__option {
+    background-color: var(--cc-bg-elevated) !important;
+    color: var(--cc-text) !important;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--cc-primary) !important;
+}
+
+/* ---------- Badges / labels (pills) ---------- */
+.label,
+.badge {
+    border-radius: 999px;
+    font-weight: 600;
+    padding: 0.28em 0.7em;
+}
+
+.label-success,
+.badge-success {
+    background-color: rgba(52, 199, 89, 0.16) !important;
+    color: var(--cc-success) !important;
+}
+
+.label-danger,
+.badge-danger {
+    background-color: rgba(240, 97, 109, 0.16) !important;
+    color: var(--cc-danger) !important;
+}
+
+.label-warning,
+.badge-warning {
+    background-color: rgba(245, 166, 35, 0.16) !important;
+    color: var(--cc-warning) !important;
+}
+
+.label-default,
+.badge-default {
+    background-color: var(--cc-surface-2) !important;
+    color: var(--cc-text-muted) !important;
+}
+
+.label-info,
+.badge-info {
+    background-color: rgba(56, 189, 248, 0.16) !important;
+    color: var(--cc-info) !important;
+}
+
+/* ---------- Tabs ---------- */
+.nav-tabs {
+    border-bottom: 1px solid var(--cc-border) !important;
+}
+
+.nav-tabs > li > a {
+    color: var(--cc-text-muted) !important;
+    border: none !important;
+    border-radius: var(--cc-radius-sm) !important;
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li > a:hover {
+    background-color: var(--cc-surface-2) !important;
+    color: #fff !important;
+    border: none !important;
+}
+
+/* ---------- Misc ---------- */
+.modal-content {
+    background-color: var(--cc-surface) !important;
+    border: 1px solid var(--cc-border) !important;
+    border-radius: var(--cc-radius) !important;
+}
+
+.modal-header,
+.modal-footer {
+    border-color: var(--cc-border) !important;
+}
+
+.callout {
+    border-radius: var(--cc-radius-sm);
+    border: 1px solid var(--cc-border);
+}
+
+.dropdown-menu {
+    background-color: var(--cc-bg-elevated) !important;
+    border: 1px solid var(--cc-border) !important;
+    border-radius: var(--cc-radius-sm) !important;
+}
+
+.dropdown-menu > li > a {
+    color: var(--cc-text) !important;
+}
+
+.dropdown-menu > li > a:hover {
+    background-color: var(--cc-surface-hover) !important;
+}
+
+hr {
+    border-color: var(--cc-border) !important;
+}
+
+.pagination > li > a,
+.pagination > li > span {
+    background-color: var(--cc-surface) !important;
+    border-color: var(--cc-border) !important;
+    color: var(--cc-text-muted) !important;
+}
+
+.pagination > .active > a,
+.pagination > .active > span {
+    background-color: var(--cc-primary) !important;
+    border-color: var(--cc-primary) !important;
+    color: #fff !important;
+}

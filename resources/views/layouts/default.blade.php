@@ -35,6 +35,9 @@
     {{-- stylesheets --}}
     <link rel="stylesheet" href="{{ url(mix('css/dist/all.css')) }}">
 
+    {{-- CodyCloud theme overlay (Cloudflare-style dark skin; remove this line to revert) --}}
+    <link rel="stylesheet" href="{{ url('css/codycloud-theme.css') }}?v=1">
+
     {{-- page level css --}}
     @stack('css')
 
