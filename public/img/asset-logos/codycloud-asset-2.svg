@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 236 48" role="img" aria-label="CodyCloud Asset">
+  <defs>
+    <linearGradient id="cc2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5b8def"/>
+      <stop offset="1" stop-color="#3b6fe8"/>
+    </linearGradient>
+  </defs>
+  <!-- Monogram C ring with a node (cloud/asset) -->
+  <circle cx="20" cy="24" r="18" fill="none" stroke="url(#cc2)" stroke-width="4"
+          stroke-dasharray="74 39" stroke-linecap="round" transform="rotate(-45 20 24)"/>
+  <circle cx="20" cy="24" r="6" fill="url(#cc2)"/>
+  <text x="50" y="24" font-family="-apple-system,BlinkMacSystemFont,Inter,'Segoe UI',sans-serif" font-size="19" font-weight="700" fill="#ffffff">CodyCloud</text>
+  <text x="50" y="38" font-family="-apple-system,BlinkMacSystemFont,Inter,'Segoe UI',sans-serif" font-size="10" font-weight="600" letter-spacing="3" fill="#6f9bf0">ASSET</text>
+</svg>

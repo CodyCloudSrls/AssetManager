@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ Helper::determineLanguageDirection() }}" data-theme="light">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ Helper::determineLanguageDirection() }}" data-theme="dark">
 
 <head>
 
@@ -35,6 +35,9 @@
         </style>
     @endif
 
+    {{-- CodyCloud theme overlay (Cloudflare-style dark skin) --}}
+    <link rel="stylesheet" href="{{ url('css/codycloud-theme.css') }}?v=7">
+
     @if (($snipeSettings) && ($snipeSettings->custom_css))
         <style>
             {!! $snipeSettings->show_custom_css() !!}
@@ -45,13 +48,11 @@
 
 <body class="hold-transition login-page">
 
-    @if (($snipeSettings) && ($snipeSettings->logo!=''))
-        <div class="text-center">
-            <a href="{{ config('app.url') }}">
-                <img id="login-logo" src="{{ Storage::disk('public')->url('').e($snipeSettings->logo) }}" alt="{{ $snipeSettings->site_name }}">
-            </a>
-        </div>
-    @endif
+    <div class="text-center cc-login-logo">
+        <a href="{{ config('app.url') }}" aria-label="{{ $snipeSettings->site_name ?? 'CodyCloud' }}">
+            <img src="{{ url('img/asset-logos/codycloud-asset-1.svg') }}" alt="{{ $snipeSettings->site_name ?? 'CodyCloud' }}">
+        </a>
+    </div>
   <!-- Content -->
   @yield('content')
 

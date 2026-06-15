@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CodyCloud Asset — opzioni logo</title>
+<style>
+  :root{
+    --bg:#0b0c0f; --elevated:#101218; --surface:#15171d; --border:#262a33;
+    --text:#e7e9ee; --muted:#939aa6; --primary:#3b6fe8;
+    --font:-apple-system,BlinkMacSystemFont,Inter,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);padding:40px}
+  h1{font-weight:700;margin:0 0 4px}
+  p.sub{color:var(--muted);margin:0 0 32px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .card h2{font-size:14px;margin:0;padding:14px 18px;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+  .preview{padding:28px 18px;display:flex;align-items:center;justify-content:center;min-height:120px}
+  .preview img{height:48px;width:auto}
+  .on-dark{background:var(--elevated)}
+  .on-bg{background:var(--bg)}
+  .sidebar-demo{display:flex}
+  .sidebar-demo .sb{width:230px;background:var(--elevated);border-right:1px solid var(--border);padding:0}
+  .sidebar-demo .brand{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+  .sidebar-demo .brand img{height:30px}
+  .sidebar-demo .navrow{padding:12px 18px;color:var(--muted);font-size:14px;border-bottom:1px solid rgba(255,255,255,.03)}
+  .sidebar-demo .navrow.active{color:#fff;border-left:3px solid var(--primary);background:#1b1e26}
+  .sidebar-demo .body{flex:1;padding:24px;background:var(--bg)}
+  .foot{margin-top:36px;color:var(--muted);font-size:13px}
+  code{background:var(--elevated);border:1px solid var(--border);border-radius:6px;padding:2px 6px}
+</style>
+</head>
+<body>
+  <h1>CodyCloud Asset — opzioni logo</h1>
+  <p class="sub">Tre proposte SVG dedicate al prodotto Asset, ottimizzate per il tema scuro. Scegli quella preferita per il sondaggio.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Opzione 1 — Cubo / asset</h2>
+      <div class="preview on-dark"><img src="/img/asset-logos/codycloud-asset-1.svg" alt="Opzione 1"></div>
+      <div class="sidebar-demo">
+        <div class="sb">
+          <div class="brand"><img src="/img/asset-logos/codycloud-asset-1.svg" alt="Opzione 1"></div>
+          <div class="navrow active">Cruscotto</div>
+          <div class="navrow">Beni</div>
+          <div class="navrow">Documenti</div>
+        </div>
+        <div class="body"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Opzione 2 — Monogramma C</h2>
+      <div class="preview on-dark"><img src="/img/asset-logos/codycloud-asset-2.svg" alt="Opzione 2"></div>
+      <div class="sidebar-demo">
+        <div class="sb">
+          <div class="brand"><img src="/img/asset-logos/codycloud-asset-2.svg" alt="Opzione 2"></div>
+          <div class="navrow active">Cruscotto</div>
+          <div class="navrow">Beni</div>
+          <div class="navrow">Documenti</div>
+        </div>
+        <div class="body"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Opzione 3 — Tag / barcode</h2>
+      <div class="preview on-dark"><img src="/img/asset-logos/codycloud-asset-3.svg" alt="Opzione 3"></div>
+      <div class="sidebar-demo">
+        <div class="sb">
+          <div class="brand"><img src="/img/asset-logos/codycloud-asset-3.svg" alt="Opzione 3"></div>
+          <div class="navrow active">Cruscotto</div>
+          <div class="navrow">Beni</div>
+          <div class="navrow">Documenti</div>
+        </div>
+        <div class="body"></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">File: <code>/img/asset-logos/codycloud-asset-1.svg</code>, <code>...-2.svg</code>, <code>...-3.svg</code>. Dimmi il numero scelto e lo applico al brand della sidebar (e come logo di login/branding).</p>
+</body>
+</html>
