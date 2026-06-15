@@ -43,6 +43,82 @@
     --main-theme-hover: #1b1e26;
     --nav-primary-text-color: #c7ccd6;
     --btn-theme-hover: #313643;
+    /* Kill the grey footer and sidebar-submenu tints */
+    --main-footer-bg-color: #0b0c0f;
+    --main-footer-text-color: #939aa6;
+    --main-footer-top-border-color: #262a33;
+    --sidenav-hover-color-bg: #1b1e26;
+    --sidenav-text-hover-color: #ffffff;
+    --sidenav-text-nohover-color: #c7ccd6;
+}
+
+/* ---------- Brand moved into the sidebar ---------- */
+.main-header .left-navblock {
+    display: none !important;
+}
+
+.cc-sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--cc-border);
+    color: var(--cc-text) !important;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.1;
+    text-decoration: none !important;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.cc-sidebar-brand:hover {
+    color: #fff !important;
+}
+
+.cc-sidebar-brand-img {
+    max-height: 32px;
+    width: auto;
+    border-radius: 6px;
+    flex: 0 0 auto;
+}
+
+.sidebar-collapse .cc-sidebar-brand {
+    justify-content: center;
+    padding: 14px 4px;
+}
+
+.sidebar-collapse .cc-sidebar-brand-text {
+    display: none;
+}
+
+/* ---------- Footer: no grey ---------- */
+footer.main-footer,
+.main-footer {
+    background-color: var(--cc-bg-elevated) !important;
+    border-top: 1px solid var(--cc-border) !important;
+    color: var(--cc-text-muted) !important;
+}
+
+/* ---------- Sidebar submenu (treeview): near-black, no grey/green ---------- */
+.sidebar-menu .treeview-menu {
+    background-color: rgba(0, 0, 0, 0.28) !important;
+}
+
+.sidebar-menu .treeview-menu > li > a {
+    color: var(--cc-text-muted) !important;
+}
+
+.sidebar-menu .treeview-menu > li > a:hover,
+.sidebar-menu .treeview-menu > li.active > a {
+    background-color: var(--cc-surface-2) !important;
+    color: #fff !important;
+}
+
+.sidebar-menu > li:hover > a,
+.sidebar-menu > li.menu-open > a {
+    background-color: var(--cc-surface) !important;
+    color: #fff !important;
 }
 
 /* ---------- Base ---------- */

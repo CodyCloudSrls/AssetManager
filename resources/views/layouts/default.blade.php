@@ -1214,7 +1214,7 @@
 
     {{-- CodyCloud theme overlay (Cloudflare-style dark skin). Loaded after the inline
          branding styles so it can override them; remove this line to revert. --}}
-    <link rel="stylesheet" href="{{ url('css/codycloud-theme.css') }}?v=5">
+    <link rel="stylesheet" href="{{ url('css/codycloud-theme.css') }}?v=6">
 
     {{-- Custom CSS --}}
     @if (($snipeSettings) && ($snipeSettings->custom_css))
@@ -1604,6 +1604,13 @@
             <aside class="main-sidebar">
                 <!-- sidebar: style can be found in sidebar.less -->
                 <section class="sidebar">
+                    <!-- CodyCloud brand inside the sidebar (moved out of the top bar) -->
+                    <a href="{{ config('app.url') }}" class="cc-sidebar-brand no-hover">
+                        @if ($snipeSettings && $snipeSettings->logo != '')
+                            <img class="cc-sidebar-brand-img" src="{{ Storage::disk('public')->url($snipeSettings->logo) }}" alt="{{ $snipeSettings->site_name }} logo">
+                        @endif
+                        <span class="cc-sidebar-brand-text">{{ $snipeSettings->site_name }}</span>
+                    </a>
                     <!-- sidebar menu: : style can be found in sidebar.less -->
                     <ul class="sidebar-menu" data-widget="tree" {{ \App\Helpers\Helper::determineLanguageDirection() == 'rtl' ? 'style="margin-right:12px' : '' }}>
                         @can('admin')
