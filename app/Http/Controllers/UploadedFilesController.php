@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\StorageHelper;
 use App\Http\Requests\UploadFileRequest;
 use App\Models\Actionlog;
+use App\Models\Customer;
 use App\Models\CustomerContract;
 use App\Models\Import;
 use App\Support\Files\FileIntegrity;
@@ -225,25 +226,56 @@ class UploadedFilesController extends Controller
 
         $this->authorize('files', $customer);
 
-        $request->validate(['file_id' => 'required|integer']);
+        $request->validate([
+            'file_ids' => 'required_without:file_id|array',
+            'file_ids.*' => 'integer',
+            'file_id' => 'required_without:file_ids|integer',
+        ]);
 
+        $ids = collect($request->input('file_ids', []))
+            ->push($request->input('file_id'))
+            ->filter(fn ($id) => is_numeric($id))
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $moved = 0;
+        foreach ($ids as $id) {
+            if ($this->moveCustomerFileToContract($customer, $contract, $id)) {
+                $moved++;
+            }
+        }
+
+        if ($moved === 0) {
+            return redirect()->route('contracts.show', $contract)->withFragment('files')
+                ->with('error', trans('general.file_upload_status.file_not_found'));
+        }
+
+        return redirect()->route('contracts.show', $contract)->withFragment('files')
+            ->with('success', trans_choice('admin/contracts/general.file_move_success', $moved, ['count' => $moved]));
+    }
+
+    /**
+     * Move a single customer upload onto the contract. Returns false (and makes
+     * no change) when the file does not belong to the customer or is missing.
+     */
+    private function moveCustomerFileToContract(Customer $customer, CustomerContract $contract, int $fileId): bool
+    {
         $log = Actionlog::whereNotNull('filename')
             ->where('action_type', 'uploaded')
             ->where('item_type', self::$map_object_type['customers'])
             ->where('item_id', $customer->id)
-            ->find($request->integer('file_id'));
+            ->find($fileId);
 
         if (! $log || FileIntegrity::uploadDeletionRecorded($log)) {
-            return redirect()->route('contracts.show', $contract)->withFragment('files')
-                ->with('error', trans('general.file_upload_status.file_not_found'));
+            return false;
         }
 
         $from = self::$map_storage_path['customers'].$log->filename;
         $to = self::$map_storage_path['contracts'].$log->filename;
 
         if (! Storage::exists($from)) {
-            return redirect()->route('contracts.show', $contract)->withFragment('files')
-                ->with('error', trans('general.file_upload_status.file_not_found'));
+            return false;
         }
 
         if (! Storage::exists(self::$map_storage_path['contracts'])) {
@@ -258,8 +290,7 @@ class UploadedFilesController extends Controller
         $log->log_meta = json_encode(FileIntegrity::withAuditChain(FileIntegrity::metadataForStoredFile($to), $log));
         $log->save();
 
-        return redirect()->route('contracts.show', $contract)->withFragment('files')
-            ->with('success', trans('admin/contracts/general.file_move_success'));
+        return true;
     }
 
     public function downloadImport(Import $import)

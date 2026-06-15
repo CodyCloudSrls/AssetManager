@@ -161,46 +161,52 @@
             @can('files', $contract->customer)
                 <div class="modal fade" id="moveCustomerFileModal" tabindex="-1" role="dialog" aria-labelledby="moveCustomerFileModalLabel">
                     <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal" aria-label="{{ trans('button.cancel') }}"><span aria-hidden="true">&times;</span></button>
-                                <h4 class="modal-title" id="moveCustomerFileModalLabel">{{ trans('admin/contracts/general.move_file_from_customer') }}</h4>
-                            </div>
-                            <div class="modal-body">
-                                <p class="help-block">{{ trans('admin/contracts/general.move_file_help') }}</p>
-                                <div class="table-responsive">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>{{ trans('general.file_name') }}</th>
-                                                <th>{{ trans('general.notes') }}</th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($contract->customer->uploads()->orderByDesc('created_at')->get() as $upload)
+                        <form method="POST" action="{{ route('contracts.files.move', $contract) }}">
+                            @csrf
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="{{ trans('button.cancel') }}"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="moveCustomerFileModalLabel">{{ trans('admin/contracts/general.move_file_from_customer') }}</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <p class="help-block">{{ trans('admin/contracts/general.move_file_help') }}</p>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
                                                 <tr>
-                                                    <td>{{ $upload->filename }}</td>
-                                                    <td>{{ $upload->note }}</td>
-                                                    <td class="text-right">
-                                                        <form method="POST" action="{{ route('contracts.files.move', $contract) }}">
-                                                            @csrf
-                                                            <input type="hidden" name="file_id" value="{{ $upload->id }}">
-                                                            <button type="submit" class="btn btn-sm btn-primary">{{ trans('admin/contracts/general.move') }}</button>
-                                                        </form>
-                                                    </td>
+                                                    <th style="width:1%;"><input type="checkbox" id="moveCustomerFileCheckAll" aria-label="{{ trans('general.select_all_none') }}"></th>
+                                                    <th>{{ trans('general.file_name') }}</th>
+                                                    <th>{{ trans('general.notes') }}</th>
                                                 </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($contract->customer->uploads()->orderByDesc('created_at')->get() as $upload)
+                                                    <tr>
+                                                        <td><input type="checkbox" name="file_ids[]" value="{{ $upload->id }}" class="move-customer-file-checkbox" aria-label="{{ $upload->filename }}"></td>
+                                                        <td>{{ $upload->filename }}</td>
+                                                        <td>{{ $upload->note }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">{{ trans('button.cancel') }}</button>
+                                    <button type="submit" class="btn btn-primary">{{ trans('admin/contracts/general.move_selected') }}</button>
                                 </div>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-default" data-dismiss="modal">{{ trans('button.cancel') }}</button>
-                            </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
+
+                <script nonce="{{ csrf_token() }}">
+                    $(function () {
+                        $('#moveCustomerFileCheckAll').on('change', function () {
+                            $('.move-customer-file-checkbox').prop('checked', $(this).prop('checked'));
+                        });
+                    });
+                </script>
             @endcan
         @endif
     @endcan

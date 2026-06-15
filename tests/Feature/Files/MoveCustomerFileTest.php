@@ -78,6 +78,24 @@ class MoveCustomerFileTest extends TestCase
         $this->assertTrue(FileIntegrity::verificationForLog(Actionlog::find($fileId))['verified']);
     }
 
+    public function test_moves_multiple_attachments_at_once(): void
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->superuser()->for($company)->create();
+        $customer = $this->customer($company, $user, 'Multi Customer');
+        $contract = $this->contractFor($customer, $user);
+        $first = $this->uploadToCustomer($user, $customer);
+        $second = $this->uploadToCustomer($user, $customer);
+
+        $this->actingAs($user)
+            ->post(route('contracts.files.move', $contract), ['file_ids' => [$first, $second]])
+            ->assertRedirect(route('contracts.show', $contract).'#files')
+            ->assertSessionHas('success');
+
+        $this->assertSame(2, $contract->fresh()->uploads()->count());
+        $this->assertSame(0, $customer->fresh()->uploads()->count());
+    }
+
     public function test_cannot_move_a_file_from_a_different_customer(): void
     {
         $company = Company::factory()->create();
