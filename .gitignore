@@ -92,3 +92,12 @@ storage/ldap_client_tls.key
 /storage/framework/testing
 
 /.phpunit.cache
+
+# Internal planning/process docs (kept locally, not published)
+/docs/codycloud-asset-fix-wbs-2026-06-09.md
+/docs/compliance-framework-pack-operations-wbs.md
+/docs/nis2-gdpr-document-management-wbs.md
+/docs/compliance-pack-rollout-ai-act-nis2.md
+/docs/project-direction-status.md
+/docs/nis2-pack-audit.md
+/docs/compliance-source-register.md
