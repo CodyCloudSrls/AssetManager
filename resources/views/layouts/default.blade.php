@@ -20,10 +20,9 @@
           href="{{ ($snipeSettings) && ($snipeSettings->favicon!='') ?  Storage::disk('public')->url(e($snipeSettings->logo)) :  config('app.url').'/img/app-icon.png' }}">
     <link rel="shortcut icon" type="image/ico"
           href="{{ ($snipeSettings) && ($snipeSettings->favicon!='') ?  Storage::disk('public')->url(e($snipeSettings->favicon)) : config('app.url').'/favicon.ico' }}">
-    {{-- CodyCloud SVG favicon (brand mark); used unless an admin favicon is set --}}
-    @if (!(($snipeSettings) && ($snipeSettings->favicon!='')))
-        <link rel="icon" type="image/svg+xml" href="{{ url('img/asset-logos/codycloud-asset-mark.svg') }}">
-    @endif
+    {{-- CodyCloud SVG favicon (logo-1 brand mark); modern browsers prefer this,
+         the .ico above stays as a legacy fallback --}}
+    <link rel="icon" type="image/svg+xml" href="{{ url('img/asset-logos/codycloud-asset-mark.svg') }}">
 
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
