@@ -455,6 +455,51 @@ input[type="search"].search-highlight {
 
 .select2-container--default .select2-results__option--highlighted[aria-selected] {
     background-color: var(--cc-primary) !important;
+    color: #fff !important;
+}
+
+/* Rendered value + placeholder inside the select2 box */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--cc-text) !important;
+    line-height: 32px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: var(--cc-text-dim) !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: var(--cc-text-muted) transparent transparent transparent !important;
+}
+
+/* Selected tags ("pills") in a multi-select */
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: var(--cc-surface-2) !important;
+    border: 1px solid var(--cc-border-strong) !important;
+    color: var(--cc-text) !important;
+    border-radius: 6px !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: var(--cc-text-muted) !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: #fff !important;
+}
+
+/* The currently-selected row in the open dropdown */
+.select2-container--default .select2-results__option[aria-selected="true"] {
+    background-color: var(--cc-surface-2) !important;
+    color: var(--cc-text) !important;
+}
+
+/* Search field inside an open select2 dropdown */
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    background-color: var(--cc-surface) !important;
+    border: 1px solid var(--cc-border-strong) !important;
+    color: var(--cc-text) !important;
+    border-radius: var(--cc-radius-sm) !important;
 }
 
 /* ---------- Badges / labels (pills) ---------- */
@@ -546,6 +591,108 @@ input[type="search"].search-highlight {
 
 hr {
     border-color: var(--cc-border) !important;
+}
+
+/* ---------- Page header (title + breadcrumb on every page) ---------- */
+.content-header {
+    padding: 18px 20px 10px;
+}
+
+.content-header > h1 {
+    color: var(--cc-text) !important;
+    font-weight: 600;
+}
+
+.content-header > h1 > small {
+    color: var(--cc-text-muted) !important;
+}
+
+.content-header > .breadcrumb,
+.breadcrumb {
+    background-color: transparent !important;
+    border: 0 !important;
+    padding: 6px 0 !important;
+}
+
+.content-header > .breadcrumb {
+    top: 16px;
+}
+
+.breadcrumb > li,
+.breadcrumb > li > a {
+    color: var(--cc-text-muted) !important;
+}
+
+.breadcrumb > li > a:hover {
+    color: var(--cc-primary) !important;
+}
+
+.breadcrumb > .active {
+    color: var(--cc-text) !important;
+}
+
+.breadcrumb > li + li::before {
+    color: var(--cc-text-dim) !important;
+}
+
+/* ---------- Custom checkboxes / radios on the dark skin ---------- */
+.checkbox label,
+.radio label {
+    color: var(--cc-text);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: var(--cc-primary);
+}
+
+/* Snipe draws faux check/radio marks via ::before — keep them readable on dark */
+input[type="checkbox"]::before,
+input[type="radio"]::before {
+    background-color: var(--cc-surface) !important;
+    border: 1px solid var(--cc-border-strong) !important;
+}
+
+input[type="checkbox"]:checked::before,
+input[type="radio"]:checked::before {
+    background-color: var(--cc-primary) !important;
+    border-color: var(--cc-primary) !important;
+}
+
+/* ---------- Panels (used on some settings / detail pages) ---------- */
+.panel {
+    background-color: var(--cc-surface) !important;
+    border: 1px solid var(--cc-border) !important;
+    border-radius: var(--cc-radius) !important;
+    box-shadow: none !important;
+}
+
+.panel-heading {
+    background-color: var(--cc-bg-elevated) !important;
+    border-bottom: 1px solid var(--cc-border) !important;
+    color: var(--cc-text) !important;
+    border-radius: var(--cc-radius) var(--cc-radius) 0 0 !important;
+}
+
+.panel-footer {
+    background-color: var(--cc-bg-elevated) !important;
+    border-top: 1px solid var(--cc-border) !important;
+}
+
+.panel-default,
+.panel-primary {
+    border-color: var(--cc-border) !important;
+}
+
+/* ---------- List groups ---------- */
+.list-group-item {
+    background-color: var(--cc-surface) !important;
+    border-color: var(--cc-border) !important;
+    color: var(--cc-text) !important;
+}
+
+.list-group-item:hover {
+    background-color: var(--cc-surface-hover) !important;
 }
 
 /* ---------- Login page ---------- */

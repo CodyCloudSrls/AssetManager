@@ -20,6 +20,10 @@
           href="{{ ($snipeSettings) && ($snipeSettings->favicon!='') ?  Storage::disk('public')->url(e($snipeSettings->logo)) :  config('app.url').'/img/app-icon.png' }}">
     <link rel="shortcut icon" type="image/ico"
           href="{{ ($snipeSettings) && ($snipeSettings->favicon!='') ?  Storage::disk('public')->url(e($snipeSettings->favicon)) : config('app.url').'/favicon.ico' }}">
+    {{-- CodyCloud SVG favicon (brand mark); used unless an admin favicon is set --}}
+    @if (!(($snipeSettings) && ($snipeSettings->favicon!='')))
+        <link rel="icon" type="image/svg+xml" href="{{ url('img/asset-logos/codycloud-asset-mark.svg') }}">
+    @endif
 
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -1214,7 +1218,7 @@
 
     {{-- CodyCloud theme overlay (Cloudflare-style dark skin). Loaded after the inline
          branding styles so it can override them; remove this line to revert. --}}
-    <link rel="stylesheet" href="{{ url('css/codycloud-theme.css') }}?v=10">
+    <link rel="stylesheet" href="{{ url('css/codycloud-theme.css') }}?v={{ @filemtime(public_path('css/codycloud-theme.css')) ?: '10' }}">
 
     {{-- Custom CSS --}}
     @if (($snipeSettings) && ($snipeSettings->custom_css))
