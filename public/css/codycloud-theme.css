@@ -63,14 +63,16 @@
     padding-top: 0 !important;
 }
 
-/* Brand + collapse toggle share one row, aligned with the header height */
+/* Brand + collapse toggle share one row, aligned with the header height.
+   The header navbar and this head are both pinned to 56px and both start at
+   top:0, so their bottom border lines up exactly (the "nav line" == "topbar line"). */
 .cc-sidebar-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    height: 50px;
-    min-height: 50px;
+    height: 56px;
+    min-height: 56px;
     padding: 8px 12px 8px 18px;
     border-bottom: 1px solid var(--cc-border);
 }
@@ -947,7 +949,87 @@ kbd {
     color: var(--cc-text) !important;
 }
 
+/* Kill the AdminLTE caret/triangle that points up from navbar dropdowns —
+   Cloudflare panels float as clean cards with no arrow. */
+.main-header .navbar-nav > .notifications-menu > .dropdown-menu::before,
+.main-header .navbar-nav > .notifications-menu > .dropdown-menu::after,
+.main-header .navbar-nav > .messages-menu > .dropdown-menu::before,
+.main-header .navbar-nav > .messages-menu > .dropdown-menu::after,
+.main-header .navbar-nav > .tasks-menu > .dropdown-menu::before,
+.main-header .navbar-nav > .tasks-menu > .dropdown-menu::after,
+.main-header .navbar-nav > .user-menu > .dropdown-menu::before,
+.main-header .navbar-nav > .user-menu > .dropdown-menu::after,
+.main-header .navbar-custom-menu .dropdown-menu::before,
+.main-header .navbar-custom-menu .dropdown-menu::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* Full-bleed special menus (notifications / messages / tasks): match the panel */
+.main-header .navbar-nav > .notifications-menu > .dropdown-menu,
+.main-header .navbar-nav > .messages-menu > .dropdown-menu,
+.main-header .navbar-nav > .tasks-menu > .dropdown-menu {
+    width: 300px !important;
+    min-width: 260px !important;
+}
+
+.main-header .navbar-nav > .notifications-menu > .dropdown-menu > li.header,
+.main-header .navbar-nav > .messages-menu > .dropdown-menu > li.header,
+.main-header .navbar-nav > .tasks-menu > .dropdown-menu > li.header,
+.main-header .navbar-nav .dropdown-menu > li.header {
+    background-color: transparent !important;
+    color: var(--cc-text-muted) !important;
+    border-bottom: 1px solid var(--cc-border) !important;
+    border-radius: 0 !important;
+    padding: 8px 12px !important;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.main-header .navbar-nav > .notifications-menu > .dropdown-menu > li.footer > a,
+.main-header .navbar-nav > .messages-menu > .dropdown-menu > li.footer > a,
+.main-header .navbar-nav > .tasks-menu > .dropdown-menu > li.footer > a,
+.main-header .navbar-nav .dropdown-menu > li.footer > a {
+    background-color: transparent !important;
+    color: var(--cc-primary) !important;
+    border-top: 1px solid var(--cc-border) !important;
+    border-radius: 0 !important;
+}
+
+.main-header .navbar-nav .dropdown-menu .menu > li > a {
+    border-bottom: 1px solid var(--cc-border) !important;
+    color: var(--cc-text) !important;
+}
+
+/* The Create-New menu and any plain navbar dropdown: comfortable min width */
+.main-header .navbar-custom-menu .dropdown-menu {
+    min-width: 220px !important;
+}
+
 /* Header left padding now that the hamburger moved into the sidebar */
 .main-header .navbar {
     padding-left: 8px;
+}
+
+/* Pin the top bar to a deterministic 56px so its bottom border lines up with
+   the sidebar head (both start at top:0). */
+.main-header,
+.main-header > .navbar,
+.main-header .navbar {
+    min-height: 56px !important;
+    height: 56px !important;
+}
+
+/* Keep the header icon row vertically centred in the 56px bar */
+.main-header .navbar-custom-menu > .nav.navbar-nav {
+    display: flex;
+    align-items: center;
+    height: 56px;
+}
+.main-header .navbar-custom-menu > .nav.navbar-nav > li > a {
+    padding-top: 0;
+    padding-bottom: 0;
+    display: flex;
+    align-items: center;
+    height: 56px;
 }
