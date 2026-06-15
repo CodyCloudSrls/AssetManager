@@ -815,6 +815,7 @@ return array (
   'device_eol' => 'Device EOL',
   'na' => 'N/A',
   'upload_files' => 'Upload Files',
+  'upload_files_drag_drop' => 'Trascina qui i file, oppure',
   'uploaded_files' => 'Uploaded Files',
   'last_note' => 'Last Note',
 );

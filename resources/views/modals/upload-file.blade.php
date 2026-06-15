@@ -19,10 +19,14 @@
                 <div class="row">
                     <div class="col-md-12">
 
-                        <label class="btn btn-theme btn-block">
-                            {{ trans('button.select_files')  }}
-                            <input type="file" name="file[]" multiple class="js-uploadFile" id="uploadFile" data-maxsize="{{ Helper::file_upload_max_size() }}" accept="{{ config('filesystems.allowed_upload_mimetypes') }}" style="display:none" required>
-                        </label>
+                        <div id="uploadDropZone" class="upload-dropzone" style="border: 2px dashed #b3b3b3; border-radius: 6px; padding: 18px; text-align: center; transition: border-color .15s, background-color .15s;">
+                            <i class="fa-solid fa-cloud-arrow-up fa-2x" aria-hidden="true"></i>
+                            <p style="margin: 6px 0 10px;">{{ trans('general.upload_files_drag_drop') }}</p>
+                            <label class="btn btn-theme">
+                                {{ trans('button.select_files')  }}
+                                <input type="file" name="file[]" multiple class="js-uploadFile" id="uploadFile" data-maxsize="{{ Helper::file_upload_max_size() }}" accept="{{ config('filesystems.allowed_upload_mimetypes') }}" style="display:none" required>
+                            </label>
+                        </div>
 
                     </div>
                     <div class="col-md-12">
@@ -52,3 +56,46 @@
         </div>
     </div>
 </div>
+
+<script nonce="{{ csrf_token() }}">
+    $(function () {
+        var zone = document.getElementById('uploadDropZone');
+        var input = document.getElementById('uploadFile');
+
+        if (! zone || ! input || typeof DataTransfer === 'undefined') {
+            return;
+        }
+
+        var setActive = function (on) {
+            zone.style.borderColor = on ? '#5bc0de' : '#b3b3b3';
+            zone.style.backgroundColor = on ? 'rgba(91,192,222,0.08)' : '';
+        };
+
+        ['dragenter', 'dragover'].forEach(function (ev) {
+            zone.addEventListener(ev, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                setActive(true);
+            });
+        });
+
+        ['dragleave', 'dragend'].forEach(function (ev) {
+            zone.addEventListener(ev, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                setActive(false);
+            });
+        });
+
+        zone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            setActive(false);
+
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+                input.files = e.dataTransfer.files;
+                $(input).trigger('change');
+            }
+        });
+    });
+</script>
