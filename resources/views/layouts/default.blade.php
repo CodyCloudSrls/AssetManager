@@ -1613,7 +1613,7 @@
                             <img class="cc-sidebar-brand-img" src="{{ url('img/asset-logos/codycloud-asset-1.svg') }}" alt="{{ $snipeSettings->site_name }}">
                             <img class="cc-sidebar-brand-mark" src="{{ url('img/asset-logos/codycloud-asset-mark.svg') }}" alt="{{ $snipeSettings->site_name }}">
                         </a>
-                        <a href="#" class="cc-sidebar-toggle" role="button" aria-label="{{ trans('general.toggle_navigation') }}">
+                        <a href="#" class="cc-sidebar-toggle" data-toggle="push-menu" role="button" aria-label="{{ trans('general.toggle_navigation') }}">
                             <i class="fa-solid fa-bars" aria-hidden="true"></i>
                         </a>
                     </div>
@@ -2217,20 +2217,6 @@
                 <!-- /.sidebar -->
             </aside>
 
-            <script nonce="{{ csrf_token() }}">
-                // The sidebar collapse toggle was moved next to the logo; forward its
-                // click to the original (hidden) AdminLTE toggle so the binding works.
-                document.addEventListener('DOMContentLoaded', function () {
-                    var moved = document.querySelector('.cc-sidebar-toggle');
-                    var original = document.querySelector('.main-header .sidebar-toggle');
-                    if (moved && original) {
-                        moved.addEventListener('click', function (e) {
-                            e.preventDefault();
-                            original.click();
-                        });
-                    }
-                });
-            </script>
 
             <!-- Content Wrapper. Contains page content -->
 

@@ -116,6 +116,26 @@
     display: none !important;
 }
 
+/* The header element (z-index 1030) spans full width; its transparent top-left
+   region sat ON TOP of the sidebar head and swallowed the clicks meant for the
+   brand + toggle (logo visible through it, but nothing clickable). Raise the
+   sidebar above the header so the toggle actually receives the click that
+   AdminLTE's document-delegated push-menu handler listens for. */
+.main-sidebar {
+    z-index: 1040 !important;
+}
+
+.cc-sidebar-head,
+.cc-sidebar-brand,
+.cc-sidebar-toggle {
+    position: relative;
+    z-index: 2;
+}
+
+.cc-sidebar-toggle {
+    cursor: pointer;
+}
+
 /* Collapsed sidebar: keep only the toggle, centred (it expands the sidebar) */
 .sidebar-collapse .cc-sidebar-head {
     justify-content: center;
@@ -1027,7 +1047,7 @@ kbd {
 .navbar-nav > .dropdown > .dropdown-menu,
 .navbar-nav > .user-menu > .dropdown-menu,
 .main-header .dropdown-menu {
-    background-color: #1c1f27 !important;
+    background-color: var(--cc-bg-elevated) !important;
     border: 1px solid var(--cc-border-strong) !important;
     border-radius: 10px !important;
     box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55) !important;
@@ -1046,7 +1066,7 @@ kbd {
 .main-header .dropdown-menu > li > a,
 .main-header .dropdown-menu > li > a:link,
 .main-header .dropdown-menu > li > a:visited {
-    color: #d6dae2 !important;
+    color: var(--cc-text) !important;
     background-color: transparent !important;
     border-radius: 7px !important;
     padding: 9px 12px !important;
@@ -1060,7 +1080,7 @@ kbd {
 .main-header .dropdown-menu > li:hover > a,
 .main-header .dropdown-menu > .active > a,
 .main-header .dropdown-menu > .active > a:hover {
-    background-color: #2a2f3a !important;
+    background-color: var(--cc-surface-hover) !important;
     color: #ffffff !important;
 }
 
