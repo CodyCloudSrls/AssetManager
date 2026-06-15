@@ -57,14 +57,21 @@
     display: none !important;
 }
 
-/* Brand + collapse toggle share one row at the top of the sidebar */
+/* Remove the AdminLTE top gap so the brand sits flush at the top */
+.main-sidebar,
+.main-sidebar .sidebar {
+    padding-top: 0 !important;
+}
+
+/* Brand + collapse toggle share one row, aligned with the header height */
 .cc-sidebar-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    min-height: 64px;
-    padding: 12px 12px 12px 18px;
+    height: 50px;
+    min-height: 50px;
+    padding: 8px 12px 8px 18px;
     border-bottom: 1px solid var(--cc-border);
 }
 
@@ -76,7 +83,7 @@
 }
 
 .cc-sidebar-brand-img {
-    height: 34px;
+    height: 30px;
     width: auto;
 }
 
@@ -869,29 +876,50 @@ kbd {
 .main-header .navbar-custom-menu .dropdown-menu,
 .main-header .navbar-nav .dropdown-menu,
 .navbar-nav > .dropdown > .dropdown-menu,
-.navbar-nav > .user-menu > .dropdown-menu {
-    background-color: var(--cc-bg-elevated) !important;
-    border: 1px solid var(--cc-border) !important;
-    border-radius: var(--cc-radius-sm) !important;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45) !important;
+.navbar-nav > .user-menu > .dropdown-menu,
+.main-header .dropdown-menu {
+    background-color: #1c1f27 !important;
+    border: 1px solid var(--cc-border-strong) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55) !important;
     padding: 6px !important;
+    margin-top: 8px !important;
+}
+
+.main-header .navbar-custom-menu .dropdown-menu > li,
+.main-header .navbar-nav .dropdown-menu > li,
+.main-header .dropdown-menu > li {
+    background-color: transparent !important;
 }
 
 .main-header .navbar-custom-menu .dropdown-menu > li > a,
 .main-header .navbar-nav .dropdown-menu > li > a,
-.main-header .dropdown-menu > li > a {
-    color: var(--cc-text) !important;
+.main-header .dropdown-menu > li > a,
+.main-header .dropdown-menu > li > a:link,
+.main-header .dropdown-menu > li > a:visited {
+    color: #d6dae2 !important;
     background-color: transparent !important;
-    border-radius: 6px;
-    padding: 8px 12px;
+    border-radius: 7px !important;
+    padding: 9px 12px !important;
 }
 
 .main-header .navbar-custom-menu .dropdown-menu > li > a:hover,
 .main-header .navbar-custom-menu .dropdown-menu > li > a:focus,
 .main-header .navbar-nav .dropdown-menu > li > a:hover,
 .main-header .dropdown-menu > li > a:hover,
-.main-header .dropdown-menu > .active > a {
-    background-color: var(--cc-surface-hover) !important;
+.main-header .dropdown-menu > li > a:focus,
+.main-header .dropdown-menu > li:hover > a,
+.main-header .dropdown-menu > .active > a,
+.main-header .dropdown-menu > .active > a:hover {
+    background-color: #2a2f3a !important;
+    color: #ffffff !important;
+}
+
+/* Open toggle (the header item whose dropdown is open) */
+.main-header .navbar .nav > .open > a,
+.main-header .navbar .nav > .open > a:hover,
+.main-header .navbar .nav > .open > a:focus {
+    background-color: var(--cc-surface-2) !important;
     color: #ffffff !important;
 }
 
