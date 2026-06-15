@@ -21,6 +21,12 @@ return [
         'name' => 'Vede tutti i tenant',
         'note' => 'Consente a un superadmin piattaforma di vedere e cambiare su tutti i tenant. Questa autorizzazione non ha effetto per superuser tenant o utenti vincolati a tenant.',
     ],
+    'tenantsservicesview' => [
+        'name' => 'Visualizza servizi tenant',
+    ],
+    'tenantsservicesmanage' => [
+        'name' => 'Gestisci servizi tenant',
+    ],
     'import' => [
         'name' => 'Importazione CSV',
         'note' => 'Questo consentirà agli utenti di importare anche se l\'accesso a utenti, asset, ecc è negato altrove.',
@@ -509,6 +515,9 @@ return [
     ],
     'contractsdelete' => [
         'name' => 'Elimina contratti',
+    ],
+    'contractsfiles' => [
+        'name' => 'Gestisci allegati contratti',
     ],
     'manufacturers' => [
         'name' => 'Produttori',

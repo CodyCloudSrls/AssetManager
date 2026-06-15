@@ -2630,6 +2630,8 @@
                 destination = 'models';
             } else if (row.item.type === 'assets') {
                 destination = 'hardware';
+            } else if (row.item.type === 'customercontracts') {
+                destination = 'contracts';
             } else {
                 destination = row.item.type;
             }

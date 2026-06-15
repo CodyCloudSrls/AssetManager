@@ -35,6 +35,12 @@ return [
         'name' => 'View All Tenants',
         'note' => 'Allows a platform superadmin to see and switch across every tenant. This permission has no effect for tenant superusers or tenant-bound users.',
     ],
+    'tenantsservicesview' => [
+        'name' => 'View Tenant Services',
+    ],
+    'tenantsservicesmanage' => [
+        'name' => 'Manage Tenant Services',
+    ],
 
     'import' => [
         'name' => 'CSV Import',
@@ -589,6 +595,9 @@ return [
     ],
     'contractsdelete' => [
         'name' => 'Delete Contracts',
+    ],
+    'contractsfiles' => [
+        'name' => 'Manage Contract Files',
     ],
     'manufacturers' => [
         'name' => 'Manufacturers',
