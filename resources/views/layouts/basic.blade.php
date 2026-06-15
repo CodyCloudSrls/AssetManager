@@ -36,7 +36,7 @@
     @endif
 
     {{-- CodyCloud theme overlay (Cloudflare-style dark skin) --}}
-    <link rel="stylesheet" href="{{ url('css/codycloud-theme.css') }}?v=7">
+    <link rel="stylesheet" href="{{ url('css/codycloud-theme.css') }}?v=8">
 
     @if (($snipeSettings) && ($snipeSettings->custom_css))
         <style>

@@ -57,11 +57,21 @@
     display: none !important;
 }
 
+/* Brand + collapse toggle share one row at the top of the sidebar */
+.cc-sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 64px;
+    padding: 12px 12px 12px 18px;
+    border-bottom: 1px solid var(--cc-border);
+}
+
 .cc-sidebar-brand {
     display: flex;
     align-items: center;
-    padding: 16px 18px;
-    border-bottom: 1px solid var(--cc-border);
+    overflow: hidden;
     text-decoration: none !important;
 }
 
@@ -72,22 +82,39 @@
 
 .cc-sidebar-brand-mark {
     display: none;
-    height: 32px;
+    height: 30px;
     width: auto;
 }
 
-/* Collapsed sidebar: show the square mark only, centred */
-.sidebar-collapse .cc-sidebar-brand {
+.cc-sidebar-toggle {
+    flex: 0 0 auto;
+    padding: 8px 10px;
+    font-size: 18px;
+    line-height: 1;
+    color: var(--cc-text-muted) !important;
+    border-radius: var(--cc-radius-sm);
+    text-decoration: none !important;
+}
+
+.cc-sidebar-toggle:hover,
+.cc-sidebar-toggle:focus {
+    color: #ffffff !important;
+    background-color: var(--cc-surface-2);
+}
+
+/* Hide the old hamburger that sat in the header, one row above the logo */
+.main-header .sidebar-toggle {
+    display: none !important;
+}
+
+/* Collapsed sidebar: keep only the toggle, centred (it expands the sidebar) */
+.sidebar-collapse .cc-sidebar-head {
     justify-content: center;
     padding: 12px 4px;
 }
 
-.sidebar-collapse .cc-sidebar-brand-img {
+.sidebar-collapse .cc-sidebar-brand {
     display: none;
-}
-
-.sidebar-collapse .cc-sidebar-brand-mark {
-    display: block;
 }
 
 /* ---------- Footer: no grey ---------- */
@@ -832,4 +859,67 @@ kbd {
 .panel-footer {
     background-color: var(--cc-bg-elevated) !important;
     border-color: var(--cc-border) !important;
+}
+
+/* ============================================================
+   Nav dropdowns (header "Crea", company switcher, user menu,
+   settings) — dark and consistent, overriding inline branding.
+   ============================================================ */
+
+.main-header .navbar-custom-menu .dropdown-menu,
+.main-header .navbar-nav .dropdown-menu,
+.navbar-nav > .dropdown > .dropdown-menu,
+.navbar-nav > .user-menu > .dropdown-menu {
+    background-color: var(--cc-bg-elevated) !important;
+    border: 1px solid var(--cc-border) !important;
+    border-radius: var(--cc-radius-sm) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45) !important;
+    padding: 6px !important;
+}
+
+.main-header .navbar-custom-menu .dropdown-menu > li > a,
+.main-header .navbar-nav .dropdown-menu > li > a,
+.main-header .dropdown-menu > li > a {
+    color: var(--cc-text) !important;
+    background-color: transparent !important;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.main-header .navbar-custom-menu .dropdown-menu > li > a:hover,
+.main-header .navbar-custom-menu .dropdown-menu > li > a:focus,
+.main-header .navbar-nav .dropdown-menu > li > a:hover,
+.main-header .dropdown-menu > li > a:hover,
+.main-header .dropdown-menu > .active > a {
+    background-color: var(--cc-surface-hover) !important;
+    color: #ffffff !important;
+}
+
+.main-header .dropdown-menu .divider,
+.dropdown-menu .divider {
+    background-color: var(--cc-border) !important;
+    margin: 6px 0;
+}
+
+/* User menu panel (header/footer of the avatar dropdown) */
+.navbar-custom-menu .user-menu .user-header {
+    background-color: var(--cc-surface) !important;
+    color: var(--cc-text) !important;
+    border-bottom: 1px solid var(--cc-border);
+}
+
+.navbar-custom-menu .user-menu .user-footer {
+    background-color: var(--cc-bg-elevated) !important;
+    border-top: 1px solid var(--cc-border);
+}
+
+.navbar-custom-menu .user-menu .user-footer .btn-default {
+    background-color: var(--cc-surface-2) !important;
+    border-color: var(--cc-border-strong) !important;
+    color: var(--cc-text) !important;
+}
+
+/* Header left padding now that the hamburger moved into the sidebar */
+.main-header .navbar {
+    padding-left: 8px;
 }
