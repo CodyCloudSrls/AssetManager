@@ -32,6 +32,19 @@
     --cc-font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
+/*
+ * Override Snipe-IT's branding theme variables so the top header, dropdowns,
+ * labels and pagination follow the dark skin instead of the configured
+ * (blue) header colour. This file is loaded AFTER the inline branding <style>,
+ * so these definitions win.
+ */
+:root {
+    --main-theme-color: #101218;
+    --main-theme-hover: #1b1e26;
+    --nav-primary-text-color: #c7ccd6;
+    --btn-theme-hover: #313643;
+}
+
 /* ---------- Base ---------- */
 body,
 .wrapper,
@@ -77,8 +90,26 @@ small,
 }
 
 .main-header .logo {
+    background-color: var(--cc-bg-elevated) !important;
     border-right: 1px solid var(--cc-border) !important;
+    color: var(--cc-text) !important;
     font-weight: 700;
+}
+
+/* Table toolbar (refresh / export / print / columns / search) */
+.fixed-table-toolbar .btn,
+.fixed-table-toolbar .btn-group > .btn,
+.btn-tableButton {
+    background-color: var(--cc-surface-2) !important;
+    border-color: var(--cc-border-strong) !important;
+    color: var(--cc-text) !important;
+}
+
+.fixed-table-toolbar .btn:hover,
+.btn-tableButton:hover,
+.btn-tableButton:focus {
+    background-color: var(--cc-surface-hover) !important;
+    color: #fff !important;
 }
 
 .main-header .navbar .nav > li > a {

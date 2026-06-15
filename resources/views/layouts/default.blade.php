@@ -35,9 +35,6 @@
     {{-- stylesheets --}}
     <link rel="stylesheet" href="{{ url(mix('css/dist/all.css')) }}">
 
-    {{-- CodyCloud theme overlay (Cloudflare-style dark skin; remove this line to revert) --}}
-    <link rel="stylesheet" href="{{ url('css/codycloud-theme.css') }}?v=1">
-
     {{-- page level css --}}
     @stack('css')
 
@@ -1214,6 +1211,10 @@
 
 
     </style>
+
+    {{-- CodyCloud theme overlay (Cloudflare-style dark skin). Loaded after the inline
+         branding styles so it can override them; remove this line to revert. --}}
+    <link rel="stylesheet" href="{{ url('css/codycloud-theme.css') }}?v=2">
 
     {{-- Custom CSS --}}
     @if (($snipeSettings) && ($snipeSettings->custom_css))
