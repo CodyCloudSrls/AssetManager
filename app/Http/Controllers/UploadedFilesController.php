@@ -178,6 +178,56 @@ class UploadedFilesController extends Controller
     }
 
     /**
+     * Delete several uploaded files at once for the given object.
+     */
+    public function bulkDestroy(Request $request, $object_type, $id): RedirectResponse
+    {
+        $object = self::$map_object_type[$object_type]::withTrashed()->find($id);
+        $this->authorize('files', $object);
+
+        if (! $object) {
+            return redirect()->back()->withFragment('files')->with('error', trans('general.file_upload_status.invalid_object'));
+        }
+
+        $ids = collect($request->input('ids', []))
+            ->filter(fn ($value) => is_numeric($value))
+            ->map(fn ($value) => (int) $value)
+            ->unique()
+            ->values();
+
+        $deleted = 0;
+        foreach ($ids as $fileId) {
+            $log = Actionlog::where('id', $fileId)
+                ->where('item_type', self::$map_object_type[$object_type])
+                ->where('item_id', $object->id)
+                ->first();
+
+            if ($log && $this->deleteUploadedFileLog($object_type, $object, $log)) {
+                $deleted++;
+            }
+        }
+
+        if ($deleted === 0) {
+            return redirect()->back()->withFragment('files')->with('error', trans_choice('general.file_upload_status.delete.error', 1));
+        }
+
+        return redirect()->back()->withFragment('files')->with('success', trans_choice('general.file_upload_status.delete.success', $deleted));
+    }
+
+    private function deleteUploadedFileLog(string $object_type, $object, Actionlog $log): bool
+    {
+        $metadata = FileIntegrity::metadataForStoredFile(self::$map_storage_path[$object_type].$log->filename);
+        $metadata['integrity']['delete_recorded_at'] = now()->toIso8601String();
+        $metadata['integrity']['delete_mode'] = $object_type === 'documents' ? 'tombstone_preserve_file' : 'delete_file';
+
+        if ($object_type !== 'documents' && Storage::exists(self::$map_storage_path[$object_type].$log->filename)) {
+            Storage::delete(self::$map_storage_path[$object_type].$log->filename);
+        }
+
+        return (bool) $log->logUploadDelete($object, $log->filename, $metadata);
+    }
+
+    /**
      * Update the note of an already uploaded file. The note is metadata only,
      * so the file content (and its integrity checksum) is left untouched.
      */

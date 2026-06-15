@@ -56,6 +56,35 @@ class DeleteContractFileTest extends TestCase
         $this->assertSame(0, $contract->fresh()->uploads()->count());
     }
 
+    public function test_multiple_contract_files_can_be_bulk_deleted(): void
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->superuser()->for($company)->create();
+        [$contract, $firstId] = $this->contractWithFile($user, $company);
+
+        $this->actingAs($user)
+            ->post(route('ui.files.store', ['object_type' => 'contracts', 'id' => $contract->id]), [
+                'file' => [UploadedFile::fake()->create('second.pdf', 30)],
+            ]);
+        $secondId = (int) Actionlog::query()
+            ->where('item_type', CustomerContract::class)
+            ->where('item_id', $contract->id)
+            ->where('action_type', 'uploaded')
+            ->latest('id')
+            ->value('id');
+
+        $this->assertSame(2, $contract->fresh()->uploads()->count());
+
+        $this->actingAs($user)
+            ->post(route('ui.files.bulkdestroy', ['object_type' => 'contracts', 'id' => $contract->id]), [
+                'ids' => [$firstId, $secondId],
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertSame(0, $contract->fresh()->uploads()->count());
+    }
+
     public function test_the_legacy_customercontracts_object_type_is_not_a_valid_route(): void
     {
         $company = Company::factory()->create();

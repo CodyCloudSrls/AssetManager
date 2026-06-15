@@ -793,6 +793,15 @@ Route::group(['middleware' => 'web'], function () {
     )->name('ui.files.store')
         ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|customers|components|companies|departments|documents|tickets|contracts']);
 
+    // Delete several files at once
+    Route::post('{object_type}/{id}/files/bulk-delete',
+        [
+            UploadedFilesController::class,
+            'bulkDestroy',
+        ]
+    )->name('ui.files.bulkdestroy')
+        ->where(['object_type' => 'assets|maintenances|hardware|models|users|locations|accessories|consumables|licenses|suppliers|customers|components|companies|departments|documents|tickets|contracts']);
+
     // Update a file's note
     Route::patch('{object_type}/{id}/files/{file_id}',
         [

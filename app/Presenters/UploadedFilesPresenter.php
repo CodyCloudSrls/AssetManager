@@ -17,6 +17,13 @@ class UploadedFilesPresenter extends Presenter
 
         $layout = [
             [
+                'field' => 'checkbox',
+                'checkbox' => true,
+                'titleTooltip' => trans('general.select_all_none'),
+                'printIgnore' => true,
+                'class' => 'hidden-print',
+            ],
+            [
                 'field' => 'id',
                 'searchable' => true,
                 'sortable' => true,

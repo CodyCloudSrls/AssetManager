@@ -11,6 +11,15 @@
 </x-slot:table_header>
 
 @if(isset($object))
+    @can('files', $object)
+        <form method="POST" action="{{ route('ui.files.bulkdestroy', ['object_type' => $object_type, 'id' => $object->id]) }}" id="{{ $object_type }}-bulkDeleteFilesForm" class="hidden-print" style="margin-bottom: 10px;">
+            @csrf
+            <button type="submit" class="btn btn-danger btn-sm" id="{{ $object_type }}-bulkDeleteFilesButton" disabled>
+                <x-icon type="delete" class="fa-fw" />
+                {{ trans('general.bulk_delete') }}
+            </button>
+        </form>
+    @endcan
     <table
         data-columns="{{ \App\Presenters\UploadedFilesPresenter::dataTableLayout() }}"
         data-cookie-id-table="{{ $object_type }}-FileUploadsTable"
@@ -65,6 +74,39 @@
                     var action = '{{ url('/') }}/' + $btn.attr('data-object-type') + '/' + $btn.attr('data-object-id') + '/files/' + $btn.attr('data-file-id');
                     $('#editFileNoteForm').attr('action', action);
                     $('#editFileNoteText').val($btn.attr('data-note') || '');
+                });
+
+                var $filesTable = $('#{{ $object_type }}-FileUploadsTable');
+                var $bulkForm = $('#{{ $object_type }}-bulkDeleteFilesForm');
+                var $bulkButton = $('#{{ $object_type }}-bulkDeleteFilesButton');
+
+                var selectedFileIds = function () {
+                    try {
+                        return ($filesTable.bootstrapTable('getSelections') || []).map(function (row) { return row.id; });
+                    } catch (error) {
+                        return [];
+                    }
+                };
+
+                var refreshBulkDelete = function () {
+                    var ids = selectedFileIds();
+                    $bulkButton.prop('disabled', ids.length === 0);
+                    $bulkForm.find('input[name="ids[]"]').remove();
+                    ids.forEach(function (id) {
+                        $bulkForm.append('<input type="hidden" name="ids[]" value="' + id + '">');
+                    });
+                };
+
+                $filesTable.on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table load-success.bs.table page-change.bs.table', refreshBulkDelete);
+
+                $bulkForm.on('submit', function (event) {
+                    if (selectedFileIds().length === 0) {
+                        event.preventDefault();
+                        return;
+                    }
+                    if (! window.confirm('{{ trans('general.file_upload_status.confirm_delete') }}')) {
+                        event.preventDefault();
+                    }
                 });
             });
         </script>
