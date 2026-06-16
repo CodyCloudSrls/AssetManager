@@ -14,7 +14,7 @@
     @can('files', $object)
         <form method="POST" action="{{ route('ui.files.bulkdestroy', ['object_type' => $object_type, 'id' => $object->id]) }}" id="{{ $object_type }}-bulkDeleteFilesForm" class="hidden-print" style="margin-bottom: 10px;">
             @csrf
-            <button type="submit" class="btn btn-danger btn-sm" id="{{ $object_type }}-bulkDeleteFilesButton" disabled>
+            <button type="submit" class="btn btn-danger btn-sm" id="{{ $object_type }}-bulkDeleteFilesButton">
                 <x-icon type="delete" class="fa-fw" />
                 {{ trans('general.bulk_delete') }}
             </button>
@@ -102,23 +102,26 @@
                     return ids;
                 };
 
-                var refreshBulkDelete = function () {
+                // Keep the form's hidden ids[] in sync with the current selection.
+                var syncSelectionInputs = function () {
                     var ids = selectedFileIds();
-                    $bulkButton.prop('disabled', ids.length === 0);
                     $bulkForm.find('input[name="ids[]"]').remove();
                     ids.forEach(function (id) {
                         $bulkForm.append('<input type="hidden" name="ids[]" value="' + id + '">');
                     });
+                    return ids;
                 };
 
-                $filesTable.on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table load-success.bs.table page-change.bs.table', refreshBulkDelete);
-                // Native-change fallback (covers builds where the bs.table check events don't fire)
-                $filesTable.on('change', 'input[type="checkbox"]', function () { setTimeout(refreshBulkDelete, 0); });
+                $filesTable.on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table load-success.bs.table page-change.bs.table', syncSelectionInputs);
+                $filesTable.on('change', 'input[type="checkbox"]', function () { setTimeout(syncSelectionInputs, 0); });
 
+                // The button stays clickable; we validate the selection at submit time
+                // (robust against bootstrap-table builds that don't emit check events).
                 $bulkForm.on('submit', function (event) {
-                    refreshBulkDelete();
-                    if (selectedFileIds().length === 0) {
+                    var ids = syncSelectionInputs();
+                    if (ids.length === 0) {
                         event.preventDefault();
+                        window.alert('{{ trans('general.no_files_selected') }}');
                         return;
                     }
                     if (! window.confirm('{{ trans('general.file_upload_status.confirm_delete') }}')) {

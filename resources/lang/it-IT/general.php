@@ -61,6 +61,7 @@ return array (
   'bulk_checkout' => 'Assegnazione Massiva',
   'bulk_edit' => 'Modifica Massiva',
   'bulk_delete' => 'Cancellazione Massiva',
+  'no_files_selected' => 'Seleziona almeno un file da eliminare.',
   'bulk_actions' => 'Azioni Massive',
   'bulk_checkin_delete' => 'Restituzione Massiva / Cancellazione Utenti',
   'byod' => 'BYOD',

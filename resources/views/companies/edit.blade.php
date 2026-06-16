@@ -9,7 +9,12 @@
 {{-- Page content --}}
 @section('inputFields')
 @include ('partials.forms.edit.name', ['translated_name' => trans('admin/companies/table.name')])
-@include ('partials.forms.edit.company-select', ['translated_name' => trans('admin/companies/table.parent'), 'fieldname' => 'parent_id', 'item' => $item])
+@include ('partials.forms.edit.company-select', ['translated_name' => trans('admin/companies/table.parent'), 'fieldname' => 'parent_id', 'item' => $item, 'allow_empty' => true])
+<div class="form-group">
+    <div class="col-md-8 col-md-offset-3">
+        <p class="help-block" style="margin-top:-8px;">{{ trans('admin/companies/table.parent_help') }}</p>
+    </div>
+</div>
 @include ('partials.forms.edit.phone')
 @include ('partials.forms.edit.fax')
 @include ('partials.forms.edit.email')

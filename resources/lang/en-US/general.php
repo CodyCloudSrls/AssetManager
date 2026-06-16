@@ -61,6 +61,7 @@ return [
     'bulk_checkout' => 'Bulk Checkout',
     'bulk_edit' => 'Bulk Edit',
     'bulk_delete' => 'Bulk Delete',
+    'no_files_selected' => 'Select at least one file to delete.',
     'bulk_actions' => 'Bulk Actions',
     'bulk_checkin_delete' => 'Bulk Checkin / Delete Users',
     'byod' => 'BYOD',

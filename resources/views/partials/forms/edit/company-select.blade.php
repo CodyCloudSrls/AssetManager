@@ -4,7 +4,8 @@
         <label for="{{ $fieldname }}" class="col-md-3 control-label">{{ $translated_name }}</label>
         <div class="col-md-6">
             @php
-                $lockedCompanyId = old($fieldname, (isset($item) && $item->{$fieldname}) ? $item->{$fieldname} : (\App\Models\Company::preferredCompanySelectionId() ?? auth()->user()?->company_id));
+                $companySelectDefault = (isset($allow_empty) && $allow_empty) ? '' : (\App\Models\Company::preferredCompanySelectionId() ?? auth()->user()?->company_id);
+                $lockedCompanyId = old($fieldname, (isset($item) && $item->{$fieldname}) ? $item->{$fieldname} : $companySelectDefault);
             @endphp
             <input type="hidden" name="{{ $fieldname }}" value="{{ $lockedCompanyId }}">
             <select class="js-data-ajax" disabled data-endpoint="companies"
@@ -33,7 +34,10 @@
                         </option>
                     @endforeach
                 @endisset
-                @if ($company_id = old($fieldname, (isset($item) && $item->{$fieldname}) ? $item->{$fieldname} : (\App\Models\Company::preferredCompanySelectionId() ?? '')))
+                @php
+                    $companySelectDefault = (isset($allow_empty) && $allow_empty) ? '' : (\App\Models\Company::preferredCompanySelectionId() ?? '');
+                @endphp
+                @if ($company_id = old($fieldname, (isset($item) && $item->{$fieldname}) ? $item->{$fieldname} : $companySelectDefault))
                     <option value="{{ $company_id }}" selected="selected">
                         {{ (\App\Models\Company::find($company_id)) ? \App\Models\Company::find($company_id)->name : '' }}
                     </option>

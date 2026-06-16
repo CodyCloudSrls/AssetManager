@@ -117,9 +117,10 @@
                             @if ($contract->customer && $contract->customer->uploads()->exists())
                                 @can('files', $contract->customer)
                                     <div class="text-right hidden-print" style="margin-bottom: 10px;">
-                                        <a href="#" class="btn btn-sm btn-default" data-toggle="modal" data-target="#moveCustomerFileModal">
+                                        <a href="#" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#moveCustomerFileModal">
                                             <x-icon type="paperclip" class="fa-fw" />
                                             {{ trans('admin/contracts/general.move_file_from_customer') }}
+                                            ({{ $contract->customer->uploads()->count() }})
                                         </a>
                                     </div>
                                 @endcan

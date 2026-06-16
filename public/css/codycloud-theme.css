@@ -505,6 +505,47 @@ textarea[disabled],
     color: var(--cc-text-dim) !important;
 }
 
+/* Keep the fill inside the rounded outline so no square corner pokes out,
+   and clip select2's inner elements (rendered value, arrow) to the same radius. */
+.form-control,
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="url"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="search"],
+select,
+textarea,
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple,
+.input-group-addon {
+    background-clip: padding-box !important;
+}
+
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple {
+    overflow: hidden !important;
+}
+
+/* select2 arrow box must follow the rounded right edge, not square it off */
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 100% !important;
+    top: 0 !important;
+    background: transparent !important;
+    border-radius: 0 var(--cc-radius-sm) var(--cc-radius-sm) 0 !important;
+}
+
+/* Focused select2 should glow rounded like inputs, not a square border */
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: var(--cc-primary) !important;
+    box-shadow: 0 0 0 3px rgba(59, 111, 232, 0.18) !important;
+    outline: none !important;
+}
+
 .select2-dropdown,
 .select2-container--default .select2-results__option {
     background-color: var(--cc-bg-elevated) !important;
