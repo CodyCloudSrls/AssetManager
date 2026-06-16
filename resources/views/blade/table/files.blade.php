@@ -81,11 +81,25 @@
                 var $bulkButton = $('#{{ $object_type }}-bulkDeleteFilesButton');
 
                 var selectedFileIds = function () {
+                    var ids = [];
                     try {
-                        return ($filesTable.bootstrapTable('getSelections') || []).map(function (row) { return row.id; });
+                        ids = ($filesTable.bootstrapTable('getSelections') || []).map(function (row) { return row.id; });
                     } catch (error) {
-                        return [];
+                        ids = [];
                     }
+                    // Fallback: some bootstrap-table builds don't bubble check.bs.table,
+                    // so read the checked rows straight from the DOM via their row index.
+                    if (ids.length === 0) {
+                        var data = [];
+                        try { data = $filesTable.bootstrapTable('getData') || []; } catch (e) { data = []; }
+                        $filesTable.find('tbody input[type="checkbox"]:checked').each(function () {
+                            var idx = $(this).closest('tr').data('index');
+                            if (typeof idx !== 'undefined' && data[idx] && data[idx].id) {
+                                ids.push(data[idx].id);
+                            }
+                        });
+                    }
+                    return ids;
                 };
 
                 var refreshBulkDelete = function () {
@@ -98,8 +112,11 @@
                 };
 
                 $filesTable.on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table load-success.bs.table page-change.bs.table', refreshBulkDelete);
+                // Native-change fallback (covers builds where the bs.table check events don't fire)
+                $filesTable.on('change', 'input[type="checkbox"]', function () { setTimeout(refreshBulkDelete, 0); });
 
                 $bulkForm.on('submit', function (event) {
+                    refreshBulkDelete();
                     if (selectedFileIds().length === 0) {
                         event.preventDefault();
                         return;

@@ -458,6 +458,44 @@ input[type="search"].search-highlight {
     box-shadow: none !important;
 }
 
+/* The inline branding paints every input with --table-stripe-bg (#494747 grey)
+   via `input[type=...]` selectors that out-specify `.form-control`, leaving grey
+   slabs that ignore the input's rounded outline. Re-assert the dark Cloudflare
+   surface at matching specificity so all forms are consistent. */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="url"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="search"],
+select,
+select option,
+textarea,
+.select2-selection,
+.select2-selection--single,
+.select2-selection--multiple,
+.select2-selection__rendered {
+    background-color: var(--cc-bg-elevated) !important;
+    color: var(--cc-text) !important;
+    border-color: var(--cc-border-strong) !important;
+    border-radius: var(--cc-radius-sm) !important;
+}
+
+/* Disabled / readonly inputs: slightly recessed, still dark (not grey) */
+.form-control[disabled],
+.form-control[readonly],
+input[disabled],
+textarea[disabled],
+.select2-container--default.select2-container--disabled .select2-selection--single,
+.select2-container--default.select2-container--disabled .select2-selection--multiple {
+    background-color: var(--cc-surface) !important;
+    color: var(--cc-text-muted) !important;
+    border-color: var(--cc-border) !important;
+}
+
 .form-control:focus {
     border-color: var(--cc-primary) !important;
     box-shadow: 0 0 0 3px rgba(59, 111, 232, 0.18) !important;
