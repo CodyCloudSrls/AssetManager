@@ -6,7 +6,7 @@ return [
     'reset_password' => 'Reimposta Password',
     'saml_login' => 'Accedi tramite SAML',
     'login' => 'Accedi',
-    'login_prompt' => 'Per favore accedi',
+    'login_prompt' => 'Accedi al tuo account',
     'forgot_password' => 'Password dimenticata',
     'ldap_reset_password' => 'Clicca qui per reimpostare la tua password LDAP',
     'remember_me' => 'Ricordami',

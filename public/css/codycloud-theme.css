@@ -752,14 +752,48 @@ body.login-page {
     font-size: 18px;
 }
 
+/* The box body was AdminLTE white — make it part of the dark card so the
+   info alert (translucent blue + light text) keeps proper contrast. */
+.login-page .login-box-body,
+.login-page .register-box-body {
+    background: transparent !important;
+    color: var(--cc-text) !important;
+}
+
 .login-page .box-footer {
     background: transparent !important;
     border-top: 1px solid var(--cc-border) !important;
 }
 
+/* Stronger contrast for the login/2FA info notice on the dark card */
+.login-page .alert-info {
+    background-color: rgba(56, 189, 248, 0.14) !important;
+    color: #bfe6fb !important;
+    border-color: rgba(56, 189, 248, 0.35) !important;
+}
+
 .login-page label {
     color: var(--cc-text-muted) !important;
     font-weight: 600;
+}
+
+/* "Remember me" row: it is a .form-control wrapping the checkbox + text;
+   give the checkbox real left padding and breathing room from the label. */
+.login-page .form-group > label.form-control {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    height: auto;
+    min-height: 40px;
+    padding: 8px 14px !important;
+    cursor: pointer;
+}
+
+.login-page .form-group > label.form-control > input[type="checkbox"] {
+    margin: 0 !important;
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
 }
 
 .login-page a {
