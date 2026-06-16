@@ -275,6 +275,11 @@ class BulkAssetsController extends Controller
             || ($request->filled('notes'))
             || ($request->filled('next_audit_date'))
             || ($request->filled('asset_eol_date'))
+            || ($request->filled('nis_relevant'))
+            || ($request->filled('nis_inventory_scope'))
+            || ($request->filled('nis_service_impact'))
+            || ($request->filled('nis_notes'))
+            || ($request->filled('null_nis_notes'))
             || ($request->filled('null_name'))
             || ($request->filled('null_purchase_date'))
             || ($request->filled('null_expected_checkin_date'))
@@ -306,6 +311,10 @@ class BulkAssetsController extends Controller
                     ->conditionallyAddItem('warranty_months')
                     ->conditionallyAddItem('next_audit_date')
                     ->conditionallyAddItem('asset_eol_date')
+                    ->conditionallyAddItem('nis_relevant')
+                    ->conditionallyAddItem('nis_inventory_scope')
+                    ->conditionallyAddItem('nis_service_impact')
+                    ->conditionallyAddItem('nis_notes')
                     ->conditionallyAddItem('notes');
                 foreach ($custom_field_columns as $key => $custom_field_column) {
                     $this->conditionallyAddItem($custom_field_column);
@@ -365,6 +374,10 @@ class BulkAssetsController extends Controller
 
                 if ($request->input('null_notes') == '1') {
                     $this->update_array['notes'] = null;
+                }
+
+                if ($request->input('null_nis_notes') == '1') {
+                    $this->update_array['nis_notes'] = null;
                 }
 
                 if ($request->filled('purchase_cost')) {

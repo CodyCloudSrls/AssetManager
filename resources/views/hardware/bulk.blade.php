@@ -267,6 +267,75 @@
             </div>
           </div>
 
+          <!-- NIS2 inventory -->
+          <div class="form-group">
+            <div class="col-md-9 col-md-offset-3">
+              <strong>{{ trans('admin/hardware/form.nis_inventory_section') }}</strong>
+            </div>
+          </div>
+
+          <div class="form-group {{ $errors->has('nis_relevant') ? ' has-error' : '' }}">
+            <div class="control-label col-md-3">
+              <strong>{{ trans('admin/hardware/form.nis_relevant') }}</strong>
+            </div>
+            <div class="col-md-7">
+              <label class="form-control">
+                <input type="radio" name="nis_relevant" value="1">
+                {{ trans('general.yes') }}
+              </label>
+              <label class="form-control">
+                <input type="radio" name="nis_relevant" value="0">
+                {{ trans('general.no') }}
+              </label>
+              <label class="form-control">
+                <input type="radio" name="nis_relevant" value="" checked>
+                {{ trans('general.do_not_change') }}
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group {{ $errors->has('nis_inventory_scope') ? ' has-error' : '' }}">
+            <label for="nis_inventory_scope" class="col-md-3 control-label">{{ trans('admin/hardware/form.nis_inventory_scope') }}</label>
+            <div class="col-md-7">
+              <select class="form-control select2" name="nis_inventory_scope" id="nis_inventory_scope" aria-label="nis_inventory_scope">
+                <option value="">{{ trans('general.do_not_change') }}</option>
+                @foreach (\App\Models\Category::nisInventoryScopeOptions() as $value => $label)
+                  <option value="{{ $value }}" @selected(old('nis_inventory_scope') === $value)>{{ $label }}</option>
+                @endforeach
+              </select>
+              {!! $errors->first('nis_inventory_scope', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
+            </div>
+          </div>
+
+          <div class="form-group {{ $errors->has('nis_service_impact') ? ' has-error' : '' }}">
+            <label for="nis_service_impact" class="col-md-3 control-label">{{ trans('admin/hardware/form.nis_service_impact') }}</label>
+            <div class="col-md-7">
+              <select class="form-control select2" name="nis_service_impact" id="nis_service_impact" aria-label="nis_service_impact">
+                <option value="">{{ trans('general.do_not_change') }}</option>
+                @foreach (\App\Models\Asset::nisServiceImpactOptions() as $value => $label)
+                  <option value="{{ $value }}" @selected(old('nis_service_impact') === $value)>{{ $label }}</option>
+                @endforeach
+              </select>
+              {!! $errors->first('nis_service_impact', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
+            </div>
+          </div>
+
+          <div class="form-group {{ $errors->has('nis_notes') ? ' has-error' : '' }}">
+            <label for="nis_notes" class="col-md-3 control-label">{{ trans('admin/hardware/form.nis_notes') }}</label>
+            <div class="col-md-7">
+              <textarea class="form-control" name="nis_notes" id="nis_notes" rows="3">{{ old('nis_notes') }}</textarea>
+              {!! $errors->first('nis_notes', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
+            </div>
+          </div>
+          <div class="form-group {{ $errors->has('null_nis_notes') ? ' has-error' : '' }}">
+            <div class="col-md-8 col-md-offset-3">
+              <label class="form-control">
+                <input type="checkbox" name="null_nis_notes" value="1">
+                {{ trans_choice('general.set_to_null', count($assets),['selection_count' => count($assets)]) }}
+              </label>
+            </div>
+          </div>
+
 
           @include("models/custom_fields_form_bulk_edit",["models" => $models])
 

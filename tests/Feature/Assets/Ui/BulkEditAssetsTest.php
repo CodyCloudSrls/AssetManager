@@ -287,6 +287,52 @@ class BulkEditAssetsTest extends TestCase
         });
     }
 
+    public function test_bulk_edit_assets_updates_nis2_fields()
+    {
+        $assets = Asset::factory()->count(5)->create([
+            'nis_relevant' => false,
+            'nis_inventory_scope' => null,
+            'nis_service_impact' => 'unknown',
+            'nis_notes' => null,
+        ]);
+
+        $id_array = $assets->pluck('id')->toArray();
+
+        $this->actingAs(User::factory()->editAssets()->create())->post(route('hardware/bulksave'), [
+            'ids' => $id_array,
+            'nis_relevant' => '1',
+            'nis_inventory_scope' => 'server',
+            'nis_service_impact' => 'high',
+            'nis_notes' => 'Perimetro NIS2 confermato',
+        ])
+            ->assertStatus(302)
+            ->assertSessionHasNoErrors();
+
+        Asset::findMany($id_array)->each(function (Asset $asset) {
+            $this->assertEquals(1, $asset->nis_relevant);
+            $this->assertEquals('server', $asset->nis_inventory_scope);
+            $this->assertEquals('high', $asset->nis_service_impact);
+            $this->assertEquals('Perimetro NIS2 confermato', $asset->nis_notes);
+        });
+    }
+
+    public function test_bulk_edit_assets_nulls_nis_notes_if_selected()
+    {
+        $assets = Asset::factory()->count(3)->create([
+            'nis_notes' => 'to be removed',
+        ]);
+        $id_array = $assets->pluck('id')->toArray();
+
+        $this->actingAs(User::factory()->editAssets()->create())->post(route('hardware/bulksave'), [
+            'ids' => $id_array,
+            'null_nis_notes' => '1',
+        ])->assertStatus(302)->assertSessionHasNoErrors();
+
+        Asset::findMany($id_array)->each(function (Asset $asset) {
+            $this->assertNull($asset->nis_notes);
+        });
+    }
+
     public function test_bulk_edit_assets_requires_admin_to_update_encrypted_custom_fields()
     {
         $this->markIncompleteIfMySQL('Custom Fields tests do not work on mysql');
