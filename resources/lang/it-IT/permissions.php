@@ -599,35 +599,35 @@ return [
     'inherit' => 'Eredita il permesso per :area da gruppi di permessi',
     'use_groups' => 'Si consiglia vivamente di utilizzare i gruppi di permessi invece di assegnare i permessi individuali per una gestione più semplice.',
     'assetsfiles' => [
-        'name' => 'Manage Asset Files',
-        'note' => 'Allows the user to upload, download, and delete files associated with assets. (This only makes sense with view privileges or higher.)',
+        'name' => 'Gestisci file dei beni',
+        'note' => 'Permette di caricare, scaricare ed eliminare i file associati ai beni. (Ha senso solo con privilegi di visualizzazione o superiori.)',
     ],
     'usersfiles' => [
-        'name' => 'Manage User Files',
-        'note' => 'Allows the user to upload, download, and delete files associated with users. (This only makes sense with view privileges or higher.)',
+        'name' => 'Gestisci file degli utenti',
+        'note' => 'Permette di caricare, scaricare ed eliminare i file associati agli utenti. (Ha senso solo con privilegi di visualizzazione o superiori.)',
     ],
     'modelsfiles' => [
-        'name' => 'Manage Model Files',
-        'note' => 'Allows the user to upload, download, and delete files associated with asset models on both the model view and the asset view screens. (This only makes sense with view privileges or higher.)',
+        'name' => 'Gestisci file dei modelli',
+        'note' => 'Permette di caricare, scaricare ed eliminare i file associati ai modelli di beni, sia nella schermata del modello sia in quella del bene. (Ha senso solo con privilegi di visualizzazione o superiori.)',
     ],
     'departmentsfiles' => [
-        'name' => 'Manage Department Files',
-        'note' => 'Allows the user to upload, download, and delete files associated with departments. (This only makes sense with view privileges or higher.)',
+        'name' => 'Gestisci file dei reparti',
+        'note' => 'Permette di caricare, scaricare ed eliminare i file associati ai reparti. (Ha senso solo con privilegi di visualizzazione o superiori.)',
     ],
     'suppliersfiles' => [
-        'name' => 'Manage Supplier Files',
-        'note' => 'Allows the user to upload, download, and delete files associated with suppliers. (This only makes sense with view privileges or higher.)',
+        'name' => 'Gestisci file dei fornitori',
+        'note' => 'Permette di caricare, scaricare ed eliminare i file associati ai fornitori. (Ha senso solo con privilegi di visualizzazione o superiori.)',
     ],
     'customersfiles' => [
         'name' => 'Gestione file clienti',
         'note' => 'Consente di caricare, scaricare ed eliminare file associati ai clienti. Ha senso solo insieme al permesso di visualizzazione o superiore.',
     ],
     'locationsfiles' => [
-        'name' => 'Manage Location Files',
-        'note' => 'Allows the user to upload, download, and delete files associated with locations.(This only makes sense with view privileges or higher.)',
+        'name' => 'Gestisci file delle sedi',
+        'note' => 'Permette di caricare, scaricare ed eliminare i file associati alle sedi. (Ha senso solo con privilegi di visualizzazione o superiori.)',
     ],
     'companiesfiles' => [
-        'name' => 'Manage Company Files',
-        'note' => 'Allows the user to upload, download, and delete files associated with companies. (This only makes sense with view privileges or higher.)',
+        'name' => 'Gestisci file delle aziende',
+        'note' => 'Permette di caricare, scaricare ed eliminare i file associati alle aziende. (Ha senso solo con privilegi di visualizzazione o superiori.)',
     ],
 ];

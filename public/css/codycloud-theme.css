@@ -929,6 +929,24 @@ body.login-page {
     background-color: var(--cc-bg-elevated) !important;
 }
 
+/* Footer / totals row: one uniform colour across the WHOLE row, including the
+   frozen fixed-columns clones at the left/right ends (no darker segments). */
+.table > tfoot > tr > td,
+.table > tfoot > tr > th,
+.snipe-table > tfoot > tr > td,
+.fixed-table-footer,
+.fixed-table-footer table,
+.fixed-table-footer td,
+.fixed-table-footer th,
+.fixed-columns .fixed-table-footer,
+.fixed-columns-right .fixed-table-footer,
+.fixed-columns .fixed-table-footer td,
+.fixed-columns-right .fixed-table-footer td {
+    background-color: var(--cc-surface) !important;
+    color: var(--cc-text) !important;
+    border-top: 1px solid var(--cc-border) !important;
+}
+
 /* One consistent hover / selected colour everywhere (never blue) */
 .table-hover > tbody > tr:hover,
 .table-hover > tbody > tr:hover > td,
