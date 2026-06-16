@@ -69,6 +69,8 @@ return [
     'nis_inventory_scope' => 'Ambito inventario NIS2',
     'nis_service_impact' => 'Impatto sul servizio',
     'nis_notes' => 'Note NIS2',
+    'nis_tenant_services' => 'Servizi tenant collegati',
+    'nis_tenant_services_help' => 'Collega questo bene ai servizi tenant (perimetro NIS2) che supporta. Vengono mostrati solo i servizi dell\'azienda del bene.',
     'nis_service_impacts' => [
         'unknown' => 'Non valutato',
         'low' => 'Basso',

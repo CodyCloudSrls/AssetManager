@@ -1169,6 +1169,17 @@ class Asset extends Depreciable
     }
 
     /**
+     * Tenant services (NIS2 perimeter) that this asset supports. Many-to-many.
+     */
+    public function tenantServices()
+    {
+        return $this->belongsToMany(TenantService::class, 'asset_tenant_service')
+            ->withTimestamps()
+            ->orderBy('tenant_services.macro_area')
+            ->orderBy('tenant_services.name');
+    }
+
+    /**
      * Establishes the asset -> location relationship
      *
      * @author [A. Gianotto] [<snipe@snipe.net>]

@@ -69,6 +69,8 @@ return [
     'nis_inventory_scope' => 'NIS2 Inventory Scope',
     'nis_service_impact' => 'Service Impact',
     'nis_notes' => 'NIS2 Notes',
+    'nis_tenant_services' => 'Linked tenant services',
+    'nis_tenant_services_help' => 'Link this asset to the tenant services (NIS2 perimeter) it supports. Only services for the asset\'s company are shown.',
     'nis_service_impacts' => [
         'unknown' => 'Not assessed',
         'low' => 'Low',

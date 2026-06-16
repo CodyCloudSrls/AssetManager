@@ -260,6 +260,8 @@ class AssetsController extends Controller
                         $asset->checkOut($target, auth()->user(), date('Y-m-d H:i:s'), $request->input('expected_checkin', null), 'Checked out on asset creation', $request->input('name'), $location);
                     }
 
+                    $this->syncTenantServices($request, $asset);
+
                     $successes[] = "<a href='".route('hardware.show', $asset)."' style='color: white;'>".e($asset->asset_tag).'</a>';
 
                 } else {
@@ -515,11 +517,30 @@ class AssetsController extends Controller
                 ]));
         }
         if ($asset->save()) {
+            $this->syncTenantServices($request, $asset);
+
             return Helper::getRedirectOption($request, $asset->id, 'Assets')
                 ->with('success', trans('admin/hardware/message.update.success'));
         }
 
         return redirect()->back()->withInput()->withErrors($asset->getErrors());
+    }
+
+    /**
+     * Sync the NIS2 tenant services linked to an asset (many-to-many).
+     * Only runs when the form actually submitted the field, and only attaches
+     * services that belong to the asset's company/tenant.
+     */
+    private function syncTenantServices(Request $request, Asset $asset): void
+    {
+        if (! $request->filled('tenant_service_ids_present')) {
+            return;
+        }
+
+        $ids = array_filter(array_map('intval', (array) $request->input('tenant_service_ids', [])));
+        $validIds = \App\Models\TenantService::validIdsForCompany($ids, $asset->company_id);
+
+        $asset->tenantServices()->sync($validIds);
     }
 
     /**

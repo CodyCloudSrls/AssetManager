@@ -156,6 +156,23 @@
                 {!! $errors->first('nis_notes', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
             </div>
         </div>
+
+        <div class="form-group {{ $errors->has('tenant_service_ids') ? ' has-error' : '' }}">
+            <label for="tenant_service_ids" class="col-md-3 control-label">{{ trans('admin/hardware/form.nis_tenant_services') }}</label>
+            <div class="col-md-7">
+                @php
+                    $selectedAssetTenantServiceIds = array_map('intval', old('tenant_service_ids', ($item->exists ? $item->tenantServices->pluck('id')->all() : [])));
+                @endphp
+                <input type="hidden" name="tenant_service_ids_present" value="1">
+                <select class="js-data-ajax" data-endpoint="tenantservices" data-placeholder="{{ trans('admin/hardware/form.nis_tenant_services') }}" multiple name="tenant_service_ids[]" id="tenant_service_ids" aria-label="tenant_service_ids" style="width: 100%" data-company-id="{{ old('company_id', $item->company_id ?? '') }}">
+                    @foreach (\App\Models\TenantService::whereIn('id', $selectedAssetTenantServiceIds)->get() as $svc)
+                        <option value="{{ $svc->id }}" selected>{{ $svc->name }}</option>
+                    @endforeach
+                </select>
+                <p class="help-block">{{ trans('admin/hardware/form.nis_tenant_services_help') }}</p>
+                {!! $errors->first('tenant_service_ids', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
+            </div>
+        </div>
     </fieldset>
 
 
@@ -254,6 +271,13 @@
 
 
 <script nonce="{{ csrf_token() }}">
+
+    $(function () {
+        // Re-scope the linked NIS2 tenant services when the asset's company changes
+        $(document).on('change', 'select[name="company_id"]', function () {
+            $('#tenant_service_ids').attr('data-company-id', $(this).val()).val(null).trigger('change');
+        });
+    });
 
     @if(Request::has('model_id'))
         //TODO: Refactor custom fields to use Livewire, populate from server on page load when requested with model_id

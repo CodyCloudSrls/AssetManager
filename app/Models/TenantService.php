@@ -277,6 +277,12 @@ class TenantService extends SnipeModel
             ->withTimestamps();
     }
 
+    public function assets(): BelongsToMany
+    {
+        return $this->belongsToMany(Asset::class, 'asset_tenant_service')
+            ->withTimestamps();
+    }
+
     public function adminuser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by')->withTrashed();
