@@ -505,6 +505,64 @@ textarea[disabled],
     color: var(--cc-text-dim) !important;
 }
 
+/* Definitive fix for the intermittent "grey corners": draw the 1px outline as an
+   INSET box-shadow (which follows the border-radius perfectly) and make the real
+   border transparent, so no border-vs-background sub-pixel triangle is left at the
+   rounded corners. Listed with the type selectors too, to beat the inline branding. */
+.form-control,
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="url"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="search"],
+select,
+textarea,
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple {
+    border-color: transparent !important;
+    box-shadow: inset 0 0 0 1px var(--cc-border-strong) !important;
+}
+
+.form-control:focus,
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+input[type="url"]:focus,
+input[type="tel"]:focus,
+textarea:focus,
+select:focus,
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: transparent !important;
+    box-shadow: inset 0 0 0 1px var(--cc-primary), 0 0 0 3px rgba(59, 111, 232, 0.18) !important;
+}
+
+/* Validation error styling on the dark skin */
+.has-error .form-control,
+.has-error .select2-container--default .select2-selection--single,
+.has-error .select2-container--default .select2-selection--multiple {
+    border-color: transparent !important;
+    box-shadow: inset 0 0 0 1px var(--cc-danger) !important;
+}
+
+.has-error label,
+.has-error .control-label {
+    color: var(--cc-danger) !important;
+}
+
+.cc-field-error {
+    color: var(--cc-danger) !important;
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+}
+
 /* Keep the fill inside the rounded outline so no square corner pokes out,
    and clip select2's inner elements (rendered value, arrow) to the same radius. */
 .form-control,

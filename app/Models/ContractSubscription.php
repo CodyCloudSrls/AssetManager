@@ -15,7 +15,10 @@ class ContractSubscription extends SnipeModel
     use ValidatingTrait;
 
     public const FREQUENCY_MONTHLY = 'monthly';
+    public const FREQUENCY_BIMONTHLY = 'bimonthly';
     public const FREQUENCY_QUARTERLY = 'quarterly';
+    public const FREQUENCY_QUADRIMESTER = 'quadrimester';
+    public const FREQUENCY_SEMIANNUAL = 'semiannual';
     public const FREQUENCY_ANNUAL = 'annual';
     public const FREQUENCY_ONE_TIME = 'one_time';
 
@@ -55,7 +58,7 @@ class ContractSubscription extends SnipeModel
         'description' => 'nullable|string|max:65535',
         'quantity' => 'required|numeric|gte:0',
         'unit_price' => 'required|numeric|gte:0',
-        'billing_frequency' => 'required|string|in:monthly,quarterly,annual,one_time',
+        'billing_frequency' => 'required|string|in:monthly,bimonthly,quarterly,quadrimester,semiannual,annual,one_time',
         'starts_at' => 'nullable|date',
         'ends_at' => 'nullable|date|after_or_equal:starts_at',
         'is_active' => 'boolean',
@@ -65,7 +68,10 @@ class ContractSubscription extends SnipeModel
     {
         return [
             self::FREQUENCY_MONTHLY => trans('admin/contracts/general.frequency_monthly'),
+            self::FREQUENCY_BIMONTHLY => trans('admin/contracts/general.frequency_bimonthly'),
             self::FREQUENCY_QUARTERLY => trans('admin/contracts/general.frequency_quarterly'),
+            self::FREQUENCY_QUADRIMESTER => trans('admin/contracts/general.frequency_quadrimester'),
+            self::FREQUENCY_SEMIANNUAL => trans('admin/contracts/general.frequency_semiannual'),
             self::FREQUENCY_ANNUAL => trans('admin/contracts/general.frequency_annual'),
             self::FREQUENCY_ONE_TIME => trans('admin/contracts/general.frequency_one_time'),
         ];
@@ -99,7 +105,10 @@ class ContractSubscription extends SnipeModel
     public static function monthlyAmount(float $amount, string $frequency): float
     {
         return match ($frequency) {
+            self::FREQUENCY_BIMONTHLY => $amount / 2,
             self::FREQUENCY_QUARTERLY => $amount / 3,
+            self::FREQUENCY_QUADRIMESTER => $amount / 4,
+            self::FREQUENCY_SEMIANNUAL => $amount / 6,
             self::FREQUENCY_ANNUAL => $amount / 12,
             self::FREQUENCY_ONE_TIME => 0.0,
             default => $amount,

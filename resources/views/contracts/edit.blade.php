@@ -7,6 +7,16 @@
 ])
 
 @section('inputFields')
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <h4 style="margin-top:0;"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> {{ trans('general.error') }}</h4>
+        <ul style="margin-bottom:0; padding-left:18px;">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 @php
     $subscriptionRows = old('subscriptions');
     if (is_null($subscriptionRows)) {

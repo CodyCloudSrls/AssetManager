@@ -16,21 +16,24 @@
         <input type="hidden" class="subscription-delete-flag" name="subscriptions[{{ $rowKey }}][_delete]" value="{{ $row['_delete'] ?? 0 }}">
 
         <div class="row">
-            <div class="col-md-5">
+            <div class="col-md-5 {{ $errors->has('subscriptions.'.$rowKey.'.name') ? 'has-error' : '' }}">
                 <label>{{ trans('admin/contracts/general.subscription_name') }}</label>
                 <input class="form-control" name="subscriptions[{{ $rowKey }}][name]" type="text" value="{{ $row['name'] ?? '' }}">
+                {!! $errors->first('subscriptions.'.$rowKey.'.name', '<span class="help-block cc-field-error"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
             </div>
             <div class="col-md-3">
                 <label>{{ trans('admin/contracts/general.service_code') }}</label>
                 <input class="form-control" name="subscriptions[{{ $rowKey }}][service_code]" type="text" value="{{ $row['service_code'] ?? '' }}">
             </div>
-            <div class="col-md-2">
+            <div class="col-md-2 {{ $errors->has('subscriptions.'.$rowKey.'.quantity') ? 'has-error' : '' }}">
                 <label>{{ trans('admin/contracts/general.quantity') }}</label>
                 <input class="form-control" name="subscriptions[{{ $rowKey }}][quantity]" type="number" min="0" step="0.0001" value="{{ $row['quantity'] ?? 1 }}">
+                {!! $errors->first('subscriptions.'.$rowKey.'.quantity', '<span class="help-block cc-field-error"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
             </div>
-            <div class="col-md-2">
+            <div class="col-md-2 {{ $errors->has('subscriptions.'.$rowKey.'.unit_price') ? 'has-error' : '' }}">
                 <label>{{ trans('admin/contracts/general.unit_price') }}</label>
                 <input class="form-control" name="subscriptions[{{ $rowKey }}][unit_price]" type="number" min="0" step="0.0001" value="{{ $row['unit_price'] ?? '' }}">
+                {!! $errors->first('subscriptions.'.$rowKey.'.unit_price', '<span class="help-block cc-field-error"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
             </div>
         </div>
 

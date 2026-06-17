@@ -235,6 +235,23 @@ class CustomerContractsController extends Controller
         ]);
 
         $validator->after(function ($validator) use ($request, $contract) {
+            // Per-row checks so a half-filled subscription points at the exact
+            // field instead of failing later with an opaque model error.
+            foreach ($request->input('subscriptions', []) as $key => $row) {
+                if (! is_array($row) || $this->isDeletedRow($row) || $this->isBlankSubscriptionRow($row)) {
+                    continue;
+                }
+                if (trim((string) ($row['name'] ?? '')) === '') {
+                    $validator->errors()->add("subscriptions.$key.name", trans('validation.required', ['attribute' => trans('admin/contracts/general.subscription_name')]));
+                }
+                if (! is_numeric($row['unit_price'] ?? null)) {
+                    $validator->errors()->add("subscriptions.$key.unit_price", trans('validation.required', ['attribute' => trans('admin/contracts/general.unit_price')]));
+                }
+                if (! is_numeric($row['quantity'] ?? null)) {
+                    $validator->errors()->add("subscriptions.$key.quantity", trans('validation.required', ['attribute' => trans('admin/contracts/general.quantity')]));
+                }
+            }
+
             $companyId = (int) $request->input('company_id');
             $customer = Customer::withoutGlobalScopes()->find((int) $request->input('customer_id'));
 
@@ -373,8 +390,8 @@ class CustomerContractsController extends Controller
             $subscription->quantity = $row['quantity'] ?? 1;
             $subscription->unit_price = $row['unit_price'] ?? 0;
             $subscription->billing_frequency = $row['billing_frequency'] ?? ContractSubscription::FREQUENCY_MONTHLY;
-            $subscription->starts_at = $row['starts_at'] ?: null;
-            $subscription->ends_at = $row['ends_at'] ?: null;
+            $subscription->starts_at = ($row['starts_at'] ?? null) ?: null;
+            $subscription->ends_at = ($row['ends_at'] ?? null) ?: null;
             $subscription->is_active = ! array_key_exists('is_active', $row) || (bool) $row['is_active'];
             $subscription->created_by = $subscription->created_by ?: auth()->id();
             if (! $subscription->save()) {
@@ -431,8 +448,8 @@ class CustomerContractsController extends Controller
         $costLine->quantity = $row['cost_quantity'] ?? 1;
         $costLine->unit_cost = $row['unit_cost'] ?? 0;
         $costLine->cost_frequency = $row['cost_frequency'] ?? $subscription->billing_frequency;
-        $costLine->starts_at = $row['cost_starts_at'] ?: null;
-        $costLine->ends_at = $row['cost_ends_at'] ?: null;
+        $costLine->starts_at = ($row['cost_starts_at'] ?? null) ?: null;
+        $costLine->ends_at = ($row['cost_ends_at'] ?? null) ?: null;
         $costLine->is_active = ! array_key_exists('cost_is_active', $row) || (bool) $row['cost_is_active'];
         $costLine->created_by = $costLine->created_by ?: auth()->id();
         if (! $costLine->save()) {

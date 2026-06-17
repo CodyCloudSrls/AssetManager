@@ -80,4 +80,65 @@ class CreateCustomerContractTest extends TestCase
             'event_type' => CustomerContractEvent::EVENT_CREATED,
         ]);
     }
+
+    public function test_subscription_missing_price_returns_a_field_specific_error(): void
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->superuser()->for($company)->create();
+        $this->actingAs($user);
+
+        $customer = new Customer(['company_id' => $company->id, 'name' => 'Cust']);
+        $customer->created_by = $user->id;
+        $customer->save();
+
+        $this->post(route('contracts.store'), [
+            'company_id' => $company->id,
+            'customer_id' => $customer->id,
+            'name' => 'Contract',
+            'status' => CustomerContract::STATUS_DRAFT,
+            'currency' => 'EUR',
+            'subscriptions' => [
+                'new_0' => [
+                    'name' => 'Managed service',
+                    'quantity' => '1',
+                    'unit_price' => '', // omitted price
+                    'billing_frequency' => ContractSubscription::FREQUENCY_MONTHLY,
+                ],
+            ],
+        ])
+            ->assertStatus(302)
+            ->assertSessionHasErrors('subscriptions.new_0.unit_price');
+    }
+
+    public function test_subscription_accepts_semiannual_frequency(): void
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->superuser()->for($company)->create();
+        $this->actingAs($user);
+
+        $customer = new Customer(['company_id' => $company->id, 'name' => 'Cust']);
+        $customer->created_by = $user->id;
+        $customer->save();
+
+        $this->post(route('contracts.store'), [
+            'company_id' => $company->id,
+            'customer_id' => $customer->id,
+            'name' => 'Contract',
+            'status' => CustomerContract::STATUS_DRAFT,
+            'currency' => 'EUR',
+            'subscriptions' => [
+                'new_0' => [
+                    'name' => 'Managed service',
+                    'quantity' => '1',
+                    'unit_price' => '600.00',
+                    'billing_frequency' => ContractSubscription::FREQUENCY_SEMIANNUAL,
+                ],
+            ],
+        ])->assertStatus(302)->assertSessionHasNoErrors();
+
+        $subscription = ContractSubscription::where('name', 'Managed service')->firstOrFail();
+        $this->assertSame(ContractSubscription::FREQUENCY_SEMIANNUAL, $subscription->billing_frequency);
+        // 600 every 6 months => 100/month
+        $this->assertEqualsWithDelta(100.0, $subscription->monthly_revenue, 0.001);
+    }
 }
