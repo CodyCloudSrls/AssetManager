@@ -586,6 +586,33 @@ textarea,
     overflow: hidden !important;
 }
 
+/* The inner text span must NOT paint its own background — only the rounded
+   selection box does — otherwise its square corners bleed grey past the radius. */
+.select2-container--default .select2-selection--single .select2-selection__rendered,
+.select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    background-color: transparent !important;
+}
+
+/* Native <select>: the browser's own rendering ignores border-radius at the
+   corners (leaving grey corners). Force appearance:none + a CSS chevron so the
+   box is fully ours and the corners stay clean. */
+select,
+select.form-control {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23939aa6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    background-size: 12px 12px !important;
+    background-clip: padding-box !important;
+    padding-right: 30px !important;
+}
+select[multiple] {
+    background-image: none !important;
+    padding-right: 12px !important;
+}
+
 /* select2 arrow box must follow the rounded right edge, not square it off */
 .select2-container--default .select2-selection--single .select2-selection__arrow {
     height: 100% !important;
