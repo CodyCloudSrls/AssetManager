@@ -35,6 +35,14 @@ Route::group(['prefix' => 'accessories', 'middleware' => ['auth']], function () 
         [Accessories\AccessoriesController::class, 'postCreate']
     );
 
+    Route::post('bulkedit',
+        [Accessories\BulkAccessoriesController::class, 'edit']
+    )->name('accessories.bulkedit');
+
+    Route::post('bulkeditsave',
+        [Accessories\BulkAccessoriesController::class, 'update']
+    )->name('accessories.bulkeditsave');
+
 });
 
 Route::resource('accessories', Accessories\AccessoriesController::class, [

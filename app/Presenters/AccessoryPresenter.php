@@ -16,6 +16,10 @@ class AccessoryPresenter extends Presenter
     {
         $layout = [
             [
+                'field' => 'checkbox',
+                'checkbox' => true,
+                'class' => 'hidden-print',
+            ], [
                 'field' => 'id',
                 'searchable' => false,
                 'sortable' => true,
