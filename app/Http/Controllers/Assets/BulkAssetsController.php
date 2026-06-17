@@ -280,6 +280,7 @@ class BulkAssetsController extends Controller
             || ($request->filled('nis_service_impact'))
             || ($request->filled('nis_notes'))
             || ($request->filled('null_nis_notes'))
+            || ($request->filled('apply_tenant_service_ids'))
             || ($request->filled('null_name'))
             || ($request->filled('null_purchase_date'))
             || ($request->filled('null_expected_checkin_date'))
@@ -542,6 +543,13 @@ class BulkAssetsController extends Controller
                         }
                     }
 
+                } elseif ($request->filled('apply_tenant_service_ids')) {
+                    // Link the asset to the selected NIS2 tenant services, keeping only
+                    // the ones valid for the asset's (possibly just-updated) company.
+                    $serviceIds = array_filter(array_map('intval', (array) $request->input('tenant_service_ids', [])));
+                    $asset->tenantServices()->sync(
+                        \App\Models\TenantService::validIdsForCompany($serviceIds, $asset->company_id)
+                    );
                 }  // end if saved
 
             } // end asset foreach

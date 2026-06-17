@@ -8,8 +8,11 @@ use App\Models\Company;
 use App\Models\CustomField;
 use App\Models\Statuslabel;
 use App\Models\Supplier;
+use App\Models\Tenant;
+use App\Models\TenantService;
 use App\Models\User;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class BulkEditAssetsTest extends TestCase
@@ -330,6 +333,32 @@ class BulkEditAssetsTest extends TestCase
 
         Asset::findMany($id_array)->each(function (Asset $asset) {
             $this->assertNull($asset->nis_notes);
+        });
+    }
+
+    public function test_bulk_edit_assets_links_tenant_services_when_applied()
+    {
+        $tenant = Tenant::create(['uuid' => (string) Str::uuid()]);
+        $company = Company::factory()->create(['tenant_id' => $tenant->id]);
+        $service = new TenantService([
+            'tenant_id' => $tenant->id,
+            'macro_area' => TenantService::MACRO_PRODUCTION_DIGITAL_INFRASTRUCTURES,
+            'name' => 'Hosting',
+            'is_active' => true,
+        ]);
+        $service->save();
+
+        $assets = Asset::factory()->count(3)->create(['company_id' => $company->id]);
+        $id_array = $assets->pluck('id')->toArray();
+
+        $this->actingAs(User::factory()->editAssets()->create())->post(route('hardware/bulksave'), [
+            'ids' => $id_array,
+            'apply_tenant_service_ids' => '1',
+            'tenant_service_ids' => [$service->id],
+        ])->assertStatus(302)->assertSessionHasNoErrors();
+
+        Asset::findMany($id_array)->each(function (Asset $asset) use ($service) {
+            $this->assertTrue($asset->tenantServices->pluck('id')->contains($service->id));
         });
     }
 

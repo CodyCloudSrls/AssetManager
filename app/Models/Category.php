@@ -157,6 +157,7 @@ class Category extends SnipeModel
             'server' => trans('admin/categories/general.nis_inventory_scopes.server'),
             'endpoint' => trans('admin/categories/general.nis_inventory_scopes.endpoint'),
             'cloud' => trans('admin/categories/general.nis_inventory_scopes.cloud'),
+            'datacenter' => trans('admin/categories/general.nis_inventory_scopes.datacenter'),
             'security' => trans('admin/categories/general.nis_inventory_scopes.security'),
             'identity' => trans('admin/categories/general.nis_inventory_scopes.identity'),
             'backup' => trans('admin/categories/general.nis_inventory_scopes.backup'),

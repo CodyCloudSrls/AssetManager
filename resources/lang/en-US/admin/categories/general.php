@@ -30,6 +30,7 @@ return [
         'server' => 'Server',
         'endpoint' => 'Endpoint',
         'cloud' => 'Cloud',
+        'datacenter' => 'Datacenter',
         'security' => 'Security',
         'identity' => 'Identity and Access',
         'backup' => 'Backup',

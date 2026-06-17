@@ -141,8 +141,8 @@ class Asset extends Depreciable
         'assigned_type' => ['nullable', 'required_with:assigned_to', 'in:'.User::class.','.Location::class.','.Asset::class],
         'requestable' => ['nullable', 'boolean'],
         'nis_relevant' => ['nullable', 'boolean'],
-        'nis_inventory_scope' => ['nullable', 'string', 'in:network,vpn,network_flow,server,endpoint,cloud,security,identity,backup,facility,other'],
-        'nis_service_impact' => ['nullable', 'string', 'in:unknown,low,medium,high,critical'],
+        'nis_inventory_scope' => ['nullable', 'string', 'in:network,vpn,network_flow,server,endpoint,cloud,datacenter,security,identity,backup,facility,other'],
+        'nis_service_impact' => ['nullable', 'string', 'in:unknown,minimal,low,medium,high'],
         'nis_notes' => ['nullable', 'string', 'max:65535'],
         'assigned_user' => ['integer', 'nullable', 'exists:users,id,deleted_at,NULL'],
         'assigned_location' => ['integer', 'nullable', 'scoped_exists:App\Models\Location', 'fmcs_location'],
@@ -220,10 +220,10 @@ class Asset extends Depreciable
     {
         return [
             'unknown' => trans('admin/hardware/form.nis_service_impacts.unknown'),
+            'minimal' => trans('admin/hardware/form.nis_service_impacts.minimal'),
             'low' => trans('admin/hardware/form.nis_service_impacts.low'),
             'medium' => trans('admin/hardware/form.nis_service_impacts.medium'),
             'high' => trans('admin/hardware/form.nis_service_impacts.high'),
-            'critical' => trans('admin/hardware/form.nis_service_impacts.critical'),
         ];
     }
 

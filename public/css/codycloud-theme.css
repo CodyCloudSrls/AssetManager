@@ -546,6 +546,36 @@ textarea,
     outline: none !important;
 }
 
+/* Input groups (e.g. "EUR" + cost, value + "months"): round only the outer
+   edges, square the joined edge — otherwise both pieces are fully rounded and
+   leave odd grey corners where they meet. */
+.input-group > .form-control,
+.input-group > .input-group-addon,
+.input-group > .input-group-btn > .btn {
+    border-radius: 0 !important;
+}
+.input-group > .form-control:first-child,
+.input-group > .input-group-addon:first-child,
+.input-group > .input-group-btn:first-child > .btn {
+    border-top-left-radius: var(--cc-radius-sm) !important;
+    border-bottom-left-radius: var(--cc-radius-sm) !important;
+}
+.input-group > .form-control:last-child,
+.input-group > .input-group-addon:last-child,
+.input-group > .input-group-btn:last-child > .btn {
+    border-top-right-radius: var(--cc-radius-sm) !important;
+    border-bottom-right-radius: var(--cc-radius-sm) !important;
+}
+
+/* Native <select> and any straggling controls: clip the fill to the rounded
+   outline and drop the inset shadow so no grey corner shows. */
+select.form-control,
+select {
+    border-radius: var(--cc-radius-sm) !important;
+    background-clip: padding-box !important;
+    box-shadow: none !important;
+}
+
 .select2-dropdown,
 .select2-container--default .select2-results__option {
     background-color: var(--cc-bg-elevated) !important;

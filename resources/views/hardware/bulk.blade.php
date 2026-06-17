@@ -336,6 +336,23 @@
             </div>
           </div>
 
+          <div class="form-group {{ $errors->has('tenant_service_ids') ? ' has-error' : '' }}">
+            <label for="tenant_service_ids" class="col-md-3 control-label">{{ trans('admin/hardware/form.nis_tenant_services') }}</label>
+            <div class="col-md-7">
+              <select class="js-data-ajax" data-endpoint="tenantservices" data-placeholder="{{ trans('admin/hardware/form.nis_tenant_services') }}" multiple name="tenant_service_ids[]" id="tenant_service_ids" aria-label="tenant_service_ids" style="width: 100%" data-company-id="{{ old('company_id') }}"></select>
+              <p class="help-block">{{ trans('admin/hardware/form.nis_tenant_services_bulk_help') }}</p>
+              {!! $errors->first('tenant_service_ids', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-md-8 col-md-offset-3">
+              <label class="form-control">
+                <input type="checkbox" name="apply_tenant_service_ids" value="1">
+                {{ trans('admin/hardware/form.nis_tenant_services_apply') }}
+              </label>
+            </div>
+          </div>
+
 
           @include("models/custom_fields_form_bulk_edit",["models" => $models])
 
@@ -361,6 +378,13 @@
           const radios = document.querySelectorAll('input[type="radio"][name="' + name + '"]');
           radios.forEach(radio => radio.checked = false);
         });
+      });
+    });
+
+    $(function () {
+      // Re-scope the NIS2 tenant services list when the bulk company changes
+      $(document).on('change', 'select[name="company_id"]', function () {
+        $('#tenant_service_ids').attr('data-company-id', $(this).val()).val(null).trigger('change');
       });
     });
     function status_check() {

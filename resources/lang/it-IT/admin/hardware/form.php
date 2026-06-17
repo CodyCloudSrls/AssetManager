@@ -71,12 +71,14 @@ return [
     'nis_notes' => 'Note NIS2',
     'nis_tenant_services' => 'Servizi tenant collegati',
     'nis_tenant_services_help' => 'Collega questo bene ai servizi tenant (perimetro NIS2) che supporta. Vengono mostrati solo i servizi dell\'azienda del bene.',
+    'nis_tenant_services_bulk_help' => 'Vengono mostrati i servizi dell\'azienda selezionata sopra. Ogni bene riceverà solo i servizi validi per la propria azienda.',
+    'nis_tenant_services_apply' => 'Applica i servizi selezionati ai beni (sostituisce quelli già collegati).',
     'nis_service_impacts' => [
         'unknown' => 'Non valutato',
-        'low' => 'Basso',
-        'medium' => 'Medio',
-        'high' => 'Alto',
-        'critical' => 'Critico',
+        'minimal' => 'Impatto minimo',
+        'low' => 'Impatto basso',
+        'medium' => 'Impatto medio',
+        'high' => 'Impatto alto',
     ],
     'calc_eol' => 'Se viene annullata la data di EOL, usa il calcolo automatico in base alla data d\'acquisto e al tasso di EOL.',
 ];
