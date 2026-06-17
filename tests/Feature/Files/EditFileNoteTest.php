@@ -72,6 +72,35 @@ class EditFileNoteTest extends TestCase
             ->assertJsonPath('rows.0.note', 'corrected note');
     }
 
+    public function test_web_note_update_redirects_without_errors(): void
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->superuser()->for($company)->create();
+        $contract = $this->contract($company, $user);
+
+        $log = new \App\Models\Actionlog;
+        $log->item_type = CustomerContract::class;
+        $log->item_id = $contract->id;
+        $log->filename = 'SG001-24.pdf';
+        $log->action_type = 'uploaded';
+        $log->created_by = $user->id;
+        $log->note = 'original note';
+        $log->save();
+
+        $this->actingAs($user)
+            ->from(route('contracts.show', $contract))
+            ->patch(route('ui.files.update', ['object_type' => 'contracts', 'id' => $contract->id, 'file_id' => $log->id]), [
+                'notes' => "MI MANCA l'SG002/24 ANCORA IN VIGORE",
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('action_logs', [
+            'id' => $log->id,
+            'note' => "MI MANCA l'SG002/24 ANCORA IN VIGORE",
+        ]);
+    }
+
     public function test_file_note_update_requires_files_permission(): void
     {
         $company = Company::factory()->create();

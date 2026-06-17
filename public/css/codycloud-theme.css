@@ -505,10 +505,9 @@ textarea[disabled],
     color: var(--cc-text-dim) !important;
 }
 
-/* Definitive fix for the intermittent "grey corners": draw the 1px outline as an
-   INSET box-shadow (which follows the border-radius perfectly) and make the real
-   border transparent, so no border-vs-background sub-pixel triangle is left at the
-   rounded corners. Listed with the type selectors too, to beat the inline branding. */
+/* Clean single 1px border on every input (also listed with the type selectors
+   to beat the inline branding's grey #656464 border). One uniform border, no
+   double outline. */
 .form-control,
 input[type="text"],
 input[type="number"],
@@ -523,8 +522,8 @@ select,
 textarea,
 .select2-container--default .select2-selection--single,
 .select2-container--default .select2-selection--multiple {
-    border-color: transparent !important;
-    box-shadow: inset 0 0 0 1px var(--cc-border-strong) !important;
+    border: 1px solid var(--cc-border-strong) !important;
+    box-shadow: none !important;
 }
 
 .form-control:focus,
@@ -539,16 +538,15 @@ textarea:focus,
 select:focus,
 .select2-container--default.select2-container--focus .select2-selection--single,
 .select2-container--default.select2-container--focus .select2-selection--multiple {
-    border-color: transparent !important;
-    box-shadow: inset 0 0 0 1px var(--cc-primary), 0 0 0 3px rgba(59, 111, 232, 0.18) !important;
+    border-color: var(--cc-primary) !important;
+    box-shadow: 0 0 0 3px rgba(59, 111, 232, 0.18) !important;
 }
 
 /* Validation error styling on the dark skin */
 .has-error .form-control,
 .has-error .select2-container--default .select2-selection--single,
 .has-error .select2-container--default .select2-selection--multiple {
-    border-color: transparent !important;
-    box-shadow: inset 0 0 0 1px var(--cc-danger) !important;
+    border-color: var(--cc-danger) !important;
 }
 
 .has-error label,
@@ -828,22 +826,14 @@ hr {
     color: var(--cc-text);
 }
 
+/* Style the checkbox/radio BOX itself for the dark skin. Do NOT touch the
+   ::before — that is the check/dot mark (sized 1em via the base theme); adding a
+   border to it made the mark overflow its box ("checkbox too big"). */
 input[type="checkbox"],
 input[type="radio"] {
-    accent-color: var(--cc-primary);
-}
-
-/* Snipe draws faux check/radio marks via ::before — keep them readable on dark */
-input[type="checkbox"]::before,
-input[type="radio"]::before {
-    background-color: var(--cc-surface) !important;
-    border: 1px solid var(--cc-border-strong) !important;
-}
-
-input[type="checkbox"]:checked::before,
-input[type="radio"]:checked::before {
-    background-color: var(--cc-primary) !important;
-    border-color: var(--cc-primary) !important;
+    background-color: var(--cc-bg-elevated) !important;
+    border-color: var(--cc-border-strong) !important;
+    color: var(--cc-primary) !important;
 }
 
 /* ---------- Panels (used on some settings / detail pages) ---------- */
