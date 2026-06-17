@@ -107,23 +107,30 @@
             if (total <= 0) { return; }
 
             var url = $table.data('url');
-            url += (url.indexOf('?') === -1 ? '?' : '&') + 'limit=' + total + '&offset=0';
-
+            var base = url + (url.indexOf('?') === -1 ? '?' : '&');
+            var pageSize = 500; // the API caps results at MAX_RESULTS, so fetch in chunks
+            var allIds = [];
             var $link = $(this).css('pointer-events', 'none').css('opacity', 0.6);
 
-            $.getJSON(url).done(function (resp) {
-                var rows = (resp && resp.rows) ? resp.rows : [];
-                var ids = rows.map(function (r) { return r.id; }).filter(function (id) { return id; });
+            function fetchPage(offset) {
+                return $.getJSON(base + 'limit=' + pageSize + '&offset=' + offset).then(function (resp) {
+                    var rows = (resp && resp.rows) ? resp.rows : [];
+                    rows.forEach(function (r) { if (r.id) { allIds.push(r.id); } });
+                    if (rows.length === pageSize && allIds.length < total) {
+                        return fetchPage(offset + pageSize);
+                    }
+                });
+            }
 
-                if (window.snipeTableAddBulkSelectionIds && ids.length) {
-                    window.snipeTableAddBulkSelectionIds($table, ids);
+            fetchPage(0).done(function () {
+                if (window.snipeTableAddBulkSelectionIds && allIds.length) {
+                    window.snipeTableAddBulkSelectionIds($table, allIds);
                     if (window.snipeTableSyncBulkSelections) {
                         window.snipeTableSyncBulkSelections($table);
                     }
                 }
-
                 $banner.find('.cc-select-all-prompt').addClass('hidden');
-                $banner.find('.cc-select-all-done-count').text(ids.length);
+                $banner.find('.cc-select-all-done-count').text(allIds.length);
                 $banner.find('.cc-select-all-done').removeClass('hidden');
             }).always(function () {
                 $link.css('pointer-events', '').css('opacity', '');
