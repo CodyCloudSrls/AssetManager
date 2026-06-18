@@ -586,11 +586,18 @@ textarea,
     overflow: hidden !important;
 }
 
-/* The inner text span must NOT paint its own background — only the rounded
-   selection box does — otherwise its square corners bleed grey past the radius. */
+/* Every inner element of a select2 must be transparent and border-less — only
+   the rounded selection box paints. Otherwise their square corners/edges bleed
+   grey past the radius (the "grey corners" on the dropdown fields). */
 .select2-container--default .select2-selection--single .select2-selection__rendered,
-.select2-container--default .select2-selection--multiple .select2-selection__rendered {
+.select2-container--default .select2-selection--multiple .select2-selection__rendered,
+.select2-container--default .select2-selection--single .select2-selection__arrow,
+.select2-container--default .select2-selection--single .select2-selection__clear,
+.select2-container--default .select2-selection--multiple .select2-selection__clear {
     background-color: transparent !important;
+    background-image: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
 }
 
 /* Native <select>: the browser's own rendering ignores border-radius at the
@@ -853,14 +860,31 @@ hr {
     color: var(--cc-text);
 }
 
-/* Style the checkbox/radio BOX itself for the dark skin. Do NOT touch the
-   ::before — that is the check/dot mark (sized 1em via the base theme); adding a
-   border to it made the mark overflow its box ("checkbox too big"). */
+/* Dark-skin checkbox/radio. The base theme draws the check/dot via ::before at
+   1em (= the input's font-size, 10px). We size the BOX to 16px so the 10px mark
+   sits centred with breathing room (the "spaziatura" Francesca asked for), and
+   on :checked we fill the box with the primary colour and paint the mark WHITE
+   — otherwise the mark is near-invisible (dark on dark). */
 input[type="checkbox"],
 input[type="radio"] {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    flex-shrink: 0;
     background-color: var(--cc-bg-elevated) !important;
-    border-color: var(--cc-border-strong) !important;
-    color: var(--cc-primary) !important;
+    border: 1px solid var(--cc-border-strong) !important;
+    vertical-align: middle;
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    background-color: var(--cc-primary) !important;
+    border-color: var(--cc-primary) !important;
+}
+
+input[type="checkbox"]:checked::before,
+input[type="radio"]:checked::before {
+    box-shadow: inset 1em 1em #ffffff !important;
 }
 
 /* ---------- Panels (used on some settings / detail pages) ---------- */
