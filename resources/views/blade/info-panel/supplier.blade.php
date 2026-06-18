@@ -4,13 +4,26 @@
 
 
 @if ($infoPanelObj->supplier)
+    @php
+        // Only offer the expander when there's contact info to reveal, otherwise
+        // the "+" opens an empty row.
+        $supplier = $infoPanelObj->supplier;
+        $hasSupplierContact = $supplier->contact
+            || $supplier->phone
+            || $supplier->email
+            || $supplier->url
+            || trim((string) $supplier->present()->displayAddress) !== '';
+    @endphp
     <x-info-element icon_type="supplier" icon_color="{{ $infoPanelObj->supplier->tag_color }}" title="{{ trans('general.supplier') }}">
         {!!  $infoPanelObj->supplier->present()->nameUrl !!}
-        <a class="pull-right js-copy-link" style="font-size: 16px; margin-right: 3px;" type="button" data-toggle="collapse" data-target="#supplierContact" aria-expanded="false" aria-controls="supplierContact">
-            <x-icon type="plus" class="fa-fw"/>
-        </a>
+        @if ($hasSupplierContact)
+            <a class="pull-right js-copy-link" style="font-size: 16px; margin-right: 3px;" type="button" data-toggle="collapse" data-target="#supplierContact" aria-expanded="false" aria-controls="supplierContact">
+                <x-icon type="plus" class="fa-fw"/>
+            </a>
+        @endif
     </x-info-element>
 
+    @if ($hasSupplierContact)
     <span class="collapse" id="supplierContact">
 
         <x-info-element class="subitem well well-sm">
@@ -51,5 +64,6 @@
             </p>
         </x-info-element>
             </span>
+    @endif
 
 @endif

@@ -581,10 +581,10 @@ textarea,
     background-clip: padding-box !important;
 }
 
-.select2-container--default .select2-selection--single,
-.select2-container--default .select2-selection--multiple {
-    overflow: hidden !important;
-}
+/* NB: no overflow:hidden here — overflow:hidden + a 1px border + border-radius
+   leaves a grey clip artifact at the rounded corners (the "grey corners" only on
+   the select2/select dropdown fields). The inner elements are transparent
+   (below) and background-clip is padding-box, so clipping isn't needed. */
 
 /* Every inner element of a select2 must be transparent and border-less — only
    the rounded selection box paints. Otherwise their square corners/edges bleed
@@ -860,20 +860,39 @@ hr {
     color: var(--cc-text);
 }
 
-/* Dark-skin checkbox/radio. The base theme draws the check/dot via ::before at
-   1em (= the input's font-size, 10px). We size the BOX to 16px so the 10px mark
-   sits centred with breathing room (the "spaziatura" Francesca asked for), and
-   on :checked we fill the box with the primary colour and paint the mark WHITE
-   — otherwise the mark is near-invisible (dark on dark). */
+/* Robust dark-skin checkbox/radio. We DON'T reuse the base theme's ::before mark
+   (clip-path + box-shadow) — it was rendering near-invisible and glued to the
+   edge. Instead: appearance:none, our own 16px box, the base ::before hidden, and
+   the mark drawn with ::after (white tick / white dot) inset from the border so
+   there's clear spacing. Filled with the primary colour when checked. */
 input[type="checkbox"],
 input[type="radio"] {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
     width: 16px !important;
     height: 16px !important;
     min-width: 16px !important;
-    flex-shrink: 0;
+    flex: 0 0 auto !important;
+    margin-top: 2px !important;
+    position: relative !important;
     background-color: var(--cc-bg-elevated) !important;
     border: 1px solid var(--cc-border-strong) !important;
+    border-radius: 4px !important;
+    cursor: pointer;
     vertical-align: middle;
+}
+
+input[type="radio"] {
+    border-radius: 50% !important;
+}
+
+/* Drop the base theme's faux mark completely */
+input[type="checkbox"]::before,
+input[type="radio"]::before {
+    display: none !important;
+    content: none !important;
+    box-shadow: none !important;
 }
 
 input[type="checkbox"]:checked,
@@ -882,9 +901,32 @@ input[type="radio"]:checked {
     border-color: var(--cc-primary) !important;
 }
 
-input[type="checkbox"]:checked::before,
-input[type="radio"]:checked::before {
-    box-shadow: inset 1em 1em #ffffff !important;
+/* White tick, inset from the edges -> visible + spacing from the outline */
+input[type="checkbox"]:checked::after {
+    content: "" !important;
+    position: absolute !important;
+    left: 5px !important;
+    top: 1px !important;
+    width: 4px !important;
+    height: 9px !important;
+    border: solid #ffffff !important;
+    border-width: 0 2px 2px 0 !important;
+    transform: rotate(45deg) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* White centre dot for the round radios */
+input[type="radio"]:checked::after {
+    content: "" !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    width: 7px !important;
+    height: 7px !important;
+    border-radius: 50% !important;
+    background-color: #ffffff !important;
+    transform: translate(-50%, -50%) !important;
 }
 
 /* ---------- Panels (used on some settings / detail pages) ---------- */

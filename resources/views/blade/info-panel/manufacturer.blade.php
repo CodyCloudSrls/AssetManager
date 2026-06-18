@@ -6,13 +6,27 @@
 
 
 @if ($manufacturer)
+    @php
+        // Only offer the expander when there is actually contact info to reveal —
+        // otherwise the "+" opens an empty row (e.g. a manufacturer with no
+        // phone/email/url/address set).
+        $hasManufacturerContact = $manufacturer->support_phone
+            || $manufacturer->support_email
+            || $manufacturer->url
+            || $manufacturer->support_url
+            || ($asset && $manufacturer->warranty_lookup_url)
+            || trim((string) $manufacturer->present()->displayAddress) !== '';
+    @endphp
     <x-info-element icon_type="manufacturer" title="{{ trans('general.manufacturer') }}" icon_color="{{ $manufacturer->tag_color }}">
         {!!  $manufacturer->present()->nameUrl !!}
-        <a class="pull-right js-copy-link" style="font-size: 16px; margin-right: 3px;" type="button" data-toggle="collapse" data-target="#manufacturerContact" aria-expanded="false" aria-controls="manufacturerContact">
-            <x-icon type="plus" class="fa-fw"/>
-        </a>
+        @if ($hasManufacturerContact)
+            <a class="pull-right js-copy-link" style="font-size: 16px; margin-right: 3px;" type="button" data-toggle="collapse" data-target="#manufacturerContact" aria-expanded="false" aria-controls="manufacturerContact">
+                <x-icon type="plus" class="fa-fw"/>
+            </a>
+        @endif
     </x-info-element>
 
+    @if ($hasManufacturerContact)
     <span class="collapse" id="manufacturerContact">
 
         <x-info-element class="subitem well well-sm">
@@ -64,5 +78,6 @@
             </p>
         </x-info-element>
             </span>
+    @endif
 
 @endif
