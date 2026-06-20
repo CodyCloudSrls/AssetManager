@@ -4,7 +4,8 @@ return array (
   'title' => 'Tenants',
   'create' => 'Create Tenant',
   'uuid' => 'Tenant UUID',
-  'root_company' => 'Root Company',
+  'root_company' => 'Main Company',
+  'root_company_help' => 'The main company that represents this tenant. It is different from the "Parent Company" (the controlling company in a group), which is set on the individual company record.',
   'companies_count' => 'Companies',
   'users_count' => 'Users',
   'assets_count' => 'Assets',
@@ -23,8 +24,8 @@ return array (
   'member_actions' => 'Actions',
   'empty_members' => 'No cross-tenant users are assigned to this tenant.',
   'overview' => 'Tenant overview',
-  'root_company_link' => 'Open root company',
-  'edit_root_company' => 'Edit root company',
+  'root_company_link' => 'Open main company',
+  'edit_root_company' => 'Edit main company',
   'companies' => 'Tenant companies',
   'settings' =>
   array (

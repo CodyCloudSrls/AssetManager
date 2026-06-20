@@ -59,6 +59,7 @@
                                     @else
                                         -
                                     @endif
+                                    <p class="help-block" style="margin:4px 0 0;">{{ trans('admin/tenants/general.root_company_help') }}</p>
                                 </td>
                             </tr>
                             <tr>

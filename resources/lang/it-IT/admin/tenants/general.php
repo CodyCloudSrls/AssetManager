@@ -4,7 +4,8 @@ return array (
   'title' => 'Tenant',
   'create' => 'Crea tenant',
   'uuid' => 'UUID tenant',
-  'root_company' => 'Azienda madre',
+  'root_company' => 'Azienda principale',
+  'root_company_help' => 'L\'azienda principale che rappresenta questo tenant. È diversa dall\'"Azienda padre" (la controllante in un gruppo), che si imposta nella scheda della singola azienda.',
   'companies_count' => 'Aziende',
   'users_count' => 'Utenti',
   'assets_count' => 'Beni',
@@ -23,8 +24,8 @@ return array (
   'member_actions' => 'Azioni',
   'empty_members' => 'Nessun utente cross-tenant assegnato a questo tenant.',
   'overview' => 'Panoramica tenant',
-  'root_company_link' => 'Apri azienda madre',
-  'edit_root_company' => 'Modifica azienda madre',
+  'root_company_link' => 'Apri azienda principale',
+  'edit_root_company' => 'Modifica azienda principale',
   'companies' => 'Aziende del tenant',
   'settings' =>
   array (
