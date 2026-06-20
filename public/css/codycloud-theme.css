@@ -50,6 +50,13 @@
     --sidenav-hover-color-bg: #1b1e26;
     --sidenav-text-hover-color: #ffffff;
     --sidenav-text-nohover-color: #c7ccd6;
+    /* Box / content backgrounds were a grey (#3d4144 / #222222) in the branding's
+       dark mode — used by .box, .list-group-item, info-panel items, etc. Re-point
+       them at the Cloudflare dark surfaces so nothing renders grey. */
+    --box-bg: #15171d;
+    --color-bg: #0b0c0f;
+    --table-stripe-bg: #15171d;
+    --input-group-bg: #1b1e26;
 }
 
 /* ---------- Brand moved into the sidebar ---------- */
@@ -1048,6 +1055,24 @@ body.login-page {
 
 .login-page a {
     color: var(--cc-primary);
+}
+
+/* Same breathing room for checkbox/radio "boxes" on EVERY page (Francesca: the
+   space between the box border and the checkbox was only present on login). A
+   label styled as .form-control wraps the input + its text; lay it out as a flex
+   row with left padding + a gap so the input isn't glued to the border. */
+label.form-control {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding-left: 14px !important;
+    cursor: pointer;
+}
+
+label.form-control > input[type="checkbox"],
+label.form-control > input[type="radio"] {
+    margin: 0 !important;
+    flex: 0 0 auto;
 }
 
 /* Dark scrollbars to match the skin */
