@@ -23,6 +23,22 @@
         </div>
     </div>
 
+    @if (!empty($companyOptions) && count($companyOptions) > 1)
+    <div class="form-group {{ $errors->has('company_id') ? ' has-error' : '' }}">
+        <label for="company_id" class="col-md-3 control-label">{{ trans('admin/tenantservices/general.company') }}</label>
+        <div class="col-md-7">
+            <select class="form-control select2" name="company_id" id="company_id" aria-label="company_id">
+                <option value="">{{ trans('admin/tenantservices/general.company_tenant_wide') }}</option>
+                @foreach ($companyOptions as $companyId => $companyName)
+                    <option value="{{ $companyId }}" @selected((string) old('company_id', $service->company_id) === (string) $companyId)>{{ $companyName }}</option>
+                @endforeach
+            </select>
+            <p class="help-block">{{ trans('admin/tenantservices/general.company_help') }}</p>
+            {!! $errors->first('company_id', '<span class="alert-msg">:message</span>') !!}
+        </div>
+    </div>
+    @endif
+
     <div class="form-group {{ $errors->has('name') ? ' has-error' : '' }}">
         <label for="name" class="col-md-3 control-label">{{ trans('admin/tenantservices/general.name') }}</label>
         <div class="col-md-7">

@@ -38,6 +38,7 @@ class TenantService extends SnipeModel
 
     protected $fillable = [
         'tenant_id',
+        'company_id',
         'macro_area',
         'name',
         'description',
@@ -49,6 +50,7 @@ class TenantService extends SnipeModel
 
     protected $casts = [
         'tenant_id' => 'integer',
+        'company_id' => 'integer',
         'is_active' => 'boolean',
         'created_by' => 'integer',
     ];
@@ -59,6 +61,7 @@ class TenantService extends SnipeModel
 
     protected $rules = [
         'tenant_id' => 'required|integer|exists:tenants,id',
+        'company_id' => 'nullable|integer|exists:companies,id',
         'macro_area' => 'required|string|max:80',
         'name' => 'required|string|max:255',
         'description' => 'nullable|string|max:65535',
@@ -238,6 +241,10 @@ class TenantService extends SnipeModel
 
         return static::query()
             ->where('tenant_id', $tenantId)
+            ->where(function ($query) use ($companyId) {
+                // a company sees its own services AND the tenant-wide ones (NULL company)
+                $query->whereNull('company_id')->orWhere('company_id', $companyId);
+            })
             ->active()
             ->orderBy('macro_area')
             ->orderBy('name')
@@ -254,6 +261,9 @@ class TenantService extends SnipeModel
 
         return static::query()
             ->where('tenant_id', $tenantId)
+            ->where(function ($query) use ($companyId) {
+                $query->whereNull('company_id')->orWhere('company_id', $companyId);
+            })
             ->whereIn('id', $ids)
             ->pluck('id')
             ->map(fn ($id) => (int) $id)
@@ -263,6 +273,11 @@ class TenantService extends SnipeModel
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class, 'tenant_id');
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class, 'company_id');
     }
 
     public function documents(): BelongsToMany

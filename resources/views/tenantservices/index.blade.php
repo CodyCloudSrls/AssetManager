@@ -50,6 +50,7 @@
                                     <th style="width:1%;"><input type="checkbox" id="tenantServicesCheckAll" aria-label="{{ trans('general.select_all_none') }}"></th>
                                 @endif
                                 <th>{{ trans('admin/tenantservices/general.macro_area') }}</th>
+                                <th>{{ trans('admin/tenantservices/general.company_column') }}</th>
                                 <th>{{ trans('admin/tenantservices/general.name') }}</th>
                                 <th>{{ trans('admin/tenantservices/general.relevance_preassigned') }}</th>
                                 <th>{{ trans('admin/tenantservices/general.relevance_assigned') }}</th>
@@ -68,6 +69,13 @@
                                         <td><input type="checkbox" name="ids[]" value="{{ $service->id }}" form="bulkServicesForm" class="tenant-service-checkbox" aria-label="{{ $service->name }}"></td>
                                     @endif
                                     <td>{{ $service->macro_area_label }}</td>
+                                    <td>
+                                        @if ($service->company_id)
+                                            {{ $service->company?->name }}
+                                        @else
+                                            <span class="text-muted">{{ trans('admin/tenantservices/general.company_tenant_wide') }}</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         <strong>{{ $service->name }}</strong>
                                         @if ($service->description)
@@ -113,7 +121,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ $canManageTenant ? 9 : 7 }}" class="text-muted">{{ trans('admin/tenantservices/general.no_services') }}</td>
+                                    <td colspan="{{ $canManageTenant ? 10 : 8 }}" class="text-muted">{{ trans('admin/tenantservices/general.no_services') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>

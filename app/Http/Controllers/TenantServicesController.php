@@ -236,6 +236,7 @@ class TenantServicesController extends Controller
             'item' => $service,
             'macroAreaOptions' => TenantService::macroAreaOptions($service->macro_area),
             'impactOptions' => TenantService::impactOptions(),
+            'companyOptions' => \App\Models\Company::where('tenant_id', $tenant->id)->orderBy('name')->pluck('name', 'id')->all(),
         ];
     }
 
@@ -247,8 +248,11 @@ class TenantServicesController extends Controller
             $macroAreaKeys = array_values(array_unique($macroAreaKeys));
         }
 
+        $tenantCompanyIds = \App\Models\Company::where('tenant_id', $tenant->id)->pluck('id')->all();
+
         return Validator::make($request->all(), [
             'macro_area' => ['required', 'string', Rule::in($macroAreaKeys)],
+            'company_id' => ['nullable', Rule::in($tenantCompanyIds)],
             'name' => [
                 'required',
                 'string',
@@ -270,6 +274,7 @@ class TenantServicesController extends Controller
     private function fillService(TenantService $service, Tenant $tenant, Request $request): void
     {
         $service->tenant_id = $tenant->id;
+        $service->company_id = $request->filled('company_id') ? (int) $request->input('company_id') : null;
         $service->macro_area = $request->input('macro_area');
         $service->name = trim((string) $request->input('name'));
         $service->description = $request->input('description');
