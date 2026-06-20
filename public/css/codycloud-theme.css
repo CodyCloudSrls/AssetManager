@@ -434,6 +434,19 @@ input[type="search"].search-highlight {
     border-top: 1px solid var(--cc-border) !important;
 }
 
+/* Vertical "label : value" tables (tenant overview, asset/document details):
+   the left label column is a <th> in tbody. Keep it transparent (no grey block)
+   with muted, bold label text — it was rendering as a grey column. */
+.table > tbody > tr > th,
+.snipe-table > tbody > tr > th {
+    background-color: transparent !important;
+    color: var(--cc-text-muted) !important;
+    font-weight: 600;
+    border-top: 1px solid var(--cc-border) !important;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
 .table-striped > tbody > tr:nth-of-type(odd),
 .table-striped > tbody > tr:nth-of-type(odd) > td {
     background-color: rgba(255, 255, 255, 0.015) !important;
