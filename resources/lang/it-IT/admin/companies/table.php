@@ -9,6 +9,6 @@ return [
     'update' => 'Aggiorna Azienda',
     'name' => 'Nome Azienda',
     'parent' => 'Azienda padre',
-    'parent_help' => 'Opzionale: indica l\'azienda controllante solo se questa fa parte di un gruppo. Lascia vuoto se è l\'azienda principale del tenant.',
+    'parent_help' => 'Opzionale: indica l\'azienda controllante se questa fa parte di un gruppo. Impostandola, l\'azienda entra nello stesso tenant dell\'azienda padre, così puoi categorizzare i servizi NIS2 separatamente per ciascuna. Lascia vuoto se è l\'azienda principale del tenant.',
     'id' => 'ID',
 ];

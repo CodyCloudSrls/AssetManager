@@ -421,7 +421,18 @@
 
                 <hr>
 
-                <h4>{{ trans('admin/tenants/general.companies') }}</h4>
+                <h4>
+                    {{ trans('admin/tenants/general.companies') }}
+                    @if ($rootCompany)
+                        @can('create', \App\Models\Company::class)
+                            <a href="{{ route('companies.create', ['parent_id' => $rootCompany->id]) }}" class="btn btn-primary btn-sm pull-right">
+                                <x-icon type="plus" class="fa-fw" />
+                                {{ trans('admin/tenants/general.add_company') }}
+                            </a>
+                        @endcan
+                    @endif
+                </h4>
+                <p class="help-block">{{ trans('admin/tenants/general.add_company_help') }}</p>
                 <table class="table table-striped snipe-table">
                     <thead>
                     <tr>

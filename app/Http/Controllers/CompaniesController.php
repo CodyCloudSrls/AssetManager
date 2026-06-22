@@ -63,7 +63,18 @@ final class CompaniesController extends Controller
     {
         $this->authorize('create', Company::class);
 
-        return view('companies/edit')->with('item', new Company);
+        $company = new Company;
+
+        // Allow pre-filling the parent (e.g. from the tenant page "add company"
+        // button) so the new company lands in that company's tenant/group.
+        if (request()->filled('parent_id')) {
+            $parentId = (int) request('parent_id');
+            if (Company::where('id', $parentId)->exists()) {
+                $company->parent_id = $parentId;
+            }
+        }
+
+        return view('companies/edit')->with('item', $company);
     }
 
     /**

@@ -27,6 +27,8 @@ return array (
   'root_company_link' => 'Open main company',
   'edit_root_company' => 'Edit main company',
   'companies' => 'Tenant companies',
+  'add_company' => 'Add company',
+  'add_company_help' => 'Add another company to this tenant (e.g. Ecosistem, Econet). It will be linked to the main company and you can categorize its NIS2 services separately.',
   'settings' =>
   array (
     'title' => 'Tenant settings',

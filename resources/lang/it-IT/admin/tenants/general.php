@@ -27,6 +27,8 @@ return array (
   'root_company_link' => 'Apri azienda principale',
   'edit_root_company' => 'Modifica azienda principale',
   'companies' => 'Aziende del tenant',
+  'add_company' => 'Aggiungi azienda',
+  'add_company_help' => 'Aggiungi un\'altra azienda a questo tenant (es. Ecosistem, Econet). Verrà collegata all\'azienda principale e potrai categorizzare i suoi servizi NIS2 separatamente.',
   'settings' =>
   array (
     'title' => 'Impostazioni tenant',
