@@ -14,6 +14,7 @@ return [
     'company' => 'Azienda',
     'company_tenant_wide' => 'Tutto il tenant (tutte le aziende)',
     'company_help' => 'Lascia "Tutto il tenant" per applicare il servizio a tutte le aziende, oppure scegli una singola azienda per una categorizzazione separata (es. solo Suez Italy o solo Ecosistem).',
+    'company_single_hint' => 'Questo tenant ha una sola azienda, quindi per ora la categorizzazione è unica. <a href=":url">Aggiungi altre aziende al tenant</a> per categorizzare i servizi separatamente per ciascuna.',
     'company_column' => 'Azienda',
     'name' => 'Nome servizio',
     'name_help' => 'Usa una denominazione chiara. Lo stesso servizio puo essere inserito in piu macro-aree quando necessario.',

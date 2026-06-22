@@ -23,7 +23,6 @@
         </div>
     </div>
 
-    @if (!empty($companyOptions) && count($companyOptions) > 1)
     <div class="form-group {{ $errors->has('company_id') ? ' has-error' : '' }}">
         <label for="company_id" class="col-md-3 control-label">{{ trans('admin/tenantservices/general.company') }}</label>
         <div class="col-md-7">
@@ -34,10 +33,15 @@
                 @endforeach
             </select>
             <p class="help-block">{{ trans('admin/tenantservices/general.company_help') }}</p>
+            @if (count($companyOptions) <= 1)
+                <p class="help-block" style="margin-top:-4px;">
+                    <i class="fas fa-info-circle" aria-hidden="true"></i>
+                    {!! trans('admin/tenantservices/general.company_single_hint', ['url' => route('tenants.show', $tenant)]) !!}
+                </p>
+            @endif
             {!! $errors->first('company_id', '<span class="alert-msg">:message</span>') !!}
         </div>
     </div>
-    @endif
 
     <div class="form-group {{ $errors->has('name') ? ' has-error' : '' }}">
         <label for="name" class="col-md-3 control-label">{{ trans('admin/tenantservices/general.name') }}</label>

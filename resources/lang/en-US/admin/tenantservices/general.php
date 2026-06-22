@@ -14,6 +14,7 @@ return [
     'company' => 'Company',
     'company_tenant_wide' => 'Whole tenant (all companies)',
     'company_help' => 'Leave "Whole tenant" to apply the service to every company, or pick a single company for a separate categorization (e.g. only Suez Italy or only Ecosistem).',
+    'company_single_hint' => 'This tenant has only one company, so categorization is shared for now. <a href=":url">Add more companies to the tenant</a> to categorize services separately for each.',
     'company_column' => 'Company',
     'name' => 'Service name',
     'name_help' => 'Use a clear name. The same service can be entered under more than one macro-area when required.',
