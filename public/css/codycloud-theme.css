@@ -1821,3 +1821,172 @@ textarea:required:focus {
     box-shadow: none !important;
     border-right-width: 1px !important;
 }
+
+/* ============================================================
+   NAV — full rewrite (authoritative, last word in this file).
+   CerberoSOC style: flat full-width items, NO floating chip box,
+   submenu blended into the sidebar (no separate grey box), and the
+   AdminLTE/branding teal-grey (#1e282c/#2c3b41, the "verde/grigio")
+   killed at the <li> level. Overrides every earlier sidebar rule.
+   ============================================================ */
+
+/* Sidebar surface */
+.main-sidebar,
+.main-sidebar .sidebar,
+.left-side {
+    background-color: #0e0e11 !important;
+    border-right: 1px solid var(--cc-border) !important;
+}
+
+/* Kill the teal-grey that the branding sets on the <li> ELEMENTS (not the links),
+   and give the submenu the SAME colour as the sidebar so it never reads as a box. */
+.sidebar-menu > li,
+.sidebar-menu > li:hover,
+.sidebar-menu > li.active,
+.sidebar-menu > li.menu-open,
+.sidebar-menu .treeview-menu > li,
+.sidebar-menu .treeview-menu > li:hover,
+.sidebar-menu .treeview-menu > li.active {
+    background-color: transparent !important;
+}
+.sidebar-menu .treeview-menu,
+.sidebar-menu > li > .treeview-menu {
+    background-color: #0e0e11 !important;
+    padding: 2px 0 6px !important;
+}
+
+/* Top-level items: flat, full width, no chip, muted */
+.sidebar-menu > li > a {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border-left: 3px solid transparent !important;
+    box-shadow: none !important;
+    padding: 11px 14px 11px 15px !important;
+    color: var(--cc-text-muted) !important;
+    font-weight: 500;
+    transition: background-color .12s ease, color .12s ease;
+}
+.sidebar-menu > li > a > .fa,
+.sidebar-menu > li > a > svg,
+.sidebar-menu > li > a > i { color: var(--cc-text-dim) !important; }
+
+/* Hover: subtle full-width wash */
+.sidebar-menu > li:hover > a,
+.sidebar-menu > li > a:hover,
+.sidebar-menu > li > a:focus {
+    background-color: rgba(255, 255, 255, 0.045) !important;
+    color: #ffffff !important;
+    border-left-color: transparent !important;
+    padding-left: 15px !important;
+}
+.sidebar-menu > li:hover > a > .fa,
+.sidebar-menu > li:hover > a > svg,
+.sidebar-menu > li:hover > a > i { color: var(--cc-text-muted) !important; }
+
+/* Active / open: subtle full-width fill + left indigo accent + indigo icon */
+.sidebar-menu > li.active > a,
+.sidebar-menu > li.menu-open > a,
+.sidebar-menu > li.active:hover > a {
+    background-color: rgba(255, 255, 255, 0.07) !important;
+    color: #ffffff !important;
+    border-left: 3px solid var(--cc-primary) !important;
+    box-shadow: none !important;
+    padding-left: 15px !important;
+}
+.sidebar-menu > li.active > a > .fa,
+.sidebar-menu > li.active > a > svg,
+.sidebar-menu > li.active > a > i,
+.sidebar-menu > li.menu-open > a > .fa,
+.sidebar-menu > li.menu-open > a > svg,
+.sidebar-menu > li.menu-open > a > i { color: var(--cc-primary) !important; }
+
+/* Submenu items: indented flat rows, no box */
+.sidebar-menu .treeview-menu > li > a {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border-left: 3px solid transparent !important;
+    padding: 7px 12px 7px 47px !important;
+    color: var(--cc-text-muted) !important;
+    font-weight: 400;
+}
+.sidebar-menu .treeview-menu > li > a:hover,
+.sidebar-menu .treeview-menu > li:hover > a {
+    background-color: rgba(255, 255, 255, 0.045) !important;
+    color: #ffffff !important;
+    border-left-color: transparent !important;
+}
+.sidebar-menu .treeview-menu > li.active > a {
+    background-color: rgba(255, 255, 255, 0.07) !important;
+    color: #ffffff !important;
+    border-left: 3px solid var(--cc-primary) !important;
+}
+
+/* Submenu icons: clean monochrome — no AdminLTE rainbow, no harsh green */
+.sidebar-menu .treeview-menu > li > a > .fa,
+.sidebar-menu .treeview-menu > li > a > svg,
+.sidebar-menu .treeview-menu > li > a > i,
+.sidebar-menu .treeview-menu .text-green,
+.sidebar-menu .treeview-menu .text-aqua,
+.sidebar-menu .treeview-menu .text-light-blue,
+.sidebar-menu .treeview-menu .text-blue,
+.sidebar-menu .treeview-menu .text-navy,
+.sidebar-menu .treeview-menu .text-teal,
+.sidebar-menu .treeview-menu .text-yellow,
+.sidebar-menu .treeview-menu .text-orange,
+.sidebar-menu .treeview-menu .text-red,
+.sidebar-menu .treeview-menu .text-maroon,
+.sidebar-menu .treeview-menu .text-purple { color: var(--cc-text-dim) !important; }
+.sidebar-menu .treeview-menu > li.active > a > .fa,
+.sidebar-menu .treeview-menu > li.active > a > i,
+.sidebar-menu .treeview-menu > li > a:hover > .fa,
+.sidebar-menu .treeview-menu > li > a:hover > i { color: var(--cc-text-muted) !important; }
+
+/* Caret on parents */
+.sidebar-menu > li > a > .pull-right-container .fa,
+.sidebar-menu > li > a .fa-angle-left,
+.sidebar-menu > li > a .fa-angle-down { color: var(--cc-text-dim) !important; }
+
+/* Count badges → quiet pills */
+.sidebar-menu > li > a .badge,
+.sidebar-menu .treeview-menu > li > a .badge,
+.sidebar-menu .pull-right-container .label,
+.sidebar-menu .badge,
+.sidebar-menu .label {
+    background-color: var(--cc-surface-2) !important;
+    color: var(--cc-text-muted) !important;
+    border: 1px solid var(--cc-border) !important;
+    border-radius: 999px !important;
+    font-weight: 600;
+    box-shadow: none !important;
+    margin-top: 1px;
+}
+
+/* Dividers / headers in the menu */
+.sidebar-menu li.divider {
+    height: 1px !important;
+    margin: 7px 16px !important;
+    padding: 0 !important;
+    background-color: var(--cc-border) !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    overflow: hidden;
+}
+.sidebar-menu li.header {
+    background: transparent !important;
+    color: var(--cc-text-dim) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 12px 16px 5px !important;
+}
+
+/* Collapsed rail + flyout submenu (popup needs a solid, bordered surface) */
+.sidebar-collapse .sidebar-menu > li > a { margin: 0 !important; border-radius: 0 !important; }
+.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
+    background-color: #14141a !important;
+    border: 1px solid var(--cc-border) !important;
+    border-left: none !important;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+}
