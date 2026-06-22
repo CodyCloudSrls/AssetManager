@@ -1791,10 +1791,10 @@ a:hover { color: var(--cc-primary-hover); }
 .sidebar-collapse .sidebar-menu > li > a { margin: 1px 6px !important; }
 .sidebar-collapse .sidebar-menu > li.active > a { box-shadow: inset 3px 0 0 var(--cc-primary); }
 
-/* ---------- Required-field indicator ----------
+/* ---------- Required fields: no orange ----------
    Snipe marks required inputs/selects with `border-right: 5px solid orange`,
-   which breaks the rounded corner into an orange slab (looks like a stray
-   bracket). Replace it with a clean inset amber accent that follows the radius. */
+   which breaks the rounded corner into an orange slab. Kill the orange entirely —
+   required fields look like normal fields; focus gets a clean blue ring. */
 input[type="date"]:required,
 input[type="number"]:required,
 input[type="text"]:required,
@@ -1806,14 +1806,17 @@ select:required,
 input:required,
 textarea:required {
     border-right-width: 1px !important;
-    border-right-color: var(--cc-border-strong) !important;
-    box-shadow: inset -2.5px 0 0 0 rgba(251, 146, 60, 0.85) !important;
+    border-right-color: var(--cc-border) !important;
+    box-shadow: none !important;
 }
 input:required:focus,
 select:required:focus,
-textarea:required:focus {
+textarea:required:focus,
+input:focus,
+select:focus,
+textarea:focus {
     border-color: var(--cc-primary) !important;
-    box-shadow: inset -2.5px 0 0 0 rgba(251, 146, 60, 0.85) !important;
+    box-shadow: 0 0 0 3px rgba(75, 107, 251, 0.16) !important;
 }
 /* select2 single widgets render their own box — keep them clean (no orange) */
 .select2-container--default .select2-selection--single,
@@ -1989,4 +1992,61 @@ textarea:required:focus {
     border-left: none !important;
     border-radius: 0 8px 8px 0;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* ============================================================
+   Toggle button-groups — Bootstrap `[data-toggle="buttons"]` radios
+   (e.g. the checkout target: Utente / Bene / Sede).
+   The radio <input> must stay hidden (my global radio styling was
+   rendering it as a black circle inside the button), and only the
+   ACTIVE label should read as selected.
+   ============================================================ */
+.btn-group[data-toggle="buttons"] .btn > input[type="radio"],
+.btn-group[data-toggle="buttons"] .btn > input[type="checkbox"],
+[data-toggle="buttons"] > .btn > input[type="radio"],
+[data-toggle="buttons"] > .btn > input[type="checkbox"],
+label.btn > input[type="radio"],
+label.btn > input[type="checkbox"] {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 0 !important;
+    clip: rect(0, 0, 0, 0) !important;
+    pointer-events: none !important;
+    border: 0 !important;
+    background: none !important;
+}
+.btn-group[data-toggle="buttons"] > .btn,
+.btn-group[data-toggle="buttons"] > label.btn,
+.btn-group[data-toggle="buttons"] > .btn.btn-theme {
+    background-color: var(--cc-surface-2) !important;
+    border: 1px solid var(--cc-border-strong) !important;
+    color: var(--cc-text-muted) !important;
+    box-shadow: none !important;
+    font-weight: 600;
+}
+.btn-group[data-toggle="buttons"] > .btn:hover,
+.btn-group[data-toggle="buttons"] > label.btn:hover {
+    background-color: var(--cc-surface-hover) !important;
+    color: var(--cc-text) !important;
+}
+.btn-group[data-toggle="buttons"] > .btn.active,
+.btn-group[data-toggle="buttons"] > label.btn.active,
+.btn-group[data-toggle="buttons"] > .btn.btn-theme.active {
+    background-color: var(--cc-primary) !important;
+    border-color: var(--cc-primary) !important;
+    color: #ffffff !important;
+}
+
+/* select2 focus → clean blue ring (consistent with native inputs, no orange) */
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--focus .select2-selection--multiple,
+.select2-container--default .select2-selection--single:focus,
+.select2-container--open .select2-selection--single,
+.select2-container--open .select2-selection--multiple {
+    border-color: var(--cc-primary) !important;
+    box-shadow: 0 0 0 3px rgba(75, 107, 251, 0.16) !important;
+    outline: none !important;
 }
