@@ -11,7 +11,7 @@
     <link rel="shortcut icon" type="image/ico" href="{{ ($snipeSettings) && ($snipeSettings->favicon!='') ?  Storage::disk('public')->url(e($snipeSettings->favicon)) : config('app.url').'/favicon.ico' }}">
     {{-- CodyCloud SVG favicon (logo-1 brand mark); modern browsers prefer this,
          the .ico above stays as a legacy fallback --}}
-    <link rel="icon" type="image/svg+xml" href="{{ url('img/asset-logos/codycloud-asset-mark.svg') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ url('img/asset-logos/codycloud-soc-mark.svg') }}">
     {{-- stylesheets --}}
     <link rel="stylesheet" href="{{ url(mix('css/dist/all.css')) }}">
 
@@ -53,7 +53,7 @@
 
     <div class="text-center cc-login-logo">
         <a href="{{ config('app.url') }}" aria-label="{{ $snipeSettings->site_name ?? 'CodyCloud' }}">
-            <img src="{{ url('img/asset-logos/codycloud-asset-1.svg') }}" alt="{{ $snipeSettings->site_name ?? 'CodyCloud' }}">
+            <img src="{{ url('img/asset-logos/codycloud-soc-logo.svg') }}" alt="{{ $snipeSettings->site_name ?? 'CodyCloud' }}">
         </a>
     </div>
   <!-- Content -->

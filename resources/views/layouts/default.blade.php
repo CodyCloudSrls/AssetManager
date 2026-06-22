@@ -22,7 +22,7 @@
           href="{{ ($snipeSettings) && ($snipeSettings->favicon!='') ?  Storage::disk('public')->url(e($snipeSettings->favicon)) : config('app.url').'/favicon.ico' }}">
     {{-- CodyCloud SVG favicon (logo-1 brand mark); modern browsers prefer this,
          the .ico above stays as a legacy fallback --}}
-    <link rel="icon" type="image/svg+xml" href="{{ url('img/asset-logos/codycloud-asset-mark.svg') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ url('img/asset-logos/codycloud-soc-mark.svg') }}">
 
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -1610,8 +1610,8 @@
                     <!-- CodyCloud brand inside the sidebar (logo + collapse toggle on one row) -->
                     <div class="cc-sidebar-head">
                         <a href="{{ config('app.url') }}" class="cc-sidebar-brand no-hover" aria-label="{{ $snipeSettings->site_name }}">
-                            <img class="cc-sidebar-brand-img" src="{{ url('img/asset-logos/codycloud-asset-1.svg') }}" alt="{{ $snipeSettings->site_name }}">
-                            <img class="cc-sidebar-brand-mark" src="{{ url('img/asset-logos/codycloud-asset-mark.svg') }}" alt="{{ $snipeSettings->site_name }}">
+                            <img class="cc-sidebar-brand-img" src="{{ url('img/asset-logos/codycloud-soc-logo.svg') }}" alt="{{ $snipeSettings->site_name }}">
+                            <img class="cc-sidebar-brand-mark" src="{{ url('img/asset-logos/codycloud-soc-mark.svg') }}" alt="{{ $snipeSettings->site_name }}">
                         </a>
                         <a href="#" class="cc-sidebar-toggle" data-toggle="push-menu" role="button" aria-label="{{ trans('general.toggle_navigation') }}">
                             <i class="fa-solid fa-bars" aria-hidden="true"></i>

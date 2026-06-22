@@ -11,24 +11,27 @@
  */
 
 :root {
-    --cc-bg: #0b0c0f;
-    --cc-bg-elevated: #101218;
-    --cc-surface: #15171d;
-    --cc-surface-2: #1b1e26;
-    --cc-surface-hover: #21242d;
-    --cc-border: #262a33;
-    --cc-border-strong: #313643;
-    --cc-text: #e7e9ee;
-    --cc-text-muted: #939aa6;
-    --cc-text-dim: #6b7280;
-    --cc-primary: #3b6fe8;
-    --cc-primary-hover: #335fce;
-    --cc-danger: #f0616d;
-    --cc-warning: #f5a623;
-    --cc-success: #34c759;
+    /* CerberoSOC-aligned palette: neutral near-black surfaces (no blue tint) +
+       vivid indigo primary, matching the SOC console look. */
+    --cc-bg: #0a0a0c;
+    --cc-bg-elevated: #111114;
+    --cc-surface: #161619;
+    --cc-surface-2: #1c1c21;
+    --cc-surface-hover: #232329;
+    --cc-border: #26262b;
+    --cc-border-strong: #34343c;
+    --cc-text: #f4f5f7;
+    --cc-text-muted: #9b9ba6;
+    --cc-text-dim: #6b6b76;
+    --cc-primary: #4b6bfb;
+    --cc-primary-hover: #3b5bf0;
+    --cc-danger: #f87171;
+    --cc-warning: #fb923c;
+    --cc-success: #22c55e;
     --cc-info: #38bdf8;
-    --cc-radius: 10px;
-    --cc-radius-sm: 8px;
+    --cc-purple: #a78bfa;
+    --cc-radius: 12px;
+    --cc-radius-sm: 9px;
     --cc-font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
@@ -39,24 +42,24 @@
  * so these definitions win.
  */
 :root {
-    --main-theme-color: #101218;
-    --main-theme-hover: #1b1e26;
-    --nav-primary-text-color: #c7ccd6;
-    --btn-theme-hover: #313643;
+    --main-theme-color: #111114;
+    --main-theme-hover: #1c1c21;
+    --nav-primary-text-color: #c8c8d0;
+    --btn-theme-hover: #34343c;
     /* Kill the grey footer and sidebar-submenu tints */
-    --main-footer-bg-color: #0b0c0f;
-    --main-footer-text-color: #939aa6;
-    --main-footer-top-border-color: #262a33;
-    --sidenav-hover-color-bg: #1b1e26;
+    --main-footer-bg-color: #0a0a0c;
+    --main-footer-text-color: #9b9ba6;
+    --main-footer-top-border-color: #26262b;
+    --sidenav-hover-color-bg: #1c1c21;
     --sidenav-text-hover-color: #ffffff;
-    --sidenav-text-nohover-color: #c7ccd6;
+    --sidenav-text-nohover-color: #c8c8d0;
     /* Box / content backgrounds were a grey (#3d4144 / #222222) in the branding's
        dark mode — used by .box, .list-group-item, info-panel items, etc. Re-point
-       them at the Cloudflare dark surfaces so nothing renders grey. */
-    --box-bg: #15171d;
-    --color-bg: #0b0c0f;
-    --table-stripe-bg: #15171d;
-    --input-group-bg: #1b1e26;
+       them at the neutral SOC surfaces so nothing renders grey. */
+    --box-bg: #161619;
+    --color-bg: #0a0a0c;
+    --table-stripe-bg: #161619;
+    --input-group-bg: #1c1c21;
 }
 
 /* ---------- Brand moved into the sidebar ---------- */
@@ -1540,3 +1543,217 @@ kbd {
     align-items: center;
     height: 56px;
 }
+
+/* ============================================================
+   CerberoSOC alignment — match the SOC console look:
+   neutral dark cards, colored stat numbers, rounded nav items,
+   subtle active accents, clean topbar.
+   ============================================================ */
+
+/* ---------- Dashboard KPI cards (.small-box) ----------
+   AdminLTE renders these as full-colour blocks; the SOC look is a dark card
+   with a big COLOURED NUMBER and a muted uppercase label. */
+.small-box,
+.small-box.bg-teal,
+.small-box.bg-aqua,
+.small-box.bg-light-blue,
+.small-box.bg-blue,
+.small-box.bg-maroon,
+.small-box.bg-red,
+.small-box.bg-orange,
+.small-box.bg-yellow,
+.small-box.bg-purple,
+.small-box.bg-green,
+.small-box.bg-navy {
+    background-color: var(--cc-surface) !important;
+    border: 1px solid var(--cc-border) !important;
+    border-radius: var(--cc-radius) !important;
+    color: var(--cc-text) !important;
+    box-shadow: none !important;
+    overflow: hidden;
+    transition: border-color .15s ease, transform .15s ease;
+}
+.small-box:hover {
+    border-color: var(--cc-border-strong) !important;
+    transform: translateY(-1px);
+}
+.small-box > .inner { padding: 16px 18px; }
+.small-box > .inner > h3 {
+    color: var(--cc-text) !important;
+    font-weight: 700;
+    font-size: 30px;
+    margin: 0 0 2px;
+    text-shadow: none !important;
+}
+.small-box > .inner > p {
+    color: var(--cc-text-muted) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 11px;
+    font-weight: 600;
+    margin: 0;
+}
+/* subtle, low-contrast icon (no longer the focal point) */
+.small-box > .icon {
+    color: rgba(255, 255, 255, 0.05) !important;
+    top: 8px;
+    font-size: 64px;
+}
+.small-box > .icon > i { color: inherit !important; }
+.small-box-footer,
+.small-box:hover .small-box-footer {
+    background-color: transparent !important;
+    color: var(--cc-text-muted) !important;
+    border-top: 1px solid var(--cc-border) !important;
+    font-size: 12px;
+    padding: 8px 18px;
+}
+.small-box-footer:hover { color: var(--cc-text) !important; }
+
+/* Colour the NUMBER per the original severity colour class */
+.small-box.bg-maroon > .inner > h3,
+.small-box.bg-red > .inner > h3 { color: var(--cc-danger) !important; }
+.small-box.bg-maroon > .icon,
+.small-box.bg-red > .icon { color: rgba(248, 113, 113, 0.10) !important; }
+
+.small-box.bg-orange > .inner > h3,
+.small-box.bg-yellow > .inner > h3 { color: var(--cc-warning) !important; }
+.small-box.bg-orange > .icon,
+.small-box.bg-yellow > .icon { color: rgba(251, 146, 60, 0.10) !important; }
+
+.small-box.bg-teal > .inner > h3,
+.small-box.bg-aqua > .inner > h3,
+.small-box.bg-light-blue > .inner > h3,
+.small-box.bg-blue > .inner > h3 { color: var(--cc-info) !important; }
+.small-box.bg-teal > .icon,
+.small-box.bg-aqua > .icon,
+.small-box.bg-light-blue > .icon,
+.small-box.bg-blue > .icon { color: rgba(56, 189, 248, 0.10) !important; }
+
+.small-box.bg-purple > .inner > h3 { color: var(--cc-purple) !important; }
+.small-box.bg-purple > .icon { color: rgba(167, 139, 250, 0.10) !important; }
+
+.small-box.bg-green > .inner > h3 { color: var(--cc-success) !important; }
+.small-box.bg-green > .icon { color: rgba(34, 197, 94, 0.10) !important; }
+
+/* info-box (alternative KPI widget) — same treatment */
+.info-box {
+    background-color: var(--cc-surface) !important;
+    border: 1px solid var(--cc-border) !important;
+    border-radius: var(--cc-radius) !important;
+    box-shadow: none !important;
+}
+.info-box-icon { background-color: transparent !important; color: var(--cc-text-muted) !important; }
+.info-box-number { color: var(--cc-text) !important; font-weight: 700; }
+.info-box-text { color: var(--cc-text-muted) !important; text-transform: uppercase; letter-spacing: 0.04em; font-size: 11px; }
+
+/* ---------- Sidebar: rounded nav items + SOC active accent ---------- */
+.sidebar-menu > li > a {
+    margin: 1px 10px;
+    border-radius: 8px;
+    transition: background-color .12s ease, color .12s ease;
+}
+.sidebar-menu > li:hover > a {
+    background-color: var(--cc-surface) !important;
+    color: #ffffff !important;
+}
+.sidebar-menu > li.active > a,
+.sidebar-menu > li.menu-open > a {
+    background-color: var(--cc-surface-2) !important;
+    color: #ffffff !important;
+    box-shadow: inset 3px 0 0 var(--cc-primary);
+    border-left-color: transparent !important;
+}
+.sidebar-menu > li.active > a > .fa,
+.sidebar-menu > li.active > a > svg,
+.sidebar-menu > li.active > a > i { color: var(--cc-primary) !important; }
+/* treeview submenu items: slightly inset, rounded, subtle active */
+.sidebar-menu .treeview-menu > li > a {
+    border-radius: 6px;
+    margin: 1px 10px 1px 18px;
+}
+.sidebar-menu .treeview-menu > li.active > a {
+    color: #fff !important;
+    background-color: var(--cc-surface-2) !important;
+}
+/* the version label at the bottom */
+.main-sidebar .sidebar-version,
+.main-sidebar .text-version { color: var(--cc-text-dim) !important; font-size: 11px; }
+
+/* ---------- Cards / boxes: SOC card finish ---------- */
+.box,
+.box.box-default,
+.box.box-primary,
+.box.box-solid,
+.nav-tabs-custom {
+    background-color: var(--cc-surface) !important;
+    border: 1px solid var(--cc-border) !important;
+    border-top: 1px solid var(--cc-border) !important;
+    border-radius: var(--cc-radius) !important;
+    box-shadow: none !important;
+}
+.box > .box-header,
+.box-header.with-border {
+    border-bottom: 1px solid var(--cc-border) !important;
+    padding: 14px 18px;
+}
+.box-header > .box-title,
+.box-title { font-weight: 650; letter-spacing: -0.1px; }
+.box > .box-body { padding: 16px 18px; }
+.box > .box-footer { background-color: transparent !important; border-top: 1px solid var(--cc-border) !important; }
+
+/* ---------- Topbar: SOC console finish ---------- */
+.main-header > .navbar,
+.main-header .navbar {
+    border-bottom: 1px solid var(--cc-border) !important;
+}
+/* the search box → rounded pill like the SOC quick-search */
+.main-header .navbar-form .form-control,
+.main-header .navbar .form-control,
+.main-header input[type="search"] {
+    border-radius: 9px !important;
+    background-color: var(--cc-surface) !important;
+    border: 1px solid var(--cc-border-strong) !important;
+}
+.main-header .navbar-form .input-group .btn,
+.main-header .navbar .input-group-btn .btn {
+    border-radius: 9px !important;
+}
+
+/* ---------- Buttons: SOC primary ---------- */
+.btn { border-radius: var(--cc-radius-sm) !important; font-weight: 600; }
+.btn-primary,
+.btn-theme {
+    background-color: var(--cc-primary) !important;
+    border-color: var(--cc-primary) !important;
+    color: #ffffff !important;
+}
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-theme:hover,
+.btn-theme:focus {
+    background-color: var(--cc-primary-hover) !important;
+    border-color: var(--cc-primary-hover) !important;
+}
+
+/* ---------- Progress bars (stat widgets) ---------- */
+.progress {
+    background-color: var(--cc-surface-2) !important;
+    border-radius: 999px !important;
+    height: 8px;
+    box-shadow: none !important;
+}
+.progress-bar { box-shadow: none !important; }
+.progress-bar-yellow, .progress-bar-warning { background-color: var(--cc-warning) !important; }
+.progress-bar-red, .progress-bar-danger { background-color: var(--cc-danger) !important; }
+.progress-bar-green, .progress-bar-success { background-color: var(--cc-success) !important; }
+.progress-bar-aqua, .progress-bar-info, .progress-bar-blue { background-color: var(--cc-info) !important; }
+
+/* ---------- Selection + focus polish ---------- */
+::selection { background: rgba(75, 107, 251, 0.32); }
+a, .text-primary, .text-light-blue, .text-aqua { color: var(--cc-primary); }
+a:hover { color: var(--cc-primary-hover); }
+
+/* Collapsed sidebar: tighten item margins so the icon-only rail stays aligned */
+.sidebar-collapse .sidebar-menu > li > a { margin: 1px 6px !important; }
+.sidebar-collapse .sidebar-menu > li.active > a { box-shadow: inset 3px 0 0 var(--cc-primary); }
