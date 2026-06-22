@@ -1667,14 +1667,47 @@ kbd {
 .sidebar-menu > li.active > a > .fa,
 .sidebar-menu > li.active > a > svg,
 .sidebar-menu > li.active > a > i { color: var(--cc-primary) !important; }
-/* treeview submenu items: slightly inset, rounded, subtle active */
+/* treeview submenu: flat indented rows (not floating chips), subtle active +
+   a left rail. Keeps the icon column aligned under the parent. */
+.sidebar-menu .treeview-menu {
+    background-color: rgba(0, 0, 0, 0.22) !important;
+    padding: 4px 0 6px !important;
+}
 .sidebar-menu .treeview-menu > li > a {
-    border-radius: 6px;
-    margin: 1px 10px 1px 18px;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 7px 12px 7px 46px !important;
+    color: var(--cc-text-muted) !important;
+}
+.sidebar-menu .treeview-menu > li > a:hover {
+    background-color: var(--cc-surface) !important;
+    color: #ffffff !important;
 }
 .sidebar-menu .treeview-menu > li.active > a {
-    color: #fff !important;
+    color: #ffffff !important;
     background-color: var(--cc-surface-2) !important;
+    box-shadow: inset 2px 0 0 var(--cc-primary);
+}
+/* dividers inside (and between) menus: a thin line, never an empty grey band */
+.sidebar-menu .treeview-menu > li.divider,
+.sidebar-menu > li.divider,
+.sidebar-menu li.divider {
+    height: 1px !important;
+    margin: 6px 16px !important;
+    padding: 0 !important;
+    background-color: var(--cc-border) !important;
+    overflow: hidden;
+    font-size: 0 !important;
+    line-height: 0 !important;
+}
+/* section header rows inside a submenu (if any) */
+.sidebar-menu .treeview-menu > li.header {
+    padding: 8px 12px 4px 18px !important;
+    color: var(--cc-text-dim) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 10px;
+    font-weight: 700;
 }
 /* the version label at the bottom */
 .main-sidebar .sidebar-version,
@@ -1757,3 +1790,34 @@ a:hover { color: var(--cc-primary-hover); }
 /* Collapsed sidebar: tighten item margins so the icon-only rail stays aligned */
 .sidebar-collapse .sidebar-menu > li > a { margin: 1px 6px !important; }
 .sidebar-collapse .sidebar-menu > li.active > a { box-shadow: inset 3px 0 0 var(--cc-primary); }
+
+/* ---------- Required-field indicator ----------
+   Snipe marks required inputs/selects with `border-right: 5px solid orange`,
+   which breaks the rounded corner into an orange slab (looks like a stray
+   bracket). Replace it with a clean inset amber accent that follows the radius. */
+input[type="date"]:required,
+input[type="number"]:required,
+input[type="text"]:required,
+input[type="url"]:required,
+input[type="email"]:required,
+input[type="password"]:required,
+input[type="tel"]:required,
+select:required,
+input:required,
+textarea:required {
+    border-right-width: 1px !important;
+    border-right-color: var(--cc-border-strong) !important;
+    box-shadow: inset -2.5px 0 0 0 rgba(251, 146, 60, 0.85) !important;
+}
+input:required:focus,
+select:required:focus,
+textarea:required:focus {
+    border-color: var(--cc-primary) !important;
+    box-shadow: inset -2.5px 0 0 0 rgba(251, 146, 60, 0.85) !important;
+}
+/* select2 single widgets render their own box — keep them clean (no orange) */
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple {
+    box-shadow: none !important;
+    border-right-width: 1px !important;
+}
