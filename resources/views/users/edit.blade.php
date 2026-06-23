@@ -631,6 +631,36 @@
 
                                   </div>
                               </div>
+
+                              {{-- Visible tenants (cross-tenant visibility "middle ground":
+                                   assign the specific tenants a non-superadmin user can see) --}}
+                              @if (isset($tenants) && auth()->user()->isSuperAdmin() && ! $user->isSuperAdmin())
+                                  <div class="form-group{{ $errors->has('tenants') ? ' has-error' : '' }}">
+                                      <label class="col-md-3 control-label" for="tenants[]">
+                                          {{ trans('admin/users/general.visible_tenants') }}
+                                      </label>
+                                      <div class="col-md-6">
+                                          @if ($tenants->count())
+                                              <input type="hidden" name="tenants[]" value="">
+                                              <select
+                                                      name="tenants[]"
+                                                      size="{{ ($tenants->count() > 25) ? '25' : '10' }}"
+                                                      aria-label="tenants[]"
+                                                      id="tenants"
+                                                      multiple="multiple"
+                                                      class="form-control select2"
+                                                      style="width: 100%;">
+                                                  @foreach ($tenants as $id => $tenantName)
+                                                      <option value="{{ $id }}"{{ ($userTenants->keys()->contains($id) ? ' selected="selected"' : '') }}>{{ $tenantName }}</option>
+                                                  @endforeach
+                                              </select>
+                                              <p class="help-block">{{ trans('admin/users/general.visible_tenants_help') }}</p>
+                                          @else
+                                              <p class="help-block">{{ trans('admin/users/general.visible_tenants_none') }}</p>
+                                          @endif
+                                      </div>
+                                  </div>
+                              @endif
                           </div>
 
                     </fieldset>

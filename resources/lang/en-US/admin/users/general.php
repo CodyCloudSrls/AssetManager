@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'visible_tenants' => 'Visible tenants',
+    'visible_tenants_help' => 'Pick the tenants this user can see in addition to their own. This is the cross-tenant middle ground: neither one nor all. New assignments are read-only; existing admin roles are kept. Does not apply to superadmins (they see everything).',
+    'visible_tenants_none' => 'No tenants available.',
     'activated_help_text' => 'This user can login',
     'activated_disabled_help_text' => 'You cannot edit activation status for your own account.',
     'assets_user' => 'Assets assigned to :name',

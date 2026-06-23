@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'visible_tenants' => 'Tenant visibili',
+    'visible_tenants_help' => 'Seleziona i tenant che questo utente può vedere oltre al proprio. È la via di mezzo cross-tenant: né uno solo né tutti. Nuove assegnazioni come sola lettura; i ruoli admin già impostati restano. Non si applica ai superadmin (vedono tutto).',
+    'visible_tenants_none' => 'Nessun tenant disponibile.',
     'activated_help_text' => 'Questo utente può effettuare il login',
     'activated_disabled_help_text' => 'Non puoi modificare lo stato di attivazione del proprio account.',
     'assets_user' => 'Bene assegnato a :name',

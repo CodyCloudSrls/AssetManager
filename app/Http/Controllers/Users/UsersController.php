@@ -14,6 +14,7 @@ use App\Models\Asset;
 use App\Models\Company;
 use App\Models\ComplianceDomain;
 use App\Models\Group;
+use App\Models\Tenant;
 use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\CurrentInventory;
@@ -87,7 +88,11 @@ class UsersController extends Controller
             ->map(fn ($id) => (int) $id)
             ->values();
 
-        return view('users/edit', compact('groups', 'userGroups', 'permissions', 'userPermissions', 'complianceDomains', 'userComplianceDomainIds'))
+        $tenants = $this->assignableTenantOptions();
+        $oldTenantIds = collect($request->old('tenants', []))->filter(fn ($id) => filled($id))->map(fn ($id) => (int) $id)->all();
+        $userTenants = Tenant::query()->whereIn('id', $oldTenantIds ?: [-1])->get()->pluck('display_name', 'id');
+
+        return view('users/edit', compact('groups', 'userGroups', 'permissions', 'userPermissions', 'complianceDomains', 'userComplianceDomainIds', 'tenants', 'userTenants'))
             ->with('user', $user);
     }
 
@@ -178,6 +183,8 @@ class UsersController extends Controller
                 $user->groups()->sync($this->selectedGroupIds($request));
             }
 
+            $this->syncUserTenants($user, $request);
+
             if ($this->canManageUserPermissions($authenticatedUser)) {
                 $user->complianceDomains()->sync($this->selectedComplianceDomainIds($request, $authenticatedUser));
             }
@@ -211,6 +218,56 @@ class UsersController extends Controller
             ->unique()
             ->values()
             ->all();
+    }
+
+    /** Tenants a superadmin can grant a user visibility on (all real tenants). */
+    private function assignableTenantOptions()
+    {
+        if (! auth()->user() || ! auth()->user()->isSuperAdmin()) {
+            return collect();
+        }
+
+        return Tenant::all()->sortBy('display_name', SORT_NATURAL | SORT_FLAG_CASE)->pluck('display_name', 'id');
+    }
+
+    private function selectedTenantIds(Request $request): array
+    {
+        $validTenantIds = Tenant::query()->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+        return collect($request->input('tenants', []))
+            ->flatten()
+            ->filter(fn ($id) => filled($id))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => in_array($id, $validTenantIds, true))
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Sync which tenants a user can see (the cross-tenant "middle ground"), driven
+     * by the multi-select on the user form. Only platform superadmins can assign it,
+     * and it's a no-op for superadmin targets (they already see every tenant). New
+     * memberships default to the viewer role; existing roles are preserved.
+     */
+    private function syncUserTenants(User $user, Request $request): void
+    {
+        if (! $request->has('tenants') || ! auth()->user()->isSuperAdmin() || $user->isSuperAdmin()) {
+            return;
+        }
+
+        $existingRoles = $user->tenants()->get()->pluck('pivot.role', 'id')->all();
+
+        $syncData = [];
+        foreach ($this->selectedTenantIds($request) as $tenantId) {
+            $syncData[$tenantId] = [
+                'role' => $existingRoles[$tenantId] ?? Tenant::ROLE_VIEWER,
+                'created_by' => auth()->id(),
+            ];
+        }
+
+        $user->tenants()->sync($syncData);
+        Tenant::clearCurrentUserTenantRoleCache();
     }
 
     private function requestContainsPermissionManagement(Request $request): bool
@@ -294,7 +351,10 @@ class UsersController extends Controller
             $complianceDomains = ComplianceDomain::query()->active()->ordered()->get(['id', 'key', 'name']);
             $userComplianceDomainIds = $user->complianceDomains()->pluck('compliance_domains.id');
 
-            return view('users/edit', compact('user', 'groups', 'userGroups', 'permissions', 'userPermissions', 'complianceDomains', 'userComplianceDomainIds'))->with('item', $user);
+            $tenants = $this->assignableTenantOptions();
+            $userTenants = $user->tenants()->get()->pluck('display_name', 'id');
+
+            return view('users/edit', compact('user', 'groups', 'userGroups', 'permissions', 'userPermissions', 'complianceDomains', 'userComplianceDomainIds', 'tenants', 'userTenants'))->with('item', $user);
         }
 
     }
@@ -403,6 +463,8 @@ class UsersController extends Controller
             if (auth()->user()->isSuperAdmin()) {
                 $user->groups()->sync($this->selectedGroupIds($request));
             }
+
+            $this->syncUserTenants($user, $request);
         }
 
         // Update the location of any assets checked out to this user
