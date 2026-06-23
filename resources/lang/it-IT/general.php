@@ -64,6 +64,7 @@ return array (
   'bulkaudit_status' => 'Stato Controllo Inventario',
   'bulk_checkout' => 'Assegnazione Massiva',
   'bulk_edit' => 'Modifica Massiva',
+  'bulk_edit_count' => '{1} Modifica di gruppo: 1 elemento selezionato.|[2,*] Modifica di gruppo: :count elementi selezionati.',
   'bulk_delete' => 'Cancellazione Massiva',
   'no_files_selected' => 'Seleziona almeno un file da eliminare.',
   'select_all_pages_prompt' => 'Sono selezionati tutti gli elementi di questa pagina.',

@@ -129,6 +129,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('suppliers', SuppliersController::class);
 
     Route::post('suppliers/bulk/delete', [BulkSuppliersController::class, 'destroy'])->name('suppliers.bulk.delete');
+    Route::post('suppliers/bulkedit', [BulkSuppliersController::class, 'edit'])->name('suppliers.bulkedit.show');
+    Route::post('suppliers/bulksave', [BulkSuppliersController::class, 'update'])->name('suppliers.bulksave');
 
     /*
     * Customers and contracts

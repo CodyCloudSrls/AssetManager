@@ -64,6 +64,7 @@ return [
     'bulkaudit_status' => 'Audit Status',
     'bulk_checkout' => 'Bulk Checkout',
     'bulk_edit' => 'Bulk Edit',
+  'bulk_edit_count' => '{1} Bulk edit: 1 item selected.|[2,*] Bulk edit: :count items selected.',
     'bulk_delete' => 'Bulk Delete',
     'no_files_selected' => 'Select at least one file to delete.',
     'select_all_pages_prompt' => 'All items on this page are selected.',

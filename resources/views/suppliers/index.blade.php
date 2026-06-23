@@ -14,11 +14,14 @@
             <x-slot:bulkactions>
                 <x-table.bulk-actions
                         name='supplier'
-                        action_route="{{route('suppliers.bulk.delete')}}"
+                        action_route="{{route('suppliers.bulkedit.show')}}"
                         model_name="supplier"
                 >
+                    @can('update', App\Models\Supplier::class)
+                        <option value="edit">{{ trans('general.bulk_edit') }}</option>
+                    @endcan
                     @can('delete', App\Models\Supplier::class)
-                        <option>{{ trans('general.delete') }}</option>
+                        <option value="delete">{{ trans('general.delete') }}</option>
                     @endcan
                 </x-table.bulk-actions>
             </x-slot:bulkactions>

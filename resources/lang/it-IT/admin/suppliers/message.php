@@ -4,6 +4,7 @@ return [
 
     'deleted' => 'Fornitore eliminato',
     'does_not_exist' => 'Il fornitore non esiste.',
+    'no_suppliers_selected' => 'Nessun fornitore selezionato.',
 
     'create' => [
         'error' => 'Il fornitore non è stato creato, si prega di riprovare.',

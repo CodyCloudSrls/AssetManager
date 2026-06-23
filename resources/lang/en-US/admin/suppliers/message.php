@@ -4,6 +4,7 @@ return [
 
     'deleted' => 'Deleted supplier',
     'does_not_exist' => 'Supplier does not exist.',
+    'no_suppliers_selected' => 'No suppliers selected.',
 
     'create' => [
         'error' => 'Supplier was not created, please try again.',

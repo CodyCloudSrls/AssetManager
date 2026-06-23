@@ -11,9 +11,97 @@ use App\Exceptions\ItemStillHasLicenses;
 use App\Exceptions\ItemStillHasMaintenances;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class BulkSuppliersController extends Controller
 {
+    /**
+     * Entry point for the bulk-actions dropdown. The form always POSTs here; we
+     * branch on the selected action ('delete' reuses destroy(), 'edit' shows the
+     * group-edit form).
+     */
+    public function edit(Request $request)
+    {
+        if (! $request->filled('ids')) {
+            return redirect()->route('suppliers.index')->with('error', trans('admin/suppliers/message.no_suppliers_selected'));
+        }
+
+        if ($request->input('bulk_actions') === 'delete') {
+            return $this->destroy($request);
+        }
+
+        $this->authorize('update', Supplier::class);
+
+        $suppliers = Supplier::whereIn('id', (array) $request->input('ids'))->get();
+
+        if ($suppliers->isEmpty()) {
+            return redirect()->route('suppliers.index')->with('error', trans('admin/suppliers/message.no_suppliers_selected'));
+        }
+
+        return view('suppliers.bulk-edit', [
+            'suppliers' => $suppliers,
+            'ids' => $suppliers->pluck('id')->all(),
+        ]);
+    }
+
+    /**
+     * Apply the group edit. Only the fields whose "apply_*" checkbox is set are
+     * written (everything else is left untouched on every selected supplier).
+     */
+    public function update(Request $request)
+    {
+        $this->authorize('update', Supplier::class);
+
+        $suppliers = Supplier::whereIn('id', (array) $request->input('ids'))->get();
+
+        if ($suppliers->isEmpty()) {
+            return redirect()->route('suppliers.index')->with('error', trans('admin/suppliers/message.no_suppliers_selected'));
+        }
+
+        $validator = Validator::make($request->all(), [
+            'nis_criticality' => ['nullable', Rule::in(array_keys(Supplier::nisCriticalityOptions()))],
+            'nis_relevance_type' => ['nullable', Rule::in(array_keys(Supplier::nisRelevanceTypeOptions()))],
+            'nis_assessment_status' => ['nullable', Rule::in(array_keys(Supplier::nisAssessmentStatusOptions()))],
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withInput()->withErrors($validator);
+        }
+
+        $updates = [];
+
+        if ($request->boolean('apply_nis_relevant')) {
+            $updates['nis_relevant'] = $request->boolean('nis_relevant_value');
+        }
+        if ($request->boolean('apply_nis_criticality') && $request->filled('nis_criticality')) {
+            $updates['nis_criticality'] = $request->input('nis_criticality');
+        }
+        if ($request->boolean('apply_nis_relevance_type') && $request->filled('nis_relevance_type')) {
+            $updates['nis_relevance_type'] = $request->input('nis_relevance_type');
+        }
+        if ($request->boolean('apply_nis_assessment_status') && $request->filled('nis_assessment_status')) {
+            $updates['nis_assessment_status'] = $request->input('nis_assessment_status');
+        }
+        if ($request->boolean('apply_notes')) {
+            $updates['notes'] = $request->input('notes');
+        }
+
+        if ($updates === []) {
+            return redirect()->route('suppliers.index')->with('warning', trans('admin/hardware/message.update.nothing_updated'));
+        }
+
+        DB::transaction(function () use ($suppliers, $updates) {
+            foreach ($suppliers as $supplier) {
+                $supplier->fill($updates);
+                $supplier->save();
+            }
+        });
+
+        return redirect()->route('suppliers.index')->with('success', trans('admin/suppliers/message.update.success'));
+    }
+
     public function destroy(Request $request)
     {
         $this->authorize('delete', Supplier::class);
