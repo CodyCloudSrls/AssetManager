@@ -43,11 +43,14 @@
                 </form>
             @endif
 
+            {{-- No left fixed column: the bootstrap-table fixed-columns clone of the
+                 frozen left column blanked the adjacent "Nome" header (sort-arrows only).
+                 Tickets/Locations/Maintenances use exactly this (right-frozen actions,
+                 no left freeze) and render fine — match them. --}}
             <x-table
                 name="supplier"
                 buttons="supplierButtons"
                 fixed_right_number="1"
-                fixed_number="1"
                 api_url="{{ route('api.suppliers.index', request()->only(['tenant_id', 'company_id', 'nis_relevant', 'nis_relevance_type', 'nis_criticality', 'nis_assessment_status', 'nis_assessment_method', 'nis_assessment_outcome', 'nis_review_status', 'cpv_code'])) }}"
                 :presenter="\App\Presenters\SupplierPresenter::dataTableLayout()"
                 export_filename="export-suppliers-{{ date('Y-m-d') }}"
