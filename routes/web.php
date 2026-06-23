@@ -11,6 +11,7 @@ use App\Http\Controllers\BulkCustomersController;
 use App\Http\Controllers\BulkManufacturersController;
 use App\Http\Controllers\BulkSuppliersController;
 use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\BulkCompaniesController;
 use App\Http\Controllers\CompaniesController;
 use App\Http\Controllers\ComplianceDomainsController;
 use App\Http\Controllers\ComplianceFrameworkPacksController;
@@ -52,6 +53,8 @@ Route::group(['middleware' => 'auth'], function () {
     /*
     * Companies
     */
+    Route::post('companies/bulkedit', [BulkCompaniesController::class, 'edit'])->name('companies.bulkedit.show');
+    Route::post('companies/bulksave', [BulkCompaniesController::class, 'update'])->name('companies.bulksave');
     Route::resource('companies', CompaniesController::class, [
         'parameters' => ['company' => 'company_id'],
     ]);

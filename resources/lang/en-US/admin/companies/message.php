@@ -2,6 +2,7 @@
 
 return [
     'does_not_exist' => 'Company does not exist.',
+    'no_companies_selected' => 'No companies selected.',
     'deleted' => 'Deleted company',
     'assoc_users' => 'This company is currently associated with at least one model and cannot be deleted. Please update your models to no longer reference this company and try again. ',
     'create' => [

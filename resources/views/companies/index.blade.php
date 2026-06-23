@@ -12,10 +12,23 @@
 
         <x-page-column class="col-md-9">
             <x-box>
+                @can('update', App\Models\Company::class)
+                    <div style="margin-bottom:10px;">
+                        <x-table.bulk-actions
+                                name='companies'
+                                action_route="{{ route('companies.bulkedit.show') }}"
+                                model_name="companies"
+                        >
+                            <option value="edit">{{ trans('general.bulk_edit') }}</option>
+                        </x-table.bulk-actions>
+                    </div>
+                @endcan
                 <table
                   data-columns="{{ \App\Presenters\CompanyPresenter::dataTableLayout() }}"
                   data-cookie-id-table="companiesTable"
                   data-id-table="companiesTable"
+                  data-bulk-form-id="#companiesForm"
+                  data-bulk-button-id="#companiesButton"
                   data-side-pagination="server"
                   data-sort-order="asc"
                   data-advanced-search="false"

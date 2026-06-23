@@ -2,6 +2,7 @@
 
 return [
     'does_not_exist' => 'L\'azienda non esiste.',
+    'no_companies_selected' => 'Nessuna azienda selezionata.',
     'deleted' => 'Azienda eliminata',
     'assoc_users' => 'Questa azienda è attualmente associata con almeno un modello e non può essere cancellata. Aggiorna i tuoi modelli perchè non facciano più riferimento a questa azienda e riprova. ',
     'create' => [
