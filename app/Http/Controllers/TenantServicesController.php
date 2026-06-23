@@ -164,6 +164,8 @@ class TenantServicesController extends Controller
             'tenant' => $tenant,
             'services' => $services,
             'impactOptions' => TenantService::impactOptions(),
+            'companyOptions' => \App\Models\Company::where('tenant_id', $tenant->id)
+                ->orderBy('name')->pluck('name', 'id')->all(),
         ]);
     }
 
@@ -178,12 +180,16 @@ class TenantServicesController extends Controller
                 ->with('error', trans('admin/tenantservices/message.bulk.nothing_selected'));
         }
 
+        $tenantCompanyIds = \App\Models\Company::where('tenant_id', $tenant->id)->pluck('id')->all();
+
         $validator = Validator::make($request->all(), [
             'ids' => 'required|array',
             'apply_relevance_override' => 'nullable|boolean',
             'relevance_override' => ['nullable', Rule::in(TenantService::impactKeys())],
             'apply_is_active' => 'nullable|boolean',
             'is_active_state' => ['nullable', Rule::in(['0', '1'])],
+            'apply_company_id' => 'nullable|boolean',
+            'company_id' => ['nullable', Rule::in($tenantCompanyIds)],
         ]);
 
         $validator->after(function ($validator) use ($request) {
@@ -208,6 +214,11 @@ class TenantServicesController extends Controller
 
         if ($request->boolean('apply_is_active')) {
             $updates['is_active'] = $request->input('is_active_state') === '1';
+        }
+
+        if ($request->boolean('apply_company_id')) {
+            // empty value = "Whole tenant" (NULL); a numeric value must belong to the tenant.
+            $updates['company_id'] = $request->filled('company_id') ? (int) $request->input('company_id') : null;
         }
 
         DB::transaction(function () use ($services, $updates) {
@@ -248,7 +259,8 @@ class TenantServicesController extends Controller
     private function bulkHasSelectedFields(Request $request): bool
     {
         return $request->boolean('apply_relevance_override')
-            || $request->boolean('apply_is_active');
+            || $request->boolean('apply_is_active')
+            || $request->boolean('apply_company_id');
     }
 
     private function formData(Tenant $tenant, TenantService $service): array

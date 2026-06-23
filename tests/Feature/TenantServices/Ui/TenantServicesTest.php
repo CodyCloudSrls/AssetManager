@@ -255,6 +255,54 @@ class TenantServicesTest extends TestCase
         $this->assertNotEquals($tenantA->id, $foreignService->tenant_id);
     }
 
+    public function test_bulk_update_can_change_company_and_back_to_tenant_wide(): void
+    {
+        [$tenant, $company] = $this->tenantWithCompanyName('Suez Italy');
+        $user = User::factory()->superuser()->for($company)->create();
+        $this->actingAs($user);
+
+        $s1 = $this->tenantService($tenant, ['name' => 'Bulk svc 1', 'company_id' => null]);
+        $s2 = $this->tenantService($tenant, ['name' => 'Bulk svc 2', 'company_id' => null]);
+
+        // Assign both services to a single company.
+        $this->post(route('tenants.services.bulkeditsave', $tenant), [
+            'ids' => [$s1->id, $s2->id],
+            'apply_company_id' => '1',
+            'company_id' => (string) $company->id,
+        ])->assertRedirect(route('tenants.services.index', $tenant));
+
+        $this->assertEquals($company->id, $s1->fresh()->company_id);
+        $this->assertEquals($company->id, $s2->fresh()->company_id);
+
+        // Move them back to tenant-wide (NULL) via the empty company value.
+        $this->post(route('tenants.services.bulkeditsave', $tenant), [
+            'ids' => [$s1->id, $s2->id],
+            'apply_company_id' => '1',
+            'company_id' => '',
+        ])->assertRedirect(route('tenants.services.index', $tenant));
+
+        $this->assertNull($s1->fresh()->company_id);
+        $this->assertNull($s2->fresh()->company_id);
+    }
+
+    public function test_bulk_update_rejects_company_from_another_tenant(): void
+    {
+        [$tenant] = $this->tenantWithCompanyName('Tenant A');
+        [, $foreignCompany] = $this->tenantWithCompanyName('Tenant B');
+        $user = User::factory()->superuser()->create();
+        $this->actingAs($user);
+
+        $service = $this->tenantService($tenant, ['name' => 'Svc', 'company_id' => null]);
+
+        $this->post(route('tenants.services.bulkeditsave', $tenant), [
+            'ids' => [$service->id],
+            'apply_company_id' => '1',
+            'company_id' => (string) $foreignCompany->id,
+        ])->assertSessionHasErrors('company_id');
+
+        $this->assertNull($service->fresh()->company_id);
+    }
+
     private function tenantWithCompany(string $companyName = 'ACN Tenant Company'): array
     {
         $tenant = Tenant::create(['uuid' => (string) Str::uuid()]);

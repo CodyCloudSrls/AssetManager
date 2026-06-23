@@ -46,6 +46,28 @@
                             </tbody>
                         </table>
 
+                        {{-- Company / tenant-wide --}}
+                        @if (count($companyOptions) > 0)
+                            <div class="form-group {{ $errors->has('company_id') ? ' has-error' : '' }}">
+                                <label for="company_id" class="col-md-3 control-label">{{ trans('admin/tenantservices/general.company_column') }}</label>
+                                <div class="col-md-5">
+                                    <select class="form-control select2" name="company_id" id="company_id" aria-label="company_id">
+                                        <option value="">{{ trans('admin/tenantservices/general.company_tenant_wide') }}</option>
+                                        @foreach ($companyOptions as $companyId => $companyName)
+                                            <option value="{{ $companyId }}" @selected((string) old('company_id') === (string) $companyId)>{{ $companyName }}</option>
+                                        @endforeach
+                                    </select>
+                                    {!! $errors->first('company_id', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-control">
+                                        <input type="checkbox" name="apply_company_id" value="1" @checked(old('apply_company_id'))>
+                                        {{ trans('general.apply') }}
+                                    </label>
+                                </div>
+                            </div>
+                        @endif
+
                         {{-- Assigned relevance --}}
                         <div class="form-group {{ $errors->has('relevance_override') ? ' has-error' : '' }}">
                             <label for="relevance_override" class="col-md-3 control-label">{{ trans('admin/tenantservices/general.relevance_assigned') }}</label>
@@ -104,6 +126,7 @@
     <script nonce="{{ csrf_token() }}">
         $(function () {
             var bulkApplyFields = {
+                company_id: 'apply_company_id',
                 relevance_override: 'apply_relevance_override',
                 is_active_state: 'apply_is_active'
             };
