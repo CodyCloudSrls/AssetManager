@@ -24,6 +24,8 @@
         data-columns="{{ \App\Presenters\UploadedFilesPresenter::dataTableLayout() }}"
         data-cookie-id-table="{{ $object_type }}-FileUploadsTable"
         data-id-table="{{ $object_type }}-FileUploadsTable"
+        data-bulk-form-id="#{{ $object_type }}-bulkDeleteFilesForm"
+        data-bulk-button-id="#{{ $object_type }}-bulkDeleteFilesButton"
         id="{{ $object_type }}-FileUploadsTable"
         data-side-pagination="server"
         data-pagination="true"
@@ -78,48 +80,21 @@
 
                 var $filesTable = $('#{{ $object_type }}-FileUploadsTable');
                 var $bulkForm = $('#{{ $object_type }}-bulkDeleteFilesForm');
-                var $bulkButton = $('#{{ $object_type }}-bulkDeleteFilesButton');
 
-                var selectedFileIds = function () {
-                    var ids = [];
-                    try {
-                        ids = ($filesTable.bootstrapTable('getSelections') || []).map(function (row) { return row.id; });
-                    } catch (error) {
-                        ids = [];
-                    }
-                    // Fallback: some bootstrap-table builds don't bubble check.bs.table,
-                    // so read the checked rows straight from the DOM via their row index.
-                    if (ids.length === 0) {
-                        var data = [];
-                        try { data = $filesTable.bootstrapTable('getData') || []; } catch (e) { data = []; }
-                        $filesTable.find('tbody input[type="checkbox"]:checked').each(function () {
-                            var idx = $(this).closest('tr').data('index');
-                            if (typeof idx !== 'undefined' && data[idx] && data[idx].id) {
-                                ids.push(data[idx].id);
-                            }
-                        });
-                    }
-                    return ids;
-                };
-
-                // Keep the form's hidden ids[] in sync with the current selection.
-                var syncSelectionInputs = function () {
-                    var ids = selectedFileIds();
-                    $bulkForm.find('input[name="ids[]"]').remove();
-                    ids.forEach(function (id) {
-                        $bulkForm.append('<input type="hidden" name="ids[]" value="' + id + '">');
-                    });
-                    return ids;
-                };
-
-                $filesTable.on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table load-success.bs.table page-change.bs.table', syncSelectionInputs);
-                $filesTable.on('change', 'input[type="checkbox"]', function () { setTimeout(syncSelectionInputs, 0); });
-
-                // The button stays clickable; we validate the selection at submit time
-                // (robust against bootstrap-table builds that don't emit check events).
+                // Selection ids[] are written into the form by the SHARED .snipe-table
+                // bulk-selection mechanism (wired via data-bulk-form-id / data-bulk-button-id
+                // on the table above). That handles fixedColumns DOM duplication and
+                // server-side pagination correctly — the previous home-grown reader did
+                // not, which is why bulk delete posted empty ids[] and failed.
+                // Here we only force a final sync, then confirm / block an empty selection.
                 $bulkForm.on('submit', function (event) {
-                    var ids = syncSelectionInputs();
-                    if (ids.length === 0) {
+                    if (window.snipeTableSyncBulkSelections && window.snipeTableCurrentBulkSelectionIds) {
+                        window.snipeTableSyncBulkSelections($filesTable, window.snipeTableCurrentBulkSelectionIds($filesTable));
+                    }
+                    var count = $bulkForm.find('input[name="ids[]"]').filter(function () {
+                        return $(this).val() !== '' && $(this).val() !== 'undefined';
+                    }).length;
+                    if (count === 0) {
                         event.preventDefault();
                         window.alert('{{ trans('general.no_files_selected') }}');
                         return;
