@@ -2095,3 +2095,25 @@ label.btn > input[type="checkbox"] {
     background-color: #2a6e90 !important;
     border-color: #2a6e90 !important;
 }
+
+/* ============================================================
+   Hover-intent bridge for the collapsed-sidebar flyout
+   ============================================================
+   When the sidebar is collapsed, the submenu pops out to the right. Moving the
+   cursor diagonally from the icon toward a submenu item briefly crosses the gap
+   between the icon column and the popout, dropping :hover and closing the menu.
+   A transparent bridge over the icon column (a child of the hovered <li>, so it
+   keeps :hover alive) lets the cursor travel diagonally without the menu closing. */
+.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -52px;
+    width: 54px;
+    height: calc(100% + 20px);
+    background: transparent;
+}
+/* the popout itself sits above the bridge so its items stay clickable */
+.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
+    position: absolute;
+}
