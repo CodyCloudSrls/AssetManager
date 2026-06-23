@@ -10,6 +10,13 @@ use Livewire\Component;
 
 class Importer extends Component
 {
+    /** How many recent imports to render before requiring "show all" (keeps the
+     *  history list light so scrolling doesn't stutter once many imports pile up). */
+    private const RECENT_FILES_LIMIT = 25;
+
+    /** When false (default) only the most recent imports are rendered. */
+    public bool $showAllFiles = false;
+
     public $progress = -1; // upload progress - '-1' means don't show
 
     public $progress_message;
@@ -724,7 +731,24 @@ class Importer extends Component
     #[Computed]
     public function files()
     {
-        return Import::orderBy('id', 'desc')->get();
+        $query = Import::orderBy('id', 'desc');
+
+        if (! $this->showAllFiles) {
+            $query->limit(self::RECENT_FILES_LIMIT);
+        }
+
+        return $query->get();
+    }
+
+    #[Computed]
+    public function filesTotal()
+    {
+        return Import::count();
+    }
+
+    public function recentFilesLimit(): int
+    {
+        return self::RECENT_FILES_LIMIT;
     }
 
     #[Computed]

@@ -329,6 +329,24 @@
                                             @endif
                                     @endforeach
                                 </table>
+
+                                @if ($this->filesTotal > $this->recentFilesLimit())
+                                    <div class="text-center text-muted" style="padding:8px 0 4px;">
+                                        @if ($this->showAllFiles)
+                                            {{ trans('general.showing_all_imports', ['count' => $this->filesTotal]) }}
+                                            &nbsp;
+                                            <button type="button" class="btn btn-default btn-xs" wire:click="$set('showAllFiles', false)">
+                                                {{ trans('general.show_recent_imports', ['count' => $this->recentFilesLimit()]) }}
+                                            </button>
+                                        @else
+                                            {{ trans('general.showing_recent_imports', ['shown' => $this->recentFilesLimit(), 'total' => $this->filesTotal]) }}
+                                            &nbsp;
+                                            <button type="button" class="btn btn-default btn-xs" wire:click="$set('showAllFiles', true)">
+                                                {{ trans('general.show_all_imports', ['count' => $this->filesTotal]) }}
+                                            </button>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>

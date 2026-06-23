@@ -2,6 +2,10 @@
 
 return array (
   'show_all' => 'Mostra tutto',
+  'showing_recent_imports' => 'Mostrate le :shown importazioni più recenti su :total.',
+  'show_all_imports' => 'Mostra tutte (:count)',
+  'showing_all_imports' => 'Mostrate tutte le :count importazioni.',
+  'show_recent_imports' => 'Mostra solo le :count recenti',
   '2FA_reset' => '2FA reset',
   'accessories' => 'Accessori',
   'activated' => 'Attivato',
