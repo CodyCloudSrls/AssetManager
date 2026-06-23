@@ -32,6 +32,25 @@
                     <p>{{ trans('admin/tenantservices/general.linking_guidance') }}</p>
                 </div>
 
+                @if (count($companyOptions) > 0)
+                    <form method="GET" action="{{ route('tenants.services.index', $tenant) }}" class="form-inline" style="margin-bottom:12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <label for="company_id" style="margin:0; font-weight:600;">
+                            <x-icon type="filter" class="fa-fw" /> {{ trans('admin/tenantservices/general.company_column') }}
+                        </label>
+                        <select name="company_id" id="company_id" class="form-control" onchange="this.form.submit()" style="min-width:240px;">
+                            <option value="" {{ $companyFilter === '' ? 'selected' : '' }}>{{ trans('admin/tenantservices/general.company_filter_all') }}</option>
+                            <option value="tenant" {{ $companyFilter === 'tenant' ? 'selected' : '' }}>{{ trans('admin/tenantservices/general.company_tenant_wide') }}</option>
+                            @foreach ($companyOptions as $companyId => $companyName)
+                                <option value="{{ $companyId }}" {{ (string) $companyFilter === (string) $companyId ? 'selected' : '' }}>{{ $companyName }}</option>
+                            @endforeach
+                        </select>
+                        @if ($companyFilter !== '')
+                            <a href="{{ route('tenants.services.index', $tenant) }}" class="btn btn-default btn-sm">{{ trans('admin/tenantservices/general.company_filter_clear') }}</a>
+                        @endif
+                        <span class="text-muted" style="margin-left:auto;">{{ trans_choice('admin/tenantservices/general.service_count', count($services), ['count' => count($services)]) }}</span>
+                    </form>
+                @endif
+
                 @if ($canManageTenant)
                     <form id="bulkServicesForm" method="POST" action="{{ route('tenants.services.bulkedit', $tenant) }}" style="margin-bottom: 10px;">
                         @csrf

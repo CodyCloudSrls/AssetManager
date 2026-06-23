@@ -15,12 +15,16 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class TenantServicesController extends Controller
 {
-    public function index(Tenant $tenant): View
+    public function index(Tenant $tenant, Request $request): View
     {
         abort_unless(Tenant::canCurrentUserViewTenant($tenant), 403);
 
         $companyIds = $tenant->activeCompanyIds();
-        $services = $tenant->services()
+
+        // Optional filter by company: a numeric id scopes to that company,
+        // the literal 'tenant' scopes to tenant-wide (company_id IS NULL).
+        $companyFilter = $request->input('company_id', '');
+        $servicesQuery = $tenant->services()
             ->withCount([
                 'documents' => fn ($query) => count($companyIds) === 0
                     ? $query->whereRaw('1 = 0')
@@ -29,12 +33,31 @@ class TenantServicesController extends Controller
                     ? $query->whereRaw('1 = 0')
                     : $query->withoutGlobalScopes()->whereIn('customer_contracts.company_id', $companyIds),
             ])
-            ->orderBy('macro_area')
-            ->orderBy('name')
-            ->get();
+            ->with('company');
+
+        if ($companyFilter === 'tenant') {
+            $servicesQuery->whereNull('company_id');
+        } elseif (is_numeric($companyFilter) && in_array((int) $companyFilter, $companyIds, true)) {
+            $servicesQuery->where('company_id', (int) $companyFilter);
+        } else {
+            $companyFilter = '';
+        }
+
+        // Group the list by company (tenant-wide first), then macro-area, then name —
+        // so a tenant like "Suez International" no longer shows everything mixed up.
+        $services = $servicesQuery->get()
+            ->sortBy([
+                fn ($a, $b) => strcasecmp($a->company?->name ?? '', $b->company?->name ?? ''),
+                fn ($a, $b) => strcasecmp($a->macro_area ?? '', $b->macro_area ?? ''),
+                fn ($a, $b) => strcasecmp($a->name ?? '', $b->name ?? ''),
+            ])
+            ->values();
+
+        $companyOptions = \App\Models\Company::where('tenant_id', $tenant->id)
+            ->orderBy('name')->pluck('name', 'id')->all();
         $canManageTenant = $this->canManageServices($tenant);
 
-        return view('tenantservices.index', compact('tenant', 'services', 'canManageTenant'));
+        return view('tenantservices.index', compact('tenant', 'services', 'canManageTenant', 'companyOptions', 'companyFilter'));
     }
 
     public function create(Tenant $tenant): View

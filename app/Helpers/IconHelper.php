@@ -63,6 +63,8 @@ class IconHelper
                 return 'fas fa-long-arrow-alt-right';
             case 'download':
                 return 'fas fa-download';
+            case 'filter':
+                return 'fas fa-filter';
             case 'checkmark':
                 return 'fas fa-check';
             case 'x':
