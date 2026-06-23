@@ -132,6 +132,10 @@ class SuppliersController extends Controller
             $suppliers->where('notes', '=', $request->input('notes'));
         }
 
+        if ($request->filled('company_id')) {
+            $suppliers->where('suppliers.company_id', '=', $request->input('company_id'));
+        }
+
         if ($request->filled('nis_relevant')) {
             $suppliers->where('nis_relevant', '=', $request->boolean('nis_relevant'));
         }

@@ -39,7 +39,11 @@ class SuppliersController extends Controller
     {
         $this->authorize('view', Supplier::class);
 
-        return view('suppliers/index');
+        // Companies the current user may see (the Company global scope already
+        // restricts this for non-superusers) — used by the "filter by company" dropdown.
+        $companyOptions = Company::orderBy('name')->pluck('name', 'id')->all();
+
+        return view('suppliers/index', compact('companyOptions'));
     }
 
     /**
