@@ -273,9 +273,23 @@
 <script nonce="{{ csrf_token() }}">
 
     $(function () {
-        // Re-scope the linked NIS2 tenant services when the asset's company changes
+        // The select2 AJAX reads the company via jQuery's .data('company-id') cache, so
+        // updating only the attribute isn't enough — set BOTH the attribute and .data().
+        function scopeServicesToCompany(companyId) {
+            $('#tenant_service_ids')
+                .attr('data-company-id', companyId || '')
+                .data('company-id', companyId || '');
+        }
+
+        // On load: scope to the company already selected on the form (e.g. the default
+        // company on the CREATE form) so the tenant-services list isn't empty until the
+        // company is re-picked.
+        scopeServicesToCompany($('select[name="company_id"]').val());
+
+        // Re-scope the linked NIS2 tenant services when the asset's company changes.
         $(document).on('change', 'select[name="company_id"]', function () {
-            $('#tenant_service_ids').attr('data-company-id', $(this).val()).val(null).trigger('change');
+            scopeServicesToCompany($(this).val());
+            $('#tenant_service_ids').val(null).trigger('change');
         });
     });
 

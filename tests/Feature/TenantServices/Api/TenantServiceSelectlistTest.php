@@ -56,16 +56,42 @@ class TenantServiceSelectlistTest extends TestCase
         $this->assertNotContains($inactive->id, $ids);
     }
 
-    public function test_selectlist_is_empty_without_a_company(): void
+    public function test_selectlist_falls_back_to_users_tenant_without_a_company(): void
     {
+        // On the asset CREATE form (no company picked yet) the list must still show the
+        // user's own tenant services instead of being empty.
         [$tenant, $company] = $this->tenantWithCompany();
         $user = User::factory()->superuser()->for($company)->create();
-        $this->service($tenant, 'Hosting Web Start', true);
+        $service = $this->service($tenant, 'Hosting Web Start', true);
 
-        $this->actingAsForApi($user)
+        $response = $this->actingAsForApi($user)
             ->getJson(route('api.tenantservices.selectlist'))
-            ->assertOk()
-            ->assertJsonPath('results', []);
+            ->assertOk();
+
+        $this->assertContains($service->id, collect($response->json('results'))->pluck('id')->all());
+    }
+
+    public function test_selectlist_scopes_to_the_company_plus_tenant_wide(): void
+    {
+        $tenant = Tenant::create(['uuid' => (string) Str::uuid()]);
+        $companyA = Company::factory()->create(['tenant_id' => $tenant->id, 'name' => 'Co A '.Str::random(4)]);
+        $companyB = Company::factory()->create(['tenant_id' => $tenant->id, 'name' => 'Co B '.Str::random(4)]);
+        $user = User::factory()->superuser()->for($companyA)->create();
+
+        $svcA = (new TenantService(['tenant_id' => $tenant->id, 'company_id' => $companyA->id, 'macro_area' => TenantService::MACRO_PRODUCTION_DIGITAL_INFRASTRUCTURES, 'name' => 'Solo A', 'is_active' => true]));
+        $svcA->save();
+        $svcB = (new TenantService(['tenant_id' => $tenant->id, 'company_id' => $companyB->id, 'macro_area' => TenantService::MACRO_PRODUCTION_DIGITAL_INFRASTRUCTURES, 'name' => 'Solo B', 'is_active' => true]));
+        $svcB->save();
+        $wide = $this->service($tenant, 'Tenant Wide', true); // company_id null
+
+        $response = $this->actingAsForApi($user)
+            ->getJson(route('api.tenantservices.selectlist', ['company_id' => $companyA->id]))
+            ->assertOk();
+
+        $ids = collect($response->json('results'))->pluck('id')->all();
+        $this->assertContains($svcA->id, $ids, 'company A service shown');
+        $this->assertContains($wide->id, $ids, 'tenant-wide service shown');
+        $this->assertNotContains($svcB->id, $ids, 'company B service NOT shown for company A');
     }
 
     public function test_selectlist_filters_by_search(): void

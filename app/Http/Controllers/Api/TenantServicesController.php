@@ -29,13 +29,22 @@ class TenantServicesController extends Controller
         $tenantId = $this->viewableTenantIdForCompany($companyId);
 
         $services = TenantService::query()
-            ->select(['id', 'name', 'macro_area', 'tenant_id'])
+            ->select(['id', 'name', 'macro_area', 'tenant_id', 'company_id'])
             ->when(
                 $tenantId,
                 fn ($query) => $query->where('tenant_id', $tenantId),
                 fn ($query) => $query->whereRaw('1 = 0'),
             )
             ->active();
+
+        // When a specific company is chosen (the asset form once a company is picked),
+        // only offer that company's services plus tenant-wide ones — exactly what can
+        // actually be linked (see TenantService::validIdsForCompany).
+        if ($companyId && $tenantId) {
+            $services->where(
+                fn ($query) => $query->whereNull('company_id')->orWhere('company_id', $companyId)
+            );
+        }
 
         if ($request->filled('search')) {
             $services->where('name', 'LIKE', '%'.$request->input('search').'%');
@@ -52,8 +61,11 @@ class TenantServicesController extends Controller
 
     private function viewableTenantIdForCompany(?int $companyId): ?int
     {
+        // No company chosen yet (e.g. the asset CREATE form before a company is picked):
+        // fall back to the current user's own tenant so their services still show,
+        // instead of returning an empty list.
         if (! $companyId) {
-            return null;
+            return $this->currentUserFallbackTenantId();
         }
 
         $tenantId = TenantRecordGuard::companyTenantId($companyId);
@@ -69,5 +81,32 @@ class TenantServicesController extends Controller
         }
 
         return $tenantId;
+    }
+
+    /**
+     * Best-effort tenant for the current user when no company is in scope: their own
+     * company's tenant, otherwise the single tenant they can access (null if ambiguous).
+     */
+    private function currentUserFallbackTenantId(): ?int
+    {
+        $user = auth()->user();
+
+        if (! $user) {
+            return null;
+        }
+
+        $userCompanyId = (int) ($user->company_id ?? 0);
+
+        if ($userCompanyId) {
+            $tenantId = TenantRecordGuard::companyTenantId($userCompanyId);
+
+            if ($tenantId) {
+                return (int) $tenantId;
+            }
+        }
+
+        $accessible = Tenant::accessibleTenantIdsForCurrentUser();
+
+        return count($accessible) === 1 ? (int) $accessible[0] : null;
     }
 }
