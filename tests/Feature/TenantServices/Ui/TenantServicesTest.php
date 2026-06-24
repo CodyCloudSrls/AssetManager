@@ -255,6 +255,31 @@ class TenantServicesTest extends TestCase
         $this->assertNotEquals($tenantA->id, $foreignService->tenant_id);
     }
 
+    public function test_same_service_name_and_macro_area_allowed_for_different_companies(): void
+    {
+        [$tenant, $companyA] = $this->tenantWithCompanyName('Logica 2.0');
+        $companyB = Company::factory()->create(['tenant_id' => $tenant->id, 'name' => 'Iblue']);
+        $this->actingAs(User::factory()->superuser()->for($companyA)->create());
+
+        $macro = TenantService::MACRO_PRODUCTION_DIGITAL_INFRASTRUCTURES;
+        $payload = fn ($companyId) => [
+            'macro_area' => $macro,
+            'company_id' => $companyId,
+            'name' => 'Servizio identico',
+            'is_active' => '1',
+        ];
+
+        // Company A
+        $this->post(route('tenants.services.store', $tenant), $payload($companyA->id))->assertSessionHasNoErrors();
+        // Company B — same name + macro-area must be allowed (two companies, same service)
+        $this->post(route('tenants.services.store', $tenant), $payload($companyB->id))->assertSessionHasNoErrors();
+
+        $this->assertEquals(2, TenantService::where('tenant_id', $tenant->id)->where('name', 'Servizio identico')->count());
+
+        // Same company + same name + macro-area → still rejected as a duplicate
+        $this->post(route('tenants.services.store', $tenant), $payload($companyA->id))->assertSessionHasErrors('name');
+    }
+
     public function test_bulk_update_can_change_company_and_back_to_tenant_wide(): void
     {
         [$tenant, $company] = $this->tenantWithCompanyName('Suez Italy');

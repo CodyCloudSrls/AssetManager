@@ -284,6 +284,10 @@ class TenantServicesController extends Controller
         }
 
         $tenantCompanyIds = \App\Models\Company::where('tenant_id', $tenant->id)->pluck('id')->all();
+        // The same service name + macro-area may exist for DIFFERENT companies of the
+        // same tenant (e.g. "Logica 2.0" and "Iblue" do the same thing). Uniqueness is
+        // therefore scoped per company (NULL = tenant-wide), not per tenant.
+        $companyId = $request->filled('company_id') ? (int) $request->input('company_id') : null;
 
         return Validator::make($request->all(), [
             'macro_area' => ['required', 'string', Rule::in($macroAreaKeys)],
@@ -295,6 +299,7 @@ class TenantServicesController extends Controller
                 Rule::unique('tenant_services', 'name')
                     ->where(fn ($query) => $query
                         ->where('tenant_id', $tenant->id)
+                        ->where('company_id', $companyId)
                         ->where('macro_area', $request->input('macro_area'))
                         ->whereNull('deleted_at'))
                     ->ignore($service?->id),
