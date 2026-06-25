@@ -56,9 +56,11 @@
         }
         .document-requirement-select + .select2-container {
             width: 100% !important;
+            min-width: 100% !important;
         }
         .document-requirement-select + .select2-container .select2-selection--multiple {
             min-height: 40px;
+            width: 100% !important;
         }
         .document-requirement-empty-help {
             color: var(--color-muted);
