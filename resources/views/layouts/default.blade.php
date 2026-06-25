@@ -1990,7 +1990,79 @@
                         @endcan
 
                         @can('backend.interact')
-                            <li id="settings-sidenav-option" class="treeview {!! ((request()->is(App\Helpers\Helper::SettingUrls()) || request()->routeIs('tenants.services.*')) ? ' active' : '') !!}">
+                            {{-- ===== Anagrafiche (business records) ===== --}}
+                            @if (Gate::allows('view', \App\Models\Manufacturer::class) || Gate::allows('view', \App\Models\Supplier::class) || Gate::allows('view', \App\Models\Customer::class) || Gate::allows('view', \App\Models\CustomerContract::class))
+                                <li class="treeview{{ (request()->is('manufacturers*') || request()->is('suppliers*') || request()->is('customers*') || request()->is('contracts*')) ? ' active' : '' }}">
+                                    <a href="#" class="dropdown-toggle">
+                                        <x-icon type="records" class="fa-fw" />
+                                        <span>{{ trans('general.nav_records') }}</span>
+                                        <x-icon type="angle-left" class="pull-right fa-fw"/>
+                                    </a>
+                                    <ul class="treeview-menu">
+                                        @can('view', \App\Models\Manufacturer::class)
+                                            <li {!! (request()->is('manufacturers*') ? ' class="active"' : '') !!}><a href="{{ route('manufacturers.index') }}">{{ trans('general.manufacturers') }}</a></li>
+                                        @endcan
+                                        @can('view', \App\Models\Supplier::class)
+                                            <li {!! (request()->is('suppliers*') ? ' class="active"' : '') !!}><a href="{{ route('suppliers.index') }}">{{ trans('general.suppliers') }}</a></li>
+                                        @endcan
+                                        @can('view', \App\Models\Customer::class)
+                                            <li {!! (request()->is('customers*') ? ' class="active"' : '') !!}><a href="{{ route('customers.index') }}">{{ trans('general.customers') }}</a></li>
+                                        @endcan
+                                        @can('view', \App\Models\CustomerContract::class)
+                                            <li {!! (request()->is('contracts*') ? ' class="active"' : '') !!}><a href="{{ route('contracts.index') }}">{{ trans('admin/contracts/general.contracts') }}</a></li>
+                                        @endcan
+                                    </ul>
+                                </li>
+                            @endif
+
+                            {{-- ===== Compliance NIS2 ===== --}}
+                            @php($sidebarServicesTenant = $navbarActiveTenant ?? $navbarCurrentTenant ?? null)
+                            @php($canSeeServicesNav = ($navbarCanAccessTenantAdminArea ?? false) && $sidebarServicesTenant)
+                            @if ($canSeeServicesNav || Gate::allows('view', \App\Models\DocumentType::class) || Gate::allows('view', \App\Models\DocumentFramework::class))
+                                <li class="treeview{{ (request()->routeIs('tenants.services.*') || request()->is('documenttypes*') || request()->is('documentframeworks*') || request()->is('documentframeworkrequirements*')) ? ' active' : '' }}">
+                                    <a href="#" class="dropdown-toggle">
+                                        <x-icon type="compliance" class="fa-fw" />
+                                        <span>{{ trans('general.nav_compliance') }}</span>
+                                        <x-icon type="angle-left" class="pull-right fa-fw"/>
+                                    </a>
+                                    <ul class="treeview-menu">
+                                        @if ($canSeeServicesNav)
+                                            <li {!! (request()->routeIs('tenants.services.*') ? ' class="active"' : '') !!}><a href="{{ route('tenants.services.index', $sidebarServicesTenant) }}">{{ trans('admin/tenantservices/general.sidebar_title') }}</a></li>
+                                        @endif
+                                        @can('view', \App\Models\DocumentType::class)
+                                            <li {!! (request()->is('documenttypes*') ? ' class="active"' : '') !!}><a href="{{ route('documenttypes.index') }}">{{ trans('general.document_types') }}</a></li>
+                                        @endcan
+                                        @can('view', \App\Models\DocumentFramework::class)
+                                            <li {!! (request()->is('documentframeworks*') ? ' class="active"' : '') !!}><a href="{{ route('documentframeworks.index') }}">{{ trans('general.document_frameworks') }}</a></li>
+                                            <li {!! (request()->is('documentframeworkrequirements*') ? ' class="active"' : '') !!}><a href="{{ route('documentframeworkrequirements.index') }}">{{ trans('general.document_framework_requirements') }}</a></li>
+                                        @endcan
+                                    </ul>
+                                </li>
+                            @endif
+
+                            {{-- ===== Organizzazione ===== --}}
+                            @if (Gate::allows('view', \App\Models\Company::class) || Gate::allows('view', \App\Models\Location::class) || Gate::allows('view', \App\Models\Department::class))
+                                <li class="treeview{{ (request()->is('companies*') || request()->is('locations*') || request()->is('departments*')) ? ' active' : '' }}">
+                                    <a href="#" class="dropdown-toggle">
+                                        <x-icon type="organization" class="fa-fw" />
+                                        <span>{{ trans('general.nav_organization') }}</span>
+                                        <x-icon type="angle-left" class="pull-right fa-fw"/>
+                                    </a>
+                                    <ul class="treeview-menu">
+                                        @can('view', \App\Models\Company::class)
+                                            <li {!! (request()->is('companies*') ? ' class="active"' : '') !!}><a href="{{ route('companies.index') }}">{{ trans('general.companies') }}</a></li>
+                                        @endcan
+                                        @can('view', \App\Models\Location::class)
+                                            <li {!! (request()->is('locations*') ? ' class="active"' : '') !!}><a href="{{ route('locations.index') }}">{{ trans('general.locations') }}</a></li>
+                                        @endcan
+                                        @can('view', \App\Models\Department::class)
+                                            <li {!! (request()->is('departments*') ? ' class="active"' : '') !!}><a href="{{ route('departments.index') }}">{{ trans('general.departments') }}</a></li>
+                                        @endcan
+                                    </ul>
+                                </li>
+                            @endif
+
+                            <li id="settings-sidenav-option" class="treeview {!! (request()->is(App\Helpers\Helper::SettingUrls()) ? ' active' : '') !!}">
                                 <a href="#" id="settings">
                                     <x-icon type="settings" class="fa-fw" />
                                     <span>{{ trans('general.settings') }}</span>
@@ -2026,92 +2098,6 @@
                                         <li {{!! (request()->is('categories*') ? ' class="active"' : '') !!}}>
                                             <a href="{{ route('categories.index') }}">
                                                 {{ trans('general.categories') }}
-                                            </a>
-                                        </li>
-                                    @endcan
-
-                                    @can('view', \App\Models\DocumentType::class)
-                                        <li {{!! (request()->is('documenttypes*') ? ' class="active"' : '') !!}}>
-                                            <a href="{{ route('documenttypes.index') }}">
-                                                {{ trans('general.document_types') }}
-                                            </a>
-                                        </li>
-                                    @endcan
-
-                                    @can('view', \App\Models\DocumentFramework::class)
-                                        <li {{!! (request()->is('documentframeworks*') ? ' class="active"' : '') !!}}>
-                                            <a href="{{ route('documentframeworks.index') }}">
-                                                {{ trans('general.document_frameworks') }}
-                                            </a>
-                                        </li>
-                                        <li {{!! (request()->is('documentframeworkrequirements*') ? ' class="active"' : '') !!}}>
-                                            <a href="{{ route('documentframeworkrequirements.index') }}">
-                                                {{ trans('general.document_framework_requirements') }}
-                                            </a>
-                                        </li>
-                                    @endcan
-
-                                    @can('view', \App\Models\Manufacturer::class)
-                                        <li {{!! (request()->is('manufacturers*') ? ' class="active"' : '') !!}}>
-                                            <a href="{{ route('manufacturers.index') }}">
-                                                {{ trans('general.manufacturers') }}
-                                            </a>
-                                        </li>
-                                    @endcan
-
-                                    @can('view', \App\Models\Supplier::class)
-                                        <li {{!! (request()->is('suppliers*') ? ' class="active"' : '') !!}}>
-                                            <a href="{{ route('suppliers.index') }}">
-                                                {{ trans('general.suppliers') }}
-                                            </a>
-                                        </li>
-                                    @endcan
-
-                                    @can('view', \App\Models\Customer::class)
-                                        <li {{!! (request()->is('customers*') ? ' class="active"' : '') !!}}>
-                                            <a href="{{ route('customers.index') }}">
-                                                {{ trans('general.customers') }}
-                                            </a>
-                                        </li>
-                                    @endcan
-
-                                    @can('view', \App\Models\CustomerContract::class)
-                                        <li {{!! (request()->is('contracts*') ? ' class="active"' : '') !!}}>
-                                            <a href="{{ route('contracts.index') }}">
-                                                {{ trans('admin/contracts/general.contracts') }}
-                                            </a>
-                                        </li>
-                                    @endcan
-
-                                    @php($sidebarServicesTenant = $navbarActiveTenant ?? $navbarCurrentTenant ?? null)
-                                    @if (($navbarCanAccessTenantAdminArea ?? false) && $sidebarServicesTenant)
-                                        <li {!! (request()->routeIs('tenants.services.*') ? ' class="active"' : '') !!}>
-                                            <a href="{{ route('tenants.services.index', $sidebarServicesTenant) }}">
-                                                {{ trans('admin/tenantservices/general.sidebar_title') }}
-                                            </a>
-                                        </li>
-                                    @endif
-
-                                    @can('view', \App\Models\Department::class)
-                                        <li {{!! (request()->is('departments*') ? ' class="active"' : '') !!}}>
-                                            <a href="{{ route('departments.index') }}">
-                                                {{ trans('general.departments') }}
-                                            </a>
-                                        </li>
-                                    @endcan
-
-                                    @can('view', \App\Models\Location::class)
-                                        <li {{!! (request()->is('locations*') ? ' class="active"' : '') !!}}>
-                                            <a href="{{ route('locations.index') }}">
-                                                {{ trans('general.locations') }}
-                                            </a>
-                                        </li>
-                                    @endcan
-
-                                    @can('view', \App\Models\Company::class)
-                                        <li {{!! (request()->is('companies*') ? ' class="active"' : '') !!}}>
-                                            <a href="{{ route('companies.index') }}">
-                                                {{ trans('general.companies') }}
                                             </a>
                                         </li>
                                     @endcan

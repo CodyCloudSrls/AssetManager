@@ -65,6 +65,12 @@ class IconHelper
                 return 'fas fa-download';
             case 'filter':
                 return 'fas fa-filter';
+            case 'records':
+                return 'fas fa-briefcase';
+            case 'compliance':
+                return 'fas fa-book';
+            case 'organization':
+                return 'fas fa-building';
             case 'checkmark':
                 return 'fas fa-check';
             case 'x':

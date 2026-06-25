@@ -1464,19 +1464,17 @@ class Helper
      */
     public static function SettingUrls()
     {
+        // Only the items that remain under the "Impostazioni" menu. The business
+        // records (manufacturers/suppliers/customers/contracts), compliance
+        // (document types/frameworks/services) and organization (companies/
+        // locations/departments) items moved to their own top-level menus and
+        // highlight there instead.
         $settings = [
             '#',
             'fields*',
             'statuslabels*',
             'models*',
             'categories*',
-            'documenttypes*',
-            'documentframeworks*',
-            'manufacturers*',
-            'suppliers*',
-            'departments*',
-            'locations*',
-            'companies*',
             'depreciations*',
         ];
 
