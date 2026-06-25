@@ -10,6 +10,7 @@ return [
     'about_text' => 'Services are the tenant-level inventory used for ACN NIS categorisation and can be linked to documents and customer contracts.',
     'help' => 'Inventory the services delivered by the tenant for ACN NIS categorisation. Active services are exported in the ACN categorised list format.',
     'macro_area' => 'Macro-area',
+    'macro_area_placeholder' => '— Select a macro-area —',
     'macro_area_help' => 'ACN macro-area used to derive the pre-assigned relevance category.',
     'company' => 'Company',
     'company_tenant_wide' => 'Whole tenant (all companies)',

@@ -277,7 +277,7 @@
                                             <div class="col-md-7">
                                                 @php($selectedTenantServiceIdsForForm = array_map('intval', old('tenant_service_ids', $selectedTenantServiceIds ?? [])))
                                                 <input type="hidden" name="tenant_service_ids_present" value="1">
-                                                <select class="form-control select2" multiple name="tenant_service_ids[]" id="tenant_service_ids" aria-label="tenant_service_ids">
+                                                <select class="form-control select2" multiple name="tenant_service_ids[]" id="tenant_service_ids" aria-label="tenant_service_ids" style="width: 100%;" data-placeholder="{{ trans('admin/tenantservices/general.field_label') }}">
                                                     @foreach ($tenantServices as $tenantService)
                                                         <option value="{{ $tenantService->id }}" @selected(in_array((int) $tenantService->id, $selectedTenantServiceIdsForForm, true))>
                                                             {{ $tenantService->macro_area_label }} - {{ $tenantService->name }}

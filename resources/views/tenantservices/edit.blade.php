@@ -17,6 +17,8 @@
                 id="macro_area"
                 :options="$macroAreaOptions"
                 :selected="old('macro_area', $service->macro_area)"
+                :includeEmpty="true"
+                data-placeholder="{{ trans('admin/tenantservices/general.macro_area_placeholder') }}"
             />
             <p class="help-block">{{ trans('admin/tenantservices/general.macro_area_help') }}</p>
             {!! $errors->first('macro_area', '<span class="alert-msg">:message</span>') !!}
