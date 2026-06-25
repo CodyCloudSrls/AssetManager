@@ -17,10 +17,17 @@ class AcnTenantServicesXlsxExporter
         'Categoria di rilevanza attribuita',
     ];
 
-    public function build(Tenant $tenant): string
+    public function build(Tenant $tenant, ?int $companyId = null, bool $tenantWideOnly = false): string
     {
-        $services = $tenant->services()
-            ->active()
+        $query = $tenant->services()->active();
+
+        if ($tenantWideOnly) {
+            $query->whereNull('company_id');
+        } elseif ($companyId !== null) {
+            $query->where('company_id', $companyId);
+        }
+
+        $services = $query
             ->orderBy('macro_area')
             ->orderBy('name')
             ->get();

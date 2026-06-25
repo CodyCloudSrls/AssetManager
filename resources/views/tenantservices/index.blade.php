@@ -7,9 +7,10 @@
 
 @section('header_right')
     <a href="{{ route('tenants.show', $tenant) }}" class="btn btn-default">{{ trans('general.back') }}</a>
-    <a href="{{ route('tenants.services.acn_export', $tenant) }}" class="btn btn-info">
+    <a href="{{ route('tenants.services.acn_export', array_merge(['tenant' => $tenant], ($companyFilter ?? '') !== '' ? ['company_id' => $companyFilter] : [])) }}" class="btn btn-info"
+       @if (($companyFilter ?? '') !== '') data-tooltip="true" title="{{ trans('admin/tenantservices/general.export_acn_filtered') }}" @endif>
         <x-icon type="download" class="fa-fw" />
-        {{ trans('admin/tenantservices/general.export_acn') }}
+        {{ trans('admin/tenantservices/general.export_acn') }}{{ ($companyFilter ?? '') !== '' ? ' *' : '' }}
     </a>
     @if ($canManageTenant)
         <a href="{{ route('tenants.services.create', $tenant) }}" class="btn btn-primary">

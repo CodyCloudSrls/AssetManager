@@ -36,6 +36,7 @@ return [
     'linked_documents' => 'Documenti',
     'linked_contracts' => 'Contratti',
     'no_services' => 'Nessun servizio tenant censito.',
+    'export_acn_filtered' => 'Esporta solo i servizi dell\'azienda filtrata',
     'export_acn' => 'Esporta XLSX ACN',
     'field_label' => 'Servizi tenant',
     'document_field_help' => 'Collega questo documento ai servizi tenant che supporta o governa.',

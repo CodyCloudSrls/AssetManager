@@ -137,12 +137,29 @@ class TenantServicesController extends Controller
             ->with('success', trans('admin/tenantservices/message.delete.success'));
     }
 
-    public function exportAcn(Tenant $tenant, AcnTenantServicesXlsxExporter $exporter): BinaryFileResponse
+    public function exportAcn(Tenant $tenant, AcnTenantServicesXlsxExporter $exporter, Request $request): BinaryFileResponse
     {
         abort_unless(Tenant::canCurrentUserViewTenant($tenant), 403);
 
-        $path = $exporter->build($tenant);
-        $filename = 'Elenco_categorizzato_TENANT'.$tenant->id.'_T'.now()->format('Ymd_His').'.xlsx';
+        // Optional company scope: 'tenant' = tenant-wide only, a numeric id = that one
+        // company (validated against the tenant), empty = all services.
+        $companyFilter = $request->input('company_id', '');
+        $companyId = null;
+        $tenantWideOnly = false;
+        $companySuffix = '';
+
+        if ($companyFilter === 'tenant') {
+            $tenantWideOnly = true;
+            $companySuffix = '_TUTTOILTENANT';
+        } elseif (is_numeric($companyFilter)) {
+            $companyId = (int) $companyFilter;
+            $company = \App\Models\Company::where('tenant_id', $tenant->id)->find($companyId);
+            abort_unless($company !== null, 404);
+            $companySuffix = '_AZ'.$companyId;
+        }
+
+        $path = $exporter->build($tenant, $companyId, $tenantWideOnly);
+        $filename = 'Elenco_categorizzato_TENANT'.$tenant->id.$companySuffix.'_T'.now()->format('Ymd_His').'.xlsx';
 
         return response()->download($path, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -164,6 +181,7 @@ class TenantServicesController extends Controller
             'tenant' => $tenant,
             'services' => $services,
             'impactOptions' => TenantService::impactOptions(),
+            'macroAreaOptions' => TenantService::macroAreaOptions(),
             'companyOptions' => \App\Models\Company::where('tenant_id', $tenant->id)
                 ->orderBy('name')->pluck('name', 'id')->all(),
         ]);
@@ -190,6 +208,8 @@ class TenantServicesController extends Controller
             'is_active_state' => ['nullable', Rule::in(['0', '1'])],
             'apply_company_id' => 'nullable|boolean',
             'company_id' => ['nullable', Rule::in($tenantCompanyIds)],
+            'apply_macro_area' => 'nullable|boolean',
+            'macro_area' => ['nullable', Rule::in(TenantService::selectableMacroAreaKeys())],
         ]);
 
         $validator->after(function ($validator) use ($request) {
@@ -199,6 +219,10 @@ class TenantServicesController extends Controller
 
             if ($request->boolean('apply_is_active') && ! $request->filled('is_active_state')) {
                 $validator->errors()->add('is_active_state', trans('validation.required', ['attribute' => trans('general.status')]));
+            }
+
+            if ($request->boolean('apply_macro_area') && ! $request->filled('macro_area')) {
+                $validator->errors()->add('macro_area', trans('validation.required', ['attribute' => trans('admin/tenantservices/general.macro_area')]));
             }
         });
 
@@ -221,15 +245,26 @@ class TenantServicesController extends Controller
             $updates['company_id'] = $request->filled('company_id') ? (int) $request->input('company_id') : null;
         }
 
-        DB::transaction(function () use ($services, $updates) {
-            foreach ($services as $service) {
-                $service->fill($updates);
+        if ($request->boolean('apply_macro_area') && $request->filled('macro_area')) {
+            $updates['macro_area'] = $request->input('macro_area');
+        }
 
-                if (! $service->save()) {
-                    $service->throwValidationException();
+        try {
+            DB::transaction(function () use ($services, $updates) {
+                foreach ($services as $service) {
+                    $service->fill($updates);
+
+                    if (! $service->save()) {
+                        $service->throwValidationException();
+                    }
                 }
-            }
-        });
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            // A bulk macro-area/company change can collide with the per-company
+            // (tenant, company, macro-area, name) uniqueness — report it cleanly.
+            return redirect()->back()->withInput()
+                ->with('error', trans('admin/tenantservices/message.bulk.conflict'));
+        }
 
         return redirect()->route('tenants.services.index', $tenant)
             ->with('success', trans('admin/tenantservices/message.bulk.success'));
@@ -260,7 +295,8 @@ class TenantServicesController extends Controller
     {
         return $request->boolean('apply_relevance_override')
             || $request->boolean('apply_is_active')
-            || $request->boolean('apply_company_id');
+            || $request->boolean('apply_company_id')
+            || $request->boolean('apply_macro_area');
     }
 
     private function formData(Tenant $tenant, TenantService $service): array

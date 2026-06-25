@@ -14,5 +14,6 @@ return [
     'bulk' => [
         'success' => 'Servizi tenant aggiornati correttamente.',
         'nothing_selected' => 'Nessun servizio selezionato.',
+        'conflict' => 'Modifica non applicata: la combinazione macro-area + nome esiste già per una delle aziende selezionate.',
     ],
 ];

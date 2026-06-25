@@ -46,6 +46,26 @@
                             </tbody>
                         </table>
 
+                        {{-- Macro-area --}}
+                        <div class="form-group {{ $errors->has('macro_area') ? ' has-error' : '' }}">
+                            <label for="macro_area" class="col-md-3 control-label">{{ trans('admin/tenantservices/general.macro_area') }}</label>
+                            <div class="col-md-5">
+                                <select class="form-control select2" name="macro_area" id="macro_area" aria-label="macro_area" data-placeholder="{{ trans('admin/tenantservices/general.macro_area_placeholder') }}">
+                                    <option value=""></option>
+                                    @foreach ($macroAreaOptions as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('macro_area') === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                {!! $errors->first('macro_area', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-control">
+                                    <input type="checkbox" name="apply_macro_area" value="1" @checked(old('apply_macro_area'))>
+                                    {{ trans('general.apply') }}
+                                </label>
+                            </div>
+                        </div>
+
                         {{-- Company / tenant-wide --}}
                         @if (count($companyOptions) > 0)
                             <div class="form-group {{ $errors->has('company_id') ? ' has-error' : '' }}">
@@ -126,6 +146,7 @@
     <script nonce="{{ csrf_token() }}">
         $(function () {
             var bulkApplyFields = {
+                macro_area: 'apply_macro_area',
                 company_id: 'apply_company_id',
                 relevance_override: 'apply_relevance_override',
                 is_active_state: 'apply_is_active'

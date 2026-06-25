@@ -280,6 +280,47 @@ class TenantServicesTest extends TestCase
         $this->post(route('tenants.services.store', $tenant), $payload($companyA->id))->assertSessionHasErrors('name');
     }
 
+    public function test_bulk_update_can_change_macro_area(): void
+    {
+        [$tenant, $company] = $this->tenantWithCompanyName('Macro Co');
+        $this->actingAs(User::factory()->superuser()->for($company)->create());
+
+        $keys = array_keys(TenantService::macroAreaOptions());
+        $from = $keys[0];
+        $to = $keys[1] ?? $keys[0];
+
+        $s1 = $this->tenantService($tenant, ['name' => 'Macro svc 1', 'macro_area' => $from]);
+        $s2 = $this->tenantService($tenant, ['name' => 'Macro svc 2', 'macro_area' => $from]);
+
+        $this->post(route('tenants.services.bulkeditsave', $tenant), [
+            'ids' => [$s1->id, $s2->id],
+            'apply_macro_area' => '1',
+            'macro_area' => $to,
+        ])->assertRedirect(route('tenants.services.index', $tenant));
+
+        $this->assertEquals($to, $s1->fresh()->macro_area);
+        $this->assertEquals($to, $s2->fresh()->macro_area);
+    }
+
+    public function test_acn_export_can_be_scoped_to_a_company(): void
+    {
+        $tenant = Tenant::create(['uuid' => (string) Str::uuid()]);
+        $companyA = Company::factory()->create(['tenant_id' => $tenant->id, 'name' => 'Exp A']);
+        Company::factory()->create(['tenant_id' => $tenant->id, 'name' => 'Exp B']);
+        $this->actingAs(User::factory()->superuser()->for($companyA)->create());
+
+        $this->tenantService($tenant, ['name' => 'OnlyA', 'company_id' => $companyA->id]);
+
+        $this->get(route('tenants.services.acn_export', ['tenant' => $tenant, 'company_id' => $companyA->id]))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+        // A company from another tenant is rejected.
+        $foreign = Company::factory()->create(['name' => 'Foreign']);
+        $this->get(route('tenants.services.acn_export', ['tenant' => $tenant, 'company_id' => $foreign->id]))
+            ->assertNotFound();
+    }
+
     public function test_bulk_update_can_change_company_and_back_to_tenant_wide(): void
     {
         [$tenant, $company] = $this->tenantWithCompanyName('Suez Italy');

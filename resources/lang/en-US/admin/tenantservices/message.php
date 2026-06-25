@@ -14,5 +14,6 @@ return [
     'bulk' => [
         'success' => 'Tenant services updated successfully.',
         'nothing_selected' => 'No services selected.',
+        'conflict' => 'Change not applied: the macro-area + name combination already exists for one of the selected companies.',
     ],
 ];

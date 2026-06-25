@@ -36,6 +36,7 @@ return [
     'linked_documents' => 'Documents',
     'linked_contracts' => 'Contracts',
     'no_services' => 'No tenant services have been inventoried yet.',
+    'export_acn_filtered' => 'Exports only the filtered company\'s services',
     'export_acn' => 'Export ACN XLSX',
     'field_label' => 'Tenant services',
     'document_field_help' => 'Link this document to the tenant services it supports or governs.',
