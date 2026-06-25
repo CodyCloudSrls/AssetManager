@@ -43,6 +43,30 @@ class TenantServicesController extends Controller
             $companyFilter = '';
         }
 
+        // Filter by macro-area.
+        $macroFilter = (string) $request->input('macro_area', '');
+        if ($macroFilter !== '' && in_array($macroFilter, TenantService::selectableMacroAreaKeys(), true)) {
+            $servicesQuery->where('macro_area', $macroFilter);
+        } else {
+            $macroFilter = '';
+        }
+
+        // Filter by status (active / inactive).
+        $statusFilter = (string) $request->input('status', '');
+        if ($statusFilter === 'active') {
+            $servicesQuery->where('is_active', true);
+        } elseif ($statusFilter === 'inactive') {
+            $servicesQuery->where('is_active', false);
+        } else {
+            $statusFilter = '';
+        }
+
+        // Free-text filter on the service name.
+        $searchFilter = trim((string) $request->input('q', ''));
+        if ($searchFilter !== '') {
+            $servicesQuery->where('name', 'LIKE', '%'.$searchFilter.'%');
+        }
+
         // Group the list by company (tenant-wide first), then macro-area, then name —
         // so a tenant like "Suez International" no longer shows everything mixed up.
         $services = $servicesQuery->get()
@@ -55,9 +79,10 @@ class TenantServicesController extends Controller
 
         $companyOptions = \App\Models\Company::where('tenant_id', $tenant->id)
             ->orderBy('name')->pluck('name', 'id')->all();
+        $macroAreaOptions = TenantService::macroAreaOptions();
         $canManageTenant = $this->canManageServices($tenant);
 
-        return view('tenantservices.index', compact('tenant', 'services', 'canManageTenant', 'companyOptions', 'companyFilter'));
+        return view('tenantservices.index', compact('tenant', 'services', 'canManageTenant', 'companyOptions', 'companyFilter', 'macroAreaOptions', 'macroFilter', 'statusFilter', 'searchFilter'));
     }
 
     public function create(Tenant $tenant): View

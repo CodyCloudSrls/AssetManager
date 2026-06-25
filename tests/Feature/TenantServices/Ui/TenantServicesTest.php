@@ -280,6 +280,31 @@ class TenantServicesTest extends TestCase
         $this->post(route('tenants.services.store', $tenant), $payload($companyA->id))->assertSessionHasErrors('name');
     }
 
+    public function test_services_index_filters_by_macro_area_status_and_search(): void
+    {
+        [$tenant, $company] = $this->tenantWithCompanyName('Filter Co');
+        $this->actingAs(User::factory()->superuser()->for($company)->create());
+
+        $keys = array_keys(TenantService::macroAreaOptions());
+        $macroA = $keys[0];
+        $macroB = $keys[1] ?? $keys[0];
+
+        $this->tenantService($tenant, ['name' => 'Alphaaa Svc', 'macro_area' => $macroA, 'is_active' => true]);
+        $this->tenantService($tenant, ['name' => 'Bettaaa Svc', 'macro_area' => $macroB, 'is_active' => true]);
+        $this->tenantService($tenant, ['name' => 'Gammaaa Svc', 'macro_area' => $macroA, 'is_active' => false]);
+
+        if ($macroA !== $macroB) {
+            $this->get(route('tenants.services.index', ['tenant' => $tenant, 'macro_area' => $macroA]))
+                ->assertOk()->assertSee('Alphaaa Svc')->assertSee('Gammaaa Svc')->assertDontSee('Bettaaa Svc');
+        }
+
+        $this->get(route('tenants.services.index', ['tenant' => $tenant, 'status' => 'active']))
+            ->assertOk()->assertSee('Alphaaa Svc')->assertDontSee('Gammaaa Svc');
+
+        $this->get(route('tenants.services.index', ['tenant' => $tenant, 'q' => 'Bettaaa']))
+            ->assertOk()->assertSee('Bettaaa Svc')->assertDontSee('Alphaaa Svc');
+    }
+
     public function test_bulk_update_can_change_macro_area(): void
     {
         [$tenant, $company] = $this->tenantWithCompanyName('Macro Co');

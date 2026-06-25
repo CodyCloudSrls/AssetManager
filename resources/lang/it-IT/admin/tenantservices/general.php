@@ -10,6 +10,7 @@ return [
     'about_text' => 'I servizi sono l\'inventario tenant usato per la categorizzazione NIS ACN e possono essere collegati a documenti e contratti cliente.',
     'help' => 'Censisci i servizi erogati dal tenant ai fini della categorizzazione NIS ACN. I servizi attivi vengono esportati nel formato elenco categorizzato ACN.',
     'macro_area' => 'Macro-area',
+    'filters' => 'Filtri',
     'macro_area_placeholder' => '— Seleziona una macro-area —',
     'macro_area_help' => 'Macro-area ACN usata per derivare la categoria di rilevanza pre-assegnata.',
     'company' => 'Azienda',
