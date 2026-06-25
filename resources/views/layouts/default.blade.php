@@ -2414,6 +2414,32 @@
 
         <script nonce="{{ csrf_token() }}">
 
+            // Collapsed-sidebar flyout hover-intent: when the sidebar is collapsed the
+            // submenu pops out to the right; moving the cursor diagonally to an item used
+            // to drop :hover and close it. Keep it open for a short delay after the cursor
+            // leaves (via the .cc-flyout-hold class) — NO overlay, so the other icons stay
+            // fully clickable.
+            (function () {
+                var HOLD_DELAY = 400;
+                $(document).on('mouseenter', '.main-sidebar .sidebar-menu > li.treeview', function () {
+                    var $li = $(this);
+                    var t = $li.data('ccFlyoutTimer');
+                    if (t) { clearTimeout(t); $li.removeData('ccFlyoutTimer'); }
+                    if ($('body').hasClass('sidebar-collapse')) {
+                        $li.addClass('cc-flyout-hold');
+                    }
+                });
+                $(document).on('mouseleave', '.main-sidebar .sidebar-menu > li.treeview', function () {
+                    var $li = $(this);
+                    var existing = $li.data('ccFlyoutTimer');
+                    if (existing) { clearTimeout(existing); }
+                    $li.data('ccFlyoutTimer', setTimeout(function () {
+                        $li.removeClass('cc-flyout-hold');
+                        $li.removeData('ccFlyoutTimer');
+                    }, HOLD_DELAY));
+                });
+            })();
+
             // Handle the first selected tabs regardless of permissions
             if ($('li.snipetab').is(':first-of-type')) {
                 var hash = $('li.snipetab:first-of-type').children().attr('href');

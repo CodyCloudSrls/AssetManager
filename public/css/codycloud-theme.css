@@ -2080,11 +2080,11 @@ label.btn > input[type="checkbox"] {
     border-top: none !important;
 }
 
-/* Export buttons (.btn-info, e.g. "Esporta XLSX ACN"): guarantee pure-white
-   text + icon (no inherited link/warning tint) on a clean teal. */
+/* Export buttons (.btn-info, e.g. "Esporta XLSX ACN"): a clean COOL cyan (the warm
+   teal read slightly yellow), pure-white text + icon. */
 .btn-info {
-    background-color: #2f7ea6 !important;
-    border-color: #2f7ea6 !important;
+    background-color: #0e7490 !important;
+    border-color: #0e7490 !important;
 }
 .btn-info,
 .btn-info:hover,
@@ -2097,35 +2097,50 @@ label.btn > input[type="checkbox"] {
 }
 .btn-info:hover,
 .btn-info:focus {
-    background-color: #2a6e90 !important;
-    border-color: #2a6e90 !important;
+    background-color: #0c5d72 !important;
+    border-color: #0c5d72 !important;
 }
 
 /* ============================================================
-   Hover-intent bridge for the collapsed-sidebar flyout
+   Hover-intent for the collapsed-sidebar flyout (JS close-delay)
    ============================================================
-   When the sidebar is collapsed, the submenu pops out to the right. Moving the
-   cursor diagonally from the icon toward a submenu item briefly crosses the gap
-   between the icon column and the popout, dropping :hover and closing the menu.
-   A transparent bridge over the icon column (a child of the hovered <li>, so it
-   keeps :hover alive) lets the cursor travel diagonally without the menu closing. */
-.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
+   Previous attempt used a transparent "bridge" over the icon column to keep the
+   menu open during diagonal movement — but it BLOCKED every icon in the popout's
+   vertical range. Replaced with a JS-managed `.cc-flyout-hold` class (see the
+   script in the layout): the menu shows on :hover and stays open for a short delay
+   after the cursor leaves, with NO overlay over the icons. This block mirrors
+   AdminLTE's collapsed :hover flyout for that class. */
+.sidebar-mini:not(.sidebar-mini-expand-feature).sidebar-collapse .sidebar-menu > li.cc-flyout-hold > .treeview-menu,
+.sidebar-mini:not(.sidebar-mini-expand-feature).sidebar-collapse .sidebar-menu > li.cc-flyout-hold > a > span:not(.pull-right) {
+    display: block !important;
+    left: 50px;
     position: absolute;
-    /* Raise the popout (and therefore its bridge) above the sibling icon links, and
-       let the transparent bridge paint outside the popout box. Without this the bridge
-       was clipped / sat behind the next icon, so the menu still closed mid-movement. */
-    z-index: 1100 !important;
-    overflow: visible !important;
+    width: 180px;
 }
-.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu::before {
-    content: '';
-    position: absolute;
-    top: -14px;
-    left: -58px;
-    width: 60px;
-    height: calc(100% + 28px);
-    background: transparent;
-    pointer-events: auto;
+.sidebar-mini.sidebar-collapse .sidebar-menu > li.cc-flyout-hold > a {
+    background-color: #14141a !important;
+    color: #ffffff !important;
+}
+.sidebar-mini:not(.sidebar-mini-expand-feature).sidebar-collapse .sidebar-menu > li.cc-flyout-hold > a > span {
+    background-color: #14141a !important;
+    color: #ffffff !important;
+    margin-left: -3px;
+    padding: 12px 5px 12px 20px;
+    top: 0;
+    border: 1px solid var(--cc-border) !important;
+    border-bottom: none !important;
+    border-radius: 0 8px 0 0 !important;
+    box-shadow: 0 -2px 0 #14141a;
+}
+.sidebar-mini:not(.sidebar-mini-expand-feature).sidebar-collapse .sidebar-menu > li.cc-flyout-hold > .treeview-menu {
+    margin-left: 0;
+    top: 44px;
+    background-color: #14141a !important;
+    border: 1px solid var(--cc-border) !important;
+    border-left: none !important;
+    border-top: none !important;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
 }
 
 /* ============================================================
