@@ -2420,12 +2420,22 @@
             // leaves (via the .cc-flyout-hold class) — NO overlay, so the other icons stay
             // fully clickable.
             (function () {
-                var HOLD_DELAY = 400;
+                var HOLD_DELAY = 350;
+                function closeFlyout($li) {
+                    var t = $li.data('ccFlyoutTimer');
+                    if (t) { clearTimeout(t); $li.removeData('ccFlyoutTimer'); }
+                    $li.removeClass('cc-flyout-hold');
+                }
                 $(document).on('mouseenter', '.main-sidebar .sidebar-menu > li.treeview', function () {
                     var $li = $(this);
                     var t = $li.data('ccFlyoutTimer');
                     if (t) { clearTimeout(t); $li.removeData('ccFlyoutTimer'); }
                     if ($('body').hasClass('sidebar-collapse')) {
+                        // Only ONE flyout open at a time — close any others immediately so
+                        // they don't pile up while moving down the icon rail.
+                        $('.main-sidebar .sidebar-menu > li.treeview.cc-flyout-hold').not($li).each(function () {
+                            closeFlyout($(this));
+                        });
                         $li.addClass('cc-flyout-hold');
                     }
                 });
