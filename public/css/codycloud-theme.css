@@ -60,6 +60,11 @@
     --color-bg: #0a0a0c;
     --table-stripe-bg: #161619;
     --input-group-bg: #1c1c21;
+    /* These were a grey (#605e5e) in the branding's dark mode and were used by the
+       branding as the ACTIVE TAB background + box-header borders — the source of the
+       "grey corners" on tabs/buttons. Point them at the dark border colour. */
+    --box-header-top-border-color: #26262b;
+    --box-header-bottom-border-color: #26262b;
 }
 
 /* ---------- Brand moved into the sidebar ---------- */
@@ -2104,16 +2109,51 @@ label.btn > input[type="checkbox"] {
    between the icon column and the popout, dropping :hover and closing the menu.
    A transparent bridge over the icon column (a child of the hovered <li>, so it
    keeps :hover alive) lets the cursor travel diagonally without the menu closing. */
+.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
+    position: absolute;
+    /* Raise the popout (and therefore its bridge) above the sibling icon links, and
+       let the transparent bridge paint outside the popout box. Without this the bridge
+       was clipped / sat behind the next icon, so the menu still closed mid-movement. */
+    z-index: 1100 !important;
+    overflow: visible !important;
+}
 .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu::before {
     content: '';
     position: absolute;
-    top: -10px;
-    left: -52px;
-    width: 54px;
-    height: calc(100% + 20px);
+    top: -14px;
+    left: -58px;
+    width: 60px;
+    height: calc(100% + 28px);
     background: transparent;
+    pointer-events: auto;
 }
-/* the popout itself sits above the bridge so its items stay clickable */
-.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
-    position: absolute;
+
+/* ============================================================
+   Tabs — kill the grey corners on active tabs (doc view, user
+   permissions, etc.). The branding painted the active <li> with
+   the grey --box-header-top-border-color and grey side borders.
+   ============================================================ */
+.nav-tabs-custom > .nav-tabs > li,
+.nav-tabs-custom > .nav-tabs > li:first-of-type,
+.nav-tabs-custom > .nav-tabs > li.active,
+.nav-tabs-custom > .nav-tabs > li.active > a,
+.nav-tabs-custom > .nav-tabs > li.active > a:link,
+.nav-tabs-custom > .nav-tabs > li.active > a:visited,
+.nav-tabs-custom > .nav-tabs > li.active > a:hover,
+.nav-tabs-custom > .nav-tabs > li > a,
+.nav-tabs-custom > .nav-tabs > li > a:hover {
+    background-color: transparent !important;
+    border-left-color: transparent !important;
+    border-right-color: transparent !important;
+}
+.nav-tabs-custom > .nav-tabs > li.active {
+    border-top-color: var(--cc-primary) !important;
+}
+.nav-tabs-custom > .nav-tabs > li.active > a,
+.nav-tabs-custom > .nav-tabs > li.active > a:link,
+.nav-tabs-custom > .nav-tabs > li.active > a:visited,
+.nav-tabs-custom > .nav-tabs > li.active > a:hover {
+    background-color: var(--cc-surface-2) !important;
+    color: #ffffff !important;
+    border-radius: var(--cc-radius-sm) var(--cc-radius-sm) 0 0 !important;
 }
