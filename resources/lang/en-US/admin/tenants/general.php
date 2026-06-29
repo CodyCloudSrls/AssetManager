@@ -12,6 +12,16 @@ return array (
   'members_count' => 'Cross-tenant users',
   'branding' => 'Tenant Branding',
   'brand_logo' => 'Tenant Logo',
+  'features' =>
+  array (
+    'title' => 'Active modules',
+    'help' => 'Enable only the modules this tenant needs. Disabled features disappear from the menu and routes (no clutter, no extra permissions to manage).',
+    'assets' => 'Assets (always on)',
+    'documents' => 'Documents',
+    'nis2' => 'NIS2 compliance',
+    'tickets' => 'Tickets / Helpdesk',
+    'erp' => 'ERP / Management control',
+  ),
   'config' =>
   array (
     'title' => 'Tenant configuration',

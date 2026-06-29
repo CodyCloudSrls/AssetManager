@@ -67,6 +67,8 @@ class IconHelper
                 return 'fas fa-filter';
             case 'records':
                 return 'fas fa-briefcase';
+            case 'erp':
+                return 'fas fa-chart-line';
             case 'compliance':
                 return 'fas fa-book';
             case 'organization':

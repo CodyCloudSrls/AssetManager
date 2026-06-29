@@ -579,6 +579,8 @@ class TenantsController extends Controller
             'selectedTicketTypeIds' => $tenant->publicHelpdeskSelectedTicketTypes()->pluck('id')->all(),
             'mailEventOptions' => Tenant::mailNotificationEventOptions(),
             'enabledEvents' => $tenant->notificationEvents(),
+            'featureOptions' => Tenant::featureOptions(),
+            'enabledFeatures' => $tenant->enabledFeatures(),
         ]);
     }
 
@@ -603,6 +605,9 @@ class TenantsController extends Controller
                 'default_locale' => 'required|string|in:'.implode(',', Helper::availableLanguageLocales()),
                 'default_compliance_jurisdiction' => 'required|string|in:'.implode(',', Tenant::complianceJurisdictionValues()),
                 'bootstrap_compliance_frameworks' => 'nullable|boolean',
+                // --- Features (per-tenant modules) ---
+                'features' => 'nullable|array',
+                'features.*' => ['string', Rule::in(Tenant::featureKeys())],
                 // --- Branding ---
                 'brand' => 'nullable|integer|in:1,2,3',
                 'header_color' => 'nullable|string|max:16',
@@ -674,6 +679,10 @@ class TenantsController extends Controller
             // --- Tenant-level ---
             $tenant->default_locale = $request->input('default_locale');
             $tenant->default_compliance_jurisdiction = $request->input('default_compliance_jurisdiction');
+            $tenant->enabled_features = collect($request->input('features', []))
+                ->filter(fn ($f) => in_array($f, Tenant::featureKeys(), true))
+                ->push(Tenant::FEATURE_ASSETS) // core asset management is always on
+                ->unique()->values()->all();
             $tenant->save();
 
             // --- Root company: branding ---

@@ -1780,6 +1780,7 @@
                                 </ul>
                             </li>
                         @endcan
+                        @if (\App\Models\Tenant::currentContextHasFeature(\App\Models\Tenant::FEATURE_DOCUMENTS))
                         @can('index', \App\Models\Document::class)
                             <li class="treeview{{ (request()->is('documents*') ? ' active' : '') }}">
                                 <a href="#">
@@ -1860,6 +1861,8 @@
                                 </ul>
                             </li>
                         @endcan
+                        @endif
+                        @if (\App\Models\Tenant::currentContextHasFeature(\App\Models\Tenant::FEATURE_TICKETS))
                         @can('index', \App\Models\Ticket::class)
                             <li class="treeview{{ (request()->is('tickets*') ? ' active' : '') }}">
                                 <a href="#">
@@ -1899,6 +1902,7 @@
                                 </ul>
                             </li>
                         @endcan
+                        @endif
                         @can('view', \App\Models\License::class)
                             <li{!! (request()->is('licenses*') ? ' class="active"' : '') !!}>
                                 <a href="{{ route('licenses.index') }}">
@@ -1989,6 +1993,18 @@
                             </li>
                         @endcan
 
+                        {{-- ===== ERP / Controllo di gestione (per-tenant feature) ===== --}}
+                        @if (\App\Models\Tenant::currentContextHasFeature(\App\Models\Tenant::FEATURE_ERP))
+                            @can('view', \App\Models\CustomerContract::class)
+                                <li{!! (request()->is('erp*') ? ' class="active"' : '') !!}>
+                                    <a href="{{ route('erp.index') }}">
+                                        <x-icon type="erp" class="fa-fw" />
+                                        <span>{{ trans('erp/general.title') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                        @endif
+
                         @can('backend.interact')
                             {{-- ===== Anagrafiche (business records) ===== --}}
                             @if (Gate::allows('view', \App\Models\Manufacturer::class) || Gate::allows('view', \App\Models\Supplier::class) || Gate::allows('view', \App\Models\Customer::class) || Gate::allows('view', \App\Models\CustomerContract::class))
@@ -2018,7 +2034,7 @@
                             {{-- ===== Compliance NIS2 ===== --}}
                             @php($sidebarServicesTenant = $navbarActiveTenant ?? $navbarCurrentTenant ?? null)
                             @php($canSeeServicesNav = ($navbarCanAccessTenantAdminArea ?? false) && $sidebarServicesTenant)
-                            @if ($canSeeServicesNav || Gate::allows('view', \App\Models\DocumentType::class) || Gate::allows('view', \App\Models\DocumentFramework::class))
+                            @if (\App\Models\Tenant::currentContextHasFeature(\App\Models\Tenant::FEATURE_NIS2) && ($canSeeServicesNav || Gate::allows('view', \App\Models\DocumentType::class) || Gate::allows('view', \App\Models\DocumentFramework::class)))
                                 <li class="treeview{{ (request()->routeIs('tenants.services.*') || request()->is('documenttypes*') || request()->is('documentframeworks*') || request()->is('documentframeworkrequirements*')) ? ' active' : '' }}">
                                     <a href="#" class="dropdown-toggle">
                                         <x-icon type="compliance" class="fa-fw" />

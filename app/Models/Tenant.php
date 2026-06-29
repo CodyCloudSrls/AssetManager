@@ -45,12 +45,81 @@ class Tenant extends Model
         'uuid',
         'default_locale',
         'default_compliance_jurisdiction',
+        'enabled_features',
     ];
 
     protected $casts = [
         'default_locale' => 'string',
         'default_compliance_jurisdiction' => 'string',
+        'enabled_features' => 'array',
     ];
+
+    /** Per-tenant feature flags (modules a tenant has enabled). */
+    public const FEATURE_ASSETS = 'assets';
+    public const FEATURE_DOCUMENTS = 'documents';
+    public const FEATURE_TICKETS = 'tickets';
+    public const FEATURE_NIS2 = 'nis2';
+    public const FEATURE_ERP = 'erp';
+
+    /**
+     * All feature keys mapped to their display label, in nav order.
+     */
+    public static function featureOptions(): array
+    {
+        return [
+            self::FEATURE_ASSETS => trans('admin/tenants/general.features.assets'),
+            self::FEATURE_DOCUMENTS => trans('admin/tenants/general.features.documents'),
+            self::FEATURE_NIS2 => trans('admin/tenants/general.features.nis2'),
+            self::FEATURE_TICKETS => trans('admin/tenants/general.features.tickets'),
+            self::FEATURE_ERP => trans('admin/tenants/general.features.erp'),
+        ];
+    }
+
+    public static function featureKeys(): array
+    {
+        return array_keys(self::featureOptions());
+    }
+
+    /**
+     * Features enabled for this tenant. A NULL stored value means "all enabled"
+     * (so existing tenants keep every module until a choice is made).
+     */
+    public function enabledFeatures(): array
+    {
+        $stored = $this->enabled_features;
+
+        if (! is_array($stored)) {
+            return self::featureKeys();
+        }
+
+        // Keep the whitelist canonical, drop unknown keys, and core is always on.
+        return array_values(array_unique(array_merge(
+            [self::FEATURE_ASSETS],
+            array_intersect(self::featureKeys(), $stored),
+        )));
+    }
+
+    public function hasFeature(string $feature): bool
+    {
+        // Core asset management is always available; everything else is gated.
+        if ($feature === self::FEATURE_ASSETS) {
+            return true;
+        }
+
+        return in_array($feature, $this->enabledFeatures(), true);
+    }
+
+    /**
+     * Whether the tenant in the CURRENT request context has a feature. With no
+     * tenant context (e.g. a platform superadmin viewing everything) all features
+     * are shown — gating only narrows things for tenant-scoped users.
+     */
+    public static function currentContextHasFeature(string $feature): bool
+    {
+        $tenant = static::activeTenant() ?? static::currentTenant();
+
+        return $tenant instanceof self ? $tenant->hasFeature($feature) : true;
+    }
 
     protected static function booted(): void
     {

@@ -9,6 +9,29 @@
 @section('inputFields')
     @method('PUT')
 
+    {{-- ============================ FUNZIONI ============================ --}}
+    <fieldset name="tenant-features">
+        <x-form.legend help_text="{{ trans('admin/tenants/general.features.help') }}">
+            {{ trans('admin/tenants/general.features.title') }}
+        </x-form.legend>
+
+        <div class="form-group {{ $errors->has('features') ? ' has-error' : '' }}">
+            <div class="col-md-8 col-md-offset-3">
+                @foreach ($featureOptions as $featureKey => $featureLabel)
+                    @php($isCore = $featureKey === \App\Models\Tenant::FEATURE_ASSETS)
+                    <label class="form-control" style="margin-bottom:8px;{{ $isCore ? ' opacity:.7;' : '' }}">
+                        @if ($isCore)<input type="hidden" name="features[]" value="{{ $featureKey }}">@endif
+                        <input type="checkbox" name="features[]" value="{{ $featureKey }}"
+                            {{ in_array($featureKey, old('features', $enabledFeatures), true) ? 'checked="checked"' : '' }}
+                            {{ $isCore ? 'disabled' : '' }}>
+                        <span><strong>{{ $featureLabel }}</strong></span>
+                    </label>
+                @endforeach
+                {!! $errors->first('features', '<span class="alert-msg">:message</span>') !!}
+            </div>
+        </div>
+    </fieldset>
+
     {{-- ============================ GENERALE ============================ --}}
     <fieldset name="tenant-general">
         <x-form.legend help_text="{{ trans('admin/tenants/general.config.section_general_help') }}">

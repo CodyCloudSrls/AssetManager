@@ -17,6 +17,7 @@ use App\Http\Controllers\ComplianceDomainsController;
 use App\Http\Controllers\ComplianceFrameworkPacksController;
 use App\Http\Controllers\CustomerContractsController;
 use App\Http\Controllers\CustomersController;
+use App\Http\Controllers\ErpController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentsController;
 use App\Http\Controllers\DepreciationsController;
@@ -144,6 +145,11 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('contracts/bulkeditsave', [BulkCustomerContractsController::class, 'update'])->name('contracts.bulkeditsave');
     Route::post('contracts/{contract}/files/move', [UploadedFilesController::class, 'moveToContract'])->name('contracts.files.move');
     Route::resource('contracts', CustomerContractsController::class)->parameters(['contracts' => 'contract']);
+
+    /*
+    * ERP / Management control (gated by the per-tenant "erp" feature flag)
+    */
+    Route::get('erp', [ErpController::class, 'index'])->name('erp.index')->middleware('tenant.feature:erp');
 
     /*
     * Depreciations

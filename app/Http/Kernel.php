@@ -101,6 +101,7 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         'auth' => Authenticate::class,
         'authorize' => CheckPermissions::class,
+        'tenant.feature' => \App\Http\Middleware\EnsureTenantFeature::class,
         'auth.basic' => AuthenticateWithBasicAuth::class,
         'can' => Authorize::class,
         'guest' => RedirectIfAuthenticated::class,

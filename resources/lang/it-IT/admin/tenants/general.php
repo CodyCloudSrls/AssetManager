@@ -12,6 +12,16 @@ return array (
   'members_count' => 'Utenti cross-tenant',
   'branding' => 'Branding tenant',
   'brand_logo' => 'Logo tenant',
+  'features' =>
+  array (
+    'title' => 'Funzioni attive',
+    'help' => 'Attiva solo i moduli che servono a questo tenant. Le funzioni disattivate spariscono dal menù e dalle rotte (niente confusione né diritti da gestire).',
+    'assets' => 'Beni / Asset (sempre attivo)',
+    'documents' => 'Documenti',
+    'nis2' => 'Compliance NIS2',
+    'tickets' => 'Ticket / Helpdesk',
+    'erp' => 'ERP / Controllo di gestione',
+  ),
   'config' =>
   array (
     'title' => 'Configurazione tenant',
