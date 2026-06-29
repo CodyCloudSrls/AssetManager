@@ -37,7 +37,7 @@
                 name="default_compliance_jurisdiction"
                 id="default_compliance_jurisdiction"
                 :options="$jurisdictionOptions"
-                :selected="old('default_compliance_jurisdiction', \App\Models\Tenant::COMPLIANCE_JURISDICTION_EU)"
+                :selected="old('default_compliance_jurisdiction', \App\Models\Tenant::COMPLIANCE_JURISDICTION_IT)"
             />
             <p class="help-block">{{ trans('admin/tenants/general.settings.default_compliance_jurisdiction_help') }}</p>
             {!! $errors->first('default_compliance_jurisdiction', '<span class="alert-msg">:message</span>') !!}

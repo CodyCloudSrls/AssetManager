@@ -238,7 +238,9 @@ class Tenant extends Model
 
     public function defaultComplianceJurisdiction(): string
     {
-        return ComplianceJurisdictions::normalize($this->default_compliance_jurisdiction ?: static::COMPLIANCE_JURISDICTION_EU);
+        // Italy-first: a tenant without an explicit jurisdiction defaults to the
+        // verified IT NIS2 national overlay (the EU baseline stays a valid choice).
+        return ComplianceJurisdictions::normalize($this->default_compliance_jurisdiction ?: static::COMPLIANCE_JURISDICTION_IT);
     }
 
     public static function complianceJurisdictionValues(): array
