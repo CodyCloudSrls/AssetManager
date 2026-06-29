@@ -13,7 +13,7 @@
         || Gate::allows('view', \App\Models\PredefinedKit::class);
 
     $ccErpVisible = \App\Models\Tenant::currentContextHasFeature(\App\Models\Tenant::FEATURE_ERP)
-        && (Gate::allows('view', \App\Models\CustomerContract::class) || Gate::allows('view', \App\Models\Customer::class));
+        && Gate::allows('view', \App\Models\CustomerContract::class);
 
     $ccNis2 = \App\Models\Tenant::currentContextHasFeature(\App\Models\Tenant::FEATURE_NIS2);
     $ccComplianceInner = $ccCanSeeServices || Gate::allows('view', \App\Models\DocumentType::class) || Gate::allows('view', \App\Models\DocumentFramework::class);
@@ -265,7 +265,7 @@
 {{-- ═══════════════ ERP / GESTIONALE ═══════════════ --}}
 @if ($ccErpVisible)
     <li class="header">{{ trans('nav/modules.erp') }}</li>
-    <li class="treeview{{ (request()->is('erp*') || request()->is('contracts*') || request()->is('customers*') || request()->is('reports/contract-forecast')) ? ' active' : '' }}">
+    <li class="treeview{{ (request()->is('erp*') || request()->is('contracts*') || request()->is('reports/contract-forecast')) ? ' active' : '' }}">
         <a href="#" class="dropdown-toggle">
             <x-icon type="erp" class="fa-fw" />
             <span>{{ trans('erp/general.title') }}</span>
@@ -275,9 +275,6 @@
             @can('view', \App\Models\CustomerContract::class)
                 <li {!! (request()->is('erp*') ? ' class="active"' : '') !!}><a href="{{ route('erp.index') }}">{{ trans('erp/general.nav.cockpit') }}</a></li>
                 <li {!! (request()->is('contracts*') ? ' class="active"' : '') !!}><a href="{{ route('contracts.index') }}">{{ trans('erp/general.modules.contracts') }}</a></li>
-            @endcan
-            @can('view', \App\Models\Customer::class)
-                <li {!! (request()->is('customers*') ? ' class="active"' : '') !!}><a href="{{ route('customers.index') }}">{{ trans('general.customers') }}</a></li>
             @endcan
             @can('reports.view')
                 <li {!! (request()->is('reports/contract-forecast') ? ' class="active"' : '') !!}><a href="{{ route('reports.contract-forecast') }}">{{ trans('erp/general.nav.forecast') }}</a></li>
@@ -433,14 +430,17 @@
         </ul>
     </li>
 @endcan
-@if (Gate::allows('view', \App\Models\Manufacturer::class) || Gate::allows('view', \App\Models\Supplier::class))
-    <li class="treeview{{ (request()->is('manufacturers*') || request()->is('suppliers*')) ? ' active' : '' }}">
+@if (Gate::allows('view', \App\Models\Manufacturer::class) || Gate::allows('view', \App\Models\Supplier::class) || Gate::allows('view', \App\Models\Customer::class))
+    <li class="treeview{{ (request()->is('manufacturers*') || request()->is('suppliers*') || request()->is('customers*')) ? ' active' : '' }}">
         <a href="#" class="dropdown-toggle">
             <x-icon type="records" class="fa-fw" />
             <span>{{ trans('general.nav_records') }}</span>
             <x-icon type="angle-left" class="pull-right fa-fw"/>
         </a>
         <ul class="treeview-menu">
+            @can('view', \App\Models\Customer::class)
+                <li {!! (request()->is('customers*') ? ' class="active"' : '') !!}><a href="{{ route('customers.index') }}">{{ trans('general.customers') }}</a></li>
+            @endcan
             @can('view', \App\Models\Manufacturer::class)
                 <li {!! (request()->is('manufacturers*') ? ' class="active"' : '') !!}><a href="{{ route('manufacturers.index') }}">{{ trans('general.manufacturers') }}</a></li>
             @endcan
