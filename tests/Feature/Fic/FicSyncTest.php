@@ -29,10 +29,10 @@ class FicSyncTest extends TestCase
             ], 200),
             '*/c/42/received_documents*' => Http::response([
                 'data' => [[
-                    'id' => 2002, 'type' => 'expense', 'number' => 'F-9', 'date' => '2026-01-10',
+                    'id' => 2002, 'type' => 'expense', 'category' => 'Spese Immateriali', 'number' => 'F-9', 'date' => '2026-01-10',
                     'amount_net' => 500, 'amount_vat' => 110, 'amount_gross' => 610, 'currency' => 'EUR',
                     'entity' => ['name' => 'Supplier Spa', 'vat_number' => 'IT999'],
-                    'payments_list' => [['amount' => 610, 'status' => 'paid', 'due_date' => '2026-01-31']],
+                    'payments_list' => [['amount' => 610, 'status' => 'paid', 'due_date' => '2026-01-31', 'paid_date' => '2026-02-05']],
                 ]],
                 'current_page' => 1, 'last_page' => 1,
             ], 200),
@@ -59,6 +59,8 @@ class FicSyncTest extends TestCase
         $received = FicDocument::received()->first();
         $this->assertTrue($received->paid);
         $this->assertEqualsWithDelta(610, (float) $received->paid_amount, 0.01);
+        $this->assertEquals('Spese Immateriali', $received->category);
+        $this->assertEquals('2026-02-05', $received->paid_on->format('Y-m-d'));
     }
 
     public function test_sync_is_idempotent(): void

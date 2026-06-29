@@ -16,8 +16,8 @@ class FicDocument extends Model
     public const DIRECTION_RECEIVED = 'received';
 
     protected $fillable = [
-        'fic_company_id', 'direction', 'fic_id', 'doc_type', 'number',
-        'issued_on', 'due_on', 'entity_name', 'entity_vat',
+        'fic_company_id', 'direction', 'fic_id', 'doc_type', 'category', 'number',
+        'issued_on', 'due_on', 'paid_on', 'entity_name', 'entity_vat',
         'amount_net', 'amount_vat', 'amount_gross', 'currency',
         'paid', 'paid_amount', 'company_id', 'synced_at',
     ];
@@ -25,6 +25,7 @@ class FicDocument extends Model
     protected $casts = [
         'issued_on' => 'date',
         'due_on' => 'date',
+        'paid_on' => 'date',
         'amount_net' => 'decimal:2',
         'amount_vat' => 'decimal:2',
         'amount_gross' => 'decimal:2',

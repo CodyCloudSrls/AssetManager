@@ -54,7 +54,7 @@ class FicSyncService
 
     private function upsert(string $direction, array $doc): void
     {
-        [$paid, $paidAmount, $dueOn] = $this->paymentSummary($doc['payments_list'] ?? []);
+        [$paid, $paidAmount, $dueOn, $paidOn] = $this->paymentSummary($doc['payments_list'] ?? []);
 
         FicDocument::updateOrCreate(
             [
@@ -64,9 +64,11 @@ class FicSyncService
             ],
             [
                 'doc_type' => $doc['type'] ?? null,
+                'category' => $doc['category'] ?? null,
                 'number' => $doc['number'] ?? null,
                 'issued_on' => $this->date($doc['date'] ?? null),
                 'due_on' => $dueOn ?? $this->date($doc['next_due_date'] ?? null),
+                'paid_on' => $paidOn,
                 'entity_name' => $doc['entity']['name'] ?? null,
                 'entity_vat' => $doc['entity']['vat_number'] ?? null,
                 'amount_net' => (float) ($doc['amount_net'] ?? 0),
@@ -82,24 +84,30 @@ class FicSyncService
     }
 
     /**
-     * Summarize a FiC payments_list into [allPaid, paidAmount, earliestUnpaidDueDate].
+     * Summarize a FiC payments_list into [allPaid, paidAmount, earliestUnpaidDueDate, lastPaidDate].
+     * lastPaidDate is the cash-realization date used by the flussi di cassa.
      *
-     * @return array{0:bool,1:float,2:?Carbon}
+     * @return array{0:bool,1:float,2:?Carbon,3:?Carbon}
      */
     private function paymentSummary(array $payments): array
     {
         if ($payments === []) {
-            return [false, 0.0, null];
+            return [false, 0.0, null, null];
         }
 
         $paidAmount = 0.0;
         $earliestDue = null;
+        $lastPaid = null;
         $allPaid = true;
 
         foreach ($payments as $payment) {
             $amount = (float) ($payment['amount'] ?? 0);
             if (($payment['status'] ?? null) === 'paid') {
                 $paidAmount += $amount;
+                $paid = $this->date($payment['paid_date'] ?? null);
+                if ($paid && (is_null($lastPaid) || $paid->gt($lastPaid))) {
+                    $lastPaid = $paid;
+                }
 
                 continue;
             }
@@ -111,7 +119,7 @@ class FicSyncService
             }
         }
 
-        return [$allPaid, round($paidAmount, 2), $earliestDue];
+        return [$allPaid, round($paidAmount, 2), $earliestDue, $lastPaid];
     }
 
     private function date($value): ?Carbon
