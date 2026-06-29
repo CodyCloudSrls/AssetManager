@@ -13,6 +13,7 @@ use App\Models\Tenant;
 use App\Support\Fic\FicClient;
 use App\Support\Reports\AmmortamentiReport;
 use App\Support\Reports\ContractForecastReport;
+use App\Support\Reports\ManagementControlReport;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -65,6 +66,28 @@ class ErpController extends Controller
             // Accrued cost from professionals not yet invoiced (pending notule only,
             // so once they invoice via FiC the cost is not double-counted).
             'notulePending' => (float) Notula::forCompanies($companyIds)->accruable()->sum('amount'),
+        ]);
+    }
+
+    /**
+     * Controllo di gestione: reclassified income statement, IVA, cash flows and
+     * receivables/payables from the FiC mirror (the Gestionale Unico cockpit).
+     */
+    public function controlloGestione(Request $request, ManagementControlReport $report): View
+    {
+        $this->authorize('reports.view');
+
+        $companyIds = $this->cockpitCompanyIds($request);
+        $currentYear = (int) Carbon::now()->year;
+        $years = range($currentYear - 4, $currentYear);
+
+        return view('erp.controllo', [
+            'years' => $years,
+            'ce' => $report->contoEconomico($companyIds, $years),
+            'iva' => $report->iva($companyIds, $years),
+            'cassa' => $report->flussiCassa($companyIds, $currentYear),
+            'creditiDebiti' => $report->creditiDebiti($companyIds),
+            'hasData' => $report->hasData($companyIds),
         ]);
     }
 

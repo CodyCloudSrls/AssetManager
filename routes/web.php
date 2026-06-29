@@ -151,6 +151,7 @@ Route::group(['middleware' => 'auth'], function () {
     */
     Route::get('erp', [ErpController::class, 'index'])->name('erp.index')->middleware('tenant.feature:erp');
     Route::get('erp/ammortamenti', [ErpController::class, 'ammortamenti'])->name('erp.ammortamenti')->middleware('tenant.feature:erp');
+    Route::get('erp/controllo-gestione', [ErpController::class, 'controlloGestione'])->name('erp.controllo')->middleware('tenant.feature:erp');
     Route::middleware('tenant.feature:erp')->group(function () {
         Route::get('erp/notule', [\App\Http\Controllers\NotuleController::class, 'index'])->name('erp.notule.index');
         Route::get('erp/notule/create', [\App\Http\Controllers\NotuleController::class, 'create'])->name('erp.notule.create');
