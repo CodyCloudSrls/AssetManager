@@ -48,7 +48,7 @@
             </div>
 
             <x-table.documentframeworkrequirements
-                :route="route('api.documentframeworkrequirements.index', request()->only(['tenant_id', 'document_framework_id', 'coverage_status']))"
+                :route="route('api.documentframeworkrequirements.index', request()->only(['tenant_id', 'document_framework_id', 'coverage_status', 'compliance_domain']))"
                 table_header="{{ trans('admin/documentframeworkrequirements/general.work_queue') }}"
                 buttons="documentframeworkrequirementsButtons"
             />

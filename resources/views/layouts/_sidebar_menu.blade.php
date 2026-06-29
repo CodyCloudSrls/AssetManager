@@ -294,14 +294,18 @@
     </li>
 @endif
 
-{{-- ═══════════════ COMPLIANCE NIS2 ═══════════════ --}}
+{{-- ═══════════════ COMPLIANCE — un menu a sé per ogni framework attivo ═══════════════ --}}
 @if ($ccComplianceSection)
     <li class="header">{{ trans('nav/modules.compliance') }}</li>
+    @php($ccDomainLabels = \App\Models\ComplianceDomain::options())
+    @php($ccCanFrameworks = Gate::allows('view', \App\Models\DocumentFramework::class))
+
+    {{-- Catalogo & impostazioni condivise: servizi, tipologie documento, elenco completo framework/requisiti. --}}
     @if ($ccComplianceInner)
-        <li class="treeview{{ (request()->routeIs('tenants.services.*') || request()->is('documenttypes*') || request()->is('documentframeworks*') || request()->is('documentframeworkrequirements*')) ? ' active' : '' }}">
+        <li class="treeview{{ (request()->routeIs('tenants.services.*') || request()->is('documenttypes*') || ((request()->is('documentframeworks*') || request()->is('documentframeworkrequirements*')) && ! request('compliance_domain'))) ? ' active' : '' }}">
             <a href="#" class="dropdown-toggle">
-                <x-icon type="compliance" class="fa-fw" />
-                <span>{{ trans('general.nav_compliance') }}</span>
+                <x-icon type="settings" class="fa-fw" />
+                <span>{{ trans('nav/modules.compliance_catalog') }}</span>
                 <x-icon type="angle-left" class="pull-right fa-fw"/>
             </a>
             <ul class="treeview-menu">
@@ -311,39 +315,44 @@
                 @can('view', \App\Models\DocumentType::class)
                     <li {!! (request()->is('documenttypes*') ? ' class="active"' : '') !!}><a href="{{ route('documenttypes.index') }}">{{ trans('general.document_types') }}</a></li>
                 @endcan
-                @can('view', \App\Models\DocumentFramework::class)
+                @if ($ccCanFrameworks)
                     <li {!! (request()->is('documentframeworks*') && ! request('compliance_domain') ? ' class="active"' : '') !!}><a href="{{ route('documentframeworks.index') }}">{{ trans('general.document_frameworks') }}</a></li>
-                    <li {!! (request()->is('documentframeworkrequirements*') ? ' class="active"' : '') !!}><a href="{{ route('documentframeworkrequirements.index') }}">{{ trans('general.document_framework_requirements') }}</a></li>
-                    {{-- Per area tematica: un link rapido per ogni dominio compliance attivo per il tenant. --}}
-                    @php($ccDomainLabels = \App\Models\ComplianceDomain::options())
-                    @foreach (\App\Models\Tenant::complianceFeatureDomains() as $ccFeat => $ccDom)
-                        @if (\App\Models\Tenant::currentContextHasFeature($ccFeat) && isset($ccDomainLabels[$ccDom]))
-                            <li {!! (request()->is('documentframeworks*') && request('compliance_domain') === $ccDom ? ' class="active"' : '') !!}>
-                                <a href="{{ route('documentframeworks.index', ['compliance_domain' => $ccDom]) }}"><x-icon type="circle" class="text-grey fa-fw"/> {{ $ccDomainLabels[$ccDom] }}</a>
-                            </li>
-                        @endif
-                    @endforeach
-                @endcan
+                    <li {!! (request()->is('documentframeworkrequirements*') && ! request('compliance_domain') ? ' class="active"' : '') !!}><a href="{{ route('documentframeworkrequirements.index') }}">{{ trans('general.document_framework_requirements') }}</a></li>
+                @endif
             </ul>
         </li>
     @endif
-    @if ($ccNisReports)
-        <li class="treeview{{ (request()->is('reports/nis-risk-matrix') || request()->is('reports/nis-real-coverage')) ? ' active' : '' }}">
-            <a href="#" class="dropdown-toggle">
-                <x-icon type="reports" class="fa-fw" />
-                <span>{{ trans('nav/modules.reports') }}</span>
-                <x-icon type="angle-left" class="pull-right fa-fw"/>
-            </a>
-            <ul class="treeview-menu">
-                @can('reports.nis_risk_matrix.view')
-                    <li {{!! (request()->is('reports/nis-risk-matrix') ? ' class="active"' : '') !!}}><a href="{{ route('reports.nis-risk-matrix') }}">{{ trans('admin/reports/general.nis_risk_matrix') }}</a></li>
-                @endcan
-                @can('reports.nis_real_coverage.view')
-                    <li {{!! (request()->is('reports/nis-real-coverage') ? ' class="active"' : '') !!}}><a href="{{ route('reports.nis-real-coverage') }}">{{ trans('admin/reports/general.nis_real_coverage') }}</a></li>
-                @endcan
-            </ul>
-        </li>
-    @endif
+
+    {{-- Un modulo (menu) separato per ogni dominio compliance attivo: NIS2, GDPR, D.Lgs. 81, ISO 27001, AI Act, ISO 9001. --}}
+    @foreach (\App\Models\Tenant::complianceFeatureDomains() as $ccFeat => $ccDom)
+        @php($ccDomEnabled = \App\Models\Tenant::currentContextHasFeature($ccFeat) && isset($ccDomainLabels[$ccDom]))
+        @php($ccDomReports = $ccDom === 'nis2' && $ccNisReports)
+        @if ($ccDomEnabled && ($ccCanFrameworks || $ccDomReports))
+            @php($ccDomActive = (request()->is('documentframeworks*') || request()->is('documentframeworkrequirements*')) && request('compliance_domain') === $ccDom)
+            @php($ccDomReportsActive = $ccDomReports && (request()->is('reports/nis-risk-matrix') || request()->is('reports/nis-real-coverage')))
+            <li class="treeview{{ ($ccDomActive || $ccDomReportsActive) ? ' active' : '' }}">
+                <a href="#" class="dropdown-toggle">
+                    <x-icon type="compliance" class="fa-fw" />
+                    <span>{{ $ccDomainLabels[$ccDom] }}</span>
+                    <x-icon type="angle-left" class="pull-right fa-fw"/>
+                </a>
+                <ul class="treeview-menu">
+                    @if ($ccCanFrameworks)
+                        <li {!! (request()->is('documentframeworks*') && request('compliance_domain') === $ccDom ? ' class="active"' : '') !!}><a href="{{ route('documentframeworks.index', ['compliance_domain' => $ccDom]) }}">{{ trans('general.document_frameworks') }}</a></li>
+                        <li {!! (request()->is('documentframeworkrequirements*') && request('compliance_domain') === $ccDom ? ' class="active"' : '') !!}><a href="{{ route('documentframeworkrequirements.index', ['compliance_domain' => $ccDom]) }}">{{ trans('general.document_framework_requirements') }}</a></li>
+                    @endif
+                    @if ($ccDomReports)
+                        @can('reports.nis_risk_matrix.view')
+                            <li {!! (request()->is('reports/nis-risk-matrix') ? ' class="active"' : '') !!}><a href="{{ route('reports.nis-risk-matrix') }}">{{ trans('admin/reports/general.nis_risk_matrix') }}</a></li>
+                        @endcan
+                        @can('reports.nis_real_coverage.view')
+                            <li {!! (request()->is('reports/nis-real-coverage') ? ' class="active"' : '') !!}><a href="{{ route('reports.nis-real-coverage') }}">{{ trans('admin/reports/general.nis_real_coverage') }}</a></li>
+                        @endcan
+                    @endif
+                </ul>
+            </li>
+        @endif
+    @endforeach
 @endif
 
 {{-- ═══════════════ DOCUMENTI ═══════════════ --}}

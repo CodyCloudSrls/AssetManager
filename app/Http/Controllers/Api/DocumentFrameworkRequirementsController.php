@@ -49,6 +49,11 @@ class DocumentFrameworkRequirementsController extends Controller
             $requirements->where('document_framework_id', (int) $request->input('document_framework_id'));
         }
 
+        // Per-area scoping: requisiti del solo dominio compliance (NIS2/GDPR/DL81/...).
+        if ($request->filled('compliance_domain')) {
+            $requirements->whereHas('framework', fn ($query) => $query->where('compliance_domain', '=', $request->input('compliance_domain')));
+        }
+
         $tenantCompanyIds = $this->tenantCompanyIdsFromRequest($request);
 
         if (! is_null($tenantCompanyIds)) {

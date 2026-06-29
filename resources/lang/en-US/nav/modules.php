@@ -3,7 +3,8 @@
 return [
     'asset' => 'Asset / Inventory',
     'erp' => 'ERP / Management',
-    'compliance' => 'NIS2 Compliance',
+    'compliance' => 'Compliance',
+    'compliance_catalog' => 'Catalogue & settings',
     'documents' => 'Documents',
     'tickets' => 'Tickets / Helpdesk',
     'administration' => 'Administration',
