@@ -485,20 +485,5 @@
         </a>
     </li>
 @endcan
-@can('admin')
-    <li class="treeview{{ request()->is('admin/settings*') || request()->routeIs('settings.*') || request()->routeIs('tenants.index') || request()->is('groups*') || request()->is('developer/api-docs*') ? ' active' : '' }}">
-        <a href="#" class="dropdown-toggle">
-            <x-icon type="general-settings" class="fa-fw" />
-            <span>{{ trans('nav/modules.system') }}</span>
-            <x-icon type="angle-left" class="pull-right fa-fw"/>
-        </a>
-        <ul class="treeview-menu">
-            <li {!! (request()->routeIs('settings.index') ? ' class="active"' : '') !!}><a href="{{ route('settings.index') }}">{{ trans('general.settings') }}</a></li>
-            <li {!! (request()->is('groups*') ? ' class="active"' : '') !!}><a href="{{ route('groups.index') }}">{{ trans('general.groups') }}</a></li>
-            @if (auth()->user()?->isSuperUser())
-                <li {!! (request()->routeIs('tenants.index') ? ' class="active"' : '') !!}><a href="{{ route('tenants.index') }}">{{ trans('admin/tenants/general.title') }}</a></li>
-                <li {!! (request()->is('developer/api-docs*') ? ' class="active"' : '') !!}><a href="{{ route('api-docs.index') }}">{{ trans('nav/modules.api_docs') }}</a></li>
-            @endif
-        </ul>
-    </li>
-@endcan
+{{-- System settings (general settings, groups, tenants, API docs) are reached by
+     superadmins via the gear icon in the top bar — intentionally not in the sidebar. --}}

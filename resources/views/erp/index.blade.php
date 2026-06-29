@@ -9,35 +9,37 @@
 @stop
 
 @section('content')
-    {{-- ===== KPI cards (reusing the dashboard small-box styling) ===== --}}
+
+    {{-- ════════ PREVISIONALE — CONTRATTI (valori inseriti a mano) ════════ --}}
     <div class="row">
-        @php($cards = [
+        <div class="col-md-12">
+            <h2 style="border-bottom:2px solid #3c8dbc; padding-bottom:6px; margin-top:0;">
+                <x-icon type="long-arrow-right" class="fa-fw" /> {{ trans('erp/general.sections.previsionale') }}
+            </h2>
+            <p class="help-block">{{ trans('erp/general.sections.previsionale_help') }}</p>
+        </div>
+    </div>
+    <div class="row">
+        @php($previsionaleCards = [
             ['label' => trans('erp/general.kpi.mrr'), 'value' => $fmt($kpis['mrr']), 'bg' => 'bg-teal', 'icon' => 'long-arrow-right'],
             ['label' => trans('erp/general.kpi.arr'), 'value' => $fmt($kpis['arr']), 'bg' => 'bg-aqua', 'icon' => 'erp'],
             ['label' => trans('erp/general.kpi.active_contracts'), 'value' => $kpis['active_contracts'], 'bg' => 'bg-light-blue', 'icon' => 'long-arrow-right'],
             ['label' => trans('erp/general.kpi.expiring_contracts'), 'value' => $kpis['expiring_contracts'], 'bg' => 'bg-orange', 'icon' => 'warning'],
-            ['label' => trans('erp/general.kpi.customers'), 'value' => $kpis['customers'], 'bg' => 'bg-purple', 'icon' => 'users'],
-            ['label' => trans('erp/general.kpi.suppliers'), 'value' => $kpis['suppliers'], 'bg' => 'bg-green', 'icon' => 'records'],
         ])
-        @foreach ($cards as $card)
-            <div class="col-md-4 col-sm-6">
+        @foreach ($previsionaleCards as $card)
+            <div class="col-md-3 col-sm-6">
                 <div class="small-box {{ $card['bg'] }}">
-                    <div class="inner">
-                        <h3 style="font-size:26px;">{{ $card['value'] }}</h3>
-                        <p>{{ $card['label'] }}</p>
-                    </div>
+                    <div class="inner"><h3 style="font-size:24px;">{{ $card['value'] }}</h3><p>{{ $card['label'] }}</p></div>
                     <div class="icon"><x-icon :type="$card['icon']" /></div>
                 </div>
             </div>
         @endforeach
     </div>
-
     <div class="row">
-        {{-- ===== Financial summary (reusing ContractForecastReport) ===== --}}
-        <div class="col-md-8">
+        <div class="col-md-12">
             <div class="box box-default">
                 <div class="box-header with-border">
-                    <h2 class="box-title">{{ trans('erp/general.financials.title') }}</h2>
+                    <h3 class="box-title">{{ trans('erp/general.financials.title') }}</h3>
                     <div class="box-tools pull-right">
                         <a href="{{ route('reports.contract-forecast') }}" class="btn btn-default btn-sm">{{ trans('erp/general.financials.full_forecast') }}</a>
                     </div>
@@ -72,49 +74,46 @@
                 </div>
             </div>
         </div>
-
-        {{-- ===== Contracts hub + FiC status ===== --}}
-        <div class="col-md-4">
-            @can('view', \App\Models\CustomerContract::class)
-                <a href="{{ route('contracts.index') }}" class="box box-default" style="display:block; padding:16px; text-decoration:none;">
-                    <h4 style="margin-top:0;"><x-icon type="long-arrow-right" class="fa-fw" /> {{ trans('erp/general.modules.contracts') }}
-                        <span class="label label-success pull-right">{{ trans('erp/general.status_active') }}</span></h4>
-                    <p class="text-muted">{{ trans('erp/general.modules.contracts_help') }}</p>
-                </a>
-            @endcan
-
-            <div class="box box-default">
-                <div class="box-header with-border"><h3 class="box-title">{{ trans('erp/general.fic.title') }}</h3></div>
-                <div class="box-body">
-                    @if ($fic['enabled'])
-                        <table class="table table-condensed" style="margin-bottom:6px;">
-                            <tr><td>{{ trans('erp/general.fic.revenue_year') }}</td><td class="text-right"><strong>{{ $fmt($fic['revenue_year']) }}</strong></td></tr>
-                            <tr><td>{{ trans('erp/general.fic.receivables') }}</td><td class="text-right text-success">{{ $fmt($fic['receivables']) }}</td></tr>
-                            <tr><td>{{ trans('erp/general.fic.payables') }}</td><td class="text-right text-danger">{{ $fmt($fic['payables']) }}</td></tr>
-                            <tr><td>{{ trans('erp/general.fic.vat_balance') }}</td><td class="text-right">{{ $fmt($fic['vat_balance']) }}</td></tr>
-                            @if ($fic['overdue_receivables'] > 0)
-                                <tr><td>{{ trans('erp/general.fic.overdue') }}</td><td class="text-right"><span class="label label-warning">{{ $fmt($fic['overdue_receivables']) }}</span></td></tr>
-                            @endif
-                        </table>
-                        <p class="text-muted" style="font-size:11px;">{{ trans('erp/general.fic.last_sync') }}: {{ $fic['last_sync'] ? \Illuminate\Support\Carbon::parse($fic['last_sync'])->diffForHumans() : '—' }}</p>
-                    @elseif ($ficConfigured)
-                        <p><span class="label label-success">{{ trans('erp/general.fic.configured') }}</span></p>
-                        <p class="text-muted">{{ trans('erp/general.fic.configured_help') }}</p>
-                    @else
-                        <p><span class="label label-default">{{ trans('erp/general.fic.not_configured') }}</span></p>
-                        <p class="text-muted">{{ trans('erp/general.fic.not_configured_help') }}</p>
-                    @endif
-                </div>
-            </div>
-        </div>
     </div>
 
-    {{-- ===== Scadenzario (deadlines from the FiC mirror) ===== --}}
-    @if ($fic['enabled'] && $fic['deadlines']->isNotEmpty())
+    {{-- ════════ OPERATIVO / EFFETTIVO — FATTURE IN CLOUD (dati reali) ════════ --}}
+    <div class="row">
+        <div class="col-md-12">
+            <h2 style="border-bottom:2px solid #00a65a; padding-bottom:6px;">
+                <x-icon type="erp" class="fa-fw" /> {{ trans('erp/general.sections.operativo') }}
+            </h2>
+            <p class="help-block">{{ trans('erp/general.sections.operativo_help') }}</p>
+        </div>
+    </div>
+    @if ($fic['enabled'])
         <div class="row">
-            <div class="col-md-12">
+            @php($operativoCards = [
+                ['label' => trans('erp/general.fic.revenue_year'), 'value' => $fmt($fic['revenue_year']), 'bg' => 'bg-green', 'icon' => 'erp'],
+                ['label' => trans('erp/general.fic.receivables'), 'value' => $fmt($fic['receivables']), 'bg' => 'bg-light-blue', 'icon' => 'long-arrow-right'],
+                ['label' => trans('erp/general.fic.payables'), 'value' => $fmt($fic['payables']), 'bg' => 'bg-red', 'icon' => 'long-arrow-right'],
+                ['label' => trans('erp/general.fic.vat_balance'), 'value' => $fmt($fic['vat_balance']), 'bg' => 'bg-purple', 'icon' => 'records'],
+            ])
+            @foreach ($operativoCards as $card)
+                <div class="col-md-3 col-sm-6">
+                    <div class="small-box {{ $card['bg'] }}">
+                        <div class="inner"><h3 style="font-size:24px;">{{ $card['value'] }}</h3><p>{{ $card['label'] }}</p></div>
+                        <div class="icon"><x-icon :type="$card['icon']" /></div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+        @if ($fic['overdue_receivables'] > 0)
+            <div class="row"><div class="col-md-12">
+                <div class="callout callout-warning"><p>{{ trans('erp/general.fic.overdue') }}: <strong>{{ $fmt($fic['overdue_receivables']) }}</strong></p></div>
+            </div></div>
+        @endif
+        @if ($fic['deadlines']->isNotEmpty())
+            <div class="row"><div class="col-md-12">
                 <div class="box box-default">
-                    <div class="box-header with-border"><h3 class="box-title">{{ trans('erp/general.scadenzario.title') }}</h3></div>
+                    <div class="box-header with-border">
+                        <h3 class="box-title">{{ trans('erp/general.scadenzario.title') }}</h3>
+                        <span class="pull-right text-muted" style="font-size:11px;">{{ trans('erp/general.fic.last_sync') }}: {{ $fic['last_sync'] ? \Illuminate\Support\Carbon::parse($fic['last_sync'])->diffForHumans() : '—' }}</span>
+                    </div>
                     <div class="box-body">
                         <table class="table table-striped snipe-table">
                             <thead>
@@ -130,10 +129,7 @@
                                 @foreach ($fic['deadlines'] as $doc)
                                     @php($overdue = $doc->due_on && $doc->due_on->isPast())
                                     <tr>
-                                        <td>
-                                            {{ optional($doc->due_on)->format('d/m/Y') }}
-                                            @if ($overdue)<span class="label label-danger">{{ trans('erp/general.scadenzario.overdue') }}</span>@endif
-                                        </td>
+                                        <td>{{ optional($doc->due_on)->format('d/m/Y') }} @if ($overdue)<span class="label label-danger">{{ trans('erp/general.scadenzario.overdue') }}</span>@endif</td>
                                         <td>
                                             @if ($doc->direction === \App\Models\FicDocument::DIRECTION_ISSUED)
                                                 <span class="label label-success">{{ trans('erp/general.scadenzario.collect') }}</span>
@@ -150,9 +146,46 @@
                         </table>
                     </div>
                 </div>
+            </div></div>
+        @endif
+    @else
+        <div class="row"><div class="col-md-12">
+            <div class="box box-default"><div class="box-body">
+                @if ($ficConfigured)
+                    <p><span class="label label-success">{{ trans('erp/general.fic.configured') }}</span></p>
+                    <p class="text-muted">{{ trans('erp/general.fic.configured_help') }}</p>
+                @else
+                    <p><span class="label label-default">{{ trans('erp/general.fic.not_configured') }}</span></p>
+                    <p class="text-muted">{{ trans('erp/general.fic.not_configured_help') }}</p>
+                @endif
+            </div></div>
+        </div></div>
+    @endif
+
+    {{-- ════════ ANAGRAFICHE + roadmap ════════ --}}
+    <div class="row">
+        <div class="col-md-3 col-sm-6">
+            <div class="small-box bg-gray">
+                <div class="inner"><h3 style="font-size:24px;">{{ $kpis['customers'] }}</h3><p>{{ trans('erp/general.kpi.customers') }}</p></div>
+                <div class="icon"><x-icon type="users" /></div>
             </div>
         </div>
-    @endif
+        <div class="col-md-3 col-sm-6">
+            <div class="small-box bg-gray">
+                <div class="inner"><h3 style="font-size:24px;">{{ $kpis['suppliers'] }}</h3><p>{{ trans('erp/general.kpi.suppliers') }}</p></div>
+                <div class="icon"><x-icon type="records" /></div>
+            </div>
+        </div>
+        @can('view', \App\Models\CustomerContract::class)
+            <div class="col-md-6">
+                <a href="{{ route('contracts.index') }}" class="box box-default" style="display:block; padding:16px; text-decoration:none;">
+                    <h4 style="margin-top:0;"><x-icon type="long-arrow-right" class="fa-fw" /> {{ trans('erp/general.modules.contracts') }}
+                        <span class="label label-success pull-right">{{ trans('erp/general.status_active') }}</span></h4>
+                    <p class="text-muted">{{ trans('erp/general.modules.contracts_help') }}</p>
+                </a>
+            </div>
+        @endcan
+    </div>
 
     {{-- ===== Planned management-control modules (PDF roadmap) ===== --}}
     <div class="row">

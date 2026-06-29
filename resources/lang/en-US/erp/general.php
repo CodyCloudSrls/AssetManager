@@ -7,6 +7,13 @@ return [
     'status_planned' => 'Coming soon',
     'roadmap_title' => 'Management-control modules coming soon',
     'connectors_note' => 'The financial modules will read data via API (Fatture in Cloud = fiscal source of truth, not duplicated) with idempotent sync. Phases: connector + cockpit, analytical accounting, cash flow, payroll cost.',
+    'sections' => [
+        'previsionale' => 'Forecast — Contracts',
+        'previsionale_help' => 'Budget values entered by hand on contracts (expected revenue). These are NOT invoices.',
+        'operativo' => 'Operational / Actuals — Fatture in Cloud',
+        'operativo_help' => 'Real fiscal data (issued/received invoices). The fiscal layer stays on Fatture in Cloud.',
+        'registry' => 'Records',
+    ],
     'nav' => [
         'cockpit' => 'Cockpit',
         'forecast' => 'Contract forecast',

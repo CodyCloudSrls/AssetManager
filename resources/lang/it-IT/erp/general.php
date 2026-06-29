@@ -7,6 +7,13 @@ return [
     'status_planned' => 'In arrivo',
     'roadmap_title' => 'Moduli di controllo di gestione in arrivo',
     'connectors_note' => 'I moduli finanziari leggeranno i dati via API (Fatture in Cloud = verità fiscale, non duplicata) con sync idempotente. Fasi: connettore + cruscotto, contabilità analitica, flussi di cassa, costo del personale.',
+    'sections' => [
+        'previsionale' => 'Previsionale — Contratti',
+        'previsionale_help' => 'Valori di budget inseriti a mano sui contratti (ricavi attesi). NON sono fatture.',
+        'operativo' => 'Operativo / Effettivo — Fatture in Cloud',
+        'operativo_help' => 'Dati fiscali reali (fatture emesse/ricevute). Il livello fiscale resta su Fatture in Cloud.',
+        'registry' => 'Anagrafiche',
+    ],
     'nav' => [
         'cockpit' => 'Cruscotto',
         'forecast' => 'Previsione contratti',
