@@ -48,8 +48,11 @@
                                     <td class="text-right">{{ \App\Helpers\Helper::formatCurrencyOutput($n->paid_amount) }}</td>
                                     <td class="text-right {{ $n->residuo > 0 ? 'text-danger' : '' }}">{{ \App\Helpers\Helper::formatCurrencyOutput($n->residuo) }}</td>
                                     <td>
-                                        @php($cls = ['pending' => 'label-warning', 'invoiced' => 'label-info', 'paid' => 'label-success'][$n->status] ?? 'label-default')
+                                        @php($cls = ['unpaid' => 'label-warning', 'paid' => 'label-success'][$n->status] ?? 'label-default')
                                         <span class="label {{ $cls }}">{{ $n->status_label }}</span>
+                                        @if ($n->invoice_received)
+                                            <span class="label label-info" title="{{ trans('erp/notule.invoice_received') }}"><i class="fa-solid fa-file-invoice"></i></span>
+                                        @endif
                                     </td>
                                     <td class="text-right">
                                         @can('update', \App\Models\CustomerContract::class)

@@ -2,7 +2,7 @@
 
 return [
     'title' => 'Notule',
-    'intro' => 'Fees owed to professionals not yet invoiced. They weigh on management control as accrued cost while pending; when the real invoice arrives (Fatture in Cloud) mark the notula "Invoiced" so the cost is not counted twice.',
+    'intro' => 'Fees owed to professionals. Two states: unpaid / paid. Unpaid notule weigh on management control as a cost to settle; when you receive the professional\'s invoice (Fatture in Cloud) mark "Invoice received" so the cost comes from the real invoice and is not counted twice.',
     'new' => 'New notula',
     'created' => 'Notula created.',
     'updated' => 'Notula updated.',
@@ -16,15 +16,16 @@ return [
     'expected_invoice' => 'Expected invoice',
     'status' => 'Status',
     'paid_at' => 'Payment date',
-    'status_pending' => 'Awaiting invoice',
-    'status_invoiced' => 'Invoiced',
+    'status_unpaid' => 'Unpaid',
     'status_paid' => 'Paid',
+    'invoice_received' => 'Invoice received',
+    'invoice_received_help' => 'Tick when you have received the professional\'s invoice: the cost then comes from Fatture in Cloud and no longer counts among the notule.',
     'paid' => 'Paid',
     'paid_help' => 'Amount already paid (residuo = fee - paid).',
     'residuo' => 'Outstanding',
 
-    'tot_pending' => 'Accrued, awaiting invoice',
+    'tot_pending' => 'To pay (not yet invoiced)',
     'tot_all' => 'Total notule',
     'empty' => 'No notule recorded.',
-    'dedup_note' => 'Only "pending" notule weigh on management control: once the professional invoices, mark "Invoiced" so the cost comes from the real invoice and is not duplicated.',
+    'dedup_note' => 'Unpaid notule without a received invoice weigh on management control: once you mark "Invoice received" the cost comes from the real invoice and is not duplicated.',
 ];

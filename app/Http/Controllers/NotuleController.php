@@ -29,7 +29,7 @@ class NotuleController extends Controller
 
         $totals = [
             'pending' => Notula::outstandingTotal($companyIds),
-            'all' => (float) Notula::forCompanies($companyIds)->whereIn('status', [Notula::STATUS_PENDING, Notula::STATUS_INVOICED, Notula::STATUS_PAID])->sum('amount'),
+            'all' => (float) Notula::forCompanies($companyIds)->whereIn('status', [Notula::STATUS_UNPAID, Notula::STATUS_PAID])->sum('amount'),
         ];
 
         return view('erp.notule.index', compact('notule', 'totals'));
@@ -39,7 +39,7 @@ class NotuleController extends Controller
     {
         $this->authorize('update', CustomerContract::class);
 
-        return view('erp.notule.edit', ['item' => new Notula(['status' => Notula::STATUS_PENDING])]);
+        return view('erp.notule.edit', ['item' => new Notula(['status' => Notula::STATUS_UNPAID])]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -100,6 +100,7 @@ class NotuleController extends Controller
             'competence_date' => 'nullable|date',
             'expected_invoice_date' => 'nullable|date',
             'status' => 'required|string|in:'.implode(',', array_keys(Notula::statusOptions())),
+            'invoice_received' => 'nullable|boolean',
             'paid_at' => 'nullable|date',
             'company_id' => 'nullable|integer|exists:companies,id',
             'notes' => 'nullable|string|max:65535',
@@ -109,6 +110,8 @@ class NotuleController extends Controller
     private function fill(Notula $notula, array $data): void
     {
         $notula->fill($data);
+        // Checkbox: absent when unchecked, so coerce to a definite boolean.
+        $notula->invoice_received = (bool) ($data['invoice_received'] ?? false);
         // Only a paid notula keeps a payment date.
         if ($notula->status !== Notula::STATUS_PAID) {
             $notula->paid_at = null;

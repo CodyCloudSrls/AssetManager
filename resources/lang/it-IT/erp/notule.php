@@ -2,7 +2,7 @@
 
 return [
     'title' => 'Notule',
-    'intro' => 'Compensi a professionisti non ancora fatturati. Pesano sul controllo di gestione come costo maturato finché sono in attesa; quando arriva la fattura reale (Fatture in Cloud) la notula va segnata "Fatturata" e il costo non viene contato due volte.',
+    'intro' => 'Compensi a professionisti. Due stati: non pagata / pagata. Le notule non pagate pesano sul controllo di gestione come costo da liquidare; quando ricevi la fattura del professionista (Fatture in Cloud) segna "Fattura ricevuta" così il costo arriva dalla fattura reale e non viene contato due volte.',
     'new' => 'Nuova notula',
     'created' => 'Notula creata.',
     'updated' => 'Notula aggiornata.',
@@ -16,15 +16,16 @@ return [
     'expected_invoice' => 'Fattura attesa',
     'status' => 'Stato',
     'paid_at' => 'Data pagamento',
-    'status_pending' => 'In attesa di fattura',
-    'status_invoiced' => 'Fatturata',
+    'status_unpaid' => 'Non pagata',
     'status_paid' => 'Pagata',
+    'invoice_received' => 'Fattura ricevuta',
+    'invoice_received_help' => 'Segna quando hai ricevuto la fattura del professionista: il costo passa a Fatture in Cloud e non viene più contato tra le notule.',
     'paid' => 'Pagato',
     'paid_help' => 'Quanto gia pagato (residuo = compenso - pagato).',
     'residuo' => 'Residuo',
 
-    'tot_pending' => 'Maturato in attesa di fattura',
+    'tot_pending' => 'Da pagare (non ancora in fattura)',
     'tot_all' => 'Totale notule',
     'empty' => 'Nessuna notula registrata.',
-    'dedup_note' => 'Solo le notule "in attesa" pesano sul controllo di gestione: quando il professionista fattura, segnala "Fatturata" così il costo arriva dalla fattura reale e non è duplicato.',
+    'dedup_note' => 'Le notule non pagate e senza fattura ricevuta pesano sul controllo di gestione: quando segni "Fattura ricevuta" il costo arriva dalla fattura reale e non è duplicato.',
 ];

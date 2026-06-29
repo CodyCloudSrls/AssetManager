@@ -91,6 +91,18 @@
                         <div class="col-md-4"><input type="date" class="form-control" name="paid_at" value="{{ old('paid_at', optional($item->paid_at)->format('Y-m-d')) }}"></div>
                     </div>
 
+                    <div class="form-group {{ $errors->has('invoice_received') ? 'has-error' : '' }}">
+                        <label class="col-md-3 control-label">{{ trans('erp/notule.invoice_received') }}</label>
+                        <div class="col-md-7">
+                            <input type="hidden" name="invoice_received" value="0">
+                            <label class="checkbox-inline" style="padding-left:0;">
+                                <input type="checkbox" name="invoice_received" value="1" {{ old('invoice_received', $item->invoice_received) ? 'checked' : '' }}>
+                                {{ trans('erp/notule.invoice_received_help') }}
+                            </label>
+                            {!! $errors->first('invoice_received', '<span class="alert-msg">:message</span>') !!}
+                        </div>
+                    </div>
+
                     <div class="form-group {{ $errors->has('notes') ? 'has-error' : '' }}">
                         <label class="col-md-3 control-label">{{ trans('general.notes') }}</label>
                         <div class="col-md-7"><textarea class="form-control" name="notes" rows="3">{{ old('notes', $item->notes) }}</textarea></div>

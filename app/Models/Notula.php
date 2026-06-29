@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * A "notula": an amount owed to a professional who has not yet issued a fiscal invoice.
- * Feeds management control as an accrued cost while pending; once the matching FiC
- * invoice arrives it is linked + marked invoiced so the cost is not double-counted.
+ * A "notula": an amount owed to a professional. Two payment states only — non pagata
+ * (unpaid) / pagata (paid). The optional `invoice_received` flag is set manually after
+ * payment to record that the professional's fiscal invoice arrived (now tracked in FiC),
+ * so the cost is not double-counted in management control.
  */
 class Notula extends Model
 {
@@ -17,19 +18,19 @@ class Notula extends Model
 
     protected $table = 'notule';
 
-    public const STATUS_PENDING = 'pending';     // awaiting invoice
-    public const STATUS_INVOICED = 'invoiced';   // professional issued the invoice (now in FiC)
-    public const STATUS_PAID = 'paid';
+    public const STATUS_UNPAID = 'unpaid';   // non pagata
+    public const STATUS_PAID = 'paid';       // pagata
 
     protected $fillable = [
         'company_id', 'supplier_id', 'professional_name', 'description',
         'amount', 'paid_amount', 'competence_date', 'expected_invoice_date',
-        'status', 'paid_at', 'fic_document_id', 'notes', 'created_by',
+        'status', 'invoice_received', 'paid_at', 'fic_document_id', 'notes', 'created_by',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
         'paid_amount' => 'decimal:2',
+        'invoice_received' => 'boolean',
         'competence_date' => 'date',
         'expected_invoice_date' => 'date',
         'paid_at' => 'date',
@@ -38,8 +39,7 @@ class Notula extends Model
     public static function statusOptions(): array
     {
         return [
-            self::STATUS_PENDING => trans('erp/notule.status_pending'),
-            self::STATUS_INVOICED => trans('erp/notule.status_invoiced'),
+            self::STATUS_UNPAID => trans('erp/notule.status_unpaid'),
             self::STATUS_PAID => trans('erp/notule.status_paid'),
         ];
     }
@@ -73,12 +73,13 @@ class Notula extends Model
     }
 
     /**
-     * Notule that still weigh on management control: pending (not yet invoiced).
-     * Once invoiced, the real FiC invoice carries the cost instead — no double count.
+     * Notule that still weigh on management control: unpaid AND without a received fiscal
+     * invoice. Once the invoice is received the real FiC document carries the cost instead,
+     * so it is excluded here to avoid double counting.
      */
     public function scopeAccruable(Builder $query): Builder
     {
-        return $query->where('status', self::STATUS_PENDING);
+        return $query->where('status', self::STATUS_UNPAID)->where('invoice_received', false);
     }
 
     /** Outstanding amount still to pay (da pagare) = amount − paid_amount. */

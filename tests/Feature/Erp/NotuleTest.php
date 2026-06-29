@@ -8,18 +8,38 @@ use Tests\TestCase;
 
 class NotuleTest extends TestCase
 {
-    public function test_only_pending_notule_are_accruable(): void
+    public function test_accruable_excludes_paid_and_invoice_received(): void
     {
-        Notula::create(['professional_name' => 'Avv. Rossi', 'amount' => 1000, 'status' => Notula::STATUS_PENDING]);
-        Notula::create(['professional_name' => 'Dott. Bianchi', 'amount' => 500, 'status' => Notula::STATUS_INVOICED]);
+        Notula::create(['professional_name' => 'Avv. Rossi', 'amount' => 1000, 'status' => Notula::STATUS_UNPAID]); // counts
+        Notula::create(['professional_name' => 'Dott. Bianchi', 'amount' => 500, 'status' => Notula::STATUS_PAID]); // paid -> excluded
+        // Unpaid but the fiscal invoice arrived: the FiC document carries the cost now.
+        Notula::create(['professional_name' => 'Geom. Neri', 'amount' => 300, 'status' => Notula::STATUS_UNPAID, 'invoice_received' => true]);
 
-        // Invoiced notula drop out of the accrual (the real FiC invoice carries the cost).
         $this->assertEqualsWithDelta(1000, (float) Notula::accruable()->sum('amount'), 0.01);
+        $this->assertEqualsWithDelta(1000, Notula::outstandingTotal(null), 0.01);
+    }
+
+    public function test_invoice_received_flag_persists_from_form(): void
+    {
+        $this->actingAs(User::factory()->superuser()->create());
+
+        $this->post(route('erp.notule.store'), [
+            'professional_name' => 'Dott. Verdi', 'amount' => 100, 'status' => Notula::STATUS_PAID, 'invoice_received' => '1',
+        ])->assertRedirect(route('erp.notule.index'));
+
+        $this->assertTrue((bool) Notula::where('professional_name', 'Dott. Verdi')->firstOrFail()->invoice_received);
+
+        // Unchecked checkbox (absent / "0") persists as false.
+        $this->post(route('erp.notule.store'), [
+            'professional_name' => 'Dott. Gialli', 'amount' => 100, 'status' => Notula::STATUS_UNPAID, 'invoice_received' => '0',
+        ])->assertRedirect(route('erp.notule.index'));
+
+        $this->assertFalse((bool) Notula::where('professional_name', 'Dott. Gialli')->firstOrFail()->invoice_received);
     }
 
     public function test_index_renders_and_lists_notule(): void
     {
-        Notula::create(['professional_name' => 'Avv. Verdi', 'amount' => 1200, 'status' => Notula::STATUS_PENDING]);
+        Notula::create(['professional_name' => 'Avv. Verdi', 'amount' => 1200, 'status' => Notula::STATUS_UNPAID]);
 
         $this->actingAs(User::factory()->superuser()->create())
             ->get(route('erp.notule.index'))
@@ -34,7 +54,7 @@ class NotuleTest extends TestCase
         $this->post(route('erp.notule.store'), [
             'professional_name' => 'Geom. Neri',
             'amount' => 800,
-            'status' => Notula::STATUS_PENDING,
+            'status' => Notula::STATUS_UNPAID,
         ])->assertRedirect(route('erp.notule.index'));
 
         $this->assertDatabaseHas('notule', ['professional_name' => 'Geom. Neri']);
@@ -45,7 +65,7 @@ class NotuleTest extends TestCase
         $this->actingAs(User::factory()->superuser()->create());
 
         $this->post(route('erp.notule.store'), [
-            'professional_name' => 'Dott. Verdi', 'amount' => 1000, 'paid_amount' => 400, 'status' => Notula::STATUS_PENDING,
+            'professional_name' => 'Dott. Verdi', 'amount' => 1000, 'paid_amount' => 400, 'status' => Notula::STATUS_UNPAID,
         ])->assertRedirect(route('erp.notule.index'));
 
         $n = Notula::where('professional_name', 'Dott. Verdi')->firstOrFail();
@@ -59,7 +79,7 @@ class NotuleTest extends TestCase
         $this->actingAs(User::factory()->superuser()->create());
 
         $this->from(route('erp.notule.create'))
-            ->post(route('erp.notule.store'), ['professional_name' => 'X', 'amount' => 100, 'paid_amount' => 250, 'status' => Notula::STATUS_PENDING])
+            ->post(route('erp.notule.store'), ['professional_name' => 'X', 'amount' => 100, 'paid_amount' => 250, 'status' => Notula::STATUS_UNPAID])
             ->assertSessionHasErrors('paid_amount');
     }
 
@@ -68,7 +88,7 @@ class NotuleTest extends TestCase
         $this->actingAs(User::factory()->superuser()->create());
 
         $this->from(route('erp.notule.create'))
-            ->post(route('erp.notule.store'), ['amount' => 100, 'status' => Notula::STATUS_PENDING])
+            ->post(route('erp.notule.store'), ['amount' => 100, 'status' => Notula::STATUS_UNPAID])
             ->assertSessionHasErrors('professional_name');
     }
 }
