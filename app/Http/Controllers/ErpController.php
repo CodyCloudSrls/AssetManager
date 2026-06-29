@@ -278,9 +278,14 @@ class ErpController extends Controller
         return $query->withoutGlobalScopes()->whereIn($query->getModel()->getTable().'.company_id', $companyIds);
     }
 
-    /** MRR from active subscriptions of active contracts, reusing the monthly_revenue accessor. */
+    /**
+     * MRR = monthly-equivalent of the subscriptions that are RECURRING and CURRENTLY in
+     * their service period, on active contracts. Excludes ended/not-yet-started lines and
+     * one-offs (which are not recurring) so the figure reflects real recurring revenue.
+     */
     private function monthlyRecurringRevenue(?array $companyIds): float
     {
+        $today = Carbon::now()->startOfDay();
         $contracts = $this->scopeCompanies(
             CustomerContract::query()->where('status', CustomerContract::STATUS_ACTIVE),
             $companyIds
@@ -289,9 +294,19 @@ class ErpController extends Controller
         $mrr = 0.0;
         foreach ($contracts as $contract) {
             foreach ($contract->subscriptions as $subscription) {
-                if ($subscription->is_active ?? true) {
-                    $mrr += (float) $subscription->monthly_revenue;
+                if (! ($subscription->is_active ?? true)) {
+                    continue;
                 }
+                if ($subscription->billing_frequency === \App\Models\ContractSubscription::FREQUENCY_ONE_TIME) {
+                    continue; // one-offs are not recurring revenue
+                }
+                if ($subscription->starts_at && $subscription->starts_at->gt($today)) {
+                    continue; // not started yet
+                }
+                if ($subscription->ends_at && $subscription->ends_at->lt($today)) {
+                    continue; // already ended
+                }
+                $mrr += (float) $subscription->monthly_revenue;
             }
         }
 
