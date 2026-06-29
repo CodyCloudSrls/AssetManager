@@ -42,17 +42,20 @@ class FinanziamentiController extends Controller
     {
         $this->authorize('update', CustomerContract::class);
 
+        $data = $this->validated($request);
         $f = new Finanziamento();
-        $f->fill($this->validated($request));
+        $f->fill($data);
+        $f->company_id = $this->resolveScopedCompanyId($this->companyIds($request), $data['company_id'] ?? null);
         $f->created_by = auth()->id();
         $f->save();
 
         return redirect()->route('erp.finanziamenti.index')->with('success', trans('erp/finanziamenti.saved'));
     }
 
-    public function edit(Finanziamento $finanziamento): View
+    public function edit(Request $request, Finanziamento $finanziamento): View
     {
         $this->authorize('update', CustomerContract::class);
+        $this->assertCompanyAccessible($this->companyIds($request), $finanziamento->company_id);
 
         return view('erp.finanziamenti.edit', ['item' => $finanziamento]);
     }
@@ -60,15 +63,22 @@ class FinanziamentiController extends Controller
     public function update(Request $request, Finanziamento $finanziamento): RedirectResponse
     {
         $this->authorize('update', CustomerContract::class);
+        $scope = $this->companyIds($request);
+        $this->assertCompanyAccessible($scope, $finanziamento->company_id);
 
-        $finanziamento->fill($this->validated($request))->save();
+        $data = $this->validated($request);
+        $current = $finanziamento->company_id;
+        $finanziamento->fill($data);
+        $finanziamento->company_id = $this->resolveScopedCompanyId($scope, $data['company_id'] ?? null, $current);
+        $finanziamento->save();
 
         return redirect()->route('erp.finanziamenti.index')->with('success', trans('erp/finanziamenti.saved'));
     }
 
-    public function destroy(Finanziamento $finanziamento): RedirectResponse
+    public function destroy(Request $request, Finanziamento $finanziamento): RedirectResponse
     {
         $this->authorize('update', CustomerContract::class);
+        $this->assertCompanyAccessible($this->companyIds($request), $finanziamento->company_id);
 
         $finanziamento->delete();
 
@@ -84,7 +94,7 @@ class FinanziamentiController extends Controller
             'rate_pagate' => 'required|integer|min:0|max:600',
             'stato' => 'required|string|in:confermato,da_confermare',
             'company_id' => 'nullable|integer|exists:companies,id',
-            'notes' => 'nullable|string',
+            'notes' => 'nullable|string|max:65535',
         ]);
     }
 

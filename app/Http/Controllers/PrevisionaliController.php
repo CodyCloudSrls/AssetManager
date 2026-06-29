@@ -37,17 +37,20 @@ class PrevisionaliController extends Controller
     {
         $this->authorize('update', CustomerContract::class);
 
+        $data = $this->validated($request);
         $p = new Previsionale();
-        $p->fill($this->validated($request));
+        $p->fill($data);
+        $p->company_id = $this->resolveScopedCompanyId($this->companyIds($request), $data['company_id'] ?? null);
         $p->created_by = auth()->id();
         $p->save();
 
         return redirect()->route('erp.previsionali.index')->with('success', trans('erp/previsionali.saved'));
     }
 
-    public function edit(Previsionale $previsionale): View
+    public function edit(Request $request, Previsionale $previsionale): View
     {
         $this->authorize('update', CustomerContract::class);
+        $this->assertCompanyAccessible($this->companyIds($request), $previsionale->company_id);
 
         return view('erp.previsionali.edit', ['item' => $previsionale]);
     }
@@ -55,15 +58,22 @@ class PrevisionaliController extends Controller
     public function update(Request $request, Previsionale $previsionale): RedirectResponse
     {
         $this->authorize('update', CustomerContract::class);
+        $scope = $this->companyIds($request);
+        $this->assertCompanyAccessible($scope, $previsionale->company_id);
 
-        $previsionale->fill($this->validated($request))->save();
+        $data = $this->validated($request);
+        $current = $previsionale->company_id;
+        $previsionale->fill($data);
+        $previsionale->company_id = $this->resolveScopedCompanyId($scope, $data['company_id'] ?? null, $current);
+        $previsionale->save();
 
         return redirect()->route('erp.previsionali.index')->with('success', trans('erp/previsionali.saved'));
     }
 
-    public function destroy(Previsionale $previsionale): RedirectResponse
+    public function destroy(Request $request, Previsionale $previsionale): RedirectResponse
     {
         $this->authorize('update', CustomerContract::class);
+        $this->assertCompanyAccessible($this->companyIds($request), $previsionale->company_id);
 
         $previsionale->delete();
 
@@ -74,13 +84,13 @@ class PrevisionaliController extends Controller
     {
         return $request->validate([
             'anno' => 'required|integer|min:2000|max:2100',
-            'ricavi' => 'nullable|numeric',
-            'ricavi_ricorrente' => 'nullable|numeric',
-            'cogs' => 'nullable|numeric',
-            'opex' => 'nullable|numeric',
-            'personale' => 'nullable|numeric',
+            'ricavi' => 'nullable|numeric|min:0|max:9999999999',
+            'ricavi_ricorrente' => 'nullable|numeric|min:0|max:9999999999',
+            'cogs' => 'nullable|numeric|min:0|max:9999999999',
+            'opex' => 'nullable|numeric|min:0|max:9999999999',
+            'personale' => 'nullable|numeric|min:0|max:9999999999',
             'company_id' => 'nullable|integer|exists:companies,id',
-            'notes' => 'nullable|string',
+            'notes' => 'nullable|string|max:65535',
         ]);
     }
 

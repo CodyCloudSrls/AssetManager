@@ -43,17 +43,20 @@ class BilanciController extends Controller
     {
         $this->authorize('update', CustomerContract::class);
 
+        $data = $this->validated($request);
         $bilancio = new BilancioUfficiale();
-        $bilancio->fill($this->validated($request));
+        $bilancio->fill($data);
+        $bilancio->company_id = $this->resolveScopedCompanyId($this->companyIds($request), $data['company_id'] ?? null);
         $bilancio->created_by = auth()->id();
         $bilancio->save();
 
         return redirect()->route('erp.bilanci.index')->with('success', trans('erp/bilanci.saved'));
     }
 
-    public function edit(BilancioUfficiale $bilancio): View
+    public function edit(Request $request, BilancioUfficiale $bilancio): View
     {
         $this->authorize('update', CustomerContract::class);
+        $this->assertCompanyAccessible($this->companyIds($request), $bilancio->company_id);
 
         return view('erp.bilanci.edit', ['item' => $bilancio]);
     }
@@ -61,15 +64,22 @@ class BilanciController extends Controller
     public function update(Request $request, BilancioUfficiale $bilancio): RedirectResponse
     {
         $this->authorize('update', CustomerContract::class);
+        $scope = $this->companyIds($request);
+        $this->assertCompanyAccessible($scope, $bilancio->company_id);
 
-        $bilancio->fill($this->validated($request))->save();
+        $data = $this->validated($request);
+        $current = $bilancio->company_id;
+        $bilancio->fill($data);
+        $bilancio->company_id = $this->resolveScopedCompanyId($scope, $data['company_id'] ?? null, $current);
+        $bilancio->save();
 
         return redirect()->route('erp.bilanci.index')->with('success', trans('erp/bilanci.saved'));
     }
 
-    public function destroy(BilancioUfficiale $bilancio): RedirectResponse
+    public function destroy(Request $request, BilancioUfficiale $bilancio): RedirectResponse
     {
         $this->authorize('update', CustomerContract::class);
+        $this->assertCompanyAccessible($this->companyIds($request), $bilancio->company_id);
 
         $bilancio->delete();
 
@@ -80,15 +90,15 @@ class BilanciController extends Controller
     {
         return $request->validate([
             'anno' => 'required|integer|min:2000|max:2100',
-            'ricavi' => 'nullable|numeric',
-            'costi' => 'nullable|numeric',
-            'costo_personale' => 'nullable|numeric',
-            'ammortamenti' => 'nullable|numeric',
-            'utile' => 'nullable|numeric',
-            'imposte' => 'nullable|numeric',
+            'ricavi' => 'nullable|numeric|min:0|max:9999999999',
+            'costi' => 'nullable|numeric|min:0|max:9999999999',
+            'costo_personale' => 'nullable|numeric|min:0|max:9999999999',
+            'ammortamenti' => 'nullable|numeric|min:0|max:9999999999',
+            'utile' => 'nullable|numeric|min:-9999999999|max:9999999999',
+            'imposte' => 'nullable|numeric|min:-9999999999|max:9999999999',
             'is_deposited' => 'nullable|boolean',
             'company_id' => 'nullable|integer|exists:companies,id',
-            'notes' => 'nullable|string',
+            'notes' => 'nullable|string|max:65535',
         ]);
     }
 

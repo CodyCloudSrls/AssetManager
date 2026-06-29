@@ -46,17 +46,20 @@ class NotuleController extends Controller
     {
         $this->authorize('update', CustomerContract::class);
 
+        $data = $this->validateNotula($request);
         $notula = new Notula();
-        $this->fill($notula, $this->validateNotula($request));
+        $this->fill($notula, $data);
+        $notula->company_id = $this->resolveScopedCompanyId($this->notuleCompanyIds($request), $data['company_id'] ?? null);
         $notula->created_by = auth()->id();
         $notula->save();
 
         return redirect()->route('erp.notule.index')->with('success', trans('erp/notule.created'));
     }
 
-    public function edit(Notula $notula): View
+    public function edit(Request $request, Notula $notula): View
     {
         $this->authorize('update', CustomerContract::class);
+        $this->assertCompanyAccessible($this->notuleCompanyIds($request), $notula->company_id);
 
         return view('erp.notule.edit', ['item' => $notula]);
     }
@@ -64,16 +67,22 @@ class NotuleController extends Controller
     public function update(Request $request, Notula $notula): RedirectResponse
     {
         $this->authorize('update', CustomerContract::class);
+        $scope = $this->notuleCompanyIds($request);
+        $this->assertCompanyAccessible($scope, $notula->company_id);
 
-        $this->fill($notula, $this->validateNotula($request));
+        $data = $this->validateNotula($request);
+        $current = $notula->company_id;
+        $this->fill($notula, $data);
+        $notula->company_id = $this->resolveScopedCompanyId($scope, $data['company_id'] ?? null, $current);
         $notula->save();
 
         return redirect()->route('erp.notule.index')->with('success', trans('erp/notule.updated'));
     }
 
-    public function destroy(Notula $notula): RedirectResponse
+    public function destroy(Request $request, Notula $notula): RedirectResponse
     {
         $this->authorize('update', CustomerContract::class);
+        $this->assertCompanyAccessible($this->notuleCompanyIds($request), $notula->company_id);
 
         $notula->delete();
 
@@ -93,7 +102,7 @@ class NotuleController extends Controller
             'status' => 'required|string|in:'.implode(',', array_keys(Notula::statusOptions())),
             'paid_at' => 'nullable|date',
             'company_id' => 'nullable|integer|exists:companies,id',
-            'notes' => 'nullable|string',
+            'notes' => 'nullable|string|max:65535',
         ]);
     }
 
