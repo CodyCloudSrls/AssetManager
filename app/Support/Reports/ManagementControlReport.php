@@ -6,6 +6,7 @@ use App\Models\BilancioUfficiale;
 use App\Models\FicCostCategory;
 use App\Models\FicDocument;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Controllo di gestione engine. Reproduces the legacy "Gestionale Unico" cockpit from
@@ -121,10 +122,14 @@ class ManagementControlReport
     /** Open receivables / payables by counterparty. */
     public function creditiDebiti(?array $companyIds): array
     {
+        // Group by canonical counterparty: VAT number when present, else the
+        // case/space-normalized name — so "ITALWAY S.R.L." and "Italway S.r.l." collapse
+        // into one row instead of showing dirty duplicates.
+        $canonical = "COALESCE(NULLIF(TRIM(entity_vat), ''), UPPER(TRIM(entity_name)))";
         $aggregate = fn (string $direction) => FicDocument::query()
             ->where('direction', $direction)->unpaid()->forCompanies($companyIds)
-            ->selectRaw('entity_name, SUM(amount_gross - paid_amount) as aperto')
-            ->groupBy('entity_name')->havingRaw('SUM(amount_gross - paid_amount) > 0')
+            ->select(DB::raw('MAX(entity_name) as entity_name'), DB::raw('SUM(amount_gross - paid_amount) as aperto'))
+            ->groupBy(DB::raw($canonical))->havingRaw('SUM(amount_gross - paid_amount) > 0')
             ->orderByDesc('aperto')->get();
 
         $crediti = $aggregate(FicDocument::DIRECTION_ISSUED);

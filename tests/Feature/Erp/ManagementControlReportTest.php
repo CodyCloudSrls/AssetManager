@@ -56,6 +56,17 @@ class ManagementControlReportTest extends TestCase
         $this->assertEqualsWithDelta(1540, $iva['saldo'], 0.01);
     }
 
+    public function test_crediti_deduped_by_vat_across_name_variants(): void
+    {
+        FicDocument::create(['fic_company_id' => '1', 'direction' => FicDocument::DIRECTION_ISSUED, 'fic_id' => 1, 'entity_name' => 'ITALWAY S.R.L.', 'entity_vat' => 'IT123', 'issued_on' => '2026-01-01', 'amount_net' => 100, 'amount_vat' => 0, 'amount_gross' => 100, 'paid' => false, 'paid_amount' => 0, 'company_id' => null]);
+        FicDocument::create(['fic_company_id' => '1', 'direction' => FicDocument::DIRECTION_ISSUED, 'fic_id' => 2, 'entity_name' => 'Italway S.r.l.', 'entity_vat' => 'IT123', 'issued_on' => '2026-02-01', 'amount_net' => 50, 'amount_vat' => 0, 'amount_gross' => 50, 'paid' => false, 'paid_amount' => 0, 'company_id' => null]);
+
+        $crediti = (new ManagementControlReport())->creditiDebiti(null)['crediti'];
+
+        $this->assertCount(1, $crediti); // same VAT -> one row, not two
+        $this->assertEqualsWithDelta(150, (float) $crediti->first()->aperto, 0.01);
+    }
+
     public function test_page_renders(): void
     {
         $this->actingAs(User::factory()->superuser()->create())
