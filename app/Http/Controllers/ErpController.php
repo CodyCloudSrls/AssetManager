@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
+use App\Models\BilancioUfficiale;
 use App\Models\Company;
 use App\Models\Customer;
 use App\Models\CustomerContract;
 use App\Models\FicDocument;
+use App\Models\Finanziamento;
+use App\Models\ManagementInput;
 use App\Models\Notula;
 use App\Models\Supplier;
 use App\Models\Tenant;
@@ -16,6 +19,7 @@ use App\Support\Reports\ContractForecastReport;
 use App\Support\Reports\ManagementControlReport;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -67,6 +71,81 @@ class ErpController extends Controller
             // so once they invoice via FiC the cost is not double-counted).
             'notulePending' => (float) Notula::forCompanies($companyIds)->accruable()->sum('amount'),
         ]);
+    }
+
+    /**
+     * Fotografia Finanziaria: the assembled real-time company status (bilanci ufficiali,
+     * esposizione commerciale, indebitamento finanziario, posizione e PFN), reproducing
+     * the reconciled financial snapshot.
+     */
+    public function fotografia(Request $request, ManagementControlReport $mc): View
+    {
+        $this->authorize('reports.view');
+
+        $companyIds = $this->cockpitCompanyIds($request);
+        $year = (int) Carbon::now()->year;
+        $years = range($year - 4, $year);
+
+        $ce = $mc->contoEconomico($companyIds, $years);
+        $iva = $mc->iva($companyIds, [$year]);
+        $cd = $mc->creditiDebiti($companyIds);
+        $flussi = $mc->flussiCassa($companyIds, $year);
+
+        $bilanci = BilancioUfficiale::forCompanies($companyIds)->orderBy('anno')->get();
+        $notuleResiduo = (float) Notula::forCompanies($companyIds)->accruable()->sum('amount');
+        $debitiFic = $cd['tot_debiti'];
+        $debitiCommerciali = round($debitiFic + $notuleResiduo, 2);
+        $crediti = $cd['tot_crediti'];
+        $debitoFinanziario = Finanziamento::totalResiduo($companyIds, true);
+        $cassa = ManagementInput::getValue($companyIds, ManagementInput::KEY_CASSA);
+
+        return view('erp.fotografia', [
+            'year' => $year,
+            'ce' => $ce,
+            'years' => $years,
+            'bilanci' => $bilanci,
+            'utileCumulato' => round((float) $bilanci->sum('utile'), 2),
+            'kpi' => [
+                'ricavi' => $ce[$year]['ricavi'] ?? 0,
+                'ebit' => $ce[$year]['ebit'] ?? 0,
+                'personale' => $ce[$year]['personale'] ?? 0,
+                'cassa_netta_ytd' => $flussi['netto'],
+                'saldo_iva' => $iva[$year]['saldo'] ?? 0,
+            ],
+            'esposizione' => [
+                'debiti_fic' => $debitiFic,
+                'notule' => $notuleResiduo,
+                'totale' => $debitiCommerciali,
+                'top' => $cd['debiti']->take(6),
+            ],
+            'finanziario' => [
+                'debito' => $debitoFinanziario,
+                'finanziamenti' => Finanziamento::forCompanies($companyIds)->orderBy('nome')->get(),
+            ],
+            'posizione' => [
+                'crediti' => $crediti,
+                'debiti_commerciali' => $debitiCommerciali,
+                'saldo_commerciale' => round($crediti - $debitiCommerciali, 2),
+                'debito_finanziario' => $debitoFinanziario,
+                'cassa' => $cassa,
+                'pfn' => is_null($cassa) ? null : round($debitoFinanziario - $cassa, 2),
+            ],
+        ]);
+    }
+
+    /** Persist a manual financial input (cassa/banca attuale). */
+    public function saveFotografiaInput(Request $request): RedirectResponse
+    {
+        $this->authorize('update', CustomerContract::class);
+        $request->validate(['cassa_attuale' => 'nullable|numeric']);
+
+        ManagementInput::setValue(
+            $this->cockpitCompanyIds($request),
+            ManagementInput::KEY_CASSA,
+            (float) $request->input('cassa_attuale', 0)
+        );
+
+        return redirect()->route('erp.fotografia')->with('success', trans('erp/fotografia.saved'));
     }
 
     /**
