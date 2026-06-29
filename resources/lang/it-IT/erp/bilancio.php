@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'title' => 'Bilancio simulato',
+    'nav' => 'Bilancio simulato',
+    'ad_oggi' => '(simulazione ad oggi)',
+    'intro' => 'Conto Economico in formato civilistico italiano (art. 2425 c.c.), simulato dai dati reali: ricavi e costi riclassificati da Fatture in Cloud + ammortamenti dal libro cespiti. Se l\'anno ha un bilancio depositato, le imposte sono quelle reali; altrimenti è una stima.',
+    'a_valore' => 'A) VALORE DELLA PRODUZIONE',
+    'a1' => '1) Ricavi delle vendite e delle prestazioni',
+    'tot_a' => 'Totale valore della produzione (A)',
+    'b_costi' => 'B) COSTI DELLA PRODUZIONE',
+    'b6' => '6) per materie prime, sussidiarie, di consumo e merci',
+    'b7' => '7) per servizi',
+    'b9' => '9) per il personale',
+    'b10' => '10) ammortamenti e svalutazioni',
+    'tot_b' => 'Totale costi della produzione (B)',
+    'diff_ab' => 'DIFFERENZA TRA VALORE E COSTI DELLA PRODUZIONE (A - B)',
+    'risultato_ante' => 'RISULTATO PRIMA DELLE IMPOSTE',
+    'imposte' => '20) Imposte sul reddito dell\'esercizio',
+    'utile' => '21) UTILE (PERDITA) DELL\'ESERCIZIO',
+    'stima' => 'stima (IRES 24%)',
+    'reale' => 'da bilancio',
+    'note' => 'Simulazione gestionale, non un bilancio civilistico depositabile. I proventi/oneri finanziari e le rettifiche non sono inclusi; le imposte effettive (IRES/IRAP) si quantificano col commercialista. Il livello fiscale resta su Fatture in Cloud.',
+    'no_official' => 'Per un anno chiuso puoi inserire il bilancio depositato in',
+];

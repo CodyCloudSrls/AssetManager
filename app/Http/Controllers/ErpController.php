@@ -149,6 +149,51 @@ class ErpController extends Controller
     }
 
     /**
+     * Bilancio simulato "ad oggi" — Conto Economico in the Italian civil-code schema
+     * (art. 2425 c.c.), computed from real data (FiC reclassified + ammortamenti). When a
+     * deposited bilancio exists for the year its imposte win; otherwise a flagged IRES
+     * estimate is shown (the fiscal truth stays with FiC + commercialista).
+     */
+    public function bilancioSimulato(Request $request, ManagementControlReport $mc, AmmortamentiReport $amm): View
+    {
+        $this->authorize('reports.view');
+
+        $companyIds = $this->cockpitCompanyIds($request);
+        $currentYear = (int) Carbon::now()->year;
+        $year = (int) $request->input('year', $currentYear);
+
+        $ce = $mc->contoEconomico($companyIds, [$year])[$year];
+        $ammortamenti = round((float) ($amm->build($companyIds, $year)['totals']['quota_year'] ?? 0), 2);
+        $bilancio = BilancioUfficiale::forCompanies($companyIds)->where('anno', $year)->first();
+
+        $valoreProduzione = (float) $ce['ricavi'];
+        $b6 = (float) $ce['cogs'];
+        $b7 = (float) $ce['opex'];
+        $b9 = (float) $ce['personale'];
+        $b10 = $ammortamenti;
+        $costiProduzione = round($b6 + $b7 + $b9 + $b10, 2);
+        $diffAB = round($valoreProduzione - $costiProduzione, 2);
+
+        if ($bilancio && $bilancio->is_deposited && (float) $bilancio->imposte > 0) {
+            $imposte = (float) $bilancio->imposte;
+            $impSource = 'reale';
+        } else {
+            $imposte = round(max(0, $diffAB) * 0.24, 2); // IRES 24% estimate
+            $impSource = 'stima';
+        }
+        $utile = round($diffAB - $imposte, 2);
+
+        return view('erp.bilancio-simulato', [
+            'year' => $year,
+            'years' => range($currentYear, $currentYear - 4),
+            'isCurrent' => $year === $currentYear,
+            'rows' => compact('valoreProduzione', 'b6', 'b7', 'b9', 'b10', 'costiProduzione', 'diffAB', 'imposte', 'utile'),
+            'impSource' => $impSource,
+            'hasBilancio' => (bool) $bilancio,
+        ]);
+    }
+
+    /**
      * Controllo di gestione: reclassified income statement, IVA, cash flows and
      * receivables/payables from the FiC mirror (the Gestionale Unico cockpit).
      */

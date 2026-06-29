@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'title' => 'Simulated financial statement',
+    'nav' => 'Simulated statement',
+    'ad_oggi' => '(simulation to date)',
+    'intro' => 'Income Statement in the Italian statutory schema (art. 2425 c.c.), simulated from real data: revenue and costs reclassified from Fatture in Cloud + depreciation from the asset register. If the year has deposited accounts, taxes are the real ones; otherwise it is an estimate.',
+    'a_valore' => 'A) VALUE OF PRODUCTION',
+    'a1' => '1) Revenue from sales and services',
+    'tot_a' => 'Total value of production (A)',
+    'b_costi' => 'B) PRODUCTION COSTS',
+    'b6' => '6) raw materials, consumables and goods',
+    'b7' => '7) services',
+    'b9' => '9) personnel',
+    'b10' => '10) depreciation and write-downs',
+    'tot_b' => 'Total production costs (B)',
+    'diff_ab' => 'DIFFERENCE BETWEEN VALUE AND COSTS (A - B)',
+    'risultato_ante' => 'RESULT BEFORE TAXES',
+    'imposte' => '20) Income taxes',
+    'utile' => '21) PROFIT (LOSS) FOR THE YEAR',
+    'stima' => 'estimate (IRES 24%)',
+    'reale' => 'from accounts',
+    'note' => 'Management simulation, not a fileable statutory statement. Financial income/charges and adjustments are excluded; actual taxes (IRES/IRAP) are quantified with the accountant. The fiscal layer stays on Fatture in Cloud.',
+    'no_official' => 'For a closed year you can enter the deposited accounts in',
+];

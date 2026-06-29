@@ -280,6 +280,7 @@
             @can('reports.view')
                 <li {!! (request()->is('erp/fotografia') ? ' class="active"' : '') !!}><a href="{{ route('erp.fotografia') }}">{{ trans('erp/fotografia.nav') }}</a></li>
                 <li {!! (request()->is('erp/controllo-gestione') ? ' class="active"' : '') !!}><a href="{{ route('erp.controllo') }}">{{ trans('erp/controllo.title') }}</a></li>
+                <li {!! (request()->is('erp/bilancio-simulato') ? ' class="active"' : '') !!}><a href="{{ route('erp.bilancio') }}">{{ trans('erp/bilancio.nav') }}</a></li>
                 <li {!! (request()->is('erp/bilanci*') ? ' class="active"' : '') !!}><a href="{{ route('erp.bilanci.index') }}">{{ trans('erp/bilanci.nav') }}</a></li>
                 <li {!! (request()->is('erp/finanziamenti*') ? ' class="active"' : '') !!}><a href="{{ route('erp.finanziamenti.index') }}">{{ trans('erp/finanziamenti.nav') }}</a></li>
                 <li {!! (request()->is('erp/previsionali*') ? ' class="active"' : '') !!}><a href="{{ route('erp.previsionali.index') }}">{{ trans('erp/previsionali.nav') }}</a></li>
