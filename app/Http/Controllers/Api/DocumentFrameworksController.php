@@ -103,6 +103,11 @@ class DocumentFrameworksController extends Controller
             $documentFrameworks->where('is_active', '=', $request->boolean('is_active'));
         }
 
+        // Per-area filtering (compliance domain): the sidebar links per standard pass it.
+        if ($request->filled('compliance_domain')) {
+            $documentFrameworks->where('compliance_domain', '=', $request->input('compliance_domain'));
+        }
+
         $this->applyTenantCompanyFilter($documentFrameworks, $request, 'company_id');
         ComplianceDomainAccess::applyFrameworkScope($documentFrameworks, $request->user(), 'compliance_domain');
 

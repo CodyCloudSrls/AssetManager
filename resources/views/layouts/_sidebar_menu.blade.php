@@ -312,8 +312,17 @@
                     <li {!! (request()->is('documenttypes*') ? ' class="active"' : '') !!}><a href="{{ route('documenttypes.index') }}">{{ trans('general.document_types') }}</a></li>
                 @endcan
                 @can('view', \App\Models\DocumentFramework::class)
-                    <li {!! (request()->is('documentframeworks*') ? ' class="active"' : '') !!}><a href="{{ route('documentframeworks.index') }}">{{ trans('general.document_frameworks') }}</a></li>
+                    <li {!! (request()->is('documentframeworks*') && ! request('compliance_domain') ? ' class="active"' : '') !!}><a href="{{ route('documentframeworks.index') }}">{{ trans('general.document_frameworks') }}</a></li>
                     <li {!! (request()->is('documentframeworkrequirements*') ? ' class="active"' : '') !!}><a href="{{ route('documentframeworkrequirements.index') }}">{{ trans('general.document_framework_requirements') }}</a></li>
+                    {{-- Per area tematica: un link rapido per ogni dominio compliance attivo per il tenant. --}}
+                    @php($ccDomainLabels = \App\Models\ComplianceDomain::options())
+                    @foreach (\App\Models\Tenant::complianceFeatureDomains() as $ccFeat => $ccDom)
+                        @if (\App\Models\Tenant::currentContextHasFeature($ccFeat) && isset($ccDomainLabels[$ccDom]))
+                            <li {!! (request()->is('documentframeworks*') && request('compliance_domain') === $ccDom ? ' class="active"' : '') !!}>
+                                <a href="{{ route('documentframeworks.index', ['compliance_domain' => $ccDom]) }}"><x-icon type="circle" class="text-grey fa-fw"/> {{ $ccDomainLabels[$ccDom] }}</a>
+                            </li>
+                        @endif
+                    @endforeach
                 @endcan
             </ul>
         </li>

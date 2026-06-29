@@ -15,7 +15,10 @@ class ComplianceFrameworkPackConfigTest extends TestCase
     {
         $packs = $this->packs()['packs'];
 
-        $this->assertSame(['nis2_it_allegato_1', 'nis2_it_allegato_2'], array_keys($packs));
+        // The two NIS2 Italian bootstrap packs ship alongside the activatable Italian
+        // framework packs (D.Lgs. 81/2008, ISO 27001, ISO 9001).
+        $this->assertArrayHasKey('nis2_it_allegato_1', $packs);
+        $this->assertArrayHasKey('nis2_it_allegato_2', $packs);
         $this->assertCount(87, $packs['nis2_it_allegato_1']['requirements']);
         $this->assertCount(116, $packs['nis2_it_allegato_2']['requirements']);
         $this->assertSame('NIS2 IT - Allegato 1', $packs['nis2_it_allegato_1']['framework']['name']);
