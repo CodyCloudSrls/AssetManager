@@ -20,6 +20,11 @@ return [
             'success' => 'Utente tenant rimosso correttamente.',
         ],
     ],
+    'config' => [
+        'update' => [
+            'success' => 'Configurazione tenant aggiornata correttamente.',
+        ],
+    ],
     'helpdesk' => [
         'update' => [
             'success' => 'Configurazione helpdesk aggiornata correttamente.',

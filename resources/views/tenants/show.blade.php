@@ -94,37 +94,19 @@
                                     <span class="label {{ $tenant->isHelpdeskEnabled() ? 'label-success' : 'label-default' }}">
                                         {{ $tenant->isHelpdeskEnabled() ? trans('general.yes') : trans('general.no') }}
                                     </span>
-                                    @if ($canManageTenant)
-                                        <a href="{{ route('tenants.helpdesk.edit', $tenant) }}" class="btn btn-default btn-sm" style="margin-left: 8px;">
-                                            {{ trans('admin/tenants/general.helpdesk.edit') }}
-                                        </a>
-                                    @endif
                                 </td>
                             </tr>
-                            <tr>
-                                <th>{{ trans('admin/tenants/general.mail.title') }}</th>
-                                <td>
-                                    @if ($canManageTenant)
-                                        <a href="{{ route('tenants.mail.edit', $tenant) }}" class="btn btn-default btn-sm">
-                                            {{ trans('admin/tenants/general.mail.edit') }}
+                            @if ($canManageTenant)
+                                <tr>
+                                    <th>{{ trans('admin/tenants/general.config.title') }}</th>
+                                    <td>
+                                        <a href="{{ route('tenants.config.edit', $tenant) }}" class="btn btn-primary btn-sm">
+                                            <x-icon type="settings" class="fa-fw" /> {{ trans('admin/tenants/general.config.open') }}
                                         </a>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>{{ trans('admin/tenants/general.settings.title') }}</th>
-                                <td>
-                                    @if ($canManageTenant)
-                                        <a href="{{ route('tenants.settings.edit', $tenant) }}" class="btn btn-default btn-sm">
-                                            {{ trans('admin/tenants/general.settings.edit') }}
-                                        </a>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                            </tr>
+                                        <p class="help-block" style="margin:6px 0 0;">{{ trans('admin/tenants/general.config.section_general_help') }}</p>
+                                    </td>
+                                </tr>
+                            @endif
                             <tr>
                                 <th>{{ trans('admin/tenantservices/general.title') }}</th>
                                 <td>

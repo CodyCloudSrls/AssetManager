@@ -12,6 +12,16 @@ return array (
   'members_count' => 'Cross-tenant users',
   'branding' => 'Tenant Branding',
   'brand_logo' => 'Tenant Logo',
+  'config' =>
+  array (
+    'title' => 'Tenant configuration',
+    'open' => 'Configuration',
+    'section_general' => 'General',
+    'section_general_help' => 'Language, compliance jurisdiction and automatic NIS2 framework provisioning.',
+    'section_branding_help' => 'Logo, favicon, colours and CSS applied to the tenant UI.',
+    'section_helpdesk_help' => 'Public ticket portal: address, contacts and exposed request types.',
+    'section_mail_help' => 'Recipients, sender and which events trigger notification emails.',
+  ),
   'members' => 'Cross-tenant users',
   'members_help' => 'Assign users as tenant admins or tenant viewers. These users can work across more than one tenant without becoming platform administrators.',
   'role' => 'Tenant role',

@@ -12,6 +12,16 @@ return array (
   'members_count' => 'Utenti cross-tenant',
   'branding' => 'Branding tenant',
   'brand_logo' => 'Logo tenant',
+  'config' =>
+  array (
+    'title' => 'Configurazione tenant',
+    'open' => 'Configurazione',
+    'section_general' => 'Generale',
+    'section_general_help' => 'Lingua, giurisdizione di compliance e creazione automatica dei framework NIS2.',
+    'section_branding_help' => 'Logo, favicon, colori e CSS applicati all\'interfaccia del tenant.',
+    'section_helpdesk_help' => 'Portale ticket pubblico: indirizzo, contatti e tipi di richiesta esposti.',
+    'section_mail_help' => 'Destinatari, mittente e quali eventi generano email di notifica.',
+  ),
   'members' => 'Utenti cross-tenant',
   'members_help' => 'Assegna utenti come tenant admin o tenant viewer. Questi utenti possono operare su più tenant senza diventare amministratori della piattaforma.',
   'role' => 'Ruolo tenant',

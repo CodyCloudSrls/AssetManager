@@ -22,6 +22,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class TenantsController extends Controller
 {
@@ -552,6 +555,194 @@ class TenantsController extends Controller
 
         return redirect()->route('tenants.show', $tenant)
             ->with('success', trans('admin/tenants/message.mail.update.success'));
+    }
+
+    /**
+     * Unified, fully-editable tenant configuration page (replaces the scattered
+     * settings/helpdesk/mail edit pages and adds branding editing, which previously
+     * was only possible at tenant creation).
+     */
+    public function editConfig(Tenant $tenant): View
+    {
+        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+
+        $rootCompany = $tenant->rootCompany();
+        abort_if(is_null($rootCompany), 404);
+
+        return view('tenants.config', [
+            'tenant' => $tenant,
+            'rootCompany' => $rootCompany,
+            'item' => $rootCompany, // used by the uploadLogo/colorpicker partials
+            'languageOptions' => trans('localizations.languages'),
+            'jurisdictionOptions' => Tenant::complianceJurisdictionOptions(),
+            'availableTicketTypes' => $tenant->publicHelpdeskAvailableTicketTypes(),
+            'selectedTicketTypeIds' => $tenant->publicHelpdeskSelectedTicketTypes()->pluck('id')->all(),
+            'mailEventOptions' => Tenant::mailNotificationEventOptions(),
+            'enabledEvents' => $tenant->notificationEvents(),
+        ]);
+    }
+
+    public function updateConfig(ImageUploadRequest $request, Tenant $tenant): RedirectResponse
+    {
+        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+
+        $rootCompany = $tenant->rootCompany();
+        abort_if(is_null($rootCompany), 404);
+
+        // Normalise the helpdesk slug before validating.
+        $request->merge([
+            'helpdesk_slug' => filled($request->input('helpdesk_slug'))
+                ? Str::slug((string) $request->input('helpdesk_slug'))
+                : null,
+        ]);
+
+        $validator = Validator::make(
+            array_merge($request->all(), $request->allFiles()),
+            [
+                // --- General ---
+                'default_locale' => 'required|string|in:'.implode(',', Helper::availableLanguageLocales()),
+                'default_compliance_jurisdiction' => 'required|string|in:'.implode(',', Tenant::complianceJurisdictionValues()),
+                'bootstrap_compliance_frameworks' => 'nullable|boolean',
+                // --- Branding ---
+                'brand' => 'nullable|integer|in:1,2,3',
+                'header_color' => 'nullable|string|max:16',
+                'nav_link_color' => 'nullable|string|max:16',
+                'link_light_color' => 'nullable|string|max:16',
+                'link_dark_color' => 'nullable|string|max:16',
+                'privacy_policy_link' => 'nullable|url|max:255',
+                'footer_text' => 'nullable|string|max:65535',
+                'custom_css' => 'nullable|string|max:65535',
+                'brand_logo' => 'nullable|mimes:png,gif,jpg,jpeg,svg,bmp,webp,avif',
+                'favicon' => 'nullable|mimes:png,gif,jpg,jpeg,svg,bmp,webp,avif,ico',
+                // --- Helpdesk ---
+                'helpdesk_enabled' => 'nullable|boolean',
+                'helpdesk_allow_attachments' => 'nullable|boolean',
+                'helpdesk_slug' => [
+                    'nullable', 'string', 'max:80', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                    Rule::unique('companies', 'helpdesk_slug')->ignore($rootCompany->id)->whereNull('deleted_at'),
+                ],
+                'helpdesk_intro' => 'nullable|string|max:5000',
+                'helpdesk_privacy_note' => 'nullable|string|max:5000',
+                'helpdesk_contact_email' => 'nullable|email|max:150',
+                'helpdesk_contact_phone' => 'nullable|string|max:35',
+                'public_ticket_type_ids' => 'nullable|array',
+                'public_ticket_type_ids.*' => 'integer',
+                // --- Mail & notifications ---
+                'tenant_notification_email' => 'nullable|email_array|max:500',
+                'tenant_mail_reply_to_email' => 'nullable|email|max:150',
+                'tenant_mail_reply_to_name' => 'nullable|string|max:150',
+                'tenant_mail_from_name' => 'nullable|string|max:150',
+                'tenant_document_review_warning_days' => 'nullable|integer|min:1|max:365',
+                'tenant_mail_notification_events' => 'nullable|array',
+                'tenant_mail_notification_events.*' => ['string', Rule::in(array_keys(Tenant::mailNotificationEventOptions()))],
+            ]
+        );
+
+        $validator->after(function ($validator) use ($request, $tenant) {
+            $availableIds = $tenant->publicHelpdeskAvailableTicketTypes()
+                ->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+            $selectedIds = collect($request->input('public_ticket_type_ids', []))
+                ->filter(fn ($id) => $id !== null && $id !== '')
+                ->map(fn ($id) => (int) $id)->unique()->values()->all();
+
+            foreach ($selectedIds as $selectedId) {
+                if (! in_array($selectedId, $availableIds, true)) {
+                    $validator->errors()->add('public_ticket_type_ids', trans('validation.exists', ['attribute' => 'ticket type']));
+                    break;
+                }
+            }
+
+            if ($request->boolean('helpdesk_enabled') && count($selectedIds) === 0) {
+                $validator->errors()->add('public_ticket_type_ids', trans('admin/tenants/message.helpdesk.no_public_types'));
+            }
+        });
+
+        $validator->validate();
+
+        $selectedTicketTypeIds = collect($request->input('public_ticket_type_ids', []))
+            ->filter(fn ($id) => $id !== null && $id !== '')
+            ->map(fn ($id) => (int) $id)->unique()->values()->all();
+
+        $selectedEvents = collect($request->input('tenant_mail_notification_events', []))
+            ->filter(fn ($value) => is_string($value) && $value !== '')
+            ->unique()->values()->all();
+
+        $bootstrapSummary = null;
+
+        DB::transaction(function () use ($request, $tenant, $rootCompany, $selectedTicketTypeIds, $selectedEvents, &$bootstrapSummary) {
+            // --- Tenant-level ---
+            $tenant->default_locale = $request->input('default_locale');
+            $tenant->default_compliance_jurisdiction = $request->input('default_compliance_jurisdiction');
+            $tenant->save();
+
+            // --- Root company: branding ---
+            $rootCompany->brand = $request->filled('brand') ? (int) $request->input('brand') : $rootCompany->brand;
+            $rootCompany->header_color = $request->input('header_color');
+            $rootCompany->nav_link_color = $request->input('nav_link_color');
+            $rootCompany->link_light_color = $request->input('link_light_color');
+            $rootCompany->link_dark_color = $request->input('link_dark_color');
+            $rootCompany->privacy_policy_link = $request->input('privacy_policy_link');
+            $rootCompany->footer_text = $request->input('footer_text');
+            $rootCompany->custom_css = $request->input('custom_css');
+
+            foreach (['brand_logo', 'favicon'] as $field) {
+                $rootCompany = $request->handleImages($rootCompany, 600, $field, 'companies/branding', $field);
+
+                if ($rootCompany->{$field} && ! str_contains($rootCompany->{$field}, '/')) {
+                    $rootCompany->{$field} = 'companies/branding/'.$rootCompany->{$field};
+                }
+
+                if ($request->input('clear_'.$field) == '1') {
+                    $rootCompany = $request->deleteExistingImage($rootCompany, null, $field);
+                    $rootCompany->{$field} = null;
+                }
+            }
+
+            // --- Root company: helpdesk ---
+            $rootCompany->helpdesk_enabled = $request->boolean('helpdesk_enabled');
+            $rootCompany->helpdesk_allow_attachments = $request->boolean('helpdesk_allow_attachments', true);
+            $rootCompany->helpdesk_slug = Company::generateUniqueHelpdeskSlug(
+                $request->input('helpdesk_slug') ?: $rootCompany->name,
+                $rootCompany->id
+            );
+            $rootCompany->helpdesk_intro = $request->input('helpdesk_intro');
+            $rootCompany->helpdesk_privacy_note = $request->input('helpdesk_privacy_note');
+            $rootCompany->helpdesk_contact_phone = $request->input('helpdesk_contact_phone');
+
+            // --- Root company: mail & notifications ---
+            $rootCompany->helpdesk_contact_email = $request->input('helpdesk_contact_email');
+            $rootCompany->tenant_notification_email = $request->input('tenant_notification_email');
+            $rootCompany->tenant_mail_reply_to_email = $request->input('tenant_mail_reply_to_email');
+            $rootCompany->tenant_mail_reply_to_name = $request->input('tenant_mail_reply_to_name');
+            $rootCompany->tenant_mail_from_name = $request->input('tenant_mail_from_name');
+            $rootCompany->tenant_document_review_warning_days = $request->integer('tenant_document_review_warning_days', 30);
+            $rootCompany->tenant_mail_notification_events = $selectedEvents;
+
+            $rootCompany->saveQuietly();
+
+            $tenant->helpdeskTicketTypes()->sync($selectedTicketTypeIds);
+
+            if ($request->boolean('bootstrap_compliance_frameworks')) {
+                $bootstrapSummary = app(ComplianceFrameworkPackTenantUpdater::class)
+                    ->applyAvailablePacks($tenant, auth()->id());
+            }
+        });
+
+        $message = trans('admin/tenants/message.config.update.success');
+
+        if ($bootstrapSummary !== null) {
+            $message .= ' '.trans('admin/tenants/message.settings.bootstrap.safe_update_success', [
+                'applied' => $bootstrapSummary['applied'],
+                'frameworks' => $bootstrapSummary['frameworks_created'],
+                'requirements' => $bootstrapSummary['requirements_created'],
+                'manual_review' => $bootstrapSummary['manual_review'],
+                'skipped' => $bootstrapSummary['skipped'],
+                'locale' => $tenant->defaultLocale(),
+            ]);
+        }
+
+        return redirect()->route('tenants.config.edit', $tenant)->with('success', $message);
     }
 
     private function resolveSwitchRedirect(Request $request, int $tenantId): string

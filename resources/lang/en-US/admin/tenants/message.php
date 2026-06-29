@@ -20,6 +20,11 @@ return [
             'success' => 'Tenant user removed successfully.',
         ],
     ],
+    'config' => [
+        'update' => [
+            'success' => 'Tenant configuration updated successfully.',
+        ],
+    ],
     'helpdesk' => [
         'update' => [
             'success' => 'Helpdesk configuration updated successfully.',
