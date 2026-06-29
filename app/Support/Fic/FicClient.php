@@ -59,11 +59,16 @@ class FicClient
         return $this->request()->get('/user/companies')->throw()->json() ?? [];
     }
 
-    /** GET /c/{company}/issued_documents — sales documents (invoices, etc.). */
+    /**
+     * GET /c/{company}/issued_documents — sales documents (invoices, etc.).
+     * fieldset=detailed is required so the response carries `category` and
+     * `payments_list` (needed for cost reclassification and open-receivables).
+     */
     public function issuedDocuments(string $type = 'invoice', int $page = 1, int $perPage = 50): array
     {
         return $this->request()->get("/c/{$this->companyId}/issued_documents", [
             'type' => $type,
+            'fieldset' => 'detailed',
             'page' => $page,
             'per_page' => $perPage,
         ])->throw()->json() ?? [];
@@ -74,6 +79,7 @@ class FicClient
     {
         return $this->request()->get("/c/{$this->companyId}/received_documents", [
             'type' => $type,
+            'fieldset' => 'detailed',
             'page' => $page,
             'per_page' => $perPage,
         ])->throw()->json() ?? [];
