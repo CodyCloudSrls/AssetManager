@@ -104,6 +104,8 @@ class CustomersController extends Controller
             'status',
             'vat_number',
             'tax_code',
+            'sdi_code',
+            'pec',
             'address',
             'address2',
             'city',
@@ -130,5 +132,6 @@ class CustomersController extends Controller
         ]));
 
         $customer->url = $customer->addhttp($request->input('url'));
+        $customer->sdi_code = $request->filled('sdi_code') ? strtoupper(trim($request->input('sdi_code'))) : null;
     }
 }

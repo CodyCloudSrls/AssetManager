@@ -30,6 +30,8 @@
                             <x-data-row :label="trans('general.status')">{{ $customer->status_label }}</x-data-row>
                             <x-data-row :label="trans('admin/customers/table.vat_number')">{{ $customer->vat_number }}</x-data-row>
                             <x-data-row :label="trans('admin/customers/table.tax_code')">{{ $customer->tax_code }}</x-data-row>
+                            <x-data-row :label="trans('admin/customers/table.sdi_code')">{{ $customer->sdi_code }}</x-data-row>
+                            <x-data-row :label="trans('admin/customers/table.pec')">{{ $customer->pec }}</x-data-row>
                             <x-data-row :label="trans('admin/customers/table.contact')">{{ $customer->contact }}</x-data-row>
                             <x-data-row :label="trans('admin/customers/table.phone')">{{ $customer->phone }}</x-data-row>
                             <x-data-row :label="trans('admin/customers/table.email')">{{ $customer->email }}</x-data-row>

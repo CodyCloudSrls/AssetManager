@@ -47,6 +47,25 @@
     </div>
 </div>
 
+{{-- Italian electronic invoicing (fatturazione elettronica) recipient details --}}
+<div class="form-group {{ $errors->has('sdi_code') ? ' has-error' : '' }}">
+    <label for="sdi_code" class="col-md-3 control-label">{{ trans('admin/customers/table.sdi_code') }}</label>
+    <div class="col-md-4">
+        <input class="form-control" name="sdi_code" type="text" id="sdi_code" maxlength="7" value="{{ old('sdi_code', $item->sdi_code) }}" style="text-transform:uppercase;">
+        <p class="help-block">{{ trans('admin/customers/table.sdi_code_help') }}</p>
+        {!! $errors->first('sdi_code', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+    </div>
+</div>
+
+<div class="form-group {{ $errors->has('pec') ? ' has-error' : '' }}">
+    <label for="pec" class="col-md-3 control-label">{{ trans('admin/customers/table.pec') }}</label>
+    <div class="col-md-4">
+        <input class="form-control" name="pec" type="email" id="pec" value="{{ old('pec', $item->pec) }}">
+        <p class="help-block">{{ trans('admin/customers/table.pec_help') }}</p>
+        {!! $errors->first('pec', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+    </div>
+</div>
+
 @include('partials.forms.edit.address')
 
 <div class="form-group {{ $errors->has('contact') ? ' has-error' : '' }}">
