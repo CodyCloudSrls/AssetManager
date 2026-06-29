@@ -1216,8 +1216,19 @@
     </style>
 
     {{-- CodyCloud theme overlay (Cloudflare-style dark skin). Loaded after the inline
-         branding styles so it can override them; remove this line to revert. --}}
-    <link rel="stylesheet" href="{{ url('css/codycloud-theme.css') }}?v={{ @filemtime(public_path('css/codycloud-theme.css')) ?: '10' }}">
+         branding styles so it can override them; remove this line to revert. This skin
+         IS dark mode: light mode simply disables this stylesheet (see script below), so
+         the dark look never changes. --}}
+    <link id="cc-theme-skin" rel="stylesheet" href="{{ url('css/codycloud-theme.css') }}?v={{ @filemtime(public_path('css/codycloud-theme.css')) ?: '10' }}">
+    <script>
+        // Flash-free: disable the dark skin before first paint if the user chose light.
+        // Default (no preference) keeps the dark skin on (CodyCloud brand).
+        try {
+            if (localStorage.getItem('theme') === 'light') {
+                document.getElementById('cc-theme-skin').disabled = true;
+            }
+        } catch (e) {}
+    </script>
 
     {{-- Custom CSS --}}
     @if (($snipeSettings) && ($snipeSettings->custom_css))
@@ -1887,21 +1898,16 @@
 
 
             /**
-             * Utility function to calculate the current theme setting.
-             * Look for a local storage value.
-             * Fall back to system setting.
-             * Fall back to light mode.
+             * Current theme: stored preference, else default to dark (CodyCloud brand,
+             * the CerberoSOC skin). We do NOT auto-follow the OS setting so the branded
+             * dark look is the default for everyone until they explicitly pick light.
              */
             function calculateSettingAsThemeString({ localStorageTheme, systemSettingDark }) {
-                if (localStorageTheme !== null) {
+                if (localStorageTheme === "light" || localStorageTheme === "dark") {
                     return localStorageTheme;
                 }
 
-                if (systemSettingDark.matches) {
-                    return "dark";
-                }
-
-                return "light";
+                return "dark";
             }
 
             /**
@@ -1917,10 +1923,17 @@
             }
 
             /**
-             * Utility function to update the theme setting on the html tag
+             * Apply the theme by enabling/disabling the dark skin overlay. Dark = overlay
+             * ON (the exact branded look, unchanged). Light = overlay OFF, revealing the
+             * AdminLTE light theme. data-theme stays "light" so the base vars are light in
+             * both cases; only the overlay decides dark vs light. This guarantees dark mode
+             * is byte-identical to the always-on skin.
              */
             function updateThemeOnHtmlEl({ theme }) {
-                document.querySelector("html").setAttribute("data-theme", theme);
+                var skin = document.getElementById("cc-theme-skin");
+                if (skin) {
+                    skin.disabled = (theme === "light");
+                }
             }
 
 
