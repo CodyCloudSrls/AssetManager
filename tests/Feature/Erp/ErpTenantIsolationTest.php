@@ -67,12 +67,12 @@ class ErpTenantIsolationTest extends TestCase
 
         // Forged company_id on store is clamped to A.
         $this->actingAs($editorA)->post(route('erp.notule.store'), [
-            'professional_name' => 'Avv. Rossi', 'amount' => 200, 'company_id' => $companyB->id, 'status' => Notula::STATUS_PENDING,
+            'professional_name' => 'Avv. Rossi', 'amount' => 200, 'company_id' => $companyB->id, 'status' => Notula::STATUS_UNPAID,
         ])->assertRedirect(route('erp.notule.index'));
         $this->assertDatabaseHas('notule', ['professional_name' => 'Avv. Rossi', 'company_id' => $companyA->id]);
 
         // Cannot touch another company's notula.
-        $notulaB = Notula::create(['professional_name' => 'Dott. B', 'amount' => 300, 'company_id' => $companyB->id, 'status' => Notula::STATUS_PENDING]);
+        $notulaB = Notula::create(['professional_name' => 'Dott. B', 'amount' => 300, 'company_id' => $companyB->id, 'status' => Notula::STATUS_UNPAID]);
         $this->actingAs($editorA)->get(route('erp.notule.edit', $notulaB))->assertForbidden();
         $this->actingAs($editorA)->delete(route('erp.notule.destroy', $notulaB))->assertForbidden();
         $this->assertDatabaseHas('notule', ['id' => $notulaB->id, 'company_id' => $companyB->id]);
