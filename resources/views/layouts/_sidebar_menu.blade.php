@@ -275,6 +275,7 @@
             @can('view', \App\Models\CustomerContract::class)
                 <li {!! (request()->is('erp*') ? ' class="active"' : '') !!}><a href="{{ route('erp.index') }}">{{ trans('erp/general.nav.cockpit') }}</a></li>
                 <li {!! (request()->is('contracts*') ? ' class="active"' : '') !!}><a href="{{ route('contracts.index') }}">{{ trans('erp/general.modules.contracts') }}</a></li>
+                <li {!! (request()->is('erp/notule*') ? ' class="active"' : '') !!}><a href="{{ route('erp.notule.index') }}">{{ trans('erp/notule.title') }}</a></li>
             @endcan
             @can('reports.view')
                 <li {!! (request()->is('reports/contract-forecast') ? ' class="active"' : '') !!}><a href="{{ route('reports.contract-forecast') }}">{{ trans('erp/general.nav.forecast') }}</a></li>

@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\Customer;
 use App\Models\CustomerContract;
 use App\Models\FicDocument;
+use App\Models\Notula;
 use App\Models\Supplier;
 use App\Models\Tenant;
 use App\Support\Fic\FicClient;
@@ -61,6 +62,9 @@ class ErpController extends Controller
             'kpis' => $kpis,
             'ficConfigured' => app(FicClient::class)->isConfigured(),
             'fic' => $this->ficSummary($companyIds),
+            // Accrued cost from professionals not yet invoiced (pending notule only,
+            // so once they invoice via FiC the cost is not double-counted).
+            'notulePending' => (float) Notula::forCompanies($companyIds)->accruable()->sum('amount'),
         ]);
     }
 

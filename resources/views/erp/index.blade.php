@@ -85,6 +85,13 @@
             <p class="help-block">{{ trans('erp/general.sections.operativo_help') }}</p>
         </div>
     </div>
+    @if ($notulePending > 0)
+        <div class="row"><div class="col-md-12">
+            <div class="callout callout-warning">
+                <p><strong>{{ $fmt($notulePending) }}</strong> — {{ trans('erp/notule.tot_pending') }} (<a href="{{ route('erp.notule.index') }}">{{ trans('erp/notule.title') }}</a>)</p>
+            </div>
+        </div></div>
+    @endif
     @if ($fic['enabled'])
         <div class="row">
             @php($operativoCards = [

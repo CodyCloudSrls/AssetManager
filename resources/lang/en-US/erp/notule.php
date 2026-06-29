@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'title' => 'Notule',
+    'intro' => 'Fees owed to professionals not yet invoiced. They weigh on management control as accrued cost while pending; when the real invoice arrives (Fatture in Cloud) mark the notula "Invoiced" so the cost is not counted twice.',
+    'new' => 'New notula',
+    'created' => 'Notula created.',
+    'updated' => 'Notula updated.',
+    'deleted' => 'Notula deleted.',
+    'professional' => 'Professional',
+    'professional_help' => 'Professional name (when not linked to a supplier record).',
+    'supplier' => 'Linked supplier',
+    'description' => 'Description',
+    'amount' => 'Fee',
+    'competence_date' => 'Competence date',
+    'expected_invoice' => 'Expected invoice',
+    'status' => 'Status',
+    'paid_at' => 'Payment date',
+    'status_pending' => 'Awaiting invoice',
+    'status_invoiced' => 'Invoiced',
+    'status_paid' => 'Paid',
+    'tot_pending' => 'Accrued, awaiting invoice',
+    'tot_all' => 'Total notule',
+    'empty' => 'No notule recorded.',
+    'dedup_note' => 'Only "pending" notule weigh on management control: once the professional invoices, mark "Invoiced" so the cost comes from the real invoice and is not duplicated.',
+];

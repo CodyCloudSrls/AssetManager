@@ -1,0 +1,82 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+/**
+ * A "notula": an amount owed to a professional who has not yet issued a fiscal invoice.
+ * Feeds management control as an accrued cost while pending; once the matching FiC
+ * invoice arrives it is linked + marked invoiced so the cost is not double-counted.
+ */
+class Notula extends Model
+{
+    use SoftDeletes;
+
+    protected $table = 'notule';
+
+    public const STATUS_PENDING = 'pending';     // awaiting invoice
+    public const STATUS_INVOICED = 'invoiced';   // professional issued the invoice (now in FiC)
+    public const STATUS_PAID = 'paid';
+
+    protected $fillable = [
+        'company_id', 'supplier_id', 'professional_name', 'description',
+        'amount', 'competence_date', 'expected_invoice_date',
+        'status', 'paid_at', 'fic_document_id', 'notes', 'created_by',
+    ];
+
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'competence_date' => 'date',
+        'expected_invoice_date' => 'date',
+        'paid_at' => 'date',
+    ];
+
+    public static function statusOptions(): array
+    {
+        return [
+            self::STATUS_PENDING => trans('erp/notule.status_pending'),
+            self::STATUS_INVOICED => trans('erp/notule.status_invoiced'),
+            self::STATUS_PAID => trans('erp/notule.status_paid'),
+        ];
+    }
+
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class)->withTrashed();
+    }
+
+    /** Display name: linked supplier name, else the free-text professional name. */
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->supplier?->name ?: ($this->professional_name ?: '—');
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return self::statusOptions()[$this->status] ?? $this->status;
+    }
+
+    public function scopeForCompanies(Builder $query, ?array $companyIds): Builder
+    {
+        if (is_null($companyIds)) {
+            return $query;
+        }
+        if ($companyIds === []) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereIn('company_id', $companyIds);
+    }
+
+    /**
+     * Notule that still weigh on management control: pending (not yet invoiced).
+     * Once invoiced, the real FiC invoice carries the cost instead — no double count.
+     */
+    public function scopeAccruable(Builder $query): Builder
+    {
+        return $query->where('status', self::STATUS_PENDING);
+    }
+}

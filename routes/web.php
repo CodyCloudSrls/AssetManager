@@ -151,6 +151,14 @@ Route::group(['middleware' => 'auth'], function () {
     */
     Route::get('erp', [ErpController::class, 'index'])->name('erp.index')->middleware('tenant.feature:erp');
     Route::get('erp/ammortamenti', [ErpController::class, 'ammortamenti'])->name('erp.ammortamenti')->middleware('tenant.feature:erp');
+    Route::middleware('tenant.feature:erp')->group(function () {
+        Route::get('erp/notule', [\App\Http\Controllers\NotuleController::class, 'index'])->name('erp.notule.index');
+        Route::get('erp/notule/create', [\App\Http\Controllers\NotuleController::class, 'create'])->name('erp.notule.create');
+        Route::post('erp/notule', [\App\Http\Controllers\NotuleController::class, 'store'])->name('erp.notule.store');
+        Route::get('erp/notule/{notula}/edit', [\App\Http\Controllers\NotuleController::class, 'edit'])->name('erp.notule.edit');
+        Route::put('erp/notule/{notula}', [\App\Http\Controllers\NotuleController::class, 'update'])->name('erp.notule.update');
+        Route::delete('erp/notule/{notula}', [\App\Http\Controllers\NotuleController::class, 'destroy'])->name('erp.notule.destroy');
+    });
 
     /*
     * API documentation (OpenAPI / Swagger UI) — superadmin only

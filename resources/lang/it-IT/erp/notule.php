@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'title' => 'Notule',
+    'intro' => 'Compensi a professionisti non ancora fatturati. Pesano sul controllo di gestione come costo maturato finché sono in attesa; quando arriva la fattura reale (Fatture in Cloud) la notula va segnata "Fatturata" e il costo non viene contato due volte.',
+    'new' => 'Nuova notula',
+    'created' => 'Notula creata.',
+    'updated' => 'Notula aggiornata.',
+    'deleted' => 'Notula eliminata.',
+    'professional' => 'Professionista',
+    'professional_help' => 'Nome del professionista (se non collegato a un fornitore in anagrafica).',
+    'supplier' => 'Fornitore collegato',
+    'description' => 'Descrizione',
+    'amount' => 'Compenso',
+    'competence_date' => 'Data competenza',
+    'expected_invoice' => 'Fattura attesa',
+    'status' => 'Stato',
+    'paid_at' => 'Data pagamento',
+    'status_pending' => 'In attesa di fattura',
+    'status_invoiced' => 'Fatturata',
+    'status_paid' => 'Pagata',
+    'tot_pending' => 'Maturato in attesa di fattura',
+    'tot_all' => 'Totale notule',
+    'empty' => 'Nessuna notula registrata.',
+    'dedup_note' => 'Solo le notule "in attesa" pesano sul controllo di gestione: quando il professionista fattura, segnala "Fatturata" così il costo arriva dalla fattura reale e non è duplicato.',
+];
