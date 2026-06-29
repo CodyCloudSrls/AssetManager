@@ -1,6 +1,15 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ Helper::determineLanguageDirection() }}" data-theme="light">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ Helper::determineLanguageDirection() }}" data-theme="dark">
 <head>
+    {{-- Apply the stored theme before paint to avoid a flash. Default = dark (CodyCloud brand). --}}
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('theme');
+                document.documentElement.setAttribute('data-theme', (t === 'light' || t === 'dark') ? t : 'dark');
+            } catch (e) {}
+        })();
+    </script>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>
@@ -1893,15 +1902,13 @@
              * Fall back to light mode.
              */
             function calculateSettingAsThemeString({ localStorageTheme, systemSettingDark }) {
-                if (localStorageTheme !== null) {
+                if (localStorageTheme === "light" || localStorageTheme === "dark") {
                     return localStorageTheme;
                 }
 
-                if (systemSettingDark.matches) {
-                    return "dark";
-                }
-
-                return "light";
+                // No stored preference: default to dark (CodyCloud brand), matching the
+                // pre-paint head script so the toggle and initial render stay in sync.
+                return "dark";
             }
 
             /**

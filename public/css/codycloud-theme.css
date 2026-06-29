@@ -1,18 +1,10 @@
 /*
- * CodyCloud theme overlay — Cloudflare/CerberoSOC-inspired dark skin.
- *
- * Loaded after css/dist/all.css in layouts/default.blade.php. This is a
- * non-destructive override layer (no SCSS rebuild required): it only restyles
- * colours, borders, radii, typography and accents of the existing AdminLTE/
- * Bootstrap markup. Remove the <link> in the layout to revert.
- *
- * Phase 1 — palette, surfaces, header, sidebar, cards, buttons, tables, forms,
- * badges. Structural/component redesign is a later phase.
+ * CodyCloud dark skin (CerberoSOC) — scoped to html[data-theme="dark"].
+ * Light mode (data-theme="light") falls back to the AdminLTE default theme.
+ * Auto-scoped from the unscoped source; toggle handled in layouts/default.blade.php.
  */
 
-:root {
-    /* CerberoSOC-aligned palette: neutral near-black surfaces (no blue tint) +
-       vivid indigo primary, matching the SOC console look. */
+html[data-theme="dark"] {
     --cc-bg: #0a0a0c;
     --cc-bg-elevated: #111114;
     --cc-surface: #161619;
@@ -35,53 +27,37 @@
     --cc-font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/*
- * Override Snipe-IT's branding theme variables so the top header, dropdowns,
- * labels and pagination follow the dark skin instead of the configured
- * (blue) header colour. This file is loaded AFTER the inline branding <style>,
- * so these definitions win.
- */
-:root {
+html[data-theme="dark"] {
     --main-theme-color: #111114;
     --main-theme-hover: #1c1c21;
     --nav-primary-text-color: #c8c8d0;
     --btn-theme-hover: #34343c;
-    /* Kill the grey footer and sidebar-submenu tints */
+    
     --main-footer-bg-color: #0a0a0c;
     --main-footer-text-color: #9b9ba6;
     --main-footer-top-border-color: #26262b;
     --sidenav-hover-color-bg: #1c1c21;
     --sidenav-text-hover-color: #ffffff;
     --sidenav-text-nohover-color: #c8c8d0;
-    /* Box / content backgrounds were a grey (#3d4144 / #222222) in the branding's
-       dark mode — used by .box, .list-group-item, info-panel items, etc. Re-point
-       them at the neutral SOC surfaces so nothing renders grey. */
+    
     --box-bg: #161619;
     --color-bg: #0a0a0c;
     --table-stripe-bg: #161619;
     --input-group-bg: #1c1c21;
-    /* These were a grey (#605e5e) in the branding's dark mode and were used by the
-       branding as the ACTIVE TAB background + box-header borders — the source of the
-       "grey corners" on tabs/buttons. Point them at the dark border colour. */
+    
     --box-header-top-border-color: #26262b;
     --box-header-bottom-border-color: #26262b;
 }
 
-/* ---------- Brand moved into the sidebar ---------- */
-.main-header .left-navblock {
+html[data-theme="dark"] .main-header .left-navblock {
     display: none !important;
 }
 
-/* Remove the AdminLTE top gap so the brand sits flush at the top */
-.main-sidebar,
-.main-sidebar .sidebar {
+html[data-theme="dark"] .main-sidebar, html[data-theme="dark"] .main-sidebar .sidebar {
     padding-top: 0 !important;
 }
 
-/* Brand + collapse toggle share one row, aligned with the header height.
-   The header navbar and this head are both pinned to 56px and both start at
-   top:0, so their bottom border lines up exactly (the "nav line" == "topbar line"). */
-.cc-sidebar-head {
+html[data-theme="dark"] .cc-sidebar-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -92,25 +68,25 @@
     border-bottom: 1px solid var(--cc-border);
 }
 
-.cc-sidebar-brand {
+html[data-theme="dark"] .cc-sidebar-brand {
     display: flex;
     align-items: center;
     overflow: hidden;
     text-decoration: none !important;
 }
 
-.cc-sidebar-brand-img {
+html[data-theme="dark"] .cc-sidebar-brand-img {
     height: 30px;
     width: auto;
 }
 
-.cc-sidebar-brand-mark {
+html[data-theme="dark"] .cc-sidebar-brand-mark {
     display: none;
     height: 30px;
     width: auto;
 }
 
-.cc-sidebar-toggle {
+html[data-theme="dark"] .cc-sidebar-toggle {
     flex: 0 0 auto;
     padding: 8px 10px;
     font-size: 18px;
@@ -120,212 +96,168 @@
     text-decoration: none !important;
 }
 
-.cc-sidebar-toggle:hover,
-.cc-sidebar-toggle:focus {
+html[data-theme="dark"] .cc-sidebar-toggle:hover, html[data-theme="dark"] .cc-sidebar-toggle:focus {
     color: #ffffff !important;
     background-color: var(--cc-surface-2);
 }
 
-/* Hide the old hamburger that sat in the header, one row above the logo */
-.main-header .sidebar-toggle {
+html[data-theme="dark"] .main-header .sidebar-toggle {
     display: none !important;
 }
 
-/* The header element (z-index 1030) spans full width; its transparent top-left
-   region sat ON TOP of the sidebar head and swallowed the clicks meant for the
-   brand + toggle (logo visible through it, but nothing clickable). Raise the
-   sidebar above the header so the toggle actually receives the click that
-   AdminLTE's document-delegated push-menu handler listens for. */
-.main-sidebar {
+html[data-theme="dark"] .main-sidebar {
     z-index: 1040 !important;
 }
 
-.cc-sidebar-head,
-.cc-sidebar-brand,
-.cc-sidebar-toggle {
+html[data-theme="dark"] .cc-sidebar-head, html[data-theme="dark"] .cc-sidebar-brand, html[data-theme="dark"] .cc-sidebar-toggle {
     position: relative;
     z-index: 2;
 }
 
-.cc-sidebar-toggle {
+html[data-theme="dark"] .cc-sidebar-toggle {
     cursor: pointer;
 }
 
-/* Collapsed sidebar: keep only the toggle, centred (it expands the sidebar) */
-.sidebar-collapse .cc-sidebar-head {
+html[data-theme="dark"] .sidebar-collapse .cc-sidebar-head {
     justify-content: center;
     padding: 12px 4px;
 }
 
-.sidebar-collapse .cc-sidebar-brand {
+html[data-theme="dark"] .sidebar-collapse .cc-sidebar-brand {
     display: none;
 }
 
-/* ---------- Footer: no grey ---------- */
-footer.main-footer,
-.main-footer {
+html[data-theme="dark"] footer.main-footer, html[data-theme="dark"] .main-footer {
     background-color: var(--cc-bg-elevated) !important;
     border-top: 1px solid var(--cc-border) !important;
     color: var(--cc-text-muted) !important;
 }
 
-/* ---------- Sidebar submenu (treeview): near-black, no grey/green ---------- */
-.sidebar-menu .treeview-menu {
+html[data-theme="dark"] .sidebar-menu .treeview-menu {
     background-color: rgba(0, 0, 0, 0.28) !important;
 }
 
-.sidebar-menu .treeview-menu > li > a {
+html[data-theme="dark"] .sidebar-menu .treeview-menu > li > a {
     color: var(--cc-text-muted) !important;
 }
 
-.sidebar-menu .treeview-menu > li > a:hover,
-.sidebar-menu .treeview-menu > li.active > a {
+html[data-theme="dark"] .sidebar-menu .treeview-menu > li > a:hover, html[data-theme="dark"] .sidebar-menu .treeview-menu > li.active > a {
     background-color: var(--cc-surface-2) !important;
     color: #fff !important;
 }
 
-.sidebar-menu > li:hover > a,
-.sidebar-menu > li.menu-open > a {
+html[data-theme="dark"] .sidebar-menu > li:hover > a, html[data-theme="dark"] .sidebar-menu > li.menu-open > a {
     background-color: var(--cc-surface) !important;
     color: #fff !important;
 }
 
-/* ---------- Base ---------- */
-body,
-.wrapper,
-.content-wrapper,
-.right-side {
+html[data-theme="dark"] body, html[data-theme="dark"] .wrapper, html[data-theme="dark"] .content-wrapper, html[data-theme="dark"] .right-side {
     background-color: var(--cc-bg) !important;
     color: var(--cc-text);
     font-family: var(--cc-font);
 }
 
-body {
+html[data-theme="dark"] body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-a {
+html[data-theme="dark"] a {
     color: var(--cc-primary);
 }
 
-a:hover,
-a:focus {
+html[data-theme="dark"] a:hover, html[data-theme="dark"] a:focus {
     color: var(--cc-primary-hover);
 }
 
-h1, h2, h3, h4, h5, .box-title {
+html[data-theme="dark"] h1, html[data-theme="dark"] h2, html[data-theme="dark"] h3, html[data-theme="dark"] h4, html[data-theme="dark"] h5, html[data-theme="dark"] .box-title {
     color: var(--cc-text);
     font-weight: 600;
 }
 
-.text-muted,
-small,
-.help-block {
+html[data-theme="dark"] .text-muted, html[data-theme="dark"] small, html[data-theme="dark"] .help-block {
     color: var(--cc-text-muted) !important;
 }
 
-/* ---------- Top header ---------- */
-.main-header > .navbar,
-.main-header .logo,
-.main-header .navbar {
+html[data-theme="dark"] .main-header > .navbar, html[data-theme="dark"] .main-header .logo, html[data-theme="dark"] .main-header .navbar {
     background-color: var(--cc-bg-elevated) !important;
     border-bottom: 1px solid var(--cc-border) !important;
     box-shadow: none !important;
 }
 
-.main-header .logo {
+html[data-theme="dark"] .main-header .logo {
     background-color: var(--cc-bg-elevated) !important;
     border-right: 1px solid var(--cc-border) !important;
     color: var(--cc-text) !important;
     font-weight: 700;
 }
 
-/* Table toolbar (refresh / export / print / columns / search) */
-.fixed-table-toolbar .btn,
-.fixed-table-toolbar .btn-group > .btn,
-.btn-tableButton {
+html[data-theme="dark"] .fixed-table-toolbar .btn, html[data-theme="dark"] .fixed-table-toolbar .btn-group > .btn, html[data-theme="dark"] .btn-tableButton {
     background-color: var(--cc-surface-2) !important;
     border-color: var(--cc-border-strong) !important;
     color: var(--cc-text) !important;
 }
 
-.fixed-table-toolbar .btn:hover,
-.btn-tableButton:hover,
-.btn-tableButton:focus {
+html[data-theme="dark"] .fixed-table-toolbar .btn:hover, html[data-theme="dark"] .btn-tableButton:hover, html[data-theme="dark"] .btn-tableButton:focus {
     background-color: var(--cc-surface-hover) !important;
     color: #fff !important;
 }
 
-.main-header .navbar .nav > li > a {
+html[data-theme="dark"] .main-header .navbar .nav > li > a {
     color: var(--cc-text-muted) !important;
 }
 
-.main-header .navbar .nav > li > a:hover,
-.main-header .navbar .nav > .open > a {
+html[data-theme="dark"] .main-header .navbar .nav > li > a:hover, html[data-theme="dark"] .main-header .navbar .nav > .open > a {
     background-color: var(--cc-surface-hover) !important;
     color: var(--cc-text) !important;
 }
 
-/* Active item in the top header icon bar (was still rendering blue) */
-.main-header .navbar .nav > li.active > a,
-.main-header .navbar .nav > .active > a,
-.main-header .navbar .nav > li > a.active {
+html[data-theme="dark"] .main-header .navbar .nav > li.active > a, html[data-theme="dark"] .main-header .navbar .nav > .active > a, html[data-theme="dark"] .main-header .navbar .nav > li > a.active {
     background-color: var(--cc-surface-2) !important;
     color: #fff !important;
 }
 
-/* Header search box */
-.main-header .navbar-form .form-control,
-.main-header .navbar .form-control,
-input[type="search"].search-highlight {
+html[data-theme="dark"] .main-header .navbar-form .form-control, html[data-theme="dark"] .main-header .navbar .form-control, html[data-theme="dark"] input[type="search"].search-highlight {
     background-color: var(--cc-surface) !important;
     border: 1px solid var(--cc-border-strong) !important;
     color: var(--cc-text) !important;
     border-radius: var(--cc-radius-sm) !important;
 }
 
-/* ---------- Sidebar ---------- */
-.main-sidebar,
-.left-side,
-.sidebar {
+html[data-theme="dark"] .main-sidebar, html[data-theme="dark"] .left-side, html[data-theme="dark"] .sidebar {
     background-color: var(--cc-bg-elevated) !important;
     border-right: 1px solid var(--cc-border);
 }
 
-.sidebar-menu > li > a {
+html[data-theme="dark"] .sidebar-menu > li > a {
     color: var(--cc-text-muted) !important;
     border-left: 3px solid transparent;
 }
 
-.sidebar-menu > li:hover > a,
-.sidebar-menu > li.menu-open > a {
+html[data-theme="dark"] .sidebar-menu > li:hover > a, html[data-theme="dark"] .sidebar-menu > li.menu-open > a {
     background-color: var(--cc-surface) !important;
     color: var(--cc-text) !important;
 }
 
-.sidebar-menu > li.active > a,
-.sidebar-menu > li.active:hover > a {
+html[data-theme="dark"] .sidebar-menu > li.active > a, html[data-theme="dark"] .sidebar-menu > li.active:hover > a {
     background-color: var(--cc-surface-2) !important;
     color: #fff !important;
     border-left-color: var(--cc-primary) !important;
 }
 
-.sidebar-menu .treeview-menu {
+html[data-theme="dark"] .sidebar-menu .treeview-menu {
     background-color: rgba(0, 0, 0, 0.18) !important;
 }
 
-.sidebar-menu .treeview-menu > li > a {
+html[data-theme="dark"] .sidebar-menu .treeview-menu > li > a {
     color: var(--cc-text-muted) !important;
 }
 
-.sidebar-menu .treeview-menu > li.active > a,
-.sidebar-menu .treeview-menu > li > a:hover {
+html[data-theme="dark"] .sidebar-menu .treeview-menu > li.active > a, html[data-theme="dark"] .sidebar-menu .treeview-menu > li > a:hover {
     color: #fff !important;
 }
 
-.sidebar .header,
-.sidebar-menu li.header {
+html[data-theme="dark"] .sidebar .header, html[data-theme="dark"] .sidebar-menu li.header {
     background: transparent !important;
     color: var(--cc-text-dim) !important;
     text-transform: uppercase;
@@ -333,102 +265,84 @@ input[type="search"].search-highlight {
     font-size: 11px;
 }
 
-/* ---------- Boxes / cards ---------- */
-.box,
-.nav-tabs-custom,
-.info-box,
-.small-box,
-.panel {
+html[data-theme="dark"] .box, html[data-theme="dark"] .nav-tabs-custom, html[data-theme="dark"] .info-box, html[data-theme="dark"] .small-box, html[data-theme="dark"] .panel {
     background-color: var(--cc-surface) !important;
     border: 1px solid var(--cc-border) !important;
     border-radius: var(--cc-radius) !important;
     box-shadow: none !important;
 }
 
-.box.box-default,
-.box.box-primary,
-.box.box-solid {
+html[data-theme="dark"] .box.box-default, html[data-theme="dark"] .box.box-primary, html[data-theme="dark"] .box.box-solid {
     border-top-color: var(--cc-border) !important;
 }
 
-.box-header {
+html[data-theme="dark"] .box-header {
     color: var(--cc-text) !important;
     border-bottom: 1px solid var(--cc-border) !important;
 }
 
-.box-header.with-border {
+html[data-theme="dark"] .box-header.with-border {
     border-bottom: 1px solid var(--cc-border) !important;
 }
 
-.box-footer {
+html[data-theme="dark"] .box-footer {
     background-color: transparent !important;
     border-top: 1px solid var(--cc-border) !important;
 }
 
-.side-box,
-.box.side-box {
+html[data-theme="dark"] .side-box, html[data-theme="dark"] .box.side-box {
     background-color: var(--cc-surface) !important;
 }
 
-/* ---------- Buttons ---------- */
-.btn {
+html[data-theme="dark"] .btn {
     border-radius: var(--cc-radius-sm);
     font-weight: 500;
 }
 
-.btn-primary,
-.btn-theme {
+html[data-theme="dark"] .btn-primary, html[data-theme="dark"] .btn-theme {
     background-color: var(--cc-primary) !important;
     border-color: var(--cc-primary) !important;
     color: #fff !important;
 }
 
-.btn-primary:hover,
-.btn-primary:focus,
-.btn-theme:hover,
-.btn-theme:focus {
+html[data-theme="dark"] .btn-primary:hover, html[data-theme="dark"] .btn-primary:focus, html[data-theme="dark"] .btn-theme:hover, html[data-theme="dark"] .btn-theme:focus {
     background-color: var(--cc-primary-hover) !important;
     border-color: var(--cc-primary-hover) !important;
 }
 
-.btn-default {
+html[data-theme="dark"] .btn-default {
     background-color: var(--cc-surface-2) !important;
     border-color: var(--cc-border-strong) !important;
     color: var(--cc-text) !important;
 }
 
-.btn-default:hover,
-.btn-default:focus {
+html[data-theme="dark"] .btn-default:hover, html[data-theme="dark"] .btn-default:focus {
     background-color: var(--cc-surface-hover) !important;
     border-color: var(--cc-border-strong) !important;
     color: #fff !important;
 }
 
-.btn-danger {
+html[data-theme="dark"] .btn-danger {
     background-color: var(--cc-danger) !important;
     border-color: var(--cc-danger) !important;
 }
 
-.btn-warning {
+html[data-theme="dark"] .btn-warning {
     background-color: var(--cc-warning) !important;
     border-color: var(--cc-warning) !important;
     color: #1a1205 !important;
 }
 
-.btn-success {
+html[data-theme="dark"] .btn-success {
     background-color: var(--cc-success) !important;
     border-color: var(--cc-success) !important;
 }
 
-/* ---------- Tables ---------- */
-.table,
-.snipe-table {
+html[data-theme="dark"] .table, html[data-theme="dark"] .snipe-table {
     color: var(--cc-text);
 }
 
-.table > thead > tr > th,
-.snipe-table > thead > tr > th,
-.fixed-table-header th {
+html[data-theme="dark"] .table > thead > tr > th, html[data-theme="dark"] .snipe-table > thead > tr > th, html[data-theme="dark"] .fixed-table-header th {
     color: var(--cc-text-muted) !important;
     border-bottom: 1px solid var(--cc-border) !important;
     font-weight: 600;
@@ -437,16 +351,11 @@ input[type="search"].search-highlight {
     font-size: 12px;
 }
 
-.table > tbody > tr > td,
-.snipe-table > tbody > tr > td {
+html[data-theme="dark"] .table > tbody > tr > td, html[data-theme="dark"] .snipe-table > tbody > tr > td {
     border-top: 1px solid var(--cc-border) !important;
 }
 
-/* Vertical "label : value" tables (tenant overview, asset/document details):
-   the left label column is a <th> in tbody. Keep it transparent (no grey block)
-   with muted, bold label text — it was rendering as a grey column. */
-.table > tbody > tr > th,
-.snipe-table > tbody > tr > th {
+html[data-theme="dark"] .table > tbody > tr > th, html[data-theme="dark"] .snipe-table > tbody > tr > th {
     background-color: transparent !important;
     color: var(--cc-text-muted) !important;
     font-weight: 600;
@@ -455,30 +364,23 @@ input[type="search"].search-highlight {
     letter-spacing: normal;
 }
 
-.table-striped > tbody > tr:nth-of-type(odd),
-.table-striped > tbody > tr:nth-of-type(odd) > td {
+html[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd), html[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > td {
     background-color: rgba(255, 255, 255, 0.015) !important;
 }
 
-.table-hover > tbody > tr:hover,
-.table-hover > tbody > tr:hover > td {
+html[data-theme="dark"] .table-hover > tbody > tr:hover, html[data-theme="dark"] .table-hover > tbody > tr:hover > td {
     background-color: var(--cc-surface-2) !important;
 }
 
-.bootstrap-table .fixed-table-container {
+html[data-theme="dark"] .bootstrap-table .fixed-table-container {
     border-color: var(--cc-border) !important;
 }
 
-.fixed-table-toolbar .search input,
-.bootstrap-table .form-control {
+html[data-theme="dark"] .fixed-table-toolbar .search input, html[data-theme="dark"] .bootstrap-table .form-control {
     border-radius: var(--cc-radius-sm);
 }
 
-/* ---------- Forms ---------- */
-.form-control,
-.select2-container--default .select2-selection--single,
-.select2-container--default .select2-selection--multiple,
-.input-group-addon {
+html[data-theme="dark"] .form-control, html[data-theme="dark"] .select2-container--default .select2-selection--single, html[data-theme="dark"] .select2-container--default .select2-selection--multiple, html[data-theme="dark"] .input-group-addon {
     background-color: var(--cc-bg-elevated) !important;
     border: 1px solid var(--cc-border-strong) !important;
     color: var(--cc-text) !important;
@@ -486,155 +388,65 @@ input[type="search"].search-highlight {
     box-shadow: none !important;
 }
 
-/* The inline branding paints every input with --table-stripe-bg (#494747 grey)
-   via `input[type=...]` selectors that out-specify `.form-control`, leaving grey
-   slabs that ignore the input's rounded outline. Re-assert the dark Cloudflare
-   surface at matching specificity so all forms are consistent. */
-input[type="text"],
-input[type="number"],
-input[type="date"],
-input[type="datetime-local"],
-input[type="url"],
-input[type="email"],
-input[type="password"],
-input[type="tel"],
-input[type="search"],
-select,
-select option,
-textarea,
-.select2-selection,
-.select2-selection--single,
-.select2-selection--multiple,
-.select2-selection__rendered {
+html[data-theme="dark"] input[type="text"], html[data-theme="dark"] input[type="number"], html[data-theme="dark"] input[type="date"], html[data-theme="dark"] input[type="datetime-local"], html[data-theme="dark"] input[type="url"], html[data-theme="dark"] input[type="email"], html[data-theme="dark"] input[type="password"], html[data-theme="dark"] input[type="tel"], html[data-theme="dark"] input[type="search"], html[data-theme="dark"] select, html[data-theme="dark"] select option, html[data-theme="dark"] textarea, html[data-theme="dark"] .select2-selection, html[data-theme="dark"] .select2-selection--single, html[data-theme="dark"] .select2-selection--multiple, html[data-theme="dark"] .select2-selection__rendered {
     background-color: var(--cc-bg-elevated) !important;
     color: var(--cc-text) !important;
     border-color: var(--cc-border-strong) !important;
     border-radius: var(--cc-radius-sm) !important;
 }
 
-/* Disabled / readonly inputs: slightly recessed, still dark (not grey) */
-.form-control[disabled],
-.form-control[readonly],
-input[disabled],
-textarea[disabled],
-.select2-container--default.select2-container--disabled .select2-selection--single,
-.select2-container--default.select2-container--disabled .select2-selection--multiple,
-.select2-container--default.select2-container--disabled .select2-selection__rendered,
-.select2-container--default.select2-container--disabled .select2-selection--multiple .select2-search--inline {
+html[data-theme="dark"] .form-control[disabled], html[data-theme="dark"] .form-control[readonly], html[data-theme="dark"] input[disabled], html[data-theme="dark"] textarea[disabled], html[data-theme="dark"] .select2-container--default.select2-container--disabled .select2-selection--single, html[data-theme="dark"] .select2-container--default.select2-container--disabled .select2-selection--multiple, html[data-theme="dark"] .select2-container--default.select2-container--disabled .select2-selection__rendered, html[data-theme="dark"] .select2-container--default.select2-container--disabled .select2-selection--multiple .select2-search--inline {
     background-color: var(--cc-surface) !important;
     color: var(--cc-text-muted) !important;
     border-color: var(--cc-border) !important;
 }
 
-.form-control:focus {
+html[data-theme="dark"] .form-control:focus {
     border-color: var(--cc-primary) !important;
     box-shadow: 0 0 0 3px rgba(59, 111, 232, 0.18) !important;
 }
 
-.form-control::placeholder {
+html[data-theme="dark"] .form-control::placeholder {
     color: var(--cc-text-dim) !important;
 }
 
-/* Clean single 1px border on every input (also listed with the type selectors
-   to beat the inline branding's grey #656464 border). One uniform border, no
-   double outline. */
-.form-control,
-input[type="text"],
-input[type="number"],
-input[type="date"],
-input[type="datetime-local"],
-input[type="url"],
-input[type="email"],
-input[type="password"],
-input[type="tel"],
-input[type="search"],
-select,
-textarea,
-.select2-container--default .select2-selection--single,
-.select2-container--default .select2-selection--multiple {
+html[data-theme="dark"] .form-control, html[data-theme="dark"] input[type="text"], html[data-theme="dark"] input[type="number"], html[data-theme="dark"] input[type="date"], html[data-theme="dark"] input[type="datetime-local"], html[data-theme="dark"] input[type="url"], html[data-theme="dark"] input[type="email"], html[data-theme="dark"] input[type="password"], html[data-theme="dark"] input[type="tel"], html[data-theme="dark"] input[type="search"], html[data-theme="dark"] select, html[data-theme="dark"] textarea, html[data-theme="dark"] .select2-container--default .select2-selection--single, html[data-theme="dark"] .select2-container--default .select2-selection--multiple {
     border: 1px solid var(--cc-border-strong) !important;
     box-shadow: none !important;
 }
 
-.form-control:focus,
-input[type="text"]:focus,
-input[type="number"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus,
-input[type="search"]:focus,
-input[type="url"]:focus,
-input[type="tel"]:focus,
-textarea:focus,
-select:focus,
-.select2-container--default.select2-container--focus .select2-selection--single,
-.select2-container--default.select2-container--focus .select2-selection--multiple {
+html[data-theme="dark"] .form-control:focus, html[data-theme="dark"] input[type="text"]:focus, html[data-theme="dark"] input[type="number"]:focus, html[data-theme="dark"] input[type="email"]:focus, html[data-theme="dark"] input[type="password"]:focus, html[data-theme="dark"] input[type="search"]:focus, html[data-theme="dark"] input[type="url"]:focus, html[data-theme="dark"] input[type="tel"]:focus, html[data-theme="dark"] textarea:focus, html[data-theme="dark"] select:focus, html[data-theme="dark"] .select2-container--default.select2-container--focus .select2-selection--single, html[data-theme="dark"] .select2-container--default.select2-container--focus .select2-selection--multiple {
     border-color: var(--cc-primary) !important;
     box-shadow: 0 0 0 3px rgba(59, 111, 232, 0.18) !important;
 }
 
-/* Validation error styling on the dark skin */
-.has-error .form-control,
-.has-error .select2-container--default .select2-selection--single,
-.has-error .select2-container--default .select2-selection--multiple {
+html[data-theme="dark"] .has-error .form-control, html[data-theme="dark"] .has-error .select2-container--default .select2-selection--single, html[data-theme="dark"] .has-error .select2-container--default .select2-selection--multiple {
     border-color: var(--cc-danger) !important;
 }
 
-.has-error label,
-.has-error .control-label {
+html[data-theme="dark"] .has-error label, html[data-theme="dark"] .has-error .control-label {
     color: var(--cc-danger) !important;
 }
 
-.cc-field-error {
+html[data-theme="dark"] .cc-field-error {
     color: var(--cc-danger) !important;
     display: block;
     margin-top: 4px;
     font-size: 12px;
 }
 
-/* Keep the fill inside the rounded outline so no square corner pokes out,
-   and clip select2's inner elements (rendered value, arrow) to the same radius. */
-.form-control,
-input[type="text"],
-input[type="number"],
-input[type="date"],
-input[type="datetime-local"],
-input[type="url"],
-input[type="email"],
-input[type="password"],
-input[type="tel"],
-input[type="search"],
-select,
-textarea,
-.select2-container--default .select2-selection--single,
-.select2-container--default .select2-selection--multiple,
-.input-group-addon {
+html[data-theme="dark"] .form-control, html[data-theme="dark"] input[type="text"], html[data-theme="dark"] input[type="number"], html[data-theme="dark"] input[type="date"], html[data-theme="dark"] input[type="datetime-local"], html[data-theme="dark"] input[type="url"], html[data-theme="dark"] input[type="email"], html[data-theme="dark"] input[type="password"], html[data-theme="dark"] input[type="tel"], html[data-theme="dark"] input[type="search"], html[data-theme="dark"] select, html[data-theme="dark"] textarea, html[data-theme="dark"] .select2-container--default .select2-selection--single, html[data-theme="dark"] .select2-container--default .select2-selection--multiple, html[data-theme="dark"] .input-group-addon {
     background-clip: padding-box !important;
 }
 
-/* NB: no overflow:hidden here — overflow:hidden + a 1px border + border-radius
-   leaves a grey clip artifact at the rounded corners (the "grey corners" only on
-   the select2/select dropdown fields). The inner elements are transparent
-   (below) and background-clip is padding-box, so clipping isn't needed. */
-
-/* Every inner element of a select2 must be transparent and border-less — only
-   the rounded selection box paints. Otherwise their square corners/edges bleed
-   grey past the radius (the "grey corners" on the dropdown fields). */
-.select2-container--default .select2-selection--single .select2-selection__rendered,
-.select2-container--default .select2-selection--multiple .select2-selection__rendered,
-.select2-container--default .select2-selection--single .select2-selection__arrow,
-.select2-container--default .select2-selection--single .select2-selection__clear,
-.select2-container--default .select2-selection--multiple .select2-selection__clear {
+html[data-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered, html[data-theme="dark"] .select2-container--default .select2-selection--multiple .select2-selection__rendered, html[data-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__arrow, html[data-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__clear, html[data-theme="dark"] .select2-container--default .select2-selection--multiple .select2-selection__clear {
     background-color: transparent !important;
     background-image: none !important;
     border: 0 !important;
     box-shadow: none !important;
 }
 
-/* Native <select>: the browser's own rendering ignores border-radius at the
-   corners (leaving grey corners). Force appearance:none + a CSS chevron so the
-   box is fully ours and the corners stay clean. */
-select,
-select.form-control {
+html[data-theme="dark"] select, html[data-theme="dark"] select.form-control {
     -webkit-appearance: none !important;
     -moz-appearance: none !important;
     appearance: none !important;
@@ -645,258 +457,219 @@ select.form-control {
     background-clip: padding-box !important;
     padding-right: 30px !important;
 }
-select[multiple] {
+
+html[data-theme="dark"] select[multiple] {
     background-image: none !important;
     padding-right: 12px !important;
 }
 
-/* select2 arrow box must follow the rounded right edge, not square it off */
-.select2-container--default .select2-selection--single .select2-selection__arrow {
+html[data-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__arrow {
     height: 100% !important;
     top: 0 !important;
     background: transparent !important;
     border-radius: 0 var(--cc-radius-sm) var(--cc-radius-sm) 0 !important;
 }
 
-/* Focused select2 should glow rounded like inputs, not a square border */
-.select2-container--default.select2-container--focus .select2-selection--single,
-.select2-container--default.select2-container--focus .select2-selection--multiple {
+html[data-theme="dark"] .select2-container--default.select2-container--focus .select2-selection--single, html[data-theme="dark"] .select2-container--default.select2-container--focus .select2-selection--multiple {
     border-color: var(--cc-primary) !important;
     box-shadow: 0 0 0 3px rgba(59, 111, 232, 0.18) !important;
     outline: none !important;
 }
 
-/* Input groups (e.g. "EUR" + cost, value + "months"): round only the outer
-   edges, square the joined edge — otherwise both pieces are fully rounded and
-   leave odd grey corners where they meet. */
-.input-group > .form-control,
-.input-group > .input-group-addon,
-.input-group > .input-group-btn > .btn {
+html[data-theme="dark"] .input-group > .form-control, html[data-theme="dark"] .input-group > .input-group-addon, html[data-theme="dark"] .input-group > .input-group-btn > .btn {
     border-radius: 0 !important;
 }
-.input-group > .form-control:first-child,
-.input-group > .input-group-addon:first-child,
-.input-group > .input-group-btn:first-child > .btn {
+
+html[data-theme="dark"] .input-group > .form-control:first-child, html[data-theme="dark"] .input-group > .input-group-addon:first-child, html[data-theme="dark"] .input-group > .input-group-btn:first-child > .btn {
     border-top-left-radius: var(--cc-radius-sm) !important;
     border-bottom-left-radius: var(--cc-radius-sm) !important;
 }
-.input-group > .form-control:last-child,
-.input-group > .input-group-addon:last-child,
-.input-group > .input-group-btn:last-child > .btn {
+
+html[data-theme="dark"] .input-group > .form-control:last-child, html[data-theme="dark"] .input-group > .input-group-addon:last-child, html[data-theme="dark"] .input-group > .input-group-btn:last-child > .btn {
     border-top-right-radius: var(--cc-radius-sm) !important;
     border-bottom-right-radius: var(--cc-radius-sm) !important;
 }
 
-/* Native <select> and any straggling controls: clip the fill to the rounded
-   outline and drop the inset shadow so no grey corner shows. */
-select.form-control,
-select {
+html[data-theme="dark"] select.form-control, html[data-theme="dark"] select {
     border-radius: var(--cc-radius-sm) !important;
     background-clip: padding-box !important;
     box-shadow: none !important;
 }
 
-.select2-dropdown,
-.select2-container--default .select2-results__option {
+html[data-theme="dark"] .select2-dropdown, html[data-theme="dark"] .select2-container--default .select2-results__option {
     background-color: var(--cc-bg-elevated) !important;
     color: var(--cc-text) !important;
 }
 
-.select2-container--default .select2-results__option--highlighted[aria-selected] {
+html[data-theme="dark"] .select2-container--default .select2-results__option--highlighted[aria-selected] {
     background-color: var(--cc-primary) !important;
     color: #fff !important;
 }
 
-/* Rendered value + placeholder inside the select2 box */
-.select2-container--default .select2-selection--single .select2-selection__rendered {
+html[data-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered {
     color: var(--cc-text) !important;
     line-height: 32px !important;
 }
 
-.select2-container--default .select2-selection--single .select2-selection__placeholder {
+html[data-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__placeholder {
     color: var(--cc-text-dim) !important;
 }
 
-.select2-container--default .select2-selection--single .select2-selection__arrow b {
+html[data-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__arrow b {
     border-color: var(--cc-text-muted) transparent transparent transparent !important;
 }
 
-/* Selected tags ("pills") in a multi-select */
-.select2-container--default .select2-selection--multiple .select2-selection__choice {
+html[data-theme="dark"] .select2-container--default .select2-selection--multiple .select2-selection__choice {
     background-color: var(--cc-surface-2) !important;
     border: 1px solid var(--cc-border-strong) !important;
     color: var(--cc-text) !important;
     border-radius: 6px !important;
 }
 
-.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+html[data-theme="dark"] .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
     color: var(--cc-text-muted) !important;
 }
 
-.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+html[data-theme="dark"] .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
     color: #fff !important;
 }
 
-/* The currently-selected row in the open dropdown */
-.select2-container--default .select2-results__option[aria-selected="true"] {
+html[data-theme="dark"] .select2-container--default .select2-results__option[aria-selected="true"] {
     background-color: var(--cc-surface-2) !important;
     color: var(--cc-text) !important;
 }
 
-/* Search field inside an open select2 dropdown */
-.select2-container--default .select2-search--dropdown .select2-search__field {
+html[data-theme="dark"] .select2-container--default .select2-search--dropdown .select2-search__field {
     background-color: var(--cc-surface) !important;
     border: 1px solid var(--cc-border-strong) !important;
     color: var(--cc-text) !important;
     border-radius: var(--cc-radius-sm) !important;
 }
 
-/* ---------- Badges / labels (pills) ---------- */
-.label,
-.badge {
+html[data-theme="dark"] .label, html[data-theme="dark"] .badge {
     border-radius: 999px;
     font-weight: 600;
     padding: 0.28em 0.7em;
 }
 
-.label-success,
-.badge-success {
+html[data-theme="dark"] .label-success, html[data-theme="dark"] .badge-success {
     background-color: rgba(52, 199, 89, 0.16) !important;
     color: var(--cc-success) !important;
 }
 
-.label-danger,
-.badge-danger {
+html[data-theme="dark"] .label-danger, html[data-theme="dark"] .badge-danger {
     background-color: rgba(240, 97, 109, 0.16) !important;
     color: var(--cc-danger) !important;
 }
 
-.label-warning,
-.badge-warning {
+html[data-theme="dark"] .label-warning, html[data-theme="dark"] .badge-warning {
     background-color: rgba(245, 166, 35, 0.16) !important;
     color: var(--cc-warning) !important;
 }
 
-.label-default,
-.badge-default {
+html[data-theme="dark"] .label-default, html[data-theme="dark"] .badge-default {
     background-color: var(--cc-surface-2) !important;
     color: var(--cc-text-muted) !important;
 }
 
-.label-info,
-.badge-info {
+html[data-theme="dark"] .label-info, html[data-theme="dark"] .badge-info {
     background-color: rgba(56, 189, 248, 0.16) !important;
     color: var(--cc-info) !important;
 }
 
-/* ---------- Tabs ---------- */
-.nav-tabs {
+html[data-theme="dark"] .nav-tabs {
     border-bottom: 1px solid var(--cc-border) !important;
 }
 
-.nav-tabs > li > a {
+html[data-theme="dark"] .nav-tabs > li > a {
     color: var(--cc-text-muted) !important;
     border: none !important;
     border-radius: var(--cc-radius-sm) !important;
 }
 
-.nav-tabs > li.active > a,
-.nav-tabs > li > a:hover {
+html[data-theme="dark"] .nav-tabs > li.active > a, html[data-theme="dark"] .nav-tabs > li > a:hover {
     background-color: var(--cc-surface-2) !important;
     color: #fff !important;
     border: none !important;
 }
 
-/* ---------- Misc ---------- */
-.modal-content {
+html[data-theme="dark"] .modal-content {
     background-color: var(--cc-surface) !important;
     border: 1px solid var(--cc-border) !important;
     border-radius: var(--cc-radius) !important;
 }
 
-.modal-header,
-.modal-footer {
+html[data-theme="dark"] .modal-header, html[data-theme="dark"] .modal-footer {
     border-color: var(--cc-border) !important;
 }
 
-.callout {
+html[data-theme="dark"] .callout {
     border-radius: var(--cc-radius-sm);
     border: 1px solid var(--cc-border);
 }
 
-.dropdown-menu {
+html[data-theme="dark"] .dropdown-menu {
     background-color: var(--cc-bg-elevated) !important;
     border: 1px solid var(--cc-border) !important;
     border-radius: var(--cc-radius-sm) !important;
 }
 
-.dropdown-menu > li > a {
+html[data-theme="dark"] .dropdown-menu > li > a {
     color: var(--cc-text) !important;
 }
 
-.dropdown-menu > li > a:hover {
+html[data-theme="dark"] .dropdown-menu > li > a:hover {
     background-color: var(--cc-surface-hover) !important;
 }
 
-hr {
+html[data-theme="dark"] hr {
     border-color: var(--cc-border) !important;
 }
 
-/* ---------- Page header (title + breadcrumb on every page) ---------- */
-.content-header {
+html[data-theme="dark"] .content-header {
     padding: 18px 20px 10px;
 }
 
-.content-header > h1 {
+html[data-theme="dark"] .content-header > h1 {
     color: var(--cc-text) !important;
     font-weight: 600;
 }
 
-.content-header > h1 > small {
+html[data-theme="dark"] .content-header > h1 > small {
     color: var(--cc-text-muted) !important;
 }
 
-.content-header > .breadcrumb,
-.breadcrumb {
+html[data-theme="dark"] .content-header > .breadcrumb, html[data-theme="dark"] .breadcrumb {
     background-color: transparent !important;
     border: 0 !important;
     padding: 6px 0 !important;
 }
 
-.content-header > .breadcrumb {
+html[data-theme="dark"] .content-header > .breadcrumb {
     top: 16px;
 }
 
-.breadcrumb > li,
-.breadcrumb > li > a {
+html[data-theme="dark"] .breadcrumb > li, html[data-theme="dark"] .breadcrumb > li > a {
     color: var(--cc-text-muted) !important;
 }
 
-.breadcrumb > li > a:hover {
+html[data-theme="dark"] .breadcrumb > li > a:hover {
     color: var(--cc-primary) !important;
 }
 
-.breadcrumb > .active {
+html[data-theme="dark"] .breadcrumb > .active {
     color: var(--cc-text) !important;
 }
 
-.breadcrumb > li + li::before {
+html[data-theme="dark"] .breadcrumb > li + li::before {
     color: var(--cc-text-dim) !important;
 }
 
-/* ---------- Custom checkboxes / radios on the dark skin ---------- */
-.checkbox label,
-.radio label {
+html[data-theme="dark"] .checkbox label, html[data-theme="dark"] .radio label {
     color: var(--cc-text);
 }
 
-/* Robust dark-skin checkbox/radio. We DON'T reuse the base theme's ::before mark
-   (clip-path + box-shadow) — it was rendering near-invisible and glued to the
-   edge. Instead: appearance:none, our own 16px box, the base ::before hidden, and
-   the mark drawn with ::after (white tick / white dot) inset from the border so
-   there's clear spacing. Filled with the primary colour when checked. */
-input[type="checkbox"],
-input[type="radio"] {
+html[data-theme="dark"] input[type="checkbox"], html[data-theme="dark"] input[type="radio"] {
     -webkit-appearance: none !important;
     -moz-appearance: none !important;
     appearance: none !important;
@@ -913,26 +686,22 @@ input[type="radio"] {
     vertical-align: middle;
 }
 
-input[type="radio"] {
+html[data-theme="dark"] input[type="radio"] {
     border-radius: 50% !important;
 }
 
-/* Drop the base theme's faux mark completely */
-input[type="checkbox"]::before,
-input[type="radio"]::before {
+html[data-theme="dark"] input[type="checkbox"]::before, html[data-theme="dark"] input[type="radio"]::before {
     display: none !important;
     content: none !important;
     box-shadow: none !important;
 }
 
-input[type="checkbox"]:checked,
-input[type="radio"]:checked {
+html[data-theme="dark"] input[type="checkbox"]:checked, html[data-theme="dark"] input[type="radio"]:checked {
     background-color: var(--cc-primary) !important;
     border-color: var(--cc-primary) !important;
 }
 
-/* White tick, inset from the edges -> visible + spacing from the outline */
-input[type="checkbox"]:checked::after {
+html[data-theme="dark"] input[type="checkbox"]:checked::after {
     content: "" !important;
     position: absolute !important;
     left: 5px !important;
@@ -946,8 +715,7 @@ input[type="checkbox"]:checked::after {
     box-shadow: none !important;
 }
 
-/* White centre dot for the round radios */
-input[type="radio"]:checked::after {
+html[data-theme="dark"] input[type="radio"]:checked::after {
     content: "" !important;
     position: absolute !important;
     left: 50% !important;
@@ -959,44 +727,40 @@ input[type="radio"]:checked::after {
     transform: translate(-50%, -50%) !important;
 }
 
-/* ---------- Panels (used on some settings / detail pages) ---------- */
-.panel {
+html[data-theme="dark"] .panel {
     background-color: var(--cc-surface) !important;
     border: 1px solid var(--cc-border) !important;
     border-radius: var(--cc-radius) !important;
     box-shadow: none !important;
 }
 
-.panel-heading {
+html[data-theme="dark"] .panel-heading {
     background-color: var(--cc-bg-elevated) !important;
     border-bottom: 1px solid var(--cc-border) !important;
     color: var(--cc-text) !important;
     border-radius: var(--cc-radius) var(--cc-radius) 0 0 !important;
 }
 
-.panel-footer {
+html[data-theme="dark"] .panel-footer {
     background-color: var(--cc-bg-elevated) !important;
     border-top: 1px solid var(--cc-border) !important;
 }
 
-.panel-default,
-.panel-primary {
+html[data-theme="dark"] .panel-default, html[data-theme="dark"] .panel-primary {
     border-color: var(--cc-border) !important;
 }
 
-/* ---------- List groups ---------- */
-.list-group-item {
+html[data-theme="dark"] .list-group-item {
     background-color: var(--cc-surface) !important;
     border-color: var(--cc-border) !important;
     color: var(--cc-text) !important;
 }
 
-.list-group-item:hover {
+html[data-theme="dark"] .list-group-item:hover {
     background-color: var(--cc-surface-hover) !important;
 }
 
-/* ---------- Login page ---------- */
-body.login-page {
+html[data-theme="dark"] body.login-page {
     background-color: var(--cc-bg) !important;
     display: flex;
     flex-direction: column;
@@ -1005,61 +769,54 @@ body.login-page {
     color: var(--cc-text);
 }
 
-.cc-login-logo {
+html[data-theme="dark"] .cc-login-logo {
     margin-bottom: 22px;
 }
 
-.cc-login-logo img {
+html[data-theme="dark"] .cc-login-logo img {
     height: 54px;
     width: auto;
 }
 
-.login-page .login-box,
-.login-page .box.login-box {
+html[data-theme="dark"] .login-page .login-box, html[data-theme="dark"] .login-page .box.login-box {
     background-color: var(--cc-surface) !important;
     border: 1px solid var(--cc-border) !important;
     border-radius: 12px !important;
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4) !important;
 }
 
-.login-page .box-header.with-border {
+html[data-theme="dark"] .login-page .box-header.with-border {
     border-bottom: 1px solid var(--cc-border) !important;
     text-align: center;
 }
 
-.login-page .box-title {
+html[data-theme="dark"] .login-page .box-title {
     font-weight: 700;
     font-size: 18px;
 }
 
-/* The box body was AdminLTE white — make it part of the dark card so the
-   info alert (translucent blue + light text) keeps proper contrast. */
-.login-page .login-box-body,
-.login-page .register-box-body {
+html[data-theme="dark"] .login-page .login-box-body, html[data-theme="dark"] .login-page .register-box-body {
     background: transparent !important;
     color: var(--cc-text) !important;
 }
 
-.login-page .box-footer {
+html[data-theme="dark"] .login-page .box-footer {
     background: transparent !important;
     border-top: 1px solid var(--cc-border) !important;
 }
 
-/* Stronger contrast for the login/2FA info notice on the dark card */
-.login-page .alert-info {
+html[data-theme="dark"] .login-page .alert-info {
     background-color: rgba(56, 189, 248, 0.14) !important;
     color: #bfe6fb !important;
     border-color: rgba(56, 189, 248, 0.35) !important;
 }
 
-.login-page label {
+html[data-theme="dark"] .login-page label {
     color: var(--cc-text-muted) !important;
     font-weight: 600;
 }
 
-/* "Remember me" row: it is a .form-control wrapping the checkbox + text;
-   give the checkbox real left padding and breathing room from the label. */
-.login-page .form-group > label.form-control {
+html[data-theme="dark"] .login-page .form-group > label.form-control {
     display: flex !important;
     align-items: center;
     gap: 10px;
@@ -1069,22 +826,18 @@ body.login-page {
     cursor: pointer;
 }
 
-.login-page .form-group > label.form-control > input[type="checkbox"] {
+html[data-theme="dark"] .login-page .form-group > label.form-control > input[type="checkbox"] {
     margin: 0 !important;
     flex: 0 0 auto;
     width: 16px;
     height: 16px;
 }
 
-.login-page a {
+html[data-theme="dark"] .login-page a {
     color: var(--cc-primary);
 }
 
-/* Same breathing room for checkbox/radio "boxes" on EVERY page (Francesca: the
-   space between the box border and the checkbox was only present on login). A
-   label styled as .form-control wraps the input + its text; lay it out as a flex
-   row with left padding + a gap so the input isn't glued to the border. */
-label.form-control {
+html[data-theme="dark"] label.form-control {
     display: flex !important;
     align-items: center;
     gap: 10px;
@@ -1092,60 +845,48 @@ label.form-control {
     cursor: pointer;
 }
 
-label.form-control > input[type="checkbox"],
-label.form-control > input[type="radio"] {
+html[data-theme="dark"] label.form-control > input[type="checkbox"], html[data-theme="dark"] label.form-control > input[type="radio"] {
     margin: 0 !important;
     flex: 0 0 auto;
 }
 
-/* Dark scrollbars to match the skin */
-* {
+html[data-theme="dark"] * {
     scrollbar-color: var(--cc-border-strong) transparent;
     scrollbar-width: thin;
 }
 
-::-webkit-scrollbar {
+html[data-theme="dark"] ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
 }
 
-::-webkit-scrollbar-track {
+html[data-theme="dark"] ::-webkit-scrollbar-track {
     background: var(--cc-bg);
 }
 
-::-webkit-scrollbar-thumb {
+html[data-theme="dark"] ::-webkit-scrollbar-thumb {
     background: var(--cc-border-strong);
     border-radius: 6px;
     border: 2px solid var(--cc-bg);
 }
 
-::-webkit-scrollbar-thumb:hover {
+html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
     background: #3d434f;
 }
 
-.pagination > li > a,
-.pagination > li > span {
+html[data-theme="dark"] .pagination > li > a, html[data-theme="dark"] .pagination > li > span {
     background-color: var(--cc-surface) !important;
     border-color: var(--cc-border) !important;
     color: var(--cc-text-muted) !important;
 }
 
-.pagination > .active > a,
-.pagination > .active > span {
+html[data-theme="dark"] .pagination > .active > a, html[data-theme="dark"] .pagination > .active > span {
     background-color: var(--cc-primary) !important;
     border-color: var(--cc-primary) !important;
     color: #fff !important;
 }
 
-/* ============================================================
-   Comprehensive pass: compact solid tables (CerberoSOC style),
-   consistent fixed columns / hover, refined buttons & selects.
-   ============================================================ */
-
-/* Compact rows with subtle separators instead of heavy striping */
-.table > tbody > tr > td,
-.snipe-table > tbody > tr > td,
-.fixed-table-container tbody td {
+html[data-theme="dark"] .table > tbody > tr > td, html[data-theme="dark"] .snipe-table > tbody > tr > td, html[data-theme="dark"] .fixed-table-container tbody td {
     padding: 9px 12px !important;
     border-top: none !important;
     border-bottom: 1px solid var(--cc-border) !important;
@@ -1153,250 +894,180 @@ label.form-control > input[type="radio"] {
     vertical-align: middle !important;
 }
 
-.table > thead > tr > th,
-.snipe-table > thead > tr > th,
-.fixed-table-header th,
-.fixed-table-container thead th {
+html[data-theme="dark"] .table > thead > tr > th, html[data-theme="dark"] .snipe-table > thead > tr > th, html[data-theme="dark"] .fixed-table-header th, html[data-theme="dark"] .fixed-table-container thead th {
     padding: 10px 12px !important;
     background-color: var(--cc-bg-elevated) !important;
     border-bottom: 1px solid var(--cc-border) !important;
 }
 
-/* Solid rows: drop the alternating stripe (it mismatched the fixed columns) */
-.table-striped > tbody > tr:nth-of-type(odd),
-.table-striped > tbody > tr:nth-of-type(odd) > td {
+html[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd), html[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > td {
     background-color: var(--cc-surface) !important;
 }
 
-/* Fixed (frozen) columns must match the row surface — this kills the
-   blue/lighter band that appeared on the right-hand side of rows */
-.fixed-columns,
-.fixed-columns-right,
-.fixed-columns td,
-.fixed-columns-right td,
-.fixed-columns th,
-.fixed-columns-right th,
-.fixed-columns .odd td,
-.fixed-columns .even td,
-.fixed-columns-right .odd td,
-.fixed-columns-right .even td {
+html[data-theme="dark"] .fixed-columns, html[data-theme="dark"] .fixed-columns-right, html[data-theme="dark"] .fixed-columns td, html[data-theme="dark"] .fixed-columns-right td, html[data-theme="dark"] .fixed-columns th, html[data-theme="dark"] .fixed-columns-right th, html[data-theme="dark"] .fixed-columns .odd td, html[data-theme="dark"] .fixed-columns .even td, html[data-theme="dark"] .fixed-columns-right .odd td, html[data-theme="dark"] .fixed-columns-right .even td {
     background-color: var(--cc-surface) !important;
     border-color: var(--cc-border) !important;
 }
 
-.fixed-columns thead th,
-.fixed-columns-right thead th {
+html[data-theme="dark"] .fixed-columns thead th, html[data-theme="dark"] .fixed-columns-right thead th {
     background-color: var(--cc-bg-elevated) !important;
 }
 
-/* Footer / totals row: one uniform colour across the WHOLE row, including the
-   frozen fixed-columns clones at the left/right ends (no darker segments). */
-.table > tfoot > tr > td,
-.table > tfoot > tr > th,
-.snipe-table > tfoot > tr > td,
-.fixed-table-footer,
-.fixed-table-footer table,
-.fixed-table-footer td,
-.fixed-table-footer th,
-.fixed-columns .fixed-table-footer,
-.fixed-columns-right .fixed-table-footer,
-.fixed-columns .fixed-table-footer td,
-.fixed-columns-right .fixed-table-footer td {
+html[data-theme="dark"] .table > tfoot > tr > td, html[data-theme="dark"] .table > tfoot > tr > th, html[data-theme="dark"] .snipe-table > tfoot > tr > td, html[data-theme="dark"] .fixed-table-footer, html[data-theme="dark"] .fixed-table-footer table, html[data-theme="dark"] .fixed-table-footer td, html[data-theme="dark"] .fixed-table-footer th, html[data-theme="dark"] .fixed-columns .fixed-table-footer, html[data-theme="dark"] .fixed-columns-right .fixed-table-footer, html[data-theme="dark"] .fixed-columns .fixed-table-footer td, html[data-theme="dark"] .fixed-columns-right .fixed-table-footer td {
     background-color: var(--cc-surface) !important;
     color: var(--cc-text) !important;
     border-top: 1px solid var(--cc-border) !important;
 }
 
-/* One consistent hover / selected colour everywhere (never blue) */
-.table-hover > tbody > tr:hover,
-.table-hover > tbody > tr:hover > td,
-.snipe-table > tbody > tr:hover > td,
-.fixed-table-container tbody tr:hover td,
-.fixed-columns tr:hover td,
-.fixed-columns-right tr:hover td,
-tr.selected > td,
-.fixed-columns tr.selected td,
-.fixed-columns-right tr.selected td {
+html[data-theme="dark"] .table-hover > tbody > tr:hover, html[data-theme="dark"] .table-hover > tbody > tr:hover > td, html[data-theme="dark"] .snipe-table > tbody > tr:hover > td, html[data-theme="dark"] .fixed-table-container tbody tr:hover td, html[data-theme="dark"] .fixed-columns tr:hover td, html[data-theme="dark"] .fixed-columns-right tr:hover td, html[data-theme="dark"] tr.selected > td, html[data-theme="dark"] .fixed-columns tr.selected td, html[data-theme="dark"] .fixed-columns-right tr.selected td {
     background-color: var(--cc-surface-2) !important;
 }
 
-/* Smaller thumbnails so list rows stay compact */
-.snipe-table tbody td img,
-.fixed-table-container tbody td img,
-table.snipe-table td img.thumbnail {
+html[data-theme="dark"] .snipe-table tbody td img, html[data-theme="dark"] .fixed-table-container tbody td img, html[data-theme="dark"] table.snipe-table td img.thumbnail {
     max-height: 38px !important;
     width: auto !important;
 }
 
-/* Bootstrap-table dropdowns (per-page, column toggles) */
-.fixed-table-toolbar .dropdown-menu,
-.bootstrap-table .dropdown-menu,
-.fixed-table-pagination .dropdown-menu {
+html[data-theme="dark"] .fixed-table-toolbar .dropdown-menu, html[data-theme="dark"] .bootstrap-table .dropdown-menu, html[data-theme="dark"] .fixed-table-pagination .dropdown-menu {
     background-color: var(--cc-bg-elevated) !important;
     border-color: var(--cc-border) !important;
     color: var(--cc-text) !important;
 }
 
-/* Refined, flatter semantic buttons (still coloured, less saturated) */
-.btn-info {
+html[data-theme="dark"] .btn-info {
     background-color: #2c6f93 !important;
     border-color: #2c6f93 !important;
     color: #fff !important;
 }
 
-.btn-info:hover,
-.btn-info:focus {
+html[data-theme="dark"] .btn-info:hover, html[data-theme="dark"] .btn-info:focus {
     background-color: #275f7e !important;
     border-color: #275f7e !important;
 }
 
-.btn-warning {
+html[data-theme="dark"] .btn-warning {
     background-color: #c9821b !important;
     border-color: #c9821b !important;
     color: #fff !important;
 }
 
-.btn-warning:hover,
-.btn-warning:focus {
+html[data-theme="dark"] .btn-warning:hover, html[data-theme="dark"] .btn-warning:focus {
     background-color: #ad7016 !important;
     border-color: #ad7016 !important;
     color: #fff !important;
 }
 
-.btn-danger {
+html[data-theme="dark"] .btn-danger {
     background-color: #c4505a !important;
     border-color: #c4505a !important;
     color: #fff !important;
 }
 
-.btn-danger:hover,
-.btn-danger:focus {
+html[data-theme="dark"] .btn-danger:hover, html[data-theme="dark"] .btn-danger:focus {
     background-color: #ad434c !important;
     border-color: #ad434c !important;
 }
 
-/* Small icon action buttons: tighter, rounded */
-.btn-sm,
-.btn-xs {
+html[data-theme="dark"] .btn-sm, html[data-theme="dark"] .btn-xs {
     border-radius: 7px;
 }
 
-/* ============================================================
-   Broad coverage pass — forms, alerts, tabs, wells, dropdowns,
-   tooltips, code — so every page follows the dark skin.
-   ============================================================ */
-
-fieldset legend,
-.form-horizontal legend {
+html[data-theme="dark"] fieldset legend, html[data-theme="dark"] .form-horizontal legend {
     color: var(--cc-text) !important;
     border-bottom: 1px solid var(--cc-border) !important;
     font-weight: 600;
 }
 
-.control-label,
-label.control-label {
+html[data-theme="dark"] .control-label, html[data-theme="dark"] label.control-label {
     color: var(--cc-text-muted) !important;
 }
 
-.alert {
+html[data-theme="dark"] .alert {
     border-radius: var(--cc-radius-sm);
     border: 1px solid var(--cc-border);
 }
 
-.alert-success {
+html[data-theme="dark"] .alert-success {
     background-color: rgba(52, 199, 89, 0.12) !important;
     color: #7ee0a0 !important;
     border-color: rgba(52, 199, 89, 0.3) !important;
 }
 
-.alert-danger {
+html[data-theme="dark"] .alert-danger {
     background-color: rgba(240, 97, 109, 0.12) !important;
     color: #f3949c !important;
     border-color: rgba(240, 97, 109, 0.3) !important;
 }
 
-.alert-info {
+html[data-theme="dark"] .alert-info {
     background-color: rgba(56, 189, 248, 0.12) !important;
     color: #8fd6f7 !important;
     border-color: rgba(56, 189, 248, 0.3) !important;
 }
 
-.alert-warning {
+html[data-theme="dark"] .alert-warning {
     background-color: rgba(245, 166, 35, 0.12) !important;
     color: #f3c074 !important;
     border-color: rgba(245, 166, 35, 0.3) !important;
 }
 
-.nav-tabs-custom {
+html[data-theme="dark"] .nav-tabs-custom {
     background-color: var(--cc-surface) !important;
 }
 
-.nav-tabs-custom > .nav-tabs {
+html[data-theme="dark"] .nav-tabs-custom > .nav-tabs {
     border-bottom: 1px solid var(--cc-border) !important;
 }
 
-.well {
+html[data-theme="dark"] .well {
     background-color: var(--cc-bg-elevated) !important;
     border: 1px solid var(--cc-border) !important;
     border-radius: var(--cc-radius-sm) !important;
     box-shadow: none !important;
 }
 
-.progress {
+html[data-theme="dark"] .progress {
     background-color: var(--cc-bg-elevated) !important;
 }
 
-code,
-pre,
-kbd {
+html[data-theme="dark"] code, html[data-theme="dark"] pre, html[data-theme="dark"] kbd {
     background-color: var(--cc-bg-elevated) !important;
     border: 1px solid var(--cc-border) !important;
     color: #c8d0dc !important;
 }
 
-.main-header .navbar-nav > li > a,
-.main-header .dropdown-toggle {
+html[data-theme="dark"] .main-header .navbar-nav > li > a, html[data-theme="dark"] .main-header .dropdown-toggle {
     color: var(--cc-text-muted) !important;
 }
 
-.tooltip-inner {
+html[data-theme="dark"] .tooltip-inner {
     background-color: #000000 !important;
 }
 
-.popover {
+html[data-theme="dark"] .popover {
     background-color: var(--cc-bg-elevated) !important;
     border-color: var(--cc-border) !important;
     color: var(--cc-text) !important;
 }
 
-.popover-title {
+html[data-theme="dark"] .popover-title {
     background-color: var(--cc-surface-2) !important;
     border-color: var(--cc-border) !important;
     color: var(--cc-text) !important;
 }
 
-.list-group-item {
+html[data-theme="dark"] .list-group-item {
     background-color: transparent !important;
     border-color: var(--cc-border) !important;
     color: var(--cc-text) !important;
 }
 
-.panel-heading,
-.panel-footer {
+html[data-theme="dark"] .panel-heading, html[data-theme="dark"] .panel-footer {
     background-color: var(--cc-bg-elevated) !important;
     border-color: var(--cc-border) !important;
 }
 
-/* ============================================================
-   Nav dropdowns (header "Crea", company switcher, user menu,
-   settings) — dark and consistent, overriding inline branding.
-   ============================================================ */
-
-.main-header .navbar-custom-menu .dropdown-menu,
-.main-header .navbar-nav .dropdown-menu,
-.navbar-nav > .dropdown > .dropdown-menu,
-.navbar-nav > .user-menu > .dropdown-menu,
-.main-header .dropdown-menu {
+html[data-theme="dark"] .main-header .navbar-custom-menu .dropdown-menu, html[data-theme="dark"] .main-header .navbar-nav .dropdown-menu, html[data-theme="dark"] .navbar-nav > .dropdown > .dropdown-menu, html[data-theme="dark"] .navbar-nav > .user-menu > .dropdown-menu, html[data-theme="dark"] .main-header .dropdown-menu {
     background-color: var(--cc-bg-elevated) !important;
     border: 1px solid var(--cc-border-strong) !important;
     border-radius: 10px !important;
@@ -1405,95 +1076,60 @@ kbd {
     margin-top: 8px !important;
 }
 
-.main-header .navbar-custom-menu .dropdown-menu > li,
-.main-header .navbar-nav .dropdown-menu > li,
-.main-header .dropdown-menu > li {
+html[data-theme="dark"] .main-header .navbar-custom-menu .dropdown-menu > li, html[data-theme="dark"] .main-header .navbar-nav .dropdown-menu > li, html[data-theme="dark"] .main-header .dropdown-menu > li {
     background-color: transparent !important;
 }
 
-.main-header .navbar-custom-menu .dropdown-menu > li > a,
-.main-header .navbar-nav .dropdown-menu > li > a,
-.main-header .dropdown-menu > li > a,
-.main-header .dropdown-menu > li > a:link,
-.main-header .dropdown-menu > li > a:visited {
+html[data-theme="dark"] .main-header .navbar-custom-menu .dropdown-menu > li > a, html[data-theme="dark"] .main-header .navbar-nav .dropdown-menu > li > a, html[data-theme="dark"] .main-header .dropdown-menu > li > a, html[data-theme="dark"] .main-header .dropdown-menu > li > a:link, html[data-theme="dark"] .main-header .dropdown-menu > li > a:visited {
     color: var(--cc-text) !important;
     background-color: transparent !important;
     border-radius: 7px !important;
     padding: 9px 12px !important;
 }
 
-.main-header .navbar-custom-menu .dropdown-menu > li > a:hover,
-.main-header .navbar-custom-menu .dropdown-menu > li > a:focus,
-.main-header .navbar-nav .dropdown-menu > li > a:hover,
-.main-header .dropdown-menu > li > a:hover,
-.main-header .dropdown-menu > li > a:focus,
-.main-header .dropdown-menu > li:hover > a,
-.main-header .dropdown-menu > .active > a,
-.main-header .dropdown-menu > .active > a:hover {
+html[data-theme="dark"] .main-header .navbar-custom-menu .dropdown-menu > li > a:hover, html[data-theme="dark"] .main-header .navbar-custom-menu .dropdown-menu > li > a:focus, html[data-theme="dark"] .main-header .navbar-nav .dropdown-menu > li > a:hover, html[data-theme="dark"] .main-header .dropdown-menu > li > a:hover, html[data-theme="dark"] .main-header .dropdown-menu > li > a:focus, html[data-theme="dark"] .main-header .dropdown-menu > li:hover > a, html[data-theme="dark"] .main-header .dropdown-menu > .active > a, html[data-theme="dark"] .main-header .dropdown-menu > .active > a:hover {
     background-color: var(--cc-surface-hover) !important;
     color: #ffffff !important;
 }
 
-/* Open toggle (the header item whose dropdown is open) */
-.main-header .navbar .nav > .open > a,
-.main-header .navbar .nav > .open > a:hover,
-.main-header .navbar .nav > .open > a:focus {
+html[data-theme="dark"] .main-header .navbar .nav > .open > a, html[data-theme="dark"] .main-header .navbar .nav > .open > a:hover, html[data-theme="dark"] .main-header .navbar .nav > .open > a:focus {
     background-color: var(--cc-surface-2) !important;
     color: #ffffff !important;
 }
 
-.main-header .dropdown-menu .divider,
-.dropdown-menu .divider {
+html[data-theme="dark"] .main-header .dropdown-menu .divider, html[data-theme="dark"] .dropdown-menu .divider {
     background-color: var(--cc-border) !important;
     margin: 6px 0;
 }
 
-/* User menu panel (header/footer of the avatar dropdown) */
-.navbar-custom-menu .user-menu .user-header {
+html[data-theme="dark"] .navbar-custom-menu .user-menu .user-header {
     background-color: var(--cc-surface) !important;
     color: var(--cc-text) !important;
     border-bottom: 1px solid var(--cc-border);
 }
 
-.navbar-custom-menu .user-menu .user-footer {
+html[data-theme="dark"] .navbar-custom-menu .user-menu .user-footer {
     background-color: var(--cc-bg-elevated) !important;
     border-top: 1px solid var(--cc-border);
 }
 
-.navbar-custom-menu .user-menu .user-footer .btn-default {
+html[data-theme="dark"] .navbar-custom-menu .user-menu .user-footer .btn-default {
     background-color: var(--cc-surface-2) !important;
     border-color: var(--cc-border-strong) !important;
     color: var(--cc-text) !important;
 }
 
-/* Kill the AdminLTE caret/triangle that points up from navbar dropdowns —
-   Cloudflare panels float as clean cards with no arrow. */
-.main-header .navbar-nav > .notifications-menu > .dropdown-menu::before,
-.main-header .navbar-nav > .notifications-menu > .dropdown-menu::after,
-.main-header .navbar-nav > .messages-menu > .dropdown-menu::before,
-.main-header .navbar-nav > .messages-menu > .dropdown-menu::after,
-.main-header .navbar-nav > .tasks-menu > .dropdown-menu::before,
-.main-header .navbar-nav > .tasks-menu > .dropdown-menu::after,
-.main-header .navbar-nav > .user-menu > .dropdown-menu::before,
-.main-header .navbar-nav > .user-menu > .dropdown-menu::after,
-.main-header .navbar-custom-menu .dropdown-menu::before,
-.main-header .navbar-custom-menu .dropdown-menu::after {
+html[data-theme="dark"] .main-header .navbar-nav > .notifications-menu > .dropdown-menu::before, html[data-theme="dark"] .main-header .navbar-nav > .notifications-menu > .dropdown-menu::after, html[data-theme="dark"] .main-header .navbar-nav > .messages-menu > .dropdown-menu::before, html[data-theme="dark"] .main-header .navbar-nav > .messages-menu > .dropdown-menu::after, html[data-theme="dark"] .main-header .navbar-nav > .tasks-menu > .dropdown-menu::before, html[data-theme="dark"] .main-header .navbar-nav > .tasks-menu > .dropdown-menu::after, html[data-theme="dark"] .main-header .navbar-nav > .user-menu > .dropdown-menu::before, html[data-theme="dark"] .main-header .navbar-nav > .user-menu > .dropdown-menu::after, html[data-theme="dark"] .main-header .navbar-custom-menu .dropdown-menu::before, html[data-theme="dark"] .main-header .navbar-custom-menu .dropdown-menu::after {
     display: none !important;
     content: none !important;
 }
 
-/* Full-bleed special menus (notifications / messages / tasks): match the panel */
-.main-header .navbar-nav > .notifications-menu > .dropdown-menu,
-.main-header .navbar-nav > .messages-menu > .dropdown-menu,
-.main-header .navbar-nav > .tasks-menu > .dropdown-menu {
+html[data-theme="dark"] .main-header .navbar-nav > .notifications-menu > .dropdown-menu, html[data-theme="dark"] .main-header .navbar-nav > .messages-menu > .dropdown-menu, html[data-theme="dark"] .main-header .navbar-nav > .tasks-menu > .dropdown-menu {
     width: 300px !important;
     min-width: 260px !important;
 }
 
-.main-header .navbar-nav > .notifications-menu > .dropdown-menu > li.header,
-.main-header .navbar-nav > .messages-menu > .dropdown-menu > li.header,
-.main-header .navbar-nav > .tasks-menu > .dropdown-menu > li.header,
-.main-header .navbar-nav .dropdown-menu > li.header {
+html[data-theme="dark"] .main-header .navbar-nav > .notifications-menu > .dropdown-menu > li.header, html[data-theme="dark"] .main-header .navbar-nav > .messages-menu > .dropdown-menu > li.header, html[data-theme="dark"] .main-header .navbar-nav > .tasks-menu > .dropdown-menu > li.header, html[data-theme="dark"] .main-header .navbar-nav .dropdown-menu > li.header {
     background-color: transparent !important;
     color: var(--cc-text-muted) !important;
     border-bottom: 1px solid var(--cc-border) !important;
@@ -1503,47 +1139,38 @@ kbd {
     font-weight: 600;
 }
 
-.main-header .navbar-nav > .notifications-menu > .dropdown-menu > li.footer > a,
-.main-header .navbar-nav > .messages-menu > .dropdown-menu > li.footer > a,
-.main-header .navbar-nav > .tasks-menu > .dropdown-menu > li.footer > a,
-.main-header .navbar-nav .dropdown-menu > li.footer > a {
+html[data-theme="dark"] .main-header .navbar-nav > .notifications-menu > .dropdown-menu > li.footer > a, html[data-theme="dark"] .main-header .navbar-nav > .messages-menu > .dropdown-menu > li.footer > a, html[data-theme="dark"] .main-header .navbar-nav > .tasks-menu > .dropdown-menu > li.footer > a, html[data-theme="dark"] .main-header .navbar-nav .dropdown-menu > li.footer > a {
     background-color: transparent !important;
     color: var(--cc-primary) !important;
     border-top: 1px solid var(--cc-border) !important;
     border-radius: 0 !important;
 }
 
-.main-header .navbar-nav .dropdown-menu .menu > li > a {
+html[data-theme="dark"] .main-header .navbar-nav .dropdown-menu .menu > li > a {
     border-bottom: 1px solid var(--cc-border) !important;
     color: var(--cc-text) !important;
 }
 
-/* The Create-New menu and any plain navbar dropdown: comfortable min width */
-.main-header .navbar-custom-menu .dropdown-menu {
+html[data-theme="dark"] .main-header .navbar-custom-menu .dropdown-menu {
     min-width: 220px !important;
 }
 
-/* Header left padding now that the hamburger moved into the sidebar */
-.main-header .navbar {
+html[data-theme="dark"] .main-header .navbar {
     padding-left: 8px;
 }
 
-/* Pin the top bar to a deterministic 56px so its bottom border lines up with
-   the sidebar head (both start at top:0). */
-.main-header,
-.main-header > .navbar,
-.main-header .navbar {
+html[data-theme="dark"] .main-header, html[data-theme="dark"] .main-header > .navbar, html[data-theme="dark"] .main-header .navbar {
     min-height: 56px !important;
     height: 56px !important;
 }
 
-/* Keep the header icon row vertically centred in the 56px bar */
-.main-header .navbar-custom-menu > .nav.navbar-nav {
+html[data-theme="dark"] .main-header .navbar-custom-menu > .nav.navbar-nav {
     display: flex;
     align-items: center;
     height: 56px;
 }
-.main-header .navbar-custom-menu > .nav.navbar-nav > li > a {
+
+html[data-theme="dark"] .main-header .navbar-custom-menu > .nav.navbar-nav > li > a {
     padding-top: 0;
     padding-bottom: 0;
     display: flex;
@@ -1551,27 +1178,7 @@ kbd {
     height: 56px;
 }
 
-/* ============================================================
-   CerberoSOC alignment — match the SOC console look:
-   neutral dark cards, colored stat numbers, rounded nav items,
-   subtle active accents, clean topbar.
-   ============================================================ */
-
-/* ---------- Dashboard KPI cards (.small-box) ----------
-   AdminLTE renders these as full-colour blocks; the SOC look is a dark card
-   with a big COLOURED NUMBER and a muted uppercase label. */
-.small-box,
-.small-box.bg-teal,
-.small-box.bg-aqua,
-.small-box.bg-light-blue,
-.small-box.bg-blue,
-.small-box.bg-maroon,
-.small-box.bg-red,
-.small-box.bg-orange,
-.small-box.bg-yellow,
-.small-box.bg-purple,
-.small-box.bg-green,
-.small-box.bg-navy {
+html[data-theme="dark"] .small-box, html[data-theme="dark"] .small-box.bg-teal, html[data-theme="dark"] .small-box.bg-aqua, html[data-theme="dark"] .small-box.bg-light-blue, html[data-theme="dark"] .small-box.bg-blue, html[data-theme="dark"] .small-box.bg-maroon, html[data-theme="dark"] .small-box.bg-red, html[data-theme="dark"] .small-box.bg-orange, html[data-theme="dark"] .small-box.bg-yellow, html[data-theme="dark"] .small-box.bg-purple, html[data-theme="dark"] .small-box.bg-green, html[data-theme="dark"] .small-box.bg-navy {
     background-color: var(--cc-surface) !important;
     border: 1px solid var(--cc-border) !important;
     border-radius: var(--cc-radius) !important;
@@ -1580,19 +1187,25 @@ kbd {
     overflow: hidden;
     transition: border-color .15s ease, transform .15s ease;
 }
-.small-box:hover {
+
+html[data-theme="dark"] .small-box:hover {
     border-color: var(--cc-border-strong) !important;
     transform: translateY(-1px);
 }
-.small-box > .inner { padding: 16px 18px; }
-.small-box > .inner > h3 {
+
+html[data-theme="dark"] .small-box > .inner {
+    padding: 16px 18px;
+}
+
+html[data-theme="dark"] .small-box > .inner > h3 {
     color: var(--cc-text) !important;
     font-weight: 700;
     font-size: 30px;
     margin: 0 0 2px;
     text-shadow: none !important;
 }
-.small-box > .inner > p {
+
+html[data-theme="dark"] .small-box > .inner > p {
     color: var(--cc-text-muted) !important;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -1600,105 +1213,134 @@ kbd {
     font-weight: 600;
     margin: 0;
 }
-/* subtle, low-contrast icon (no longer the focal point) */
-.small-box > .icon {
+
+html[data-theme="dark"] .small-box > .icon {
     color: rgba(255, 255, 255, 0.05) !important;
     top: 8px;
     font-size: 64px;
 }
-.small-box > .icon > i { color: inherit !important; }
-.small-box-footer,
-.small-box:hover .small-box-footer {
+
+html[data-theme="dark"] .small-box > .icon > i {
+    color: inherit !important;
+}
+
+html[data-theme="dark"] .small-box-footer, html[data-theme="dark"] .small-box:hover .small-box-footer {
     background-color: transparent !important;
     color: var(--cc-text-muted) !important;
     border-top: 1px solid var(--cc-border) !important;
     font-size: 12px;
     padding: 8px 18px;
 }
-.small-box-footer:hover { color: var(--cc-text) !important; }
 
-/* Colour the NUMBER per the original severity colour class */
-.small-box.bg-maroon > .inner > h3,
-.small-box.bg-red > .inner > h3 { color: var(--cc-danger) !important; }
-.small-box.bg-maroon > .icon,
-.small-box.bg-red > .icon { color: rgba(248, 113, 113, 0.10) !important; }
+html[data-theme="dark"] .small-box-footer:hover {
+    color: var(--cc-text) !important;
+}
 
-.small-box.bg-orange > .inner > h3,
-.small-box.bg-yellow > .inner > h3 { color: var(--cc-warning) !important; }
-.small-box.bg-orange > .icon,
-.small-box.bg-yellow > .icon { color: rgba(251, 146, 60, 0.10) !important; }
+html[data-theme="dark"] .small-box.bg-maroon > .inner > h3, html[data-theme="dark"] .small-box.bg-red > .inner > h3 {
+    color: var(--cc-danger) !important;
+}
 
-.small-box.bg-teal > .inner > h3,
-.small-box.bg-aqua > .inner > h3,
-.small-box.bg-light-blue > .inner > h3,
-.small-box.bg-blue > .inner > h3 { color: var(--cc-info) !important; }
-.small-box.bg-teal > .icon,
-.small-box.bg-aqua > .icon,
-.small-box.bg-light-blue > .icon,
-.small-box.bg-blue > .icon { color: rgba(56, 189, 248, 0.10) !important; }
+html[data-theme="dark"] .small-box.bg-maroon > .icon, html[data-theme="dark"] .small-box.bg-red > .icon {
+    color: rgba(248, 113, 113, 0.10) !important;
+}
 
-.small-box.bg-purple > .inner > h3 { color: var(--cc-purple) !important; }
-.small-box.bg-purple > .icon { color: rgba(167, 139, 250, 0.10) !important; }
+html[data-theme="dark"] .small-box.bg-orange > .inner > h3, html[data-theme="dark"] .small-box.bg-yellow > .inner > h3 {
+    color: var(--cc-warning) !important;
+}
 
-.small-box.bg-green > .inner > h3 { color: var(--cc-success) !important; }
-.small-box.bg-green > .icon { color: rgba(34, 197, 94, 0.10) !important; }
+html[data-theme="dark"] .small-box.bg-orange > .icon, html[data-theme="dark"] .small-box.bg-yellow > .icon {
+    color: rgba(251, 146, 60, 0.10) !important;
+}
 
-/* info-box (alternative KPI widget) — same treatment */
-.info-box {
+html[data-theme="dark"] .small-box.bg-teal > .inner > h3, html[data-theme="dark"] .small-box.bg-aqua > .inner > h3, html[data-theme="dark"] .small-box.bg-light-blue > .inner > h3, html[data-theme="dark"] .small-box.bg-blue > .inner > h3 {
+    color: var(--cc-info) !important;
+}
+
+html[data-theme="dark"] .small-box.bg-teal > .icon, html[data-theme="dark"] .small-box.bg-aqua > .icon, html[data-theme="dark"] .small-box.bg-light-blue > .icon, html[data-theme="dark"] .small-box.bg-blue > .icon {
+    color: rgba(56, 189, 248, 0.10) !important;
+}
+
+html[data-theme="dark"] .small-box.bg-purple > .inner > h3 {
+    color: var(--cc-purple) !important;
+}
+
+html[data-theme="dark"] .small-box.bg-purple > .icon {
+    color: rgba(167, 139, 250, 0.10) !important;
+}
+
+html[data-theme="dark"] .small-box.bg-green > .inner > h3 {
+    color: var(--cc-success) !important;
+}
+
+html[data-theme="dark"] .small-box.bg-green > .icon {
+    color: rgba(34, 197, 94, 0.10) !important;
+}
+
+html[data-theme="dark"] .info-box {
     background-color: var(--cc-surface) !important;
     border: 1px solid var(--cc-border) !important;
     border-radius: var(--cc-radius) !important;
     box-shadow: none !important;
 }
-.info-box-icon { background-color: transparent !important; color: var(--cc-text-muted) !important; }
-.info-box-number { color: var(--cc-text) !important; font-weight: 700; }
-.info-box-text { color: var(--cc-text-muted) !important; text-transform: uppercase; letter-spacing: 0.04em; font-size: 11px; }
 
-/* ---------- Sidebar: rounded nav items + SOC active accent ---------- */
-.sidebar-menu > li > a {
+html[data-theme="dark"] .info-box-icon {
+    background-color: transparent !important; color: var(--cc-text-muted) !important;
+}
+
+html[data-theme="dark"] .info-box-number {
+    color: var(--cc-text) !important; font-weight: 700;
+}
+
+html[data-theme="dark"] .info-box-text {
+    color: var(--cc-text-muted) !important; text-transform: uppercase; letter-spacing: 0.04em; font-size: 11px;
+}
+
+html[data-theme="dark"] .sidebar-menu > li > a {
     margin: 1px 10px;
     border-radius: 8px;
     transition: background-color .12s ease, color .12s ease;
 }
-.sidebar-menu > li:hover > a {
+
+html[data-theme="dark"] .sidebar-menu > li:hover > a {
     background-color: var(--cc-surface) !important;
     color: #ffffff !important;
 }
-.sidebar-menu > li.active > a,
-.sidebar-menu > li.menu-open > a {
+
+html[data-theme="dark"] .sidebar-menu > li.active > a, html[data-theme="dark"] .sidebar-menu > li.menu-open > a {
     background-color: var(--cc-surface-2) !important;
     color: #ffffff !important;
     box-shadow: inset 3px 0 0 var(--cc-primary);
     border-left-color: transparent !important;
 }
-.sidebar-menu > li.active > a > .fa,
-.sidebar-menu > li.active > a > svg,
-.sidebar-menu > li.active > a > i { color: var(--cc-primary) !important; }
-/* treeview submenu: flat indented rows (not floating chips), subtle active +
-   a left rail. Keeps the icon column aligned under the parent. */
-.sidebar-menu .treeview-menu {
+
+html[data-theme="dark"] .sidebar-menu > li.active > a > .fa, html[data-theme="dark"] .sidebar-menu > li.active > a > svg, html[data-theme="dark"] .sidebar-menu > li.active > a > i {
+    color: var(--cc-primary) !important;
+}
+
+html[data-theme="dark"] .sidebar-menu .treeview-menu {
     background-color: rgba(0, 0, 0, 0.22) !important;
     padding: 4px 0 6px !important;
 }
-.sidebar-menu .treeview-menu > li > a {
+
+html[data-theme="dark"] .sidebar-menu .treeview-menu > li > a {
     border-radius: 0 !important;
     margin: 0 !important;
     padding: 7px 12px 7px 46px !important;
     color: var(--cc-text-muted) !important;
 }
-.sidebar-menu .treeview-menu > li > a:hover {
+
+html[data-theme="dark"] .sidebar-menu .treeview-menu > li > a:hover {
     background-color: var(--cc-surface) !important;
     color: #ffffff !important;
 }
-.sidebar-menu .treeview-menu > li.active > a {
+
+html[data-theme="dark"] .sidebar-menu .treeview-menu > li.active > a {
     color: #ffffff !important;
     background-color: var(--cc-surface-2) !important;
     box-shadow: inset 2px 0 0 var(--cc-primary);
 }
-/* dividers inside (and between) menus: a thin line, never an empty grey band */
-.sidebar-menu .treeview-menu > li.divider,
-.sidebar-menu > li.divider,
-.sidebar-menu li.divider {
+
+html[data-theme="dark"] .sidebar-menu .treeview-menu > li.divider, html[data-theme="dark"] .sidebar-menu > li.divider, html[data-theme="dark"] .sidebar-menu li.divider {
     height: 1px !important;
     margin: 6px 16px !important;
     padding: 0 !important;
@@ -1707,8 +1349,8 @@ kbd {
     font-size: 0 !important;
     line-height: 0 !important;
 }
-/* section header rows inside a submenu (if any) */
-.sidebar-menu .treeview-menu > li.header {
+
+html[data-theme="dark"] .sidebar-menu .treeview-menu > li.header {
     padding: 8px 12px 4px 18px !important;
     color: var(--cc-text-dim) !important;
     text-transform: uppercase;
@@ -1716,157 +1358,143 @@ kbd {
     font-size: 10px;
     font-weight: 700;
 }
-/* the version label at the bottom */
-.main-sidebar .sidebar-version,
-.main-sidebar .text-version { color: var(--cc-text-dim) !important; font-size: 11px; }
 
-/* ---------- Cards / boxes: SOC card finish ---------- */
-.box,
-.box.box-default,
-.box.box-primary,
-.box.box-solid,
-.nav-tabs-custom {
+html[data-theme="dark"] .main-sidebar .sidebar-version, html[data-theme="dark"] .main-sidebar .text-version {
+    color: var(--cc-text-dim) !important; font-size: 11px;
+}
+
+html[data-theme="dark"] .box, html[data-theme="dark"] .box.box-default, html[data-theme="dark"] .box.box-primary, html[data-theme="dark"] .box.box-solid, html[data-theme="dark"] .nav-tabs-custom {
     background-color: var(--cc-surface) !important;
     border: 1px solid var(--cc-border) !important;
     border-top: 1px solid var(--cc-border) !important;
     border-radius: var(--cc-radius) !important;
     box-shadow: none !important;
 }
-.box > .box-header,
-.box-header.with-border {
+
+html[data-theme="dark"] .box > .box-header, html[data-theme="dark"] .box-header.with-border {
     border-bottom: 1px solid var(--cc-border) !important;
     padding: 14px 18px;
 }
-.box-header > .box-title,
-.box-title { font-weight: 650; letter-spacing: -0.1px; }
-.box > .box-body { padding: 16px 18px; }
-.box > .box-footer { background-color: transparent !important; border-top: 1px solid var(--cc-border) !important; }
 
-/* ---------- Topbar: SOC console finish ---------- */
-.main-header > .navbar,
-.main-header .navbar {
+html[data-theme="dark"] .box-header > .box-title, html[data-theme="dark"] .box-title {
+    font-weight: 650; letter-spacing: -0.1px;
+}
+
+html[data-theme="dark"] .box > .box-body {
+    padding: 16px 18px;
+}
+
+html[data-theme="dark"] .box > .box-footer {
+    background-color: transparent !important; border-top: 1px solid var(--cc-border) !important;
+}
+
+html[data-theme="dark"] .main-header > .navbar, html[data-theme="dark"] .main-header .navbar {
     border-bottom: 1px solid var(--cc-border) !important;
 }
-/* the search box → rounded pill like the SOC quick-search */
-.main-header .navbar-form .form-control,
-.main-header .navbar .form-control,
-.main-header input[type="search"] {
+
+html[data-theme="dark"] .main-header .navbar-form .form-control, html[data-theme="dark"] .main-header .navbar .form-control, html[data-theme="dark"] .main-header input[type="search"] {
     border-radius: 9px !important;
     background-color: var(--cc-surface) !important;
     border: 1px solid var(--cc-border-strong) !important;
 }
-.main-header .navbar-form .input-group .btn,
-.main-header .navbar .input-group-btn .btn {
+
+html[data-theme="dark"] .main-header .navbar-form .input-group .btn, html[data-theme="dark"] .main-header .navbar .input-group-btn .btn {
     border-radius: 9px !important;
 }
 
-/* ---------- Buttons: SOC primary ---------- */
-.btn { border-radius: var(--cc-radius-sm) !important; font-weight: 600; }
-.btn-primary,
-.btn-theme {
+html[data-theme="dark"] .btn {
+    border-radius: var(--cc-radius-sm) !important; font-weight: 600;
+}
+
+html[data-theme="dark"] .btn-primary, html[data-theme="dark"] .btn-theme {
     background-color: var(--cc-primary) !important;
     border-color: var(--cc-primary) !important;
     color: #ffffff !important;
 }
-.btn-primary:hover,
-.btn-primary:focus,
-.btn-theme:hover,
-.btn-theme:focus {
+
+html[data-theme="dark"] .btn-primary:hover, html[data-theme="dark"] .btn-primary:focus, html[data-theme="dark"] .btn-theme:hover, html[data-theme="dark"] .btn-theme:focus {
     background-color: var(--cc-primary-hover) !important;
     border-color: var(--cc-primary-hover) !important;
 }
 
-/* ---------- Progress bars (stat widgets) ---------- */
-.progress {
+html[data-theme="dark"] .progress {
     background-color: var(--cc-surface-2) !important;
     border-radius: 999px !important;
     height: 8px;
     box-shadow: none !important;
 }
-.progress-bar { box-shadow: none !important; }
-.progress-bar-yellow, .progress-bar-warning { background-color: var(--cc-warning) !important; }
-.progress-bar-red, .progress-bar-danger { background-color: var(--cc-danger) !important; }
-.progress-bar-green, .progress-bar-success { background-color: var(--cc-success) !important; }
-.progress-bar-aqua, .progress-bar-info, .progress-bar-blue { background-color: var(--cc-info) !important; }
 
-/* ---------- Selection + focus polish ---------- */
-::selection { background: rgba(75, 107, 251, 0.32); }
-a, .text-primary, .text-light-blue, .text-aqua { color: var(--cc-primary); }
-a:hover { color: var(--cc-primary-hover); }
+html[data-theme="dark"] .progress-bar {
+    box-shadow: none !important;
+}
 
-/* Collapsed sidebar: tighten item margins so the icon-only rail stays aligned */
-.sidebar-collapse .sidebar-menu > li > a { margin: 1px 6px !important; }
-.sidebar-collapse .sidebar-menu > li.active > a { box-shadow: inset 3px 0 0 var(--cc-primary); }
+html[data-theme="dark"] .progress-bar-yellow, html[data-theme="dark"] .progress-bar-warning {
+    background-color: var(--cc-warning) !important;
+}
 
-/* ---------- Required fields: no orange ----------
-   Snipe marks required inputs/selects with `border-right: 5px solid orange`,
-   which breaks the rounded corner into an orange slab. Kill the orange entirely —
-   required fields look like normal fields; focus gets a clean blue ring. */
-input[type="date"]:required,
-input[type="number"]:required,
-input[type="text"]:required,
-input[type="url"]:required,
-input[type="email"]:required,
-input[type="password"]:required,
-input[type="tel"]:required,
-select:required,
-input:required,
-textarea:required {
+html[data-theme="dark"] .progress-bar-red, html[data-theme="dark"] .progress-bar-danger {
+    background-color: var(--cc-danger) !important;
+}
+
+html[data-theme="dark"] .progress-bar-green, html[data-theme="dark"] .progress-bar-success {
+    background-color: var(--cc-success) !important;
+}
+
+html[data-theme="dark"] .progress-bar-aqua, html[data-theme="dark"] .progress-bar-info, html[data-theme="dark"] .progress-bar-blue {
+    background-color: var(--cc-info) !important;
+}
+
+html[data-theme="dark"] ::selection {
+    background: rgba(75, 107, 251, 0.32);
+}
+
+html[data-theme="dark"] a, html[data-theme="dark"] .text-primary, html[data-theme="dark"] .text-light-blue, html[data-theme="dark"] .text-aqua {
+    color: var(--cc-primary);
+}
+
+html[data-theme="dark"] a:hover {
+    color: var(--cc-primary-hover);
+}
+
+html[data-theme="dark"] .sidebar-collapse .sidebar-menu > li > a {
+    margin: 1px 6px !important;
+}
+
+html[data-theme="dark"] .sidebar-collapse .sidebar-menu > li.active > a {
+    box-shadow: inset 3px 0 0 var(--cc-primary);
+}
+
+html[data-theme="dark"] input[type="date"]:required, html[data-theme="dark"] input[type="number"]:required, html[data-theme="dark"] input[type="text"]:required, html[data-theme="dark"] input[type="url"]:required, html[data-theme="dark"] input[type="email"]:required, html[data-theme="dark"] input[type="password"]:required, html[data-theme="dark"] input[type="tel"]:required, html[data-theme="dark"] select:required, html[data-theme="dark"] input:required, html[data-theme="dark"] textarea:required {
     border-right-width: 1px !important;
     border-right-color: var(--cc-border) !important;
     box-shadow: none !important;
 }
-input:required:focus,
-select:required:focus,
-textarea:required:focus,
-input:focus,
-select:focus,
-textarea:focus {
+
+html[data-theme="dark"] input:required:focus, html[data-theme="dark"] select:required:focus, html[data-theme="dark"] textarea:required:focus, html[data-theme="dark"] input:focus, html[data-theme="dark"] select:focus, html[data-theme="dark"] textarea:focus {
     border-color: var(--cc-primary) !important;
     box-shadow: 0 0 0 3px rgba(75, 107, 251, 0.16) !important;
 }
-/* select2 single widgets render their own box — keep them clean (no orange) */
-.select2-container--default .select2-selection--single,
-.select2-container--default .select2-selection--multiple {
+
+html[data-theme="dark"] .select2-container--default .select2-selection--single, html[data-theme="dark"] .select2-container--default .select2-selection--multiple {
     box-shadow: none !important;
     border-right-width: 1px !important;
 }
 
-/* ============================================================
-   NAV — full rewrite (authoritative, last word in this file).
-   CerberoSOC style: flat full-width items, NO floating chip box,
-   submenu blended into the sidebar (no separate grey box), and the
-   AdminLTE/branding teal-grey (#1e282c/#2c3b41, the "verde/grigio")
-   killed at the <li> level. Overrides every earlier sidebar rule.
-   ============================================================ */
-
-/* Sidebar surface */
-.main-sidebar,
-.main-sidebar .sidebar,
-.left-side {
+html[data-theme="dark"] .main-sidebar, html[data-theme="dark"] .main-sidebar .sidebar, html[data-theme="dark"] .left-side {
     background-color: #0e0e11 !important;
     border-right: 1px solid var(--cc-border) !important;
 }
 
-/* Kill the teal-grey that the branding sets on the <li> ELEMENTS (not the links),
-   and give the submenu the SAME colour as the sidebar so it never reads as a box. */
-.sidebar-menu > li,
-.sidebar-menu > li:hover,
-.sidebar-menu > li.active,
-.sidebar-menu > li.menu-open,
-.sidebar-menu .treeview-menu > li,
-.sidebar-menu .treeview-menu > li:hover,
-.sidebar-menu .treeview-menu > li.active {
+html[data-theme="dark"] .sidebar-menu > li, html[data-theme="dark"] .sidebar-menu > li:hover, html[data-theme="dark"] .sidebar-menu > li.active, html[data-theme="dark"] .sidebar-menu > li.menu-open, html[data-theme="dark"] .sidebar-menu .treeview-menu > li, html[data-theme="dark"] .sidebar-menu .treeview-menu > li:hover, html[data-theme="dark"] .sidebar-menu .treeview-menu > li.active {
     background-color: transparent !important;
 }
-.sidebar-menu .treeview-menu,
-.sidebar-menu > li > .treeview-menu {
+
+html[data-theme="dark"] .sidebar-menu .treeview-menu, html[data-theme="dark"] .sidebar-menu > li > .treeview-menu {
     background-color: #0e0e11 !important;
     padding: 2px 0 6px !important;
 }
 
-/* Top-level items: flat, full width, no chip, muted */
-.sidebar-menu > li > a {
+html[data-theme="dark"] .sidebar-menu > li > a {
     margin: 0 !important;
     border-radius: 0 !important;
     border-left: 3px solid transparent !important;
@@ -1876,42 +1504,35 @@ textarea:focus {
     font-weight: 500;
     transition: background-color .12s ease, color .12s ease;
 }
-.sidebar-menu > li > a > .fa,
-.sidebar-menu > li > a > svg,
-.sidebar-menu > li > a > i { color: var(--cc-text-dim) !important; }
 
-/* Hover: subtle full-width wash */
-.sidebar-menu > li:hover > a,
-.sidebar-menu > li > a:hover,
-.sidebar-menu > li > a:focus {
+html[data-theme="dark"] .sidebar-menu > li > a > .fa, html[data-theme="dark"] .sidebar-menu > li > a > svg, html[data-theme="dark"] .sidebar-menu > li > a > i {
+    color: var(--cc-text-dim) !important;
+}
+
+html[data-theme="dark"] .sidebar-menu > li:hover > a, html[data-theme="dark"] .sidebar-menu > li > a:hover, html[data-theme="dark"] .sidebar-menu > li > a:focus {
     background-color: rgba(255, 255, 255, 0.045) !important;
     color: #ffffff !important;
     border-left-color: transparent !important;
     padding-left: 15px !important;
 }
-.sidebar-menu > li:hover > a > .fa,
-.sidebar-menu > li:hover > a > svg,
-.sidebar-menu > li:hover > a > i { color: var(--cc-text-muted) !important; }
 
-/* Active / open: subtle full-width fill + left indigo accent + indigo icon */
-.sidebar-menu > li.active > a,
-.sidebar-menu > li.menu-open > a,
-.sidebar-menu > li.active:hover > a {
+html[data-theme="dark"] .sidebar-menu > li:hover > a > .fa, html[data-theme="dark"] .sidebar-menu > li:hover > a > svg, html[data-theme="dark"] .sidebar-menu > li:hover > a > i {
+    color: var(--cc-text-muted) !important;
+}
+
+html[data-theme="dark"] .sidebar-menu > li.active > a, html[data-theme="dark"] .sidebar-menu > li.menu-open > a, html[data-theme="dark"] .sidebar-menu > li.active:hover > a {
     background-color: rgba(255, 255, 255, 0.07) !important;
     color: #ffffff !important;
     border-left: 3px solid var(--cc-primary) !important;
     box-shadow: none !important;
     padding-left: 15px !important;
 }
-.sidebar-menu > li.active > a > .fa,
-.sidebar-menu > li.active > a > svg,
-.sidebar-menu > li.active > a > i,
-.sidebar-menu > li.menu-open > a > .fa,
-.sidebar-menu > li.menu-open > a > svg,
-.sidebar-menu > li.menu-open > a > i { color: var(--cc-primary) !important; }
 
-/* Submenu items: indented flat rows, no box */
-.sidebar-menu .treeview-menu > li > a {
+html[data-theme="dark"] .sidebar-menu > li.active > a > .fa, html[data-theme="dark"] .sidebar-menu > li.active > a > svg, html[data-theme="dark"] .sidebar-menu > li.active > a > i, html[data-theme="dark"] .sidebar-menu > li.menu-open > a > .fa, html[data-theme="dark"] .sidebar-menu > li.menu-open > a > svg, html[data-theme="dark"] .sidebar-menu > li.menu-open > a > i {
+    color: var(--cc-primary) !important;
+}
+
+html[data-theme="dark"] .sidebar-menu .treeview-menu > li > a {
     margin: 0 !important;
     border-radius: 0 !important;
     border-left: 3px solid transparent !important;
@@ -1919,49 +1540,32 @@ textarea:focus {
     color: var(--cc-text-muted) !important;
     font-weight: 400;
 }
-.sidebar-menu .treeview-menu > li > a:hover,
-.sidebar-menu .treeview-menu > li:hover > a {
+
+html[data-theme="dark"] .sidebar-menu .treeview-menu > li > a:hover, html[data-theme="dark"] .sidebar-menu .treeview-menu > li:hover > a {
     background-color: rgba(255, 255, 255, 0.045) !important;
     color: #ffffff !important;
     border-left-color: transparent !important;
 }
-.sidebar-menu .treeview-menu > li.active > a {
+
+html[data-theme="dark"] .sidebar-menu .treeview-menu > li.active > a {
     background-color: rgba(255, 255, 255, 0.07) !important;
     color: #ffffff !important;
     border-left: 3px solid var(--cc-primary) !important;
 }
 
-/* Submenu icons: clean monochrome — no AdminLTE rainbow, no harsh green */
-.sidebar-menu .treeview-menu > li > a > .fa,
-.sidebar-menu .treeview-menu > li > a > svg,
-.sidebar-menu .treeview-menu > li > a > i,
-.sidebar-menu .treeview-menu .text-green,
-.sidebar-menu .treeview-menu .text-aqua,
-.sidebar-menu .treeview-menu .text-light-blue,
-.sidebar-menu .treeview-menu .text-blue,
-.sidebar-menu .treeview-menu .text-navy,
-.sidebar-menu .treeview-menu .text-teal,
-.sidebar-menu .treeview-menu .text-yellow,
-.sidebar-menu .treeview-menu .text-orange,
-.sidebar-menu .treeview-menu .text-red,
-.sidebar-menu .treeview-menu .text-maroon,
-.sidebar-menu .treeview-menu .text-purple { color: var(--cc-text-dim) !important; }
-.sidebar-menu .treeview-menu > li.active > a > .fa,
-.sidebar-menu .treeview-menu > li.active > a > i,
-.sidebar-menu .treeview-menu > li > a:hover > .fa,
-.sidebar-menu .treeview-menu > li > a:hover > i { color: var(--cc-text-muted) !important; }
+html[data-theme="dark"] .sidebar-menu .treeview-menu > li > a > .fa, html[data-theme="dark"] .sidebar-menu .treeview-menu > li > a > svg, html[data-theme="dark"] .sidebar-menu .treeview-menu > li > a > i, html[data-theme="dark"] .sidebar-menu .treeview-menu .text-green, html[data-theme="dark"] .sidebar-menu .treeview-menu .text-aqua, html[data-theme="dark"] .sidebar-menu .treeview-menu .text-light-blue, html[data-theme="dark"] .sidebar-menu .treeview-menu .text-blue, html[data-theme="dark"] .sidebar-menu .treeview-menu .text-navy, html[data-theme="dark"] .sidebar-menu .treeview-menu .text-teal, html[data-theme="dark"] .sidebar-menu .treeview-menu .text-yellow, html[data-theme="dark"] .sidebar-menu .treeview-menu .text-orange, html[data-theme="dark"] .sidebar-menu .treeview-menu .text-red, html[data-theme="dark"] .sidebar-menu .treeview-menu .text-maroon, html[data-theme="dark"] .sidebar-menu .treeview-menu .text-purple {
+    color: var(--cc-text-dim) !important;
+}
 
-/* Caret on parents */
-.sidebar-menu > li > a > .pull-right-container .fa,
-.sidebar-menu > li > a .fa-angle-left,
-.sidebar-menu > li > a .fa-angle-down { color: var(--cc-text-dim) !important; }
+html[data-theme="dark"] .sidebar-menu .treeview-menu > li.active > a > .fa, html[data-theme="dark"] .sidebar-menu .treeview-menu > li.active > a > i, html[data-theme="dark"] .sidebar-menu .treeview-menu > li > a:hover > .fa, html[data-theme="dark"] .sidebar-menu .treeview-menu > li > a:hover > i {
+    color: var(--cc-text-muted) !important;
+}
 
-/* Count badges → quiet pills */
-.sidebar-menu > li > a .badge,
-.sidebar-menu .treeview-menu > li > a .badge,
-.sidebar-menu .pull-right-container .label,
-.sidebar-menu .badge,
-.sidebar-menu .label {
+html[data-theme="dark"] .sidebar-menu > li > a > .pull-right-container .fa, html[data-theme="dark"] .sidebar-menu > li > a .fa-angle-left, html[data-theme="dark"] .sidebar-menu > li > a .fa-angle-down {
+    color: var(--cc-text-dim) !important;
+}
+
+html[data-theme="dark"] .sidebar-menu > li > a .badge, html[data-theme="dark"] .sidebar-menu .treeview-menu > li > a .badge, html[data-theme="dark"] .sidebar-menu .pull-right-container .label, html[data-theme="dark"] .sidebar-menu .badge, html[data-theme="dark"] .sidebar-menu .label {
     background-color: var(--cc-surface-2) !important;
     color: var(--cc-text-muted) !important;
     border: 1px solid var(--cc-border) !important;
@@ -1971,8 +1575,7 @@ textarea:focus {
     margin-top: 1px;
 }
 
-/* Dividers / headers in the menu */
-.sidebar-menu li.divider {
+html[data-theme="dark"] .sidebar-menu li.divider {
     height: 1px !important;
     margin: 7px 16px !important;
     padding: 0 !important;
@@ -1981,7 +1584,8 @@ textarea:focus {
     line-height: 0 !important;
     overflow: hidden;
 }
-.sidebar-menu li.header {
+
+html[data-theme="dark"] .sidebar-menu li.header {
     background: transparent !important;
     color: var(--cc-text-dim) !important;
     text-transform: uppercase;
@@ -1991,9 +1595,11 @@ textarea:focus {
     padding: 12px 16px 5px !important;
 }
 
-/* Collapsed rail + flyout submenu (popup needs a solid, bordered surface) */
-.sidebar-collapse .sidebar-menu > li > a { margin: 0 !important; border-radius: 0 !important; }
-.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
+html[data-theme="dark"] .sidebar-collapse .sidebar-menu > li > a {
+    margin: 0 !important; border-radius: 0 !important;
+}
+
+html[data-theme="dark"] .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
     background-color: #14141a !important;
     border: 1px solid var(--cc-border) !important;
     border-left: none !important;
@@ -2001,19 +1607,7 @@ textarea:focus {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
 }
 
-/* ============================================================
-   Toggle button-groups — Bootstrap `[data-toggle="buttons"]` radios
-   (e.g. the checkout target: Utente / Bene / Sede).
-   The radio <input> must stay hidden (my global radio styling was
-   rendering it as a black circle inside the button), and only the
-   ACTIVE label should read as selected.
-   ============================================================ */
-.btn-group[data-toggle="buttons"] .btn > input[type="radio"],
-.btn-group[data-toggle="buttons"] .btn > input[type="checkbox"],
-[data-toggle="buttons"] > .btn > input[type="radio"],
-[data-toggle="buttons"] > .btn > input[type="checkbox"],
-label.btn > input[type="radio"],
-label.btn > input[type="checkbox"] {
+html[data-theme="dark"] .btn-group[data-toggle="buttons"] .btn > input[type="radio"], html[data-theme="dark"] .btn-group[data-toggle="buttons"] .btn > input[type="checkbox"], html[data-theme="dark"] [data-toggle="buttons"] > .btn > input[type="radio"], html[data-theme="dark"] [data-toggle="buttons"] > .btn > input[type="checkbox"], html[data-theme="dark"] label.btn > input[type="radio"], html[data-theme="dark"] label.btn > input[type="checkbox"] {
     position: absolute !important;
     width: 1px !important;
     height: 1px !important;
@@ -2025,105 +1619,75 @@ label.btn > input[type="checkbox"] {
     border: 0 !important;
     background: none !important;
 }
-.btn-group[data-toggle="buttons"] > .btn,
-.btn-group[data-toggle="buttons"] > label.btn,
-.btn-group[data-toggle="buttons"] > .btn.btn-theme {
+
+html[data-theme="dark"] .btn-group[data-toggle="buttons"] > .btn, html[data-theme="dark"] .btn-group[data-toggle="buttons"] > label.btn, html[data-theme="dark"] .btn-group[data-toggle="buttons"] > .btn.btn-theme {
     background-color: var(--cc-surface-2) !important;
     border: 1px solid var(--cc-border-strong) !important;
     color: var(--cc-text-muted) !important;
     box-shadow: none !important;
     font-weight: 600;
 }
-.btn-group[data-toggle="buttons"] > .btn:hover,
-.btn-group[data-toggle="buttons"] > label.btn:hover {
+
+html[data-theme="dark"] .btn-group[data-toggle="buttons"] > .btn:hover, html[data-theme="dark"] .btn-group[data-toggle="buttons"] > label.btn:hover {
     background-color: var(--cc-surface-hover) !important;
     color: var(--cc-text) !important;
 }
-.btn-group[data-toggle="buttons"] > .btn.active,
-.btn-group[data-toggle="buttons"] > label.btn.active,
-.btn-group[data-toggle="buttons"] > .btn.btn-theme.active {
+
+html[data-theme="dark"] .btn-group[data-toggle="buttons"] > .btn.active, html[data-theme="dark"] .btn-group[data-toggle="buttons"] > label.btn.active, html[data-theme="dark"] .btn-group[data-toggle="buttons"] > .btn.btn-theme.active {
     background-color: var(--cc-primary) !important;
     border-color: var(--cc-primary) !important;
     color: #ffffff !important;
 }
 
-/* select2 focus → clean blue ring (consistent with native inputs, no orange) */
-.select2-container--default.select2-container--focus .select2-selection--single,
-.select2-container--default.select2-container--focus .select2-selection--multiple,
-.select2-container--default .select2-selection--single:focus,
-.select2-container--open .select2-selection--single,
-.select2-container--open .select2-selection--multiple {
+html[data-theme="dark"] .select2-container--default.select2-container--focus .select2-selection--single, html[data-theme="dark"] .select2-container--default.select2-container--focus .select2-selection--multiple, html[data-theme="dark"] .select2-container--default .select2-selection--single:focus, html[data-theme="dark"] .select2-container--open .select2-selection--single, html[data-theme="dark"] .select2-container--open .select2-selection--multiple {
     border-color: var(--cc-primary) !important;
     box-shadow: 0 0 0 3px rgba(75, 107, 251, 0.16) !important;
     outline: none !important;
 }
 
-/* ============================================================
-   Fixes: collapsed-flyout legibility + export button text
-   ============================================================ */
-
-/* Collapsed sidebar flyout: the popout HEADER (the menu name, e.g. "Impostazioni")
-   used the semi-transparent hover wash, so page content showed through and the
-   title was illegible. Force the header (and the label span AdminLTE positions
-   as the popout title) to a solid surface. The body is already solid. */
-.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > a,
-.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > a > span {
+html[data-theme="dark"] .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > a, html[data-theme="dark"] .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > a > span {
     background-color: #14141a !important;
     color: #ffffff !important;
 }
-.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > a > span {
+
+html[data-theme="dark"] .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > a > span {
     border: 1px solid var(--cc-border) !important;
     border-bottom: none !important;
     border-radius: 0 8px 0 0 !important;
     box-shadow: 0 -2px 0 #14141a;
 }
-/* keep the popout body offset/border consistent with the header */
-.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
+
+html[data-theme="dark"] .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
     border-top: none !important;
 }
 
-/* Export buttons (.btn-info, e.g. "Esporta XLSX ACN"): a clean COOL cyan (the warm
-   teal read slightly yellow), pure-white text + icon. */
-.btn-info {
+html[data-theme="dark"] .btn-info {
     background-color: #0e7490 !important;
     border-color: #0e7490 !important;
 }
-.btn-info,
-.btn-info:hover,
-.btn-info:focus,
-.btn-info > *,
-.btn-info i,
-.btn-info .fa,
-.btn-info svg {
+
+html[data-theme="dark"] .btn-info, html[data-theme="dark"] .btn-info:hover, html[data-theme="dark"] .btn-info:focus, html[data-theme="dark"] .btn-info > *, html[data-theme="dark"] .btn-info i, html[data-theme="dark"] .btn-info .fa, html[data-theme="dark"] .btn-info svg {
     color: #ffffff !important;
 }
-.btn-info:hover,
-.btn-info:focus {
+
+html[data-theme="dark"] .btn-info:hover, html[data-theme="dark"] .btn-info:focus {
     background-color: #0c5d72 !important;
     border-color: #0c5d72 !important;
 }
 
-/* ============================================================
-   Hover-intent for the collapsed-sidebar flyout (JS close-delay)
-   ============================================================
-   Previous attempt used a transparent "bridge" over the icon column to keep the
-   menu open during diagonal movement — but it BLOCKED every icon in the popout's
-   vertical range. Replaced with a JS-managed `.cc-flyout-hold` class (see the
-   script in the layout): the menu shows on :hover and stays open for a short delay
-   after the cursor leaves, with NO overlay over the icons. This block mirrors
-   AdminLTE's collapsed :hover flyout for that class. */
-.sidebar-mini:not(.sidebar-mini-expand-feature).sidebar-collapse .sidebar-menu > li.cc-flyout-hold > .treeview-menu,
-.sidebar-mini:not(.sidebar-mini-expand-feature).sidebar-collapse .sidebar-menu > li.cc-flyout-hold > a > span:not(.pull-right) {
+html[data-theme="dark"] .sidebar-mini:not(.sidebar-mini-expand-feature).sidebar-collapse .sidebar-menu > li.cc-flyout-hold > .treeview-menu, html[data-theme="dark"] .sidebar-mini:not(.sidebar-mini-expand-feature).sidebar-collapse .sidebar-menu > li.cc-flyout-hold > a > span:not(.pull-right) {
     display: block !important;
     left: 50px;
     position: absolute;
     width: 180px;
 }
-.sidebar-mini.sidebar-collapse .sidebar-menu > li.cc-flyout-hold > a {
+
+html[data-theme="dark"] .sidebar-mini.sidebar-collapse .sidebar-menu > li.cc-flyout-hold > a {
     background-color: #14141a !important;
     color: #ffffff !important;
 }
-.sidebar-mini:not(.sidebar-mini-expand-feature).sidebar-collapse .sidebar-menu > li.cc-flyout-hold > a > span {
+
+html[data-theme="dark"] .sidebar-mini:not(.sidebar-mini-expand-feature).sidebar-collapse .sidebar-menu > li.cc-flyout-hold > a > span {
     background-color: #14141a !important;
     color: #ffffff !important;
     margin-left: -3px;
@@ -2134,7 +1698,8 @@ label.btn > input[type="checkbox"] {
     border-radius: 0 8px 0 0 !important;
     box-shadow: 0 -2px 0 #14141a;
 }
-.sidebar-mini:not(.sidebar-mini-expand-feature).sidebar-collapse .sidebar-menu > li.cc-flyout-hold > .treeview-menu {
+
+html[data-theme="dark"] .sidebar-mini:not(.sidebar-mini-expand-feature).sidebar-collapse .sidebar-menu > li.cc-flyout-hold > .treeview-menu {
     margin-left: 0;
     top: 44px;
     background-color: #14141a !important;
@@ -2145,31 +1710,17 @@ label.btn > input[type="checkbox"] {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
 }
 
-/* ============================================================
-   Tabs — kill the grey corners on active tabs (doc view, user
-   permissions, etc.). The branding painted the active <li> with
-   the grey --box-header-top-border-color and grey side borders.
-   ============================================================ */
-.nav-tabs-custom > .nav-tabs > li,
-.nav-tabs-custom > .nav-tabs > li:first-of-type,
-.nav-tabs-custom > .nav-tabs > li.active,
-.nav-tabs-custom > .nav-tabs > li.active > a,
-.nav-tabs-custom > .nav-tabs > li.active > a:link,
-.nav-tabs-custom > .nav-tabs > li.active > a:visited,
-.nav-tabs-custom > .nav-tabs > li.active > a:hover,
-.nav-tabs-custom > .nav-tabs > li > a,
-.nav-tabs-custom > .nav-tabs > li > a:hover {
+html[data-theme="dark"] .nav-tabs-custom > .nav-tabs > li, html[data-theme="dark"] .nav-tabs-custom > .nav-tabs > li:first-of-type, html[data-theme="dark"] .nav-tabs-custom > .nav-tabs > li.active, html[data-theme="dark"] .nav-tabs-custom > .nav-tabs > li.active > a, html[data-theme="dark"] .nav-tabs-custom > .nav-tabs > li.active > a:link, html[data-theme="dark"] .nav-tabs-custom > .nav-tabs > li.active > a:visited, html[data-theme="dark"] .nav-tabs-custom > .nav-tabs > li.active > a:hover, html[data-theme="dark"] .nav-tabs-custom > .nav-tabs > li > a, html[data-theme="dark"] .nav-tabs-custom > .nav-tabs > li > a:hover {
     background-color: transparent !important;
     border-left-color: transparent !important;
     border-right-color: transparent !important;
 }
-.nav-tabs-custom > .nav-tabs > li.active {
+
+html[data-theme="dark"] .nav-tabs-custom > .nav-tabs > li.active {
     border-top-color: var(--cc-primary) !important;
 }
-.nav-tabs-custom > .nav-tabs > li.active > a,
-.nav-tabs-custom > .nav-tabs > li.active > a:link,
-.nav-tabs-custom > .nav-tabs > li.active > a:visited,
-.nav-tabs-custom > .nav-tabs > li.active > a:hover {
+
+html[data-theme="dark"] .nav-tabs-custom > .nav-tabs > li.active > a, html[data-theme="dark"] .nav-tabs-custom > .nav-tabs > li.active > a:link, html[data-theme="dark"] .nav-tabs-custom > .nav-tabs > li.active > a:visited, html[data-theme="dark"] .nav-tabs-custom > .nav-tabs > li.active > a:hover {
     background-color: var(--cc-surface-2) !important;
     color: #ffffff !important;
     border-radius: var(--cc-radius-sm) var(--cc-radius-sm) 0 0 !important;
