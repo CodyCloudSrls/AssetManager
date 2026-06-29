@@ -152,6 +152,12 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('erp', [ErpController::class, 'index'])->name('erp.index')->middleware('tenant.feature:erp');
 
     /*
+    * API documentation (OpenAPI / Swagger UI) — superadmin only
+    */
+    Route::get('developer/api-docs', [\App\Http\Controllers\ApiDocsController::class, 'index'])->name('api-docs.index');
+    Route::get('developer/api-docs/openapi.yaml', [\App\Http\Controllers\ApiDocsController::class, 'spec'])->name('api-docs.spec');
+
+    /*
     * Depreciations
      */
     Route::resource('depreciations', DepreciationsController::class);

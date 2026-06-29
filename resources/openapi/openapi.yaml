@@ -1,0 +1,475 @@
+openapi: 3.0.3
+info:
+  title: CodyCloud Asset — API
+  version: "1.0"
+  description: >
+    REST API for CodyCloud Asset (asset management, NIS2 compliance and the ERP /
+    management-control module). This specification documents authentication and the
+    core + CodyCloud-specific resources (Hardware, Customers, Contracts, Suppliers,
+    Tenant Services). The full endpoint surface is large; resources not listed here
+    follow the same envelope and auth conventions.
+
+    Conventions:
+      * List endpoints return `{ total, rows[] }`.
+      * Mutating endpoints return `{ status, messages, payload }` (status = success|error);
+        an "error" status is returned with HTTP 200 and field-level `messages`.
+      * All endpoints require a Bearer personal access token (Laravel Passport).
+servers:
+  - url: /api/v1
+    description: Current server
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Hardware
+    description: Assets (hardware inventory)
+  - name: Customers
+    description: Customers (ERP / commercial side)
+  - name: Contracts
+    description: Customer contracts (ERP). Created/edited via the web UI; the API is read + delete.
+  - name: Suppliers
+    description: Suppliers (asset supply chain + NIS2 supplier assessment)
+  - name: Tenant Services
+    description: Per-tenant NIS2 services (select list)
+
+paths:
+  /hardware:
+    get:
+      tags: [Hardware]
+      summary: List assets
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/search'
+        - $ref: '#/components/parameters/sort'
+        - $ref: '#/components/parameters/order'
+      responses:
+        '200':
+          description: Paginated list of assets
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ListEnvelope'
+                  - type: object
+                    properties:
+                      rows:
+                        type: array
+                        items: { $ref: '#/components/schemas/Asset' }
+    post:
+      tags: [Hardware]
+      summary: Create an asset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AssetWrite' }
+      responses:
+        '200':
+          description: Result envelope
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatusEnvelope' }
+  /hardware/{id}:
+    parameters:
+      - $ref: '#/components/parameters/idPath'
+    get:
+      tags: [Hardware]
+      summary: Get an asset
+      responses:
+        '200':
+          description: Asset
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Asset' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Hardware]
+      summary: Update an asset (partial)
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AssetWrite' }
+      responses:
+        '200':
+          description: Result envelope
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatusEnvelope' }
+    delete:
+      tags: [Hardware]
+      summary: Delete an asset
+      responses:
+        '200':
+          description: Result envelope
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatusEnvelope' }
+
+  /customers:
+    get:
+      tags: [Customers]
+      summary: List customers
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/search'
+      responses:
+        '200':
+          description: Paginated list of customers
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ListEnvelope'
+                  - type: object
+                    properties:
+                      rows:
+                        type: array
+                        items: { $ref: '#/components/schemas/Customer' }
+    post:
+      tags: [Customers]
+      summary: Create a customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerWrite' }
+      responses:
+        '200':
+          description: Result envelope
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatusEnvelope' }
+  /customers/{id}:
+    parameters:
+      - $ref: '#/components/parameters/idPath'
+    get:
+      tags: [Customers]
+      summary: Get a customer
+      responses:
+        '200':
+          description: Customer
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Customers]
+      summary: Update a customer
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerWrite' }
+      responses:
+        '200':
+          description: Result envelope
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatusEnvelope' }
+    delete:
+      tags: [Customers]
+      summary: Delete a customer
+      responses:
+        '200':
+          description: Result envelope
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatusEnvelope' }
+
+  /contracts:
+    get:
+      tags: [Contracts]
+      summary: List contracts
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/search'
+        - name: status
+          in: query
+          description: Filter by contract status
+          schema:
+            type: string
+            enum: [draft, active, suspended, expired, terminated]
+      responses:
+        '200':
+          description: Paginated list of contracts
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ListEnvelope'
+                  - type: object
+                    properties:
+                      rows:
+                        type: array
+                        items: { $ref: '#/components/schemas/Contract' }
+  /contracts/{id}:
+    parameters:
+      - $ref: '#/components/parameters/idPath'
+    get:
+      tags: [Contracts]
+      summary: Get a contract
+      responses:
+        '200':
+          description: Contract
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Contract' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Contracts]
+      summary: Delete a contract
+      responses:
+        '200':
+          description: Result envelope
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatusEnvelope' }
+
+  /suppliers:
+    get:
+      tags: [Suppliers]
+      summary: List suppliers
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/search'
+      responses:
+        '200':
+          description: Paginated list of suppliers
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ListEnvelope'
+                  - type: object
+                    properties:
+                      rows:
+                        type: array
+                        items: { $ref: '#/components/schemas/Supplier' }
+    post:
+      tags: [Suppliers]
+      summary: Create a supplier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SupplierWrite' }
+      responses:
+        '200':
+          description: Result envelope
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatusEnvelope' }
+  /suppliers/{id}:
+    parameters:
+      - $ref: '#/components/parameters/idPath'
+    get:
+      tags: [Suppliers]
+      summary: Get a supplier
+      responses:
+        '200':
+          description: Supplier
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Supplier' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Suppliers]
+      summary: Update a supplier
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SupplierWrite' }
+      responses:
+        '200':
+          description: Result envelope
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatusEnvelope' }
+    delete:
+      tags: [Suppliers]
+      summary: Delete a supplier
+      responses:
+        '200':
+          description: Result envelope
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatusEnvelope' }
+
+  /tenantservices/selectlist:
+    get:
+      tags: [Tenant Services]
+      summary: Select list of tenant services (for the current company context)
+      parameters:
+        - $ref: '#/components/parameters/search'
+      responses:
+        '200':
+          description: Select2-compatible list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: integer }
+                        text: { type: string }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Laravel Passport personal access token (Settings → API).
+
+  parameters:
+    limit:
+      name: limit
+      in: query
+      description: Page size (default 50, max 500)
+      schema: { type: integer, default: 50, maximum: 500 }
+    offset:
+      name: offset
+      in: query
+      schema: { type: integer, default: 0 }
+    search:
+      name: search
+      in: query
+      schema: { type: string }
+    sort:
+      name: sort
+      in: query
+      schema: { type: string }
+    order:
+      name: order
+      in: query
+      schema: { type: string, enum: [asc, desc] }
+    idPath:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer }
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/StatusEnvelope' }
+
+  schemas:
+    ListEnvelope:
+      type: object
+      properties:
+        total: { type: integer, example: 42 }
+        rows: { type: array, items: { type: object } }
+    StatusEnvelope:
+      type: object
+      properties:
+        status: { type: string, enum: [success, error], example: success }
+        messages:
+          oneOf:
+            - type: string
+            - type: object
+        payload:
+          type: object
+          nullable: true
+    Asset:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string, nullable: true }
+        asset_tag: { type: string }
+        serial: { type: string, nullable: true }
+        model: { type: object, nullable: true }
+        status_label: { type: object, nullable: true }
+        assigned_to: { type: object, nullable: true }
+        company: { type: object, nullable: true }
+        location: { type: object, nullable: true }
+        created_at: { type: object, nullable: true }
+        updated_at: { type: object, nullable: true }
+    AssetWrite:
+      type: object
+      required: [asset_tag, status_id, model_id]
+      properties:
+        asset_tag: { type: string }
+        status_id: { type: integer }
+        model_id: { type: integer }
+        name: { type: string }
+        serial: { type: string }
+        company_id: { type: integer }
+        notes: { type: string }
+    Customer:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        customer_number: { type: string, nullable: true }
+        status: { type: string, enum: [prospect, active, suspended, ended] }
+        vat_number: { type: string, nullable: true }
+        tax_code: { type: string, nullable: true }
+        email: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        company_id: { type: integer, nullable: true }
+        nis_profile: { type: string, nullable: true }
+        nis_service_role: { type: string, nullable: true }
+        nis_criticality: { type: string, nullable: true }
+        created_at: { type: object, nullable: true }
+    CustomerWrite:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        customer_number: { type: string }
+        status: { type: string, enum: [prospect, active, suspended, ended] }
+        vat_number: { type: string }
+        tax_code: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        company_id: { type: integer }
+    Contract:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        contract_number: { type: string, nullable: true }
+        status: { type: string, enum: [draft, active, suspended, expired, terminated] }
+        currency: { type: string, example: EUR }
+        signed_at: { type: string, format: date, nullable: true }
+        starts_at: { type: string, format: date, nullable: true }
+        ends_at: { type: string, format: date, nullable: true }
+        renewal_due_at: { type: string, format: date, nullable: true }
+        notice_due_at: { type: string, format: date, nullable: true }
+        scope: { type: string, nullable: true }
+        notes: { type: string, nullable: true }
+        customer: { type: object, nullable: true }
+        company: { type: object, nullable: true }
+    Supplier:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        tax_code: { type: string, nullable: true }
+        email: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        company_id: { type: integer, nullable: true }
+        nis_relevant: { type: boolean }
+        nis_relevance_type: { type: string, nullable: true }
+        nis_criticality: { type: string, nullable: true }
+        nis_next_review_at: { type: string, format: date, nullable: true }
+    SupplierWrite:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        tax_code: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        company_id: { type: integer }
+        nis_relevant: { type: boolean }
