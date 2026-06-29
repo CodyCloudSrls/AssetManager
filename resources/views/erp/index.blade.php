@@ -86,7 +86,18 @@
             <div class="box box-default">
                 <div class="box-header with-border"><h3 class="box-title">{{ trans('erp/general.fic.title') }}</h3></div>
                 <div class="box-body">
-                    @if ($ficConfigured)
+                    @if ($fic['enabled'])
+                        <table class="table table-condensed" style="margin-bottom:6px;">
+                            <tr><td>{{ trans('erp/general.fic.revenue_year') }}</td><td class="text-right"><strong>{{ $fmt($fic['revenue_year']) }}</strong></td></tr>
+                            <tr><td>{{ trans('erp/general.fic.receivables') }}</td><td class="text-right text-success">{{ $fmt($fic['receivables']) }}</td></tr>
+                            <tr><td>{{ trans('erp/general.fic.payables') }}</td><td class="text-right text-danger">{{ $fmt($fic['payables']) }}</td></tr>
+                            <tr><td>{{ trans('erp/general.fic.vat_balance') }}</td><td class="text-right">{{ $fmt($fic['vat_balance']) }}</td></tr>
+                            @if ($fic['overdue_receivables'] > 0)
+                                <tr><td>{{ trans('erp/general.fic.overdue') }}</td><td class="text-right"><span class="label label-warning">{{ $fmt($fic['overdue_receivables']) }}</span></td></tr>
+                            @endif
+                        </table>
+                        <p class="text-muted" style="font-size:11px;">{{ trans('erp/general.fic.last_sync') }}: {{ $fic['last_sync'] ? \Illuminate\Support\Carbon::parse($fic['last_sync'])->diffForHumans() : '—' }}</p>
+                    @elseif ($ficConfigured)
                         <p><span class="label label-success">{{ trans('erp/general.fic.configured') }}</span></p>
                         <p class="text-muted">{{ trans('erp/general.fic.configured_help') }}</p>
                     @else
@@ -97,6 +108,51 @@
             </div>
         </div>
     </div>
+
+    {{-- ===== Scadenzario (deadlines from the FiC mirror) ===== --}}
+    @if ($fic['enabled'] && $fic['deadlines']->isNotEmpty())
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box box-default">
+                    <div class="box-header with-border"><h3 class="box-title">{{ trans('erp/general.scadenzario.title') }}</h3></div>
+                    <div class="box-body">
+                        <table class="table table-striped snipe-table">
+                            <thead>
+                                <tr>
+                                    <th>{{ trans('erp/general.scadenzario.due_date') }}</th>
+                                    <th>{{ trans('erp/general.scadenzario.type') }}</th>
+                                    <th>{{ trans('erp/general.scadenzario.entity') }}</th>
+                                    <th>{{ trans('erp/general.scadenzario.document') }}</th>
+                                    <th class="text-right">{{ trans('erp/general.scadenzario.amount') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($fic['deadlines'] as $doc)
+                                    @php($overdue = $doc->due_on && $doc->due_on->isPast())
+                                    <tr>
+                                        <td>
+                                            {{ optional($doc->due_on)->format('d/m/Y') }}
+                                            @if ($overdue)<span class="label label-danger">{{ trans('erp/general.scadenzario.overdue') }}</span>@endif
+                                        </td>
+                                        <td>
+                                            @if ($doc->direction === \App\Models\FicDocument::DIRECTION_ISSUED)
+                                                <span class="label label-success">{{ trans('erp/general.scadenzario.collect') }}</span>
+                                            @else
+                                                <span class="label label-default">{{ trans('erp/general.scadenzario.pay') }}</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $doc->entity_name ?? '—' }}</td>
+                                        <td>{{ $doc->number ?? '—' }}</td>
+                                        <td class="text-right {{ $overdue ? 'text-danger' : '' }}">{{ \App\Helpers\Helper::formatCurrencyOutput($doc->outstanding) }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 
     {{-- ===== Planned management-control modules (PDF roadmap) ===== --}}
     <div class="row">

@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
 use App\Models\Company;
 use App\Models\Customer;
 use App\Models\CustomerContract;
+use App\Models\FicDocument;
 use App\Models\Supplier;
 use App\Models\Tenant;
 use App\Support\Fic\FicClient;
@@ -14,6 +15,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * ERP / Management-control cockpit. Built ON TOP of existing asset functionality —
@@ -57,7 +59,54 @@ class ErpController extends Controller
             'report' => $report,
             'kpis' => $kpis,
             'ficConfigured' => app(FicClient::class)->isConfigured(),
+            'fic' => $this->ficSummary($companyIds),
         ]);
+    }
+
+    /**
+     * Fiscal summary from the read-only FiC mirror: revenue, receivables/payables,
+     * VAT balance and the upcoming/overdue deadlines (scadenzario). Returns
+     * ['enabled' => false] when nothing has been synced yet.
+     */
+    private function ficSummary(?array $companyIds): array
+    {
+        if (! FicDocument::query()->forCompanies($companyIds)->exists()) {
+            return ['enabled' => false];
+        }
+
+        $yearStart = Carbon::now()->startOfYear();
+        $outstanding = DB::raw('amount_gross - paid_amount');
+
+        $receivables = (float) FicDocument::issued()->unpaid()->forCompanies($companyIds)->sum($outstanding);
+        $payables = (float) FicDocument::received()->unpaid()->forCompanies($companyIds)->sum($outstanding);
+        $overdueReceivables = (float) FicDocument::issued()->unpaid()->forCompanies($companyIds)
+            ->whereNotNull('due_on')->whereDate('due_on', '<', Carbon::now())->sum($outstanding);
+
+        $revenueYear = (float) FicDocument::issued()->forCompanies($companyIds)
+            ->whereDate('issued_on', '>=', $yearStart)->sum('amount_net');
+        $vatIssued = (float) FicDocument::issued()->forCompanies($companyIds)
+            ->whereDate('issued_on', '>=', $yearStart)->sum('amount_vat');
+        $vatReceived = (float) FicDocument::received()->forCompanies($companyIds)
+            ->whereDate('issued_on', '>=', $yearStart)->sum('amount_vat');
+
+        // Scadenzario: unpaid documents with a due date, overdue first then nearest.
+        $deadlines = FicDocument::query()->forCompanies($companyIds)->unpaid()
+            ->whereNotNull('due_on')
+            ->where('due_on', '<=', Carbon::now()->addDays(60))
+            ->orderBy('due_on')
+            ->limit(25)
+            ->get();
+
+        return [
+            'enabled' => true,
+            'last_sync' => FicDocument::forCompanies($companyIds)->max('synced_at'),
+            'receivables' => $receivables,
+            'payables' => $payables,
+            'overdue_receivables' => $overdueReceivables,
+            'revenue_year' => $revenueYear,
+            'vat_balance' => round($vatIssued - $vatReceived, 2),
+            'deadlines' => $deadlines,
+        ];
     }
 
     /**
@@ -76,7 +125,13 @@ class ErpController extends Controller
             return $activeTenant->activeCompanyIds();
         }
 
-        $userCompanyId = auth()->user()?->company_id;
+        // Superadmins see everything (no company scope), like elsewhere in the app.
+        $user = auth()->user();
+        if ($user?->isSuperUser()) {
+            return null;
+        }
+
+        $userCompanyId = $user?->company_id;
         if (! is_null($userCompanyId)) {
             return [(int) $userCompanyId];
         }
