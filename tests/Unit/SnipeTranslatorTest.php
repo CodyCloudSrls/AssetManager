@@ -7,7 +7,8 @@ use Tests\TestCase;
 class SnipeTranslatorTest extends TestCase
 {
     // the 'meatiest' of these tests will explicitly choose non-English as the language, because otherwise
-    // the fallback-logic (which is to fall-back to 'en-US') will be conflated in with the translation logic
+    // the fallback-logic (which is to fall-back to 'en-US') will be conflated in with the translation logic.
+    // The product ships Italian + English only, so Italian (it-IT) is the sample non-English locale here.
 
     // WARNING: If these translation strings are updated, these tests will start to fail. Update them as appropriate.
 
@@ -16,9 +17,9 @@ class SnipeTranslatorTest extends TestCase
         $this->assertEquals('This user has admin privileges', trans('general.admin_tooltip', [], 'en-US'));
     }
 
-    public function test_portuguese()
+    public function test_italian()
     {
-        $this->assertEquals('Acessório', trans('general.accessory', [], 'pt-PT'));
+        $this->assertEquals('Accessorio', trans('general.accessory', [], 'it-IT'));
     }
 
     public function test_fallback()
@@ -52,16 +53,16 @@ class SnipeTranslatorTest extends TestCase
     public function test_trans_choice_singular()
     {
         $this->assertEquals(
-            '1 Consumível',
-            trans_choice('general.countable.consumables', 1, [], 'pt-PT')
+            '1 Consumabile',
+            trans_choice('general.countable.consumables', 1, [], 'it-IT')
         );
     }
 
     public function test_trans_choice_plural()
     {
         $this->assertEquals(
-            '2 Consumíveis',
-            trans_choice('general.countable.consumables', 2, [], 'pt-PT')
+            '2 Consumabili',
+            trans_choice('general.countable.consumables', 2, [], 'it-IT')
         );
     }
 
@@ -69,7 +70,7 @@ class SnipeTranslatorTest extends TestCase
     {
         $this->assertEquals(
             'bogus_key',
-            trans('bogus_key', [], 'pt-PT'),
+            trans('bogus_key', [], 'it-IT'),
             'Translating a completely bogus key should at least just return back that key'
         );
     }
@@ -77,8 +78,8 @@ class SnipeTranslatorTest extends TestCase
     public function test_replacements()
     {
         $this->assertEquals(
-            'Artigos alocados a Some Name Here',
-            trans('admin/users/general.assets_user', ['name' => 'Some Name Here'], 'pt-PT'),
+            'Bene assegnato a Some Name Here',
+            trans('admin/users/general.assets_user', ['name' => 'Some Name Here'], 'it-IT'),
             'Text should get replaced in translations when given'
         );
     }
@@ -86,8 +87,8 @@ class SnipeTranslatorTest extends TestCase
     public function test_legacy_backup_locale_mapping()
     {
         $this->assertEquals(
-            'Mensagem de exceção: MESSAGE',
-            trans('backup::notifications.exception_message',['message' => 'MESSAGE'],'pt-PT')
+            'Messaggio dell\'eccezione: MESSAGE',
+            trans('backup::notifications.exception_message', ['message' => 'MESSAGE'], 'it-IT')
         );
     }
 }
