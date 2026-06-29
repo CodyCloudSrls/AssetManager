@@ -31,6 +31,8 @@ class Kernel extends ConsoleKernel
 
         // ERP: keep the read-only Fatture in Cloud mirror fresh (no-op if FiC unconfigured).
         $schedule->command('fic:sync')->everyTenMinutes()->withoutOverlapping();
+        // Real bank/cash balances from the cashbook — heavier, so once a day.
+        $schedule->command('fic:sync-cassa')->dailyAt('02:30')->withoutOverlapping();
     }
 
     /**

@@ -85,9 +85,23 @@ class FicClient
         ])->throw()->json() ?? [];
     }
 
-    /** GET /c/{company}/info/payment_accounts — bank/cash accounts for balances. */
+    /** GET /c/{company}/info/payment_accounts — bank/cash accounts. */
     public function paymentAccounts(): array
     {
         return $this->request()->get("/c/{$this->companyId}/info/payment_accounts")->throw()->json() ?? [];
+    }
+
+    /**
+     * GET /c/{company}/cashbook — prima nota movements in a date range. Summing in/out
+     * per account all-time gives the real bank/cash balances (conti correnti).
+     */
+    public function cashbook(string $dateFrom, string $dateTo, int $page = 1, int $perPage = 100): array
+    {
+        return $this->request()->get("/c/{$this->companyId}/cashbook", [
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+            'page' => $page,
+            'per_page' => $perPage,
+        ])->throw()->json() ?? [];
     }
 }

@@ -20,27 +20,45 @@ class FicSyncService
     {
     }
 
+    /**
+     * Document types synced per direction. Credit notes (note di credito) net AGAINST
+     * invoices, so they are stored with negative amounts. Receipts (ricevute) are sales
+     * paid on issue.
+     *
+     * @var array<string, string[]>
+     */
+    private const TYPES = [
+        FicDocument::DIRECTION_ISSUED => ['invoice', 'credit_note', 'receipt'],
+        FicDocument::DIRECTION_RECEIVED => ['expense'],
+    ];
+
     /** @return array{issued:int, received:int} */
     public function syncAll(): array
     {
-        return [
-            'issued' => $this->syncDirection(FicDocument::DIRECTION_ISSUED),
-            'received' => $this->syncDirection(FicDocument::DIRECTION_RECEIVED),
-        ];
+        $counts = [];
+        foreach (self::TYPES as $direction => $types) {
+            $total = 0;
+            foreach ($types as $type) {
+                $total += $this->syncType($direction, $type);
+            }
+            $counts[$direction === FicDocument::DIRECTION_ISSUED ? 'issued' : 'received'] = $total;
+        }
+
+        return $counts;
     }
 
-    private function syncDirection(string $direction): int
+    private function syncType(string $direction, string $type): int
     {
         $count = 0;
         $page = 1;
 
         do {
             $response = $direction === FicDocument::DIRECTION_ISSUED
-                ? $this->client->issuedDocuments('invoice', $page, self::PAGE_SIZE)
-                : $this->client->receivedDocuments('expense', $page, self::PAGE_SIZE);
+                ? $this->client->issuedDocuments($type, $page, self::PAGE_SIZE)
+                : $this->client->receivedDocuments($type, $page, self::PAGE_SIZE);
 
             foreach (($response['data'] ?? []) as $doc) {
-                $this->upsert($direction, $doc);
+                $this->upsert($direction, $type, $doc);
                 $count++;
             }
 
@@ -52,9 +70,13 @@ class FicSyncService
         return $count;
     }
 
-    private function upsert(string $direction, array $doc): void
+    private function upsert(string $direction, string $type, array $doc): void
     {
         [$paid, $paidAmount, $dueOn, $paidOn] = $this->paymentSummary($doc['payments_list'] ?? []);
+
+        // Credit notes reduce revenue / receivables: store them negative so every
+        // aggregate (ricavi, IVA, crediti) nets them automatically.
+        $sign = $type === 'credit_note' ? -1 : 1;
 
         FicDocument::updateOrCreate(
             [
@@ -63,20 +85,20 @@ class FicSyncService
                 'fic_id' => (int) ($doc['id'] ?? 0),
             ],
             [
-                'doc_type' => $doc['type'] ?? null,
-                'category' => $doc['category'] ?? null,
-                'number' => $doc['number'] ?? null,
+                'doc_type' => is_string($doc['type'] ?? null) ? $doc['type'] : $type,
+                'category' => is_string($doc['category'] ?? null) ? $doc['category'] : null,
+                'number' => is_scalar($doc['number'] ?? null) ? (string) $doc['number'] : null,
                 'issued_on' => $this->date($doc['date'] ?? null),
                 'due_on' => $dueOn ?? $this->date($doc['next_due_date'] ?? null),
                 'paid_on' => $paidOn,
-                'entity_name' => $doc['entity']['name'] ?? null,
-                'entity_vat' => $doc['entity']['vat_number'] ?? null,
-                'amount_net' => (float) ($doc['amount_net'] ?? 0),
-                'amount_vat' => (float) ($doc['amount_vat'] ?? 0),
-                'amount_gross' => (float) ($doc['amount_gross'] ?? 0),
-                'currency' => $doc['currency'] ?? 'EUR',
+                'entity_name' => is_string($doc['entity']['name'] ?? null) ? $doc['entity']['name'] : null,
+                'entity_vat' => is_string($doc['entity']['vat_number'] ?? null) ? $doc['entity']['vat_number'] : null,
+                'amount_net' => $sign * (float) ($doc['amount_net'] ?? 0),
+                'amount_vat' => $sign * (float) ($doc['amount_vat'] ?? 0),
+                'amount_gross' => $sign * (float) ($doc['amount_gross'] ?? 0),
+                'currency' => is_string($doc['currency'] ?? null) ? $doc['currency'] : (is_array($doc['currency'] ?? null) ? ($doc['currency']['id'] ?? 'EUR') : 'EUR'),
                 'paid' => $paid,
-                'paid_amount' => $paidAmount,
+                'paid_amount' => $sign * $paidAmount,
                 'company_id' => $this->localCompanyId(),
                 'synced_at' => Carbon::now(),
             ]

@@ -63,19 +63,31 @@
                         <tr><td>{{ trans('erp/fotografia.debiti_commerciali') }}</td><td class="text-right text-danger">{{ $fc($posizione['debiti_commerciali']) }}</td></tr>
                         <tr style="font-weight:bold;"><td>{{ trans('erp/fotografia.saldo_commerciale') }}</td><td class="text-right {{ $posizione['saldo_commerciale'] < 0 ? 'text-danger' : 'text-success' }}">{{ $fc($posizione['saldo_commerciale']) }}</td></tr>
                         <tr><td>{{ trans('erp/fotografia.debito_finanziario') }}</td><td class="text-right text-danger">{{ $fc($posizione['debito_finanziario']) }}</td></tr>
-                        <tr><td>{{ trans('erp/fotografia.cassa') }}</td><td class="text-right">{{ is_null($posizione['cassa']) ? '—' : $fc($posizione['cassa']) }}</td></tr>
+                        <tr><td>{{ trans('erp/fotografia.cassa') }}
+                            @if($cassaSource==='reale')<span class="label label-success">{{ trans('erp/fotografia.cassa_reale') }}</span>@elseif($cassaSource==='manuale')<span class="label label-default">{{ trans('erp/fotografia.cassa_manuale') }}</span>@endif</td>
+                            <td class="text-right">{{ is_null($posizione['cassa']) ? '—' : $fc($posizione['cassa']) }}</td></tr>
                         <tr style="font-weight:bold; border-top:2px solid #ddd;"><td>{{ trans('erp/fotografia.pfn') }}</td><td class="text-right">{{ is_null($posizione['pfn']) ? trans('erp/fotografia.pfn_missing') : $fc($posizione['pfn']) }}</td></tr>
                     </table>
-                    @can('update', \App\Models\CustomerContract::class)
-                        <form method="POST" action="{{ route('erp.fotografia.input') }}" class="form-inline" style="margin-top:8px;">
-                            @csrf
-                            <label style="font-size:12px;">{{ trans('erp/fotografia.cassa_input') }}</label>
-                            <div class="input-group" style="width:160px;"><span class="input-group-addon">€</span>
-                                <input type="number" step="0.01" name="cassa_attuale" class="form-control input-sm" value="{{ old('cassa_attuale', $posizione['cassa']) }}">
-                            </div>
-                            <button class="btn btn-sm btn-primary">{{ trans('general.save') }}</button>
-                        </form>
-                    @endcan
+                    @if ($conti->isNotEmpty())
+                        <p class="text-muted" style="font-size:11px; margin-bottom:2px;">{{ trans('erp/fotografia.conti') }}</p>
+                        <table class="table table-condensed" style="margin-bottom:4px;">
+                            @foreach ($conti as $c)
+                                <tr><td style="font-size:12px;">{{ $c->name }}</td><td class="text-right" style="font-size:12px;">{{ $f($c->balance) }}</td></tr>
+                            @endforeach
+                        </table>
+                    @endif
+                    @if ($cassaSource !== 'reale')
+                        @can('update', \App\Models\CustomerContract::class)
+                            <form method="POST" action="{{ route('erp.fotografia.input') }}" class="form-inline" style="margin-top:8px;">
+                                @csrf
+                                <label style="font-size:12px;">{{ trans('erp/fotografia.cassa_input') }}</label>
+                                <div class="input-group" style="width:160px;"><span class="input-group-addon">€</span>
+                                    <input type="number" step="0.01" name="cassa_attuale" class="form-control input-sm" value="{{ old('cassa_attuale', $posizione['cassa']) }}">
+                                </div>
+                                <button class="btn btn-sm btn-primary">{{ trans('general.save') }}</button>
+                            </form>
+                        @endcan
+                    @endif
                 </div>
             </div>
         </div>

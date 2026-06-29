@@ -28,7 +28,7 @@ class NotuleController extends Controller
             ->orderByDesc('competence_date')->orderByDesc('id')->paginate(50);
 
         $totals = [
-            'pending' => (float) Notula::forCompanies($companyIds)->accruable()->sum('amount'),
+            'pending' => Notula::outstandingTotal($companyIds),
             'all' => (float) Notula::forCompanies($companyIds)->whereIn('status', [Notula::STATUS_PENDING, Notula::STATUS_INVOICED, Notula::STATUS_PAID])->sum('amount'),
         ];
 

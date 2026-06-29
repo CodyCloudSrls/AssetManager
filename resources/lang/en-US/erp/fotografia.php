@@ -26,5 +26,9 @@ return [
     'notule' => 'Professional fees to pay',
     'tot_debiti_commerciali' => 'Total commercial payables',
     'top_debiti' => 'Main overdue/open',
+    'cassa_reale' => 'real (FiC)',
+    'cassa_manuale' => 'manual',
+    'conti' => 'Bank accounts (real balances)',
+
     'note' => 'To close 100%: enter current cash/bank (for the exact NFP), add any other financing and the deposited accounts. The fiscal layer (VAT/F24/taxes) stays on Fatture in Cloud and the accountant.',
 ];

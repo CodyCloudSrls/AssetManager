@@ -26,5 +26,9 @@ return [
     'notule' => 'Notule professionisti da pagare',
     'tot_debiti_commerciali' => 'Totale debiti commerciali',
     'top_debiti' => 'Principali scaduti/aperti',
+    'cassa_reale' => 'reale (FiC)',
+    'cassa_manuale' => 'manuale',
+    'conti' => 'Conti correnti (saldi reali)',
+
     'note' => 'Per chiudere al 100%: inserisci la cassa/banca attuale (per la PFN esatta), aggiungi gli eventuali altri finanziamenti e i bilanci depositati. Il livello fiscale (IVA/F24/imposte) resta su Fatture in Cloud e commercialista.',
 ];

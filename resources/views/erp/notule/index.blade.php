@@ -32,8 +32,9 @@
                                 <th>{{ trans('erp/notule.professional') }}</th>
                                 <th>{{ trans('erp/notule.description') }}</th>
                                 <th class="text-right">{{ trans('erp/notule.amount') }}</th>
+                                <th class="text-right">{{ trans('erp/notule.paid') }}</th>
+                                <th class="text-right">{{ trans('erp/notule.residuo') }}</th>
                                 <th>{{ trans('erp/notule.status') }}</th>
-                                <th>{{ trans('erp/notule.expected_invoice') }}</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -44,11 +45,12 @@
                                     <td>{{ $n->display_name }}</td>
                                     <td>{{ $n->description }}</td>
                                     <td class="text-right">{{ \App\Helpers\Helper::formatCurrencyOutput($n->amount) }}</td>
+                                    <td class="text-right">{{ \App\Helpers\Helper::formatCurrencyOutput($n->paid_amount) }}</td>
+                                    <td class="text-right {{ $n->residuo > 0 ? 'text-danger' : '' }}">{{ \App\Helpers\Helper::formatCurrencyOutput($n->residuo) }}</td>
                                     <td>
                                         @php($cls = ['pending' => 'label-warning', 'invoiced' => 'label-info', 'paid' => 'label-success'][$n->status] ?? 'label-default')
                                         <span class="label {{ $cls }}">{{ $n->status_label }}</span>
                                     </td>
-                                    <td>{{ optional($n->expected_invoice_date)->format('d/m/Y') ?? '—' }}</td>
                                     <td class="text-right">
                                         @can('update', \App\Models\CustomerContract::class)
                                             <a href="{{ route('erp.notule.edit', $n) }}" class="btn btn-sm btn-default"><x-icon type="edit"/></a>

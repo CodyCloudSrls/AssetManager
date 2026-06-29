@@ -23,12 +23,13 @@ class Notula extends Model
 
     protected $fillable = [
         'company_id', 'supplier_id', 'professional_name', 'description',
-        'amount', 'competence_date', 'expected_invoice_date',
+        'amount', 'paid_amount', 'competence_date', 'expected_invoice_date',
         'status', 'paid_at', 'fic_document_id', 'notes', 'created_by',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'paid_amount' => 'decimal:2',
         'competence_date' => 'date',
         'expected_invoice_date' => 'date',
         'paid_at' => 'date',
@@ -78,5 +79,18 @@ class Notula extends Model
     public function scopeAccruable(Builder $query): Builder
     {
         return $query->where('status', self::STATUS_PENDING);
+    }
+
+    /** Outstanding amount still to pay (da pagare) = amount − paid_amount. */
+    public function getResiduoAttribute(): float
+    {
+        return round((float) $this->amount - (float) $this->paid_amount, 2);
+    }
+
+    /** Total still to pay across pending notule for the scope (feeds controllo di gestione). */
+    public static function outstandingTotal(?array $companyIds): float
+    {
+        return round((float) static::query()->forCompanies($companyIds)->accruable()
+            ->sum(\Illuminate\Support\Facades\DB::raw('amount - paid_amount')), 2);
     }
 }

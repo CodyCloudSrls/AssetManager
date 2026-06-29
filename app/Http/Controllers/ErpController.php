@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\Customer;
 use App\Models\CustomerContract;
 use App\Models\FicDocument;
+use App\Models\FicPaymentAccount;
 use App\Models\Finanziamento;
 use App\Models\ManagementInput;
 use App\Models\Notula;
@@ -69,7 +70,7 @@ class ErpController extends Controller
             'fic' => $this->ficSummary($companyIds),
             // Accrued cost from professionals not yet invoiced (pending notule only,
             // so once they invoice via FiC the cost is not double-counted).
-            'notulePending' => (float) Notula::forCompanies($companyIds)->accruable()->sum('amount'),
+            'notulePending' => Notula::outstandingTotal($companyIds),
         ]);
     }
 
@@ -92,14 +93,20 @@ class ErpController extends Controller
         $flussi = $mc->flussiCassa($companyIds, $year);
 
         $bilanci = BilancioUfficiale::forCompanies($companyIds)->orderBy('anno')->get();
-        $notuleResiduo = (float) Notula::forCompanies($companyIds)->accruable()->sum('amount');
+        $notuleResiduo = Notula::outstandingTotal($companyIds);
         $debitiFic = $cd['tot_debiti'];
         $debitiCommerciali = round($debitiFic + $notuleResiduo, 2);
         $crediti = $cd['tot_crediti'];
         $debitoFinanziario = Finanziamento::totalResiduo($companyIds, true);
-        $cassa = ManagementInput::getValue($companyIds, ManagementInput::KEY_CASSA);
+
+        // Real cash from the FiC cashbook (conti correnti) wins over the manual figure.
+        $cassaReale = FicPaymentAccount::totalBalance($companyIds);
+        $cassa = $cassaReale ?? ManagementInput::getValue($companyIds, ManagementInput::KEY_CASSA);
+        $cassaSource = ! is_null($cassaReale) ? 'reale' : (is_null($cassa) ? null : 'manuale');
 
         return view('erp.fotografia', [
+            'conti' => FicPaymentAccount::forCompanies($companyIds)->where('balance', '<>', 0)->orderByDesc('balance')->get(),
+            'cassaSource' => $cassaSource,
             'year' => $year,
             'ce' => $ce,
             'years' => $years,

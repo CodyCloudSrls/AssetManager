@@ -19,6 +19,9 @@ return [
     'status_pending' => 'Awaiting invoice',
     'status_invoiced' => 'Invoiced',
     'status_paid' => 'Paid',
+    'paid' => 'Paid',
+    'residuo' => 'Outstanding',
+
     'tot_pending' => 'Accrued, awaiting invoice',
     'tot_all' => 'Total notule',
     'empty' => 'No notule recorded.',

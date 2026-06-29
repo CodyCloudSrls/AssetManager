@@ -19,6 +19,9 @@ return [
     'status_pending' => 'In attesa di fattura',
     'status_invoiced' => 'Fatturata',
     'status_paid' => 'Pagata',
+    'paid' => 'Pagato',
+    'residuo' => 'Residuo',
+
     'tot_pending' => 'Maturato in attesa di fattura',
     'tot_all' => 'Totale notule',
     'empty' => 'Nessuna notula registrata.',
