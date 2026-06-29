@@ -1220,6 +1220,10 @@ foreach ($euLocalePackLabels as $locale => $languageName) {
     ];
 }
 
+// Conserva i pacchetti italiani GDPR/AI Act definiti sopra: il blocco $packs viene
+// riassegnato sotto ai soli bootstrap NIS2, quindi li recuperiamo prima per spedirli.
+$ccLegacyPacks = $packs;
+
 $packs = [
     'nis2_it_allegato_1' => [
         'pack_version' => $packVersion,
@@ -3274,6 +3278,11 @@ $packs['iso9001_it'] = [
 $packs['dl81_it'] += ['source_register' => $sourceRegisters['dl81_it'], 'source_register_key' => 'dl81_it'];
 $packs['iso27001_it'] += ['source_register' => $sourceRegisters['iso27001'], 'source_register_key' => 'iso27001'];
 $packs['iso9001_it'] += ['source_register' => $sourceRegisters['iso9001'], 'source_register_key' => 'iso9001'];
+
+// Spedisci anche i pacchetti italiani GDPR e AI Act (it-IT) come template di sistema
+// installabili, così ogni dominio compliance ha una sorgente di bootstrap.
+$packs['gdpr_eu'] = $ccLegacyPacks['gdpr_eu'] + ['source_register' => $sourceRegisters['gdpr_eu'], 'source_register_key' => 'gdpr_eu'];
+$packs['ai_act_it'] = $ccLegacyPacks['ai_act_it'];
 
 return [
     'source_checked_at' => $sourceCheckedAt,
