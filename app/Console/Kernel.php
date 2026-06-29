@@ -30,7 +30,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('saml:clear_expired_nonces')->weekly();
 
         // ERP: keep the read-only Fatture in Cloud mirror fresh (no-op if FiC unconfigured).
-        $schedule->command('fic:sync')->hourly()->withoutOverlapping();
+        $schedule->command('fic:sync')->everyTenMinutes()->withoutOverlapping();
     }
 
     /**

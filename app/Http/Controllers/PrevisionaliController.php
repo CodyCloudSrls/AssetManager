@@ -1,0 +1,103 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
+use App\Models\CustomerContract;
+use App\Models\Previsionale;
+use App\Models\Tenant;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+
+/**
+ * Previsionale economico (forecast). ERP-gated; write reuses the ERP contracts ability.
+ */
+class PrevisionaliController extends Controller
+{
+    use AppliesTenantCompanyFilter;
+
+    public function index(Request $request): View
+    {
+        $this->authorize('view', CustomerContract::class);
+
+        $previsionali = Previsionale::forCompanies($this->companyIds($request))->orderBy('anno')->get();
+
+        return view('erp.previsionali.index', ['previsionali' => $previsionali]);
+    }
+
+    public function create(): View
+    {
+        $this->authorize('update', CustomerContract::class);
+
+        return view('erp.previsionali.edit', ['item' => new Previsionale(['anno' => (int) now()->year])]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $this->authorize('update', CustomerContract::class);
+
+        $p = new Previsionale();
+        $p->fill($this->validated($request));
+        $p->created_by = auth()->id();
+        $p->save();
+
+        return redirect()->route('erp.previsionali.index')->with('success', trans('erp/previsionali.saved'));
+    }
+
+    public function edit(Previsionale $previsionale): View
+    {
+        $this->authorize('update', CustomerContract::class);
+
+        return view('erp.previsionali.edit', ['item' => $previsionale]);
+    }
+
+    public function update(Request $request, Previsionale $previsionale): RedirectResponse
+    {
+        $this->authorize('update', CustomerContract::class);
+
+        $previsionale->fill($this->validated($request))->save();
+
+        return redirect()->route('erp.previsionali.index')->with('success', trans('erp/previsionali.saved'));
+    }
+
+    public function destroy(Previsionale $previsionale): RedirectResponse
+    {
+        $this->authorize('update', CustomerContract::class);
+
+        $previsionale->delete();
+
+        return redirect()->route('erp.previsionali.index')->with('success', trans('erp/previsionali.deleted'));
+    }
+
+    private function validated(Request $request): array
+    {
+        return $request->validate([
+            'anno' => 'required|integer|min:2000|max:2100',
+            'ricavi' => 'nullable|numeric',
+            'ricavi_ricorrente' => 'nullable|numeric',
+            'cogs' => 'nullable|numeric',
+            'opex' => 'nullable|numeric',
+            'personale' => 'nullable|numeric',
+            'company_id' => 'nullable|integer|exists:companies,id',
+            'notes' => 'nullable|string',
+        ]);
+    }
+
+    private function companyIds(Request $request): ?array
+    {
+        $companyIds = $this->tenantCompanyIdsFromRequest($request);
+        if (! is_null($companyIds)) {
+            return $companyIds;
+        }
+        if ($activeTenant = Tenant::activeTenant()) {
+            return $activeTenant->activeCompanyIds();
+        }
+        $user = auth()->user();
+        if ($user?->isSuperUser()) {
+            return null;
+        }
+
+        return is_null($user?->company_id) ? null : [(int) $user->company_id];
+    }
+}

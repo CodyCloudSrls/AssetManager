@@ -167,6 +167,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('erp/finanziamenti/{finanziamento}/edit', [\App\Http\Controllers\FinanziamentiController::class, 'edit'])->name('erp.finanziamenti.edit');
         Route::put('erp/finanziamenti/{finanziamento}', [\App\Http\Controllers\FinanziamentiController::class, 'update'])->name('erp.finanziamenti.update');
         Route::delete('erp/finanziamenti/{finanziamento}', [\App\Http\Controllers\FinanziamentiController::class, 'destroy'])->name('erp.finanziamenti.destroy');
+        Route::get('erp/previsionali', [\App\Http\Controllers\PrevisionaliController::class, 'index'])->name('erp.previsionali.index');
+        Route::get('erp/previsionali/create', [\App\Http\Controllers\PrevisionaliController::class, 'create'])->name('erp.previsionali.create');
+        Route::post('erp/previsionali', [\App\Http\Controllers\PrevisionaliController::class, 'store'])->name('erp.previsionali.store');
+        Route::get('erp/previsionali/{previsionale}/edit', [\App\Http\Controllers\PrevisionaliController::class, 'edit'])->name('erp.previsionali.edit');
+        Route::put('erp/previsionali/{previsionale}', [\App\Http\Controllers\PrevisionaliController::class, 'update'])->name('erp.previsionali.update');
+        Route::delete('erp/previsionali/{previsionale}', [\App\Http\Controllers\PrevisionaliController::class, 'destroy'])->name('erp.previsionali.destroy');
         Route::get('erp/notule', [\App\Http\Controllers\NotuleController::class, 'index'])->name('erp.notule.index');
         Route::get('erp/notule/create', [\App\Http\Controllers\NotuleController::class, 'create'])->name('erp.notule.create');
         Route::post('erp/notule', [\App\Http\Controllers\NotuleController::class, 'store'])->name('erp.notule.store');
