@@ -20,6 +20,7 @@ return [
     'status_invoiced' => 'Invoiced',
     'status_paid' => 'Paid',
     'paid' => 'Paid',
+    'paid_help' => 'Amount already paid (residuo = fee - paid).',
     'residuo' => 'Outstanding',
 
     'tot_pending' => 'Accrued, awaiting invoice',

@@ -54,6 +54,17 @@
                         </div>
                     </div>
 
+                    <div class="form-group {{ $errors->has('paid_amount') ? 'has-error' : '' }}">
+                        <label class="col-md-3 control-label">{{ trans('erp/notule.paid') }}</label>
+                        <div class="col-md-4">
+                            <div class="input-group"><span class="input-group-addon">€</span>
+                                <input type="number" step="0.01" min="0" class="form-control" name="paid_amount" value="{{ old('paid_amount', $item->paid_amount) }}">
+                            </div>
+                            <p class="help-block">{{ trans('erp/notule.paid_help') }}</p>
+                            {!! $errors->first('paid_amount', '<span class="alert-msg">:message</span>') !!}
+                        </div>
+                    </div>
+
                     <div class="form-group {{ $errors->has('competence_date') ? 'has-error' : '' }}">
                         <label class="col-md-3 control-label">{{ trans('erp/notule.competence_date') }}</label>
                         <div class="col-md-4"><input type="date" class="form-control" name="competence_date" value="{{ old('competence_date', optional($item->competence_date)->format('Y-m-d')) }}"></div>

@@ -87,6 +87,7 @@ class NotuleController extends Controller
             'professional_name' => 'nullable|string|max:191|required_without:supplier_id',
             'description' => 'nullable|string|max:191',
             'amount' => 'required|numeric|min:0',
+            'paid_amount' => 'nullable|numeric|min:0|lte:amount',
             'competence_date' => 'nullable|date',
             'expected_invoice_date' => 'nullable|date',
             'status' => 'required|string|in:'.implode(',', array_keys(Notula::statusOptions())),

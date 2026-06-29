@@ -20,6 +20,7 @@ return [
     'status_invoiced' => 'Fatturata',
     'status_paid' => 'Pagata',
     'paid' => 'Pagato',
+    'paid_help' => 'Quanto gia pagato (residuo = compenso - pagato).',
     'residuo' => 'Residuo',
 
     'tot_pending' => 'Maturato in attesa di fattura',

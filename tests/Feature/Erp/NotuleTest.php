@@ -40,6 +40,29 @@ class NotuleTest extends TestCase
         $this->assertDatabaseHas('notule', ['professional_name' => 'Geom. Neri']);
     }
 
+    public function test_paid_amount_persists_and_residuo_is_computed(): void
+    {
+        $this->actingAs(User::factory()->superuser()->create());
+
+        $this->post(route('erp.notule.store'), [
+            'professional_name' => 'Dott. Verdi', 'amount' => 1000, 'paid_amount' => 400, 'status' => Notula::STATUS_PENDING,
+        ])->assertRedirect(route('erp.notule.index'));
+
+        $n = Notula::where('professional_name', 'Dott. Verdi')->firstOrFail();
+        $this->assertEqualsWithDelta(400, (float) $n->paid_amount, 0.01);
+        $this->assertEqualsWithDelta(600, $n->residuo, 0.01);
+        $this->assertEqualsWithDelta(600, Notula::outstandingTotal(null), 0.01); // residuo, not full amount
+    }
+
+    public function test_paid_amount_cannot_exceed_amount(): void
+    {
+        $this->actingAs(User::factory()->superuser()->create());
+
+        $this->from(route('erp.notule.create'))
+            ->post(route('erp.notule.store'), ['professional_name' => 'X', 'amount' => 100, 'paid_amount' => 250, 'status' => Notula::STATUS_PENDING])
+            ->assertSessionHasErrors('paid_amount');
+    }
+
     public function test_professional_or_supplier_required(): void
     {
         $this->actingAs(User::factory()->superuser()->create());
