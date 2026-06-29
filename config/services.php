@@ -50,4 +50,20 @@ return [
         'maps_api_key' => env('GOOGLE_MAPS_API'),
     ],
 
+    /*
+     * TeamSystem connectors for the ERP / management-control module.
+     * Secrets live ONLY in .env (git-ignored) — never commit real tokens.
+     * For production use OAuth2 per-tenant; the manual token is for setup/testing.
+     */
+    'fic' => [
+        'base_url' => env('FIC_API_BASE_URL', 'https://api-v2.fattureincloud.it'),
+        'token' => env('FIC_API_TOKEN'),
+        'company_id' => env('FIC_COMPANY_ID'),
+    ],
+
+    'tspay' => [
+        'base_url' => env('TSPAY_API_BASE_URL'),
+        'token' => env('TSPAY_API_TOKEN'),
+    ],
+
 ];
