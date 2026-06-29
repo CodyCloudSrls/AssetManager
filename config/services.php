@@ -59,6 +59,9 @@ return [
         'base_url' => env('FIC_API_BASE_URL', 'https://api-v2.fattureincloud.it'),
         'token' => env('FIC_API_TOKEN'),
         'company_id' => env('FIC_COMPANY_ID'),
+        // Optional: map the FiC company to a local CodyCloud company id so the ERP
+        // cockpit can scope synced documents per company/tenant.
+        'local_company_id' => env('FIC_LOCAL_COMPANY_ID'),
     ],
 
     'tspay' => [
