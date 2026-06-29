@@ -1,0 +1,107 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
+use App\Models\CustomerContract;
+use App\Models\Finanziamento;
+use App\Models\Tenant;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+
+/**
+ * Finanziamenti / rate loans (telematica, etc.). ERP-gated; write reuses the ERP
+ * contracts ability. Feeds the PFN in the Fotografia Finanziaria.
+ */
+class FinanziamentiController extends Controller
+{
+    use AppliesTenantCompanyFilter;
+
+    public function index(Request $request): View
+    {
+        $this->authorize('view', CustomerContract::class);
+
+        $companyIds = $this->companyIds($request);
+        $finanziamenti = Finanziamento::forCompanies($companyIds)->orderBy('nome')->get();
+
+        return view('erp.finanziamenti.index', [
+            'finanziamenti' => $finanziamenti,
+            'totResiduo' => round((float) $finanziamenti->sum('residuo'), 2),
+        ]);
+    }
+
+    public function create(): View
+    {
+        $this->authorize('update', CustomerContract::class);
+
+        return view('erp.finanziamenti.edit', ['item' => new Finanziamento(['stato' => Finanziamento::STATO_CONFERMATO])]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $this->authorize('update', CustomerContract::class);
+
+        $f = new Finanziamento();
+        $f->fill($this->validated($request));
+        $f->created_by = auth()->id();
+        $f->save();
+
+        return redirect()->route('erp.finanziamenti.index')->with('success', trans('erp/finanziamenti.saved'));
+    }
+
+    public function edit(Finanziamento $finanziamento): View
+    {
+        $this->authorize('update', CustomerContract::class);
+
+        return view('erp.finanziamenti.edit', ['item' => $finanziamento]);
+    }
+
+    public function update(Request $request, Finanziamento $finanziamento): RedirectResponse
+    {
+        $this->authorize('update', CustomerContract::class);
+
+        $finanziamento->fill($this->validated($request))->save();
+
+        return redirect()->route('erp.finanziamenti.index')->with('success', trans('erp/finanziamenti.saved'));
+    }
+
+    public function destroy(Finanziamento $finanziamento): RedirectResponse
+    {
+        $this->authorize('update', CustomerContract::class);
+
+        $finanziamento->delete();
+
+        return redirect()->route('erp.finanziamenti.index')->with('success', trans('erp/finanziamenti.deleted'));
+    }
+
+    private function validated(Request $request): array
+    {
+        return $request->validate([
+            'nome' => 'required|string|max:191',
+            'rata_mensile' => 'required|numeric|min:0',
+            'rate_totali' => 'required|integer|min:0|max:600',
+            'rate_pagate' => 'required|integer|min:0|max:600',
+            'stato' => 'required|string|in:confermato,da_confermare',
+            'company_id' => 'nullable|integer|exists:companies,id',
+            'notes' => 'nullable|string',
+        ]);
+    }
+
+    private function companyIds(Request $request): ?array
+    {
+        $companyIds = $this->tenantCompanyIdsFromRequest($request);
+        if (! is_null($companyIds)) {
+            return $companyIds;
+        }
+        if ($activeTenant = Tenant::activeTenant()) {
+            return $activeTenant->activeCompanyIds();
+        }
+        $user = auth()->user();
+        if ($user?->isSuperUser()) {
+            return null;
+        }
+
+        return is_null($user?->company_id) ? null : [(int) $user->company_id];
+    }
+}

@@ -159,6 +159,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('erp/bilanci/{bilancio}/edit', [\App\Http\Controllers\BilanciController::class, 'edit'])->name('erp.bilanci.edit');
         Route::put('erp/bilanci/{bilancio}', [\App\Http\Controllers\BilanciController::class, 'update'])->name('erp.bilanci.update');
         Route::delete('erp/bilanci/{bilancio}', [\App\Http\Controllers\BilanciController::class, 'destroy'])->name('erp.bilanci.destroy');
+        Route::get('erp/finanziamenti', [\App\Http\Controllers\FinanziamentiController::class, 'index'])->name('erp.finanziamenti.index');
+        Route::get('erp/finanziamenti/create', [\App\Http\Controllers\FinanziamentiController::class, 'create'])->name('erp.finanziamenti.create');
+        Route::post('erp/finanziamenti', [\App\Http\Controllers\FinanziamentiController::class, 'store'])->name('erp.finanziamenti.store');
+        Route::get('erp/finanziamenti/{finanziamento}/edit', [\App\Http\Controllers\FinanziamentiController::class, 'edit'])->name('erp.finanziamenti.edit');
+        Route::put('erp/finanziamenti/{finanziamento}', [\App\Http\Controllers\FinanziamentiController::class, 'update'])->name('erp.finanziamenti.update');
+        Route::delete('erp/finanziamenti/{finanziamento}', [\App\Http\Controllers\FinanziamentiController::class, 'destroy'])->name('erp.finanziamenti.destroy');
         Route::get('erp/notule', [\App\Http\Controllers\NotuleController::class, 'index'])->name('erp.notule.index');
         Route::get('erp/notule/create', [\App\Http\Controllers\NotuleController::class, 'create'])->name('erp.notule.create');
         Route::post('erp/notule', [\App\Http\Controllers\NotuleController::class, 'store'])->name('erp.notule.store');
