@@ -153,6 +153,12 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('erp/ammortamenti', [ErpController::class, 'ammortamenti'])->name('erp.ammortamenti')->middleware('tenant.feature:erp');
     Route::get('erp/controllo-gestione', [ErpController::class, 'controlloGestione'])->name('erp.controllo')->middleware('tenant.feature:erp');
     Route::middleware('tenant.feature:erp')->group(function () {
+        Route::get('erp/bilanci', [\App\Http\Controllers\BilanciController::class, 'index'])->name('erp.bilanci.index');
+        Route::get('erp/bilanci/create', [\App\Http\Controllers\BilanciController::class, 'create'])->name('erp.bilanci.create');
+        Route::post('erp/bilanci', [\App\Http\Controllers\BilanciController::class, 'store'])->name('erp.bilanci.store');
+        Route::get('erp/bilanci/{bilancio}/edit', [\App\Http\Controllers\BilanciController::class, 'edit'])->name('erp.bilanci.edit');
+        Route::put('erp/bilanci/{bilancio}', [\App\Http\Controllers\BilanciController::class, 'update'])->name('erp.bilanci.update');
+        Route::delete('erp/bilanci/{bilancio}', [\App\Http\Controllers\BilanciController::class, 'destroy'])->name('erp.bilanci.destroy');
         Route::get('erp/notule', [\App\Http\Controllers\NotuleController::class, 'index'])->name('erp.notule.index');
         Route::get('erp/notule/create', [\App\Http\Controllers\NotuleController::class, 'create'])->name('erp.notule.create');
         Route::post('erp/notule', [\App\Http\Controllers\NotuleController::class, 'store'])->name('erp.notule.store');

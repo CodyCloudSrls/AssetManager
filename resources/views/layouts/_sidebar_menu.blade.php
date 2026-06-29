@@ -279,6 +279,7 @@
             @endcan
             @can('reports.view')
                 <li {!! (request()->is('erp/controllo-gestione') ? ' class="active"' : '') !!}><a href="{{ route('erp.controllo') }}">{{ trans('erp/controllo.title') }}</a></li>
+                <li {!! (request()->is('erp/bilanci*') ? ' class="active"' : '') !!}><a href="{{ route('erp.bilanci.index') }}">{{ trans('erp/bilanci.nav') }}</a></li>
                 <li {!! (request()->is('reports/contract-forecast') ? ' class="active"' : '') !!}><a href="{{ route('reports.contract-forecast') }}">{{ trans('erp/general.nav.forecast') }}</a></li>
                 <li {!! (request()->is('erp/ammortamenti') ? ' class="active"' : '') !!}><a href="{{ route('erp.ammortamenti') }}">{{ trans('erp/general.nav.ammortamenti') }}</a></li>
             @endcan

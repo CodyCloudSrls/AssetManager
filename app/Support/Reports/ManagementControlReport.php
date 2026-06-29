@@ -2,6 +2,7 @@
 
 namespace App\Support\Reports;
 
+use App\Models\BilancioUfficiale;
 use App\Models\FicCostCategory;
 use App\Models\FicDocument;
 use Illuminate\Support\Carbon;
@@ -28,13 +29,14 @@ class ManagementControlReport
     public function contoEconomico(?array $companyIds, array $years): array
     {
         $map = $this->bucketMap();
+        $officialPayroll = BilancioUfficiale::payrollByYear($companyIds);
         $rows = [];
 
         foreach ($years as $year) {
             $ricavi = (float) FicDocument::issued()->forCompanies($companyIds)
                 ->whereYear('issued_on', $year)->sum('amount_net');
 
-            $cogs = $opex = $labor = 0.0;
+            $cogs = $opex = $laborFic = 0.0;
             $received = FicDocument::received()->forCompanies($companyIds)
                 ->whereYear('issued_on', $year)->get(['category', 'amount_net']);
 
@@ -43,8 +45,12 @@ class ManagementControlReport
                 $alloc = FicCostCategory::allocate($bucket, (float) $doc->amount_net);
                 $cogs += $alloc['cogs'];
                 $opex += $alloc['opex'];
-                $labor += $alloc['labor'];
+                $laborFic += $alloc['labor'];
             }
+
+            // Authoritative precedence: a deposited bilancio's payroll wins over FiC.
+            $hasOfficial = array_key_exists($year, $officialPayroll);
+            $personale = $hasOfficial ? $officialPayroll[$year] : $laborFic;
 
             $margine = round($ricavi - $cogs, 2);
             $rows[$year] = [
@@ -54,8 +60,9 @@ class ManagementControlReport
                 'margine_lordo' => $margine,
                 'margine_pct' => $ricavi > 0 ? round($margine / $ricavi * 100, 1) : null,
                 'opex' => round($opex, 2),
-                'personale' => round($labor, 2),
-                'ebit' => round($margine - $opex - $labor, 2),
+                'personale' => round($personale, 2),
+                'personale_source' => $hasOfficial ? 'reale' : 'fic',
+                'ebit' => round($margine - $opex - $personale, 2),
             ];
         }
 
