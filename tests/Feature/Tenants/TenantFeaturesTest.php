@@ -34,6 +34,20 @@ class TenantFeaturesTest extends TestCase
         $this->assertFalse($tenant->hasFeature(Tenant::FEATURE_ERP));
     }
 
+    public function test_compliance_domains_are_individually_activatable(): void
+    {
+        $tenant = Tenant::create([
+            'uuid' => (string) Str::uuid(),
+            'enabled_features' => [Tenant::FEATURE_ISO27001, Tenant::FEATURE_GDPR],
+        ]);
+
+        $this->assertTrue($tenant->hasFeature(Tenant::FEATURE_ISO27001));
+        $this->assertTrue($tenant->hasFeature(Tenant::FEATURE_GDPR));
+        $this->assertFalse($tenant->hasFeature(Tenant::FEATURE_NIS2));
+        $this->assertFalse($tenant->hasFeature(Tenant::FEATURE_DL81));
+        $this->assertFalse($tenant->hasFeature(Tenant::FEATURE_ISO9001));
+    }
+
     public function test_config_save_persists_features_and_keeps_assets(): void
     {
         $tenant = Tenant::create(['uuid' => (string) Str::uuid()]);

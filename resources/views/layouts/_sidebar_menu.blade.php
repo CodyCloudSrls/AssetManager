@@ -16,9 +16,12 @@
         && Gate::allows('view', \App\Models\CustomerContract::class);
 
     $ccNis2 = \App\Models\Tenant::currentContextHasFeature(\App\Models\Tenant::FEATURE_NIS2);
+    // Compliance area shows if ANY compliance domain module is enabled (NIS2/GDPR/DL81/ISO27001/AI Act/ISO9001).
+    $ccAnyCompliance = collect(array_keys(\App\Models\Tenant::complianceFeatureDomains()))
+        ->contains(fn ($feat) => \App\Models\Tenant::currentContextHasFeature($feat));
     $ccComplianceInner = $ccCanSeeServices || Gate::allows('view', \App\Models\DocumentType::class) || Gate::allows('view', \App\Models\DocumentFramework::class);
     $ccNisReports = Gate::allows('reports.nis_risk_matrix.view') || Gate::allows('reports.nis_real_coverage.view');
-    $ccComplianceSection = $ccNis2 && ($ccComplianceInner || $ccNisReports);
+    $ccComplianceSection = $ccAnyCompliance && ($ccComplianceInner || $ccNisReports);
 
     $ccDocsVisible = \App\Models\Tenant::currentContextHasFeature(\App\Models\Tenant::FEATURE_DOCUMENTS) && Gate::allows('index', \App\Models\Document::class);
     $ccTicketsVisible = \App\Models\Tenant::currentContextHasFeature(\App\Models\Tenant::FEATURE_TICKETS) && Gate::allows('index', \App\Models\Ticket::class);

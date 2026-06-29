@@ -61,6 +61,27 @@ class Tenant extends Model
     public const FEATURE_NIS2 = 'nis2';
     public const FEATURE_ERP = 'erp';
 
+    // Compliance domains as individually-activatable modules. The flag key matches the
+    // framework's compliance_domain, so the nav/pages can be gated + filtered per area.
+    public const FEATURE_GDPR = 'gdpr';
+    public const FEATURE_DL81 = 'dl81';
+    public const FEATURE_ISO27001 = 'iso27001';
+    public const FEATURE_AI_ACT = 'ai_act';
+    public const FEATURE_ISO9001 = 'iso9001';
+
+    /** Compliance-domain feature flags, mapped to their framework compliance_domain key. */
+    public static function complianceFeatureDomains(): array
+    {
+        return [
+            self::FEATURE_NIS2 => 'nis2',
+            self::FEATURE_GDPR => 'gdpr',
+            self::FEATURE_DL81 => 'dl81',
+            self::FEATURE_ISO27001 => 'iso27001',
+            self::FEATURE_AI_ACT => 'ai_act',
+            self::FEATURE_ISO9001 => 'iso9001',
+        ];
+    }
+
     /**
      * All feature keys mapped to their display label, in nav order.
      */
@@ -70,6 +91,11 @@ class Tenant extends Model
             self::FEATURE_ASSETS => trans('admin/tenants/general.features.assets'),
             self::FEATURE_DOCUMENTS => trans('admin/tenants/general.features.documents'),
             self::FEATURE_NIS2 => trans('admin/tenants/general.features.nis2'),
+            self::FEATURE_GDPR => trans('admin/tenants/general.features.gdpr'),
+            self::FEATURE_DL81 => trans('admin/tenants/general.features.dl81'),
+            self::FEATURE_ISO27001 => trans('admin/tenants/general.features.iso27001'),
+            self::FEATURE_AI_ACT => trans('admin/tenants/general.features.ai_act'),
+            self::FEATURE_ISO9001 => trans('admin/tenants/general.features.iso9001'),
             self::FEATURE_TICKETS => trans('admin/tenants/general.features.tickets'),
             self::FEATURE_ERP => trans('admin/tenants/general.features.erp'),
         ];
