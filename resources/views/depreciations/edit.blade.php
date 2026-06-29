@@ -23,6 +23,21 @@
     </div>
 </div>
 
+<!-- Italian annual depreciation coefficient (coefficiente di ammortamento) -->
+<div class="form-group {{ $errors->has('coefficiente_annuo') ? ' has-error' : '' }}">
+    <label for="coefficiente_annuo" class="col-md-3 control-label">
+        {{ trans('admin/depreciations/general.coefficiente_annuo') }}
+    </label>
+    <div class="col-md-9 col-sm-12">
+        <div class="input-group" style="width: 130px;">
+            <input class="form-control" type="number" min="0" max="100" step="0.001" name="coefficiente_annuo" id="coefficiente_annuo" value="{{ old('coefficiente_annuo', $item->coefficiente_annuo) }}" />
+            <span class="input-group-addon">%</span>
+        </div>
+        <p class="help-block">{{ trans('admin/depreciations/general.coefficiente_annuo_help') }}</p>
+        {!! $errors->first('coefficiente_annuo', '<span class="alert-msg" aria-hidden="true"><i class="fa fa-times" aria-hidden="true"></i> :message</span>') !!}
+    </div>
+</div>
+
 <!-- Depreciation Minimum -->
 <div class="form-group {{ $errors->has('depreciation_min') ? ' has-error' : '' }}">
     <label for="depreciation_min" class="col-md-3 control-label">

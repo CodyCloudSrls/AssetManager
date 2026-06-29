@@ -10,6 +10,7 @@ use App\Models\FicDocument;
 use App\Models\Supplier;
 use App\Models\Tenant;
 use App\Support\Fic\FicClient;
+use App\Support\Reports\AmmortamentiReport;
 use App\Support\Reports\ContractForecastReport;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -61,6 +62,24 @@ class ErpController extends Controller
             'ficConfigured' => app(FicClient::class)->isConfigured(),
             'fic' => $this->ficSummary($companyIds),
         ]);
+    }
+
+    /**
+     * Libro dei cespiti / registro beni ammortizzabili (Italian fixed-asset
+     * depreciation register), computed from the asset data via AmmortamentiReport.
+     */
+    public function ammortamenti(Request $request, AmmortamentiReport $report): View
+    {
+        $this->authorize('reports.view');
+
+        $companyIds = $this->cockpitCompanyIds($request);
+        $currentYear = (int) Carbon::now()->year;
+        $year = (int) $request->input('year', $currentYear);
+
+        $data = $report->build($companyIds, $year);
+        $data['years'] = range($currentYear, $currentYear - 6);
+
+        return view('erp.ammortamenti', $data);
     }
 
     /**

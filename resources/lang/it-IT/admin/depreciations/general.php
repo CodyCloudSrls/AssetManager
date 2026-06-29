@@ -17,4 +17,6 @@ return [
     'linear_depreciation' => 'Lineare (default)',
     'half_1' => 'Convenzione semestrale, sempre applicata',
     'half_2' => 'Convenzione semestrale, applicata con condizione',
+    'coefficiente_annuo' => 'Coefficiente di ammortamento annuo',
+    'coefficiente_annuo_help' => 'Coefficiente ministeriale italiano (es. 20% computer, 12% mobili). Se vuoto, il libro cespiti deriva l\'aliquota dalla vita utile (12 / mesi). La prima quota è ridotta al 50%.',
 ];

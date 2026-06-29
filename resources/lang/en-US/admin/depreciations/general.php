@@ -17,4 +17,6 @@ return [
     'linear_depreciation' => 'Linear (Default)',
     'half_1' => 'Half-year convention, always applied',
     'half_2' => 'Half-year convention, applied with condition',
+    'coefficiente_annuo' => 'Annual depreciation coefficient',
+    'coefficiente_annuo_help' => 'Italian ministerial rate (e.g. 20% computers, 12% furniture). If empty, the asset register derives the rate from the useful life (12 / months). The first year is halved.',
 ];

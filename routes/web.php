@@ -150,6 +150,7 @@ Route::group(['middleware' => 'auth'], function () {
     * ERP / Management control (gated by the per-tenant "erp" feature flag)
     */
     Route::get('erp', [ErpController::class, 'index'])->name('erp.index')->middleware('tenant.feature:erp');
+    Route::get('erp/ammortamenti', [ErpController::class, 'ammortamenti'])->name('erp.ammortamenti')->middleware('tenant.feature:erp');
 
     /*
     * API documentation (OpenAPI / Swagger UI) — superadmin only

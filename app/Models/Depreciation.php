@@ -40,12 +40,14 @@ class Depreciation extends SnipeModel
     protected $fillable = [
         'name',
         'months',
+        'coefficiente_annuo',
         'company_id',
         'visibility_type',
     ];
 
     protected $casts = [
         'company_id' => 'integer',
+        'coefficiente_annuo' => 'decimal:3',
     ];
 
     use Searchable;
@@ -88,6 +90,7 @@ class Depreciation extends SnipeModel
                     }),
             ],
             'months' => 'required|max:3600|integer',
+            'coefficiente_annuo' => 'nullable|numeric|min:0|max:100',
             'company_id' => 'nullable|integer|exists:companies,id',
             'visibility_type' => 'required|string|in:private,descendants,global',
         ];
