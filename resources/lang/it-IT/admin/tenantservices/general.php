@@ -34,6 +34,7 @@ return [
     'none_override' => 'Usa categoria pre-assegnata',
     'active' => 'Attivo',
     'inactive' => 'Non attivo',
+    'bulk_delete' => 'Cancellazione massiva',
     'linked_documents' => 'Documenti',
     'linked_contracts' => 'Contratti',
     'no_services' => 'Nessun servizio tenant censito.',

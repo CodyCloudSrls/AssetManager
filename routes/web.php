@@ -219,6 +219,7 @@ Route::group(['prefix' => 'admin/tenants', 'middleware' => ['auth']], function (
     Route::post('/{tenant}/services', [TenantServicesController::class, 'store'])->name('tenants.services.store');
     Route::post('/{tenant}/services/bulkedit', [TenantServicesController::class, 'bulkEdit'])->name('tenants.services.bulkedit');
     Route::post('/{tenant}/services/bulkeditsave', [TenantServicesController::class, 'bulkUpdate'])->name('tenants.services.bulkeditsave');
+    Route::post('/{tenant}/services/bulkdelete', [TenantServicesController::class, 'bulkDelete'])->name('tenants.services.bulkdelete');
     Route::get('/{tenant}/services/acn-export', [TenantServicesController::class, 'exportAcn'])->name('tenants.services.acn_export');
     Route::get('/{tenant}/services/{tenantService}/edit', [TenantServicesController::class, 'edit'])->name('tenants.services.edit');
     Route::put('/{tenant}/services/{tenantService}', [TenantServicesController::class, 'update'])->name('tenants.services.update');

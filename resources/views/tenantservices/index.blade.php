@@ -34,6 +34,13 @@
                 </div>
 
                 @php($anyFilterActive = ($companyFilter ?? '') !== '' || ($macroFilter ?? '') !== '' || ($statusFilter ?? '') !== '' || ($searchFilter ?? '') !== '')
+                {{-- Current filters, threaded onto delete/bulk actions so they return to the same filtered view. --}}
+                @php($svcFilters = array_filter([
+                    'company_id' => $companyFilter ?? '',
+                    'macro_area' => $macroFilter ?? '',
+                    'status' => $statusFilter ?? '',
+                    'q' => $searchFilter ?? '',
+                ], fn ($v) => $v !== '' && $v !== null))
                 <form method="GET" action="{{ route('tenants.services.index', $tenant) }}" class="form-inline" style="margin-bottom:12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                     <span style="font-weight:600;"><x-icon type="filter" class="fa-fw" /> {{ trans('admin/tenantservices/general.filters') }}</span>
 
@@ -70,11 +77,17 @@
                 </form>
 
                 @if ($canManageTenant)
-                    <form id="bulkServicesForm" method="POST" action="{{ route('tenants.services.bulkedit', $tenant) }}" style="margin-bottom: 10px;">
+                    <form id="bulkServicesForm" method="POST" action="{{ route('tenants.services.bulkedit', array_merge(['tenant' => $tenant], $svcFilters)) }}" style="margin-bottom: 10px;">
                         @csrf
                         <button type="submit" class="btn btn-default btn-sm" id="bulkServicesButton">
                             <x-icon type="edit" class="fa-fw" />
                             {{ trans('general.bulk_edit') }}
+                        </button>
+                        <button type="submit" class="btn btn-danger btn-sm" id="bulkServicesDeleteButton"
+                                formaction="{{ route('tenants.services.bulkdelete', array_merge(['tenant' => $tenant], $svcFilters)) }}"
+                                onclick="return confirm('{{ trans('admin/tenantservices/message.bulk.delete_confirm') }}');">
+                            <x-icon type="delete" class="fa-fw" />
+                            {{ trans('admin/tenantservices/general.bulk_delete') }}
                         </button>
                     </form>
                 @endif
@@ -145,7 +158,7 @@
                                                 <x-icon type="edit" class="fa-fw" />
                                                 {{ trans('general.edit') }}
                                             </a>
-                                            <form method="POST" action="{{ route('tenants.services.destroy', [$tenant, $service]) }}" style="display:inline;" onsubmit="return confirm('{{ trans('general.are_you_sure') }}');">
+                                            <form method="POST" action="{{ route('tenants.services.destroy', array_merge(['tenant' => $tenant, 'tenantService' => $service], $svcFilters)) }}" style="display:inline;" onsubmit="return confirm('{{ trans('general.are_you_sure') }}');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-sm">

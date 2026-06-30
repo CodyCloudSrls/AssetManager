@@ -146,20 +146,57 @@ class TenantServicesController extends Controller
             ->with('success', trans('admin/tenantservices/message.update.success'));
     }
 
-    public function destroy(Tenant $tenant, TenantService $tenantService): RedirectResponse
+    public function destroy(Request $request, Tenant $tenant, TenantService $tenantService): RedirectResponse
     {
         abort_unless($this->canManageServices($tenant), 403);
         $tenantService = $this->serviceForTenant($tenant, $tenantService);
 
         if ($tenantService->documents()->exists() || $tenantService->contracts()->exists()) {
-            return redirect()->route('tenants.services.index', $tenant)
+            return redirect()->route('tenants.services.index', $this->indexWithFilters($request, $tenant))
                 ->with('error', trans('admin/tenantservices/message.delete.linked'));
         }
 
         $tenantService->delete();
 
-        return redirect()->route('tenants.services.index', $tenant)
+        return redirect()->route('tenants.services.index', $this->indexWithFilters($request, $tenant))
             ->with('success', trans('admin/tenantservices/message.delete.success'));
+    }
+
+    public function bulkDelete(Request $request, Tenant $tenant): RedirectResponse
+    {
+        abort_unless($this->canManageServices($tenant), 403);
+
+        $services = $this->servicesFromRequest($request, $tenant);
+
+        if ($services->isEmpty()) {
+            return redirect()->route('tenants.services.index', $this->indexWithFilters($request, $tenant))
+                ->with('error', trans('admin/tenantservices/message.bulk.nothing_selected'));
+        }
+
+        $deleted = 0;
+        $skipped = 0;
+
+        DB::transaction(function () use ($services, &$deleted, &$skipped) {
+            foreach ($services as $service) {
+                // A service still linked to documents or contracts must not be deleted.
+                if ($service->documents()->exists() || $service->contracts()->exists()) {
+                    $skipped++;
+
+                    continue;
+                }
+
+                $service->delete();
+                $deleted++;
+            }
+        });
+
+        $redirect = redirect()->route('tenants.services.index', $this->indexWithFilters($request, $tenant));
+
+        if ($skipped > 0) {
+            return $redirect->with('warning', trans('admin/tenantservices/message.bulk.delete_partial', ['deleted' => $deleted, 'skipped' => $skipped]));
+        }
+
+        return $redirect->with('success', trans('admin/tenantservices/message.bulk.delete_success', ['count' => $deleted]));
     }
 
     public function exportAcn(Tenant $tenant, AcnTenantServicesXlsxExporter $exporter, Request $request): BinaryFileResponse
@@ -293,6 +330,26 @@ class TenantServicesController extends Controller
 
         return redirect()->route('tenants.services.index', $tenant)
             ->with('success', trans('admin/tenantservices/message.bulk.success'));
+    }
+
+    /**
+     * Route params for the index that carry the current list filters, so a delete /
+     * bulk-delete action returns to the same filtered view instead of the unfiltered list.
+     * Filters travel as query params on the form action, never as body fields, so they
+     * never collide with the bulk-edit's own company_id/macro_area inputs.
+     */
+    private function indexWithFilters(Request $request, Tenant $tenant): array
+    {
+        $params = ['tenant' => $tenant->id];
+
+        foreach (['company_id', 'macro_area', 'status', 'q'] as $key) {
+            $value = $request->input($key);
+            if ($value !== null && $value !== '') {
+                $params[$key] = $value;
+            }
+        }
+
+        return $params;
     }
 
     private function servicesFromRequest(Request $request, Tenant $tenant)

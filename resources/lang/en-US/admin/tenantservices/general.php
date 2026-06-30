@@ -34,6 +34,7 @@ return [
     'none_override' => 'Use pre-assigned category',
     'active' => 'Active',
     'inactive' => 'Inactive',
+    'bulk_delete' => 'Bulk delete',
     'linked_documents' => 'Documents',
     'linked_contracts' => 'Contracts',
     'no_services' => 'No tenant services have been inventoried yet.',

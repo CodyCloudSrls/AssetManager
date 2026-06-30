@@ -15,5 +15,8 @@ return [
         'success' => 'Tenant services updated successfully.',
         'nothing_selected' => 'No services selected.',
         'conflict' => 'Change not applied: the macro-area + name combination already exists for one of the selected companies.',
+        'delete_success' => ':count tenant services deleted successfully.',
+        'delete_partial' => ':deleted services deleted. :skipped skipped because linked to documents or contracts.',
+        'delete_confirm' => 'Delete the selected services? Services linked to documents or contracts will be skipped.',
     ],
 ];
