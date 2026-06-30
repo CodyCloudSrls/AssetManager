@@ -152,6 +152,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('erp', [ErpController::class, 'index'])->name('erp.index')->middleware('tenant.feature:erp');
     Route::get('erp/ammortamenti', [ErpController::class, 'ammortamenti'])->name('erp.ammortamenti')->middleware('tenant.feature:erp');
     Route::get('erp/controllo-gestione', [ErpController::class, 'controlloGestione'])->name('erp.controllo')->middleware('tenant.feature:erp');
+    Route::get('erp/riconciliazione', [ErpController::class, 'riconciliazione'])->name('erp.riconciliazione')->middleware('tenant.feature:erp');
     Route::get('erp/fotografia', [ErpController::class, 'fotografia'])->name('erp.fotografia')->middleware('tenant.feature:erp');
     Route::get('erp/bilancio-simulato', [ErpController::class, 'bilancioSimulato'])->name('erp.bilancio')->middleware('tenant.feature:erp');
     Route::post('erp/fotografia/input', [ErpController::class, 'saveFotografiaInput'])->name('erp.fotografia.input')->middleware('tenant.feature:erp');

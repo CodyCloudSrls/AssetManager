@@ -2,6 +2,7 @@
 
 namespace App\Support\Fic;
 
+use App\Models\FicCashbookEntry;
 use App\Models\FicDocument;
 use App\Models\FicPaymentAccount;
 use Illuminate\Support\Carbon;
@@ -24,6 +25,8 @@ class FicCashService
     {
         $balances = [];
         $settled = []; // fic document id => amount actually moved (cassa reale)
+        $ficCompany = (string) config('services.fic.company_id');
+        $localCompany = $this->localCompanyId();
         $cursor = Carbon::create(self::START_YEAR, 1, 1)->startOfMonth();
         $end = Carbon::now()->endOfMonth();
 
@@ -54,6 +57,9 @@ class FicCashService
                 if ($docId) {
                     $settled[$docId] = ($settled[$docId] ?? 0) + abs($in) + abs($out);
                 }
+
+                // Persist the movement for the per-channel incassi reconciliation.
+                $this->upsertEntry($ficCompany, $localCompany, $row);
             }
 
             $cursor->addMonth();
@@ -61,8 +67,6 @@ class FicCashService
 
         $reconciled = $this->reconcileDocuments($settled);
 
-        $ficCompany = (string) config('services.fic.company_id');
-        $localCompany = $this->localCompanyId();
         $total = 0.0;
 
         foreach ($balances as $name => $balance) {
@@ -110,6 +114,67 @@ class FicCashService
         }
 
         return $reconciled;
+    }
+
+    /**
+     * Mirror one cashbook movement into fic_cashbook_entries (idempotent on the entry id),
+     * picking the direction/amount/account from the entry's declared type.
+     *
+     * @param  array<string, mixed>  $row
+     */
+    private function upsertEntry(string $ficCompany, ?int $localCompany, array $row): void
+    {
+        $ficId = (string) ($row['id'] ?? '');
+        if ($ficId === '') {
+            return;
+        }
+
+        $type = $row['type'] ?? null;
+        $in = (float) ($row['amount_in'] ?? 0);
+        $out = (float) ($row['amount_out'] ?? 0);
+
+        if ($type === FicCashbookEntry::DIRECTION_IN || ($type === null && $in != 0.0)) {
+            $direction = FicCashbookEntry::DIRECTION_IN;
+            $amount = $in;
+            $account = $row['payment_account_in'] ?? null;
+        } elseif ($type === FicCashbookEntry::DIRECTION_OUT || ($type === null && $out != 0.0)) {
+            $direction = FicCashbookEntry::DIRECTION_OUT;
+            $amount = $out;
+            $account = $row['payment_account_out'] ?? null;
+        } else {
+            return;
+        }
+
+        FicCashbookEntry::updateOrCreate(
+            ['fic_company_id' => $ficCompany, 'fic_id' => $ficId],
+            [
+                'entry_date' => $this->date($row['date'] ?? null),
+                'direction' => $direction,
+                'amount' => round(abs($amount), 2),
+                'account_name' => is_array($account) ? ($account['name'] ?? null) : null,
+                'account_id' => is_array($account) && isset($account['id']) ? (string) $account['id'] : null,
+                'description' => is_string($row['description'] ?? null) ? mb_substr($row['description'], 0, 255) : null,
+                'entity_name' => is_string($row['entity_name'] ?? null) ? mb_substr($row['entity_name'], 0, 191) : null,
+                'kind' => is_string($row['kind'] ?? null) ? $row['kind'] : null,
+                'document_fic_id' => isset($row['document']['id']) ? (int) $row['document']['id'] : null,
+                'document_type' => is_string($row['document']['type'] ?? null) ? $row['document']['type'] : null,
+                'company_id' => $localCompany,
+                'synced_at' => Carbon::now(),
+            ]
+        );
+    }
+
+    private function date($value): ?Carbon
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value)->startOfDay();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     private function localCompanyId(): ?int

@@ -7,6 +7,7 @@ use App\Models\BilancioUfficiale;
 use App\Models\Company;
 use App\Models\Customer;
 use App\Models\CustomerContract;
+use App\Models\FicCashbookEntry;
 use App\Models\FicDocument;
 use App\Models\FicPaymentAccount;
 use App\Models\Finanziamento;
@@ -219,6 +220,58 @@ class ErpController extends Controller
             'cassa' => $report->flussiCassa($companyIds, $currentYear),
             'creditiDebiti' => $report->creditiDebiti($companyIds),
             'hasData' => $report->hasData($companyIds),
+        ]);
+    }
+
+    /**
+     * Riconciliazione incassi multi-canale: matches money received per channel
+     * (TS Pay, Carta, PayPal, banche, ...) against the FiC document each cashbook
+     * movement settled, surfacing the incassi not yet tied to an invoice.
+     */
+    public function riconciliazione(Request $request): View
+    {
+        $this->authorize('reports.view');
+
+        $companyIds = $this->cockpitCompanyIds($request);
+        $currentYear = (int) Carbon::now()->year;
+        $year = (int) $request->input('year', $currentYear);
+        $channel = $request->filled('channel') ? (string) $request->input('channel') : null;
+
+        $scoped = fn () => FicCashbookEntry::forCompanies($companyIds)->whereYear('entry_date', $year);
+
+        $channels = $scoped()->incassi()
+            ->selectRaw('account_name,
+                count(*) as movimenti,
+                sum(amount) as totale,
+                sum(case when document_fic_id is null then amount else 0 end) as non_collegato,
+                sum(case when document_fic_id is null then 1 else 0 end) as non_collegati')
+            ->groupBy('account_name')
+            ->orderByDesc('totale')
+            ->get();
+
+        $unmatched = $scoped()->incassi()
+            ->whereNull('document_fic_id')
+            ->when($channel, fn ($q) => $q->where('account_name', $channel))
+            ->orderByDesc('entry_date')
+            ->limit(200)
+            ->get();
+
+        $detail = $channel
+            ? $scoped()->incassi()->where('account_name', $channel)
+                ->with('document')
+                ->orderByDesc('entry_date')
+                ->limit(300)
+                ->get()
+            : collect();
+
+        return view('erp.riconciliazione', [
+            'year' => $year,
+            'years' => range($currentYear - 4, $currentYear),
+            'channels' => $channels,
+            'unmatched' => $unmatched,
+            'detail' => $detail,
+            'channel' => $channel,
+            'hasData' => FicCashbookEntry::forCompanies($companyIds)->exists(),
         ]);
     }
 
