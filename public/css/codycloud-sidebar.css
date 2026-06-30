@@ -1,0 +1,57 @@
+/*
+ * CodyCloud sidebar layout fixes — LAYOUT ONLY (no colours, so it cannot affect
+ * dark/light legibility). Loaded after codycloud-theme.css, which stays untouched.
+ * Addresses Francesca's reports:
+ *   1) expanded titles colliding with the dropdown caret,
+ *   2) collapsed-rail flyout titles getting cut off,
+ *   3) section labels disappearing in the collapsed rail (now shown, abbreviated).
+ * Easy to revert: remove this file's <link> in layouts/default.blade.php.
+ */
+
+/* ── 1) Expanded: keep the caret pinned right and give the title room so long
+        labels ("Catalogo & impostazioni", "ERP / Controllo di gestione") wrap
+        instead of running under the caret. ───────────────────────────────── */
+.sidebar-menu > li > a {
+    position: relative;
+    padding-right: 30px;
+}
+.sidebar-menu > li > a > .pull-right,
+.sidebar-menu > li > a > .pull-right-container {
+    position: absolute !important;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0 !important;
+}
+/* The title may take two lines rather than collide with / hide under the caret. */
+.sidebar-menu > li > a > span {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    vertical-align: middle;
+}
+
+/* ── 2) Collapsed rail flyout: let the parent title size to its content so it is
+        no longer truncated. ──────────────────────────────────────────────── */
+.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > a > span {
+    width: auto !important;
+    min-width: 220px;
+    box-sizing: border-box;
+    white-space: nowrap !important;
+    overflow: visible !important;
+}
+.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
+    min-width: 220px;
+}
+
+/* ── 3) Collapsed rail: show the section headers (abbreviated, wrapped) so the
+        longer nav stays readable instead of being icons with no labels. ───── */
+.sidebar-mini.sidebar-collapse .sidebar-menu > li.header {
+    display: block !important;
+    height: auto !important;
+    padding: 9px 2px 3px !important;
+    font-size: 8px !important;
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;
+    overflow: hidden;
+}

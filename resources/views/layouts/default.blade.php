@@ -1218,6 +1218,9 @@
     {{-- CodyCloud theme overlay (Cloudflare-style dark skin). Loaded after the inline
          branding styles so it can override them; remove this line to revert. --}}
     <link rel="stylesheet" href="{{ url('css/codycloud-theme.css') }}?v={{ @filemtime(public_path('css/codycloud-theme.css')) ?: '10' }}">
+    {{-- Sidebar LAYOUT fixes only (no colours): truncated titles, caret overlap,
+         collapsed-rail section labels. Separate file so the theme stays untouched. --}}
+    <link rel="stylesheet" href="{{ url('css/codycloud-sidebar.css') }}?v={{ @filemtime(public_path('css/codycloud-sidebar.css')) ?: '1' }}">
 
     {{-- Custom CSS --}}
     @if (($snipeSettings) && ($snipeSettings->custom_css))
