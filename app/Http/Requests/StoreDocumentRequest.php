@@ -62,6 +62,10 @@ class StoreDocumentRequest extends FormRequest
             'tenant_service_ids_present' => 'nullable|boolean',
             'tenant_service_ids' => 'nullable|array',
             'tenant_service_ids.*' => 'integer',
+            // Optional attachments uploaded directly from the document form.
+            'file' => 'nullable|array',
+            'file.*' => 'nullable|file|mimes:'.config('filesystems.allowed_upload_extensions_for_validator').'|max:'.\App\Helpers\Helper::file_upload_max_size(),
+            'file_notes' => 'nullable|string|max:65535',
         ];
     }
 

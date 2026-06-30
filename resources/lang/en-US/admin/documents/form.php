@@ -8,6 +8,8 @@ return [
     'document_area' => 'Document Area',
     'framework' => 'Framework',
     'owner' => 'Owner',
+    'attachments' => 'Attachments',
+    'attachment_note' => 'Attachment note (optional)',
     'reference' => 'Reference',
     'version' => 'Version',
     'status_help' => 'Assigned primary documents count toward requirement minimum documents only when they are valid, currently effective, and have at least one uploaded file.',

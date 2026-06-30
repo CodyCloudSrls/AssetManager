@@ -361,6 +361,39 @@
                                                 @endif
                                             </div>
                                         </div>
+
+                                        {{-- Allegati opzionali: caricamento in creazione/modifica, rimozione in modifica. --}}
+                                        <div class="form-group {{ ($errors->has('file') || $errors->has('file.0')) ? ' has-error' : '' }}">
+                                            <label for="file" class="col-md-3 control-label">{{ trans('admin/documents/form.attachments') }}</label>
+                                            <div class="col-md-7">
+                                                <input type="file" name="file[]" id="file" multiple class="form-control" accept="{{ config('filesystems.allowed_upload_mimetypes') }},{{ str_replace(' ', '', config('filesystems.allowed_upload_extensions')) }}">
+                                                <p class="help-block">{{ trans('general.upload_filetypes_help', ['allowed_filetypes' => config('filesystems.allowed_upload_extensions'), 'size' => \App\Helpers\Helper::file_upload_max_size_readable()]) }}</p>
+                                                {!! $errors->first('file.0', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+                                                <input type="text" name="file_notes" class="form-control" placeholder="{{ trans('admin/documents/form.attachment_note') }}" value="{{ old('file_notes') }}" style="margin-top:6px;">
+
+                                                @if ($document->exists && ($currentUploads = $document->uploads()->orderByDesc('created_at')->get())->isNotEmpty())
+                                                    <table class="table table-condensed" style="margin-top:10px;">
+                                                        <tbody>
+                                                            @foreach ($currentUploads as $upload)
+                                                                <tr>
+                                                                    <td>
+                                                                        <a href="{{ route('ui.files.show', ['object_type' => 'documents', 'id' => $document->id, 'file_id' => $upload->id]) }}"><i class="fa-regular fa-file fa-fw" aria-hidden="true"></i> {{ $upload->filename }}</a>
+                                                                        @if ($upload->note)<span class="text-muted"> — {{ $upload->note }}</span>@endif
+                                                                    </td>
+                                                                    <td class="text-right" style="width:1%;">
+                                                                        @can('files', $document)
+                                                                            <button type="submit" form="delete-document-file-{{ $upload->id }}" class="btn btn-xs btn-danger" onclick="return confirm('{{ trans('general.sure_to_delete') }}');" aria-label="{{ trans('general.delete') }}">
+                                                                                <x-icon type="delete" class="fa-fw" />
+                                                                            </button>
+                                                                        @endcan
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
                                 </fieldset>
                             </div>
@@ -407,6 +440,18 @@
                     />
                 </div>
             </form>
+
+            {{-- Standalone delete forms for the attachments (HTML forms can't nest inside the document form). --}}
+            @if ($document->exists)
+                @can('files', $document)
+                    @foreach ($document->uploads()->get() as $upload)
+                        <form id="delete-document-file-{{ $upload->id }}" method="POST" action="{{ route('ui.files.destroy', ['object_type' => 'documents', 'id' => $document->id, 'file_id' => $upload->id]) }}" class="hidden">
+                            @csrf
+                            @method('DELETE')
+                        </form>
+                    @endforeach
+                @endcan
+            @endif
         </div>
     </div>
 @endsection

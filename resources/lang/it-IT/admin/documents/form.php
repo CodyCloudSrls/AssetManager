@@ -8,6 +8,8 @@ return [
     'document_area' => 'Area documentale',
     'framework' => 'Framework',
     'owner' => 'Responsabile',
+    'attachments' => 'Allegati',
+    'attachment_note' => 'Nota allegato (opzionale)',
     'reference' => 'Riferimento',
     'version' => 'Versione',
     'status_help' => 'I documenti primari assegnati contano nei documenti minimi solo se sono validi, in corso di validità e hanno almeno un allegato caricato.',

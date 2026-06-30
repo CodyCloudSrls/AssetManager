@@ -6,6 +6,7 @@ use App\Enums\ActionType;
 use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDocumentRequest;
+use App\Http\Requests\UploadFileRequest;
 use App\Models\Company;
 use App\Models\Document;
 use App\Models\DocumentAssignment;
@@ -18,11 +19,13 @@ use App\Models\User;
 use App\Support\Compliance\ComplianceDomainAccess;
 use App\Support\Documents\DocumentAreaAccess;
 use App\Support\Documents\DocumentAssignmentManager;
+use App\Support\Files\FileIntegrity;
 use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -109,6 +112,8 @@ class DocumentsController extends Controller
             return redirect()->back()->withInput()->withErrors($exception->errors());
         }
 
+        $this->storeUploadedFiles($request, $document);
+
         return redirect()->route('documents.show', $document)
             ->with('success', $assignmentCreated
                 ? trans('admin/documents/message.create.success').' '.trans('admin/documents/message.assignment_create.success')
@@ -165,10 +170,40 @@ class DocumentsController extends Controller
             return redirect()->back()->withInput()->withErrors($exception->errors());
         }
 
+        $this->storeUploadedFiles($request, $document);
+
         return redirect()->route('documents.show', $document)
             ->with('success', $assignmentCreated
                 ? trans('admin/documents/message.update.success').' '.trans('admin/documents/message.assignment_create.success')
                 : trans('admin/documents/message.update.success'));
+    }
+
+    /**
+     * Attach optional files uploaded straight from the document create/edit form. Reuses
+     * the same storage + audit-log mechanism as the standalone files panel, so they show
+     * up identically on the document view. Validation is handled by StoreDocumentRequest.
+     */
+    private function storeUploadedFiles(StoreDocumentRequest $request, Document $document): void
+    {
+        if (! $request->hasFile('file')) {
+            return;
+        }
+
+        $path = self::$map_storage_path['documents'];
+        if (! Storage::exists($path)) {
+            Storage::makeDirectory($path, 775);
+        }
+
+        $uploader = new UploadFileRequest;
+
+        foreach ($request->file('file') as $file) {
+            if (! $file) {
+                continue;
+            }
+
+            $fileName = $uploader->handleFile($path, self::$map_file_prefix['documents'].'-'.$document->id, $file);
+            $document->logUpload($fileName, $request->input('file_notes'), FileIntegrity::metadataForStoredFile($path.$fileName, $file));
+        }
     }
 
     public function destroy(Document $document): RedirectResponse
