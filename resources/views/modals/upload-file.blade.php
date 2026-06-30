@@ -24,7 +24,7 @@
                             <p style="margin: 6px 0 10px;">{{ trans('general.upload_files_drag_drop') }}</p>
                             <label class="btn btn-theme">
                                 {{ trans('button.select_files')  }}
-                                <input type="file" name="file[]" multiple class="js-uploadFile" id="uploadFile" data-maxsize="{{ Helper::file_upload_max_size() }}" accept="{{ config('filesystems.allowed_upload_mimetypes') }}" style="display:none" required>
+                                <input type="file" name="file[]" multiple class="js-uploadFile" id="uploadFile" data-maxsize="{{ Helper::file_upload_max_size() }}" accept="{{ config('filesystems.allowed_upload_mimetypes') }},{{ str_replace(' ', '', config('filesystems.allowed_upload_extensions')) }}" style="display:none" required>
                             </label>
                         </div>
 
