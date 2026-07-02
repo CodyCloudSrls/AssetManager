@@ -109,6 +109,40 @@
     @include ('partials.forms.edit.location-select', ['translated_name' => trans('admin/hardware/form.default_location'), 'fieldname' => 'rtd_location_id', 'help_text' => trans('general.rtd_location_help')])
     @include ('partials.forms.edit.requestable', ['requestable_text' => trans('admin/hardware/general.requestable')])
 
+    {{-- Cliente + contratto: for domains/IPs and other client-owned assets. The contract
+         defaults to the model's default contract; the customer defaults to that contract. --}}
+    <fieldset name="customer-links">
+        <x-form.legend>{{ trans('admin/hardware/form.customer_section') }}</x-form.legend>
+
+        <div class="form-group {{ $errors->has('customer_id') ? ' has-error' : '' }}">
+            <label for="customer_id" class="col-md-3 control-label">{{ trans('admin/hardware/form.customer') }}</label>
+            <div class="col-md-7">
+                <select name="customer_id" id="customer_id" class="form-control select2" data-placeholder="{{ trans('admin/hardware/form.customer') }}" aria-label="customer_id" style="width:100%;">
+                    <option value="">{{ trans('general.none') }}</option>
+                    @foreach (\App\Models\Customer::orderBy('name')->get(['id', 'name']) as $cust)
+                        <option value="{{ $cust->id }}" {{ (int) old('customer_id', $item->customer_id) === (int) $cust->id ? 'selected' : '' }}>{{ $cust->name }}</option>
+                    @endforeach
+                </select>
+                <p class="help-block">{{ trans('admin/hardware/form.customer_help') }}</p>
+                {!! $errors->first('customer_id', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
+            </div>
+        </div>
+
+        <div class="form-group {{ $errors->has('customer_contract_id') ? ' has-error' : '' }}">
+            <label for="customer_contract_id" class="col-md-3 control-label">{{ trans('admin/hardware/form.customer_contract') }}</label>
+            <div class="col-md-7">
+                <select name="customer_contract_id" id="customer_contract_id" class="form-control select2" data-placeholder="{{ trans('admin/hardware/form.customer_contract') }}" aria-label="customer_contract_id" style="width:100%;">
+                    <option value="">{{ trans('admin/hardware/form.customer_contract_inherit') }}</option>
+                    @foreach (\App\Models\CustomerContract::orderBy('name')->get(['id', 'name', 'contract_number']) as $ct)
+                        <option value="{{ $ct->id }}" {{ (int) old('customer_contract_id', $item->customer_contract_id) === (int) $ct->id ? 'selected' : '' }}>{{ $ct->name }}{{ $ct->contract_number ? ' ('.$ct->contract_number.')' : '' }}</option>
+                    @endforeach
+                </select>
+                <p class="help-block">{{ trans('admin/hardware/form.customer_contract_help') }}</p>
+                {!! $errors->first('customer_contract_id', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
+            </div>
+        </div>
+    </fieldset>
+
     <fieldset name="nis-inventory-asset">
         <x-form.legend help_text="{{ trans('admin/hardware/form.nis_inventory_help') }}">
             {{ trans('admin/hardware/form.nis_inventory_section') }}

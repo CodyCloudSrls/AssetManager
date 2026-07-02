@@ -14,6 +14,9 @@ return [
     'view_models' => 'Visualizza i modelli',
     'fieldset' => 'Campo',
     'fieldset_from_category' => 'Ereditato dalla categoria (:name) e non modificabile qui. Si imposta sulla categoria.',
+    'customer_contract' => 'Contratto verso cliente',
+    'customer_contract_none' => '— Nessun contratto —',
+    'customer_contract_help' => 'Contratto predefinito del modello: i nuovi beni creati con questo modello lo ereditano.',
     'no_custom_field' => 'Nessun campo personalizzato',
     'add_default_values' => 'Aggiungi valori predefiniti',
     'importer' => [

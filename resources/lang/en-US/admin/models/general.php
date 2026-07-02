@@ -14,6 +14,9 @@ return [
     'view_models' => 'View Models',
     'fieldset' => 'Fieldset',
     'fieldset_from_category' => 'Inherited from the category (:name) and not editable here. Change it on the category.',
+    'customer_contract' => 'Customer contract',
+    'customer_contract_none' => '— No contract —',
+    'customer_contract_help' => 'Default contract for this model: new assets created with this model inherit it.',
     'no_custom_field' => 'No custom fields',
     'add_default_values' => 'Add default values',
     'importer' => [

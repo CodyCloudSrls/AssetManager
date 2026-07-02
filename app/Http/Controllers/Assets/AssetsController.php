@@ -14,6 +14,7 @@ use App\Models\AssetModel;
 use App\Models\Category;
 use App\Models\CheckoutRequest;
 use App\Models\Company;
+use App\Models\CustomerContract;
 use App\Models\Location;
 use App\Models\Setting;
 use App\Models\Statuslabel;
@@ -120,6 +121,22 @@ class AssetsController extends Controller
     }
 
     /**
+     * Customer + contract links for an asset. The contract defaults to the model's default
+     * contract when the form leaves it empty; the customer defaults to that contract's
+     * customer. Returns [customer_id, customer_contract_id].
+     */
+    private function resolveAssetCustomerLinks(?AssetModel $model, $submittedCustomerId, $submittedContractId): array
+    {
+        $submittedCustomerId = ($submittedCustomerId !== null && $submittedCustomerId !== '') ? (int) $submittedCustomerId : null;
+        $submittedContractId = ($submittedContractId !== null && $submittedContractId !== '') ? (int) $submittedContractId : null;
+
+        $contractId = $submittedContractId ?: $model?->customer_contract_id;
+        $customerId = $submittedCustomerId ?: CustomerContract::find($contractId)?->customer_id;
+
+        return [$customerId ?: null, $contractId ?: null];
+    }
+
+    /**
      * Validate and process new asset form data.
      *
      * @author [A. Gianotto] [<snipe@snipe.net>]
@@ -200,6 +217,9 @@ class AssetsController extends Controller
                 );
                 $asset->nis_service_impact = $request->input('nis_service_impact', 'unknown');
                 $asset->nis_notes = $request->input('nis_notes');
+                [$asset->customer_id, $asset->customer_contract_id] = $this->resolveAssetCustomerLinks(
+                    $model, $request->input('customer_id'), $request->input('customer_contract_id')
+                );
                 $asset->rtd_location_id = request('rtd_location_id', null);
                 $asset->byod = request('byod', 0);
 
@@ -454,6 +474,11 @@ class AssetsController extends Controller
         );
         $asset->nis_service_impact = $request->input('nis_service_impact', 'unknown');
         $asset->nis_notes = $request->input('nis_notes');
+        // On update, keep the form's explicit values (no model re-inheritance); the customer
+        // still derives from the chosen contract when left blank.
+        [$asset->customer_id, $asset->customer_contract_id] = $this->resolveAssetCustomerLinks(
+            null, $request->input('customer_id'), $request->input('customer_contract_id')
+        );
         $asset->rtd_location_id = $request->input('rtd_location_id', null);
         $asset->byod = $request->input('byod', 0);
 

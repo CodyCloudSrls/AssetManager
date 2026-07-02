@@ -175,6 +175,8 @@ class Asset extends Depreciable
         'serial',
         'status_id',
         'supplier_id',
+        'customer_id',
+        'customer_contract_id',
         'warranty_months',
         'requestable',
         'nis_relevant',
@@ -1099,9 +1101,9 @@ class Asset extends Depreciable
     /**
      * Signed days until the renewal/expiry date (negative = already overdue, null = no date).
      */
-    public function renewalDaysLeft(): \Illuminate\Database\Eloquent\Casts\Attribute
+    public function renewalDaysLeft(): Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+        return Attribute::make(
             get: fn (mixed $value, array $attributes) => empty($attributes['renewal_date'])
                 ? null
                 : (int) Carbon::now()->startOfDay()->diffInDays(Carbon::parse($attributes['renewal_date'])->startOfDay(), false),
@@ -1196,6 +1198,22 @@ class Asset extends Depreciable
     public function supplier()
     {
         return $this->belongsTo(Supplier::class, 'supplier_id');
+    }
+
+    /**
+     * The customer that owns this asset (e.g. the client a domain/IP belongs to).
+     */
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id');
+    }
+
+    /**
+     * The customer contract this asset is billed/served under (inherited from the model).
+     */
+    public function customerContract()
+    {
+        return $this->belongsTo(CustomerContract::class, 'customer_contract_id');
     }
 
     /**

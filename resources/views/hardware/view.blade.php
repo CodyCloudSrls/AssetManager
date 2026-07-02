@@ -189,6 +189,18 @@
                                     {!!  $asset->defaultLoc?->present()->formattedNameLink !!}
                                 </x-data-row>
 
+                                @if ($asset->customer)
+                                    <x-data-row :label="trans('admin/hardware/form.customer')">
+                                        <a href="{{ route('customers.show', $asset->customer) }}">{{ $asset->customer->name }}</a>
+                                    </x-data-row>
+                                @endif
+
+                                @if ($asset->customerContract)
+                                    <x-data-row :label="trans('admin/hardware/form.customer_contract')">
+                                        <a href="{{ route('contracts.show', $asset->customerContract) }}">{{ $asset->customerContract->name }}</a>
+                                    </x-data-row>
+                                @endif
+
                                 <x-data-row :label="trans('admin/hardware/form.nis_relevant')">
                                     {{ $asset->nis_relevant ? trans('general.yes') : trans('general.no') }}
                                 </x-data-row>

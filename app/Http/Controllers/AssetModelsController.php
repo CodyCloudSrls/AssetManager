@@ -113,6 +113,7 @@ class AssetModelsController extends Controller
         $model->visibility_type = $request->input('visibility_type');
 
         $model->fieldset_id = $this->resolveModelFieldsetId($model->category_id, $request->input('fieldset_id'));
+        $model->customer_contract_id = $request->filled('customer_contract_id') ? (int) $request->input('customer_contract_id') : null;
 
         if ($request->has('use_cloned_image')) {
             $cloned_model_img = AssetModel::select('image')->find($request->input('clone_image_from_id'));
@@ -186,6 +187,7 @@ class AssetModelsController extends Controller
         $model->requestable = $request->input('requestable', '0');
         $model->require_serial = $request->input('require_serial', 0);
         $model->fieldset_id = $this->resolveModelFieldsetId($model->category_id, $request->input('fieldset_id'));
+        $model->customer_contract_id = $request->filled('customer_contract_id') ? (int) $request->input('customer_contract_id') : null;
         $model->company_id = $request->input('company_id');
         $model->visibility_type = $request->input('visibility_type');
 

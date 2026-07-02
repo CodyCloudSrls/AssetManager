@@ -67,6 +67,7 @@ class AssetModel extends SnipeModel
      */
     protected $fillable = [
         'category_id',
+        'customer_contract_id',
         'depreciation_id',
         'eol',
         'fieldset_id',
@@ -232,6 +233,14 @@ class AssetModel extends SnipeModel
     public function fieldset()
     {
         return $this->belongsTo(CustomFieldset::class, 'fieldset_id');
+    }
+
+    /**
+     * The default customer contract for this model; its assets inherit it on creation.
+     */
+    public function customerContract()
+    {
+        return $this->belongsTo(CustomerContract::class, 'customer_contract_id');
     }
 
     public function customFields()

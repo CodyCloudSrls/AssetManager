@@ -14,6 +14,22 @@
 @include ('partials.forms.edit.template-visibility-select', ['translated_name' => trans('general.template_visibility.label'), 'fieldname' => 'visibility_type', 'item' => $item])
 @include ('partials.forms.edit.category-select', ['translated_name' => trans('admin/categories/general.category_name'), 'fieldname' => 'category_id', 'required' => 'true', 'category_type' => 'asset'])
 @include ('partials.forms.edit.manufacturer-select', ['translated_name' => trans('general.manufacturer'), 'fieldname' => 'manufacturer_id'])
+
+{{-- Default customer contract for this model: new assets of the model inherit it. --}}
+<div class="form-group {{ $errors->has('customer_contract_id') ? ' has-error' : '' }}">
+    <label for="customer_contract_id" class="col-md-3 control-label">{{ trans('admin/models/general.customer_contract') }}</label>
+    <div class="col-md-7">
+        <select name="customer_contract_id" id="customer_contract_id" class="form-control select2" style="min-width:350px" aria-label="customer_contract_id">
+            <option value="">{{ trans('admin/models/general.customer_contract_none') }}</option>
+            @foreach (\App\Models\CustomerContract::orderBy('name')->get(['id', 'name', 'contract_number']) as $ct)
+                <option value="{{ $ct->id }}" {{ (int) old('customer_contract_id', $item->customer_contract_id) === (int) $ct->id ? 'selected' : '' }}>{{ $ct->name }}{{ $ct->contract_number ? ' ('.$ct->contract_number.')' : '' }}</option>
+            @endforeach
+        </select>
+        <p class="help-block">{{ trans('admin/models/general.customer_contract_help') }}</p>
+        {!! $errors->first('customer_contract_id', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times"></i> :message</span>') !!}
+    </div>
+</div>
+
 @include ('partials.forms.edit.model_number')
 @include ('partials.forms.edit.depreciation')
 @include ('partials.forms.edit.minimum_quantity')
