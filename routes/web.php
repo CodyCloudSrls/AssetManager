@@ -164,6 +164,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('erp/bilanci/{bilancio}/edit', [\App\Http\Controllers\BilanciController::class, 'edit'])->name('erp.bilanci.edit');
         Route::put('erp/bilanci/{bilancio}', [\App\Http\Controllers\BilanciController::class, 'update'])->name('erp.bilanci.update');
         Route::delete('erp/bilanci/{bilancio}', [\App\Http\Controllers\BilanciController::class, 'destroy'])->name('erp.bilanci.destroy');
+        Route::post('erp/bilanci/{bilancio}/extract', [\App\Http\Controllers\BilanciController::class, 'extractFromPdf'])->name('erp.bilanci.extract');
         Route::get('erp/finanziamenti', [\App\Http\Controllers\FinanziamentiController::class, 'index'])->name('erp.finanziamenti.index');
         Route::get('erp/finanziamenti/create', [\App\Http\Controllers\FinanziamentiController::class, 'create'])->name('erp.finanziamenti.create');
         Route::post('erp/finanziamenti', [\App\Http\Controllers\FinanziamentiController::class, 'store'])->name('erp.finanziamenti.store');

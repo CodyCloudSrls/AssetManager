@@ -38,7 +38,8 @@
 </form>
 
 {{-- Allegati bilancio: PDF ufficiale del bilancio depositato. Meccanismo upload condiviso
-     (private_uploads/bilanci/ + Actionlog + integrità). L'estrattore automatico verrà dopo. --}}
+     (private_uploads/bilanci/ + Actionlog + integrità). Il pulsante "Estrai dati dal PDF"
+     legge il Conto Economico e pre-compila il form (da rivedere prima di salvare). --}}
 <div class="row" id="files"><div class="col-md-8 col-md-offset-2">
     <div class="box box-default">
         <div class="box-header with-border"><h2 class="box-title">{{ trans('erp/bilanci.attachments') }}</h2></div>
@@ -87,6 +88,16 @@
                         @endforeach
                         </tbody>
                     </table>
+
+                    @can('files', $item)
+                        {{-- Estrai i numeri del Conto Economico dal PDF depositato e pre-compila il
+                             form (da rivedere prima di salvare — nessuna sovrascrittura diretta). --}}
+                        <form method="POST" action="{{ route('erp.bilanci.extract', $item) }}" style="display:inline;" onsubmit="return confirm('{{ trans('erp/bilanci.extract_confirm') }}');">
+                            @csrf
+                            <button type="submit" class="btn btn-default btn-sm"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> {{ trans('erp/bilanci.extract') }}</button>
+                        </form>
+                        <p class="help-block">{{ trans('erp/bilanci.extract_help') }}</p>
+                    @endcan
                 @endif
             @else
                 <p class="help-block">{{ trans('erp/bilanci.save_first_to_upload') }}</p>

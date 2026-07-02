@@ -25,4 +25,10 @@ return [
     'no_files' => 'Nessun allegato caricato per questo anno.',
     'save_first_to_upload' => 'Salva l\'anno per poter allegare il PDF del bilancio.',
     'has_pdf' => 'PDF',
+    'extract' => 'Estrai dati dal PDF',
+    'extract_help' => 'Legge il Conto Economico dal PDF depositato (formato Registro Imprese) e pre-compila i campi qui sopra. Rivedi i valori e poi salva.',
+    'extract_confirm' => 'Estrarre i dati dal PDF e pre-compilare il form? I valori attuali non salvati verranno sostituiti da quelli estratti (da rivedere).',
+    'extract_done' => 'Dati estratti dal PDF e pre-compilati. Controlla i valori e salva.',
+    'extract_failed' => 'Non sono riuscito a leggere i numeri dal PDF (potrebbe essere scansionato o in un formato non standard). Inserisci i dati a mano.',
+    'extract_no_pdf' => 'Nessun PDF allegato: carica prima il PDF del bilancio.',
 ];

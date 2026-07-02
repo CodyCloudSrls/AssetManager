@@ -25,4 +25,10 @@ return [
     'no_files' => 'No attachment uploaded for this year.',
     'save_first_to_upload' => 'Save the year to attach the balance-sheet PDF.',
     'has_pdf' => 'PDF',
+    'extract' => 'Extract data from PDF',
+    'extract_help' => 'Reads the income statement from the deposited PDF (Registro Imprese layout) and pre-fills the fields above. Review the values, then save.',
+    'extract_confirm' => 'Extract the data from the PDF and pre-fill the form? Any unsaved values will be replaced by the extracted ones (to review).',
+    'extract_done' => 'Data extracted from the PDF and pre-filled. Check the values and save.',
+    'extract_failed' => 'Could not read the figures from the PDF (it may be scanned or in a non-standard layout). Enter the data manually.',
+    'extract_no_pdf' => 'No PDF attached: upload the balance-sheet PDF first.',
 ];

@@ -6,9 +6,11 @@ use App\Http\Controllers\Concerns\AppliesTenantCompanyFilter;
 use App\Models\BilancioUfficiale;
 use App\Models\CustomerContract;
 use App\Models\Tenant;
+use App\Support\Bilanci\BilancioPdfExtractor;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Storico bilanci ufficiali (deposited yearly accounts). Authoritative figures used by
@@ -75,6 +77,51 @@ class BilanciController extends Controller
         $bilancio->save();
 
         return redirect()->route('erp.bilanci.index')->with('success', trans('erp/bilanci.saved'));
+    }
+
+    /**
+     * Extract the Conto Economico figures from the bilancio's attached PDF (Registro Imprese
+     * layout) and pre-fill the edit form for review. Never overwrites saved data directly —
+     * the values are flashed as form input so the user checks them before saving.
+     */
+    public function extractFromPdf(Request $request, BilancioUfficiale $bilancio, BilancioPdfExtractor $extractor): RedirectResponse
+    {
+        $this->authorize('update', CustomerContract::class);
+        $this->assertCompanyAccessible($this->companyIds($request), $bilancio->company_id);
+
+        $upload = $bilancio->uploads()->orderByDesc('created_at')->first();
+        if (! $upload) {
+            return redirect()->route('erp.bilanci.edit', $bilancio)->with('error', trans('erp/bilanci.extract_no_pdf'));
+        }
+
+        $relativePath = 'private_uploads/bilanci/'.$upload->filename;
+        if (! Storage::exists($relativePath)) {
+            return redirect()->route('erp.bilanci.edit', $bilancio)->with('error', trans('erp/bilanci.extract_no_pdf'));
+        }
+
+        $data = $extractor->extract(Storage::path($relativePath));
+
+        // Need at least the top-line figures; otherwise the PDF is likely scanned or unusual.
+        if (is_null($data['ricavi']) && is_null($data['costi']) && is_null($data['utile'])) {
+            return redirect()->route('erp.bilanci.edit', $bilancio)->with('error', trans('erp/bilanci.extract_failed'));
+        }
+
+        // Absent Conto Economico cost lines legitimately mean 0 (e.g. no personnel).
+        $input = [
+            'anno' => $data['anno'] ?? $bilancio->anno,
+            'ricavi' => $data['ricavi'],
+            'costi' => $data['costi'],
+            'costo_personale' => $data['costo_personale'] ?? 0,
+            'ammortamenti' => $data['ammortamenti'] ?? 0,
+            'imposte' => $data['imposte'] ?? 0,
+            'utile' => $data['utile'],
+            'is_deposited' => 1,
+        ];
+        $input = array_filter($input, fn ($v) => ! is_null($v));
+
+        return redirect()->route('erp.bilanci.edit', $bilancio)
+            ->withInput($input)
+            ->with('success', trans('erp/bilanci.extract_done'));
     }
 
     public function destroy(Request $request, BilancioUfficiale $bilancio): RedirectResponse
