@@ -341,7 +341,7 @@ return [
     'select_customer' => 'Select a Customer',
     'select_document' => 'Select a Document',
     'select_user' => 'Select a User',
-    'select_date' => 'Select Date (YYYY-MM-DD)',
+    'select_date' => 'Select Date (dd/mm/yyyy)',
     'select_statuslabel' => 'Select Status',
     'select_company' => 'Select Company',
     'select_asset' => 'Select Asset',

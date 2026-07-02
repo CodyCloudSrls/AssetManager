@@ -339,7 +339,7 @@ return array (
   'select_customer' => 'Seleziona un cliente',
   'select_document' => 'Seleziona un documento',
   'select_user' => 'Seleziona un Utente',
-  'select_date' => 'Seleziona la data (YYYY-MM-DD)',
+  'select_date' => 'Seleziona la data (gg/mm/aaaa)',
   'select_statuslabel' => 'Seleziona Stato',
   'select_company' => 'Seleziona Azienda',
   'select_asset' => 'Seleziona Bene',

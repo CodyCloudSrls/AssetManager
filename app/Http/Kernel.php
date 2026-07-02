@@ -11,10 +11,12 @@ use App\Http\Middleware\CheckLocale;
 use App\Http\Middleware\CheckPermissions;
 use App\Http\Middleware\CheckUserIsActivated;
 use App\Http\Middleware\EncryptCookies;
+use App\Http\Middleware\EnsureTenantFeature;
+use App\Http\Middleware\NormalizeLocalizedDates;
 use App\Http\Middleware\NoSessionStore;
 use App\Http\Middleware\PreventBackHistory;
-use App\Http\Middleware\RejectEmailHeaderInjection;
 use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\RejectEmailHeaderInjection;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetAPIResponseHeaders;
 use App\Http\Middleware\TrimStrings;
@@ -72,6 +74,7 @@ class Kernel extends HttpKernel
             AddQueuedCookiesToResponse::class,
             VerifyCsrfToken::class,
             CheckLocale::class,
+            NormalizeLocalizedDates::class,
             CheckUserIsActivated::class,
             CheckForTwoFactor::class,
             CreateFreshApiToken::class,
@@ -101,7 +104,7 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         'auth' => Authenticate::class,
         'authorize' => CheckPermissions::class,
-        'tenant.feature' => \App\Http\Middleware\EnsureTenantFeature::class,
+        'tenant.feature' => EnsureTenantFeature::class,
         'auth.basic' => AuthenticateWithBasicAuth::class,
         'can' => Authorize::class,
         'guest' => RedirectIfAuthenticated::class,
