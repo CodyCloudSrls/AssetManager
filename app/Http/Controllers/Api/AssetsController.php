@@ -331,6 +331,15 @@ class AssetsController extends Controller
             $assets->whereHas('model', fn ($query) => $query->where('fieldset_id', (int) $request->input('fieldset_id')));
         }
 
+        // Advanced filters "campi": filter by a custom field value. Only a real custom-field
+        // column (whitelisted from $all_custom_fields) reaches the query, then a partial match.
+        if ($request->filled('cf_column') && $request->filled('cf_value')) {
+            $cfColumn = $request->input('cf_column');
+            if ($all_custom_fields->pluck('db_column')->contains($cfColumn)) {
+                $assets->where('assets.'.$cfColumn, 'LIKE', '%'.$request->input('cf_value').'%');
+            }
+        }
+
         // Assets whose renewal/expiry is due or within N days (renewal banner link).
         if ($request->boolean('expiring_renewal')) {
             $assets->ExpiringRenewal((int) $request->input('renewal_days', 30));
@@ -472,7 +481,7 @@ class AssetsController extends Controller
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
         $limit = app('api_limit_value');
-        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $assets->count(), $limit);
+        $offset = Helper::clampPaginationOffset($request->input('offset'), $assets->count(), $limit);
 
         $total = $assets->count();
         $assets = $assets->skip($offset)->take($limit)->get();
@@ -559,7 +568,7 @@ class AssetsController extends Controller
         }
 
         $limit = app('api_limit_value');
-        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $assets->count(), $limit);
+        $offset = Helper::clampPaginationOffset($request->input('offset'), $assets->count(), $limit);
 
         $total = $assets->count();
         $assets = $assets->skip($offset)->take($limit)->get();
@@ -1334,7 +1343,7 @@ class AssetsController extends Controller
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
         $limit = app('api_limit_value');
-        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $assets->count(), $limit);
+        $offset = Helper::clampPaginationOffset($request->input('offset'), $assets->count(), $limit);
 
         $total = $assets->count();
         $assets = $assets->skip($offset)->take($limit)->get();
@@ -1368,7 +1377,7 @@ class AssetsController extends Controller
             ->with('accessories');
 
         $limit = app('api_limit_value');
-        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $accessory_checkouts->count(), $limit);
+        $offset = Helper::clampPaginationOffset($request->input('offset'), $accessory_checkouts->count(), $limit);
 
         $total = $accessory_checkouts->count();
         $accessory_checkouts = $accessory_checkouts->skip($offset)->take($limit)->get();
@@ -1407,7 +1416,7 @@ class AssetsController extends Controller
 
         $total = $component_checkouts->count();
         $limit = app('api_limit_value');
-        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $total, $limit);
+        $offset = Helper::clampPaginationOffset($request->input('offset'), $total, $limit);
         $component_checkouts = $component_checkouts->skip($offset)->take($limit)->get();
 
         return (new AssetsTransformer)->transformCheckedoutComponents($component_checkouts, $total);
@@ -1504,7 +1513,7 @@ class AssetsController extends Controller
         $history = $asset->getHistory($request);
         $total = $asset->getHistory($request)->count();
         $limit = app('api_limit_value');
-        $offset = \App\Helpers\Helper::clampPaginationOffset($request->input('offset'), $total, $limit);
+        $offset = Helper::clampPaginationOffset($request->input('offset'), $total, $limit);
         $history = $history->skip($offset)->take($limit)->get();
 
         return response()->json((new ActionlogsTransformer)->transformActionlogs($history, $total), 200, ['Content-Type' => 'application/json;charset=utf8'], JSON_UNESCAPED_UNICODE);

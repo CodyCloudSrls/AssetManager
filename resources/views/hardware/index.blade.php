@@ -66,7 +66,7 @@
             </div>
             {{-- Filtri avanzati: pannello esplicito e collassabile con select2 (autocomplete),
                  filtra via query param (l'API supporta category_id/status_id/model_id/location_id). --}}
-            @php($ccAdvActive = request()->hasAny(['category_id', 'status_id', 'model_id', 'location_id', 'fieldset_id']))
+            @php($ccAdvActive = request()->hasAny(['category_id', 'status_id', 'model_id', 'location_id', 'fieldset_id', 'cf_column']))
             <div class="hidden-print" style="margin-bottom:12px;">
                 <a href="{{ route('hardware.overview') }}" class="btn btn-default">
                     <i class="fa-solid fa-gauge-high" aria-hidden="true"></i> {{ trans('admin/hardware/general.overview_title') }}
@@ -114,6 +114,22 @@
                                     @endforeach
                                 </select>
                             </div>
+                            <div class="col-md-6 col-sm-6 form-group">
+                                <label>{{ trans('admin/hardware/general.advanced_filters_field') }}</label>
+                                <div class="row">
+                                    <div class="col-xs-6" style="padding-right:5px;">
+                                        <select name="cf_column" class="form-control cc-adv-select" data-placeholder="{{ trans('admin/hardware/general.advanced_filters_field_choose') }}">
+                                            <option value="">{{ trans('admin/hardware/general.advanced_filters_field_choose') }}</option>
+                                            @foreach (\App\Models\CustomField::orderBy('name')->get(['id', 'name', 'db_column']) as $cf)
+                                                <option value="{{ $cf->db_column }}" {{ request('cf_column') === $cf->db_column ? 'selected' : '' }}>{{ $cf->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-xs-6" style="padding-left:5px;">
+                                        <input type="text" name="cf_value" class="form-control" value="{{ request('cf_value') }}" placeholder="{{ trans('admin/hardware/general.advanced_filters_field_value') }}">
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col-md-12">
                                 <button type="submit" class="btn btn-primary btn-sm">{{ trans('admin/hardware/general.advanced_filters_apply') }}</button>
                                 <a href="{{ route('hardware.index') }}" class="btn btn-link btn-sm">{{ trans('admin/hardware/general.advanced_filters_reset') }}</a>
@@ -122,7 +138,7 @@
                     </div></div>
                 </div>
             </div>
-            <x-table.assets :route="route('api.assets.index', request()->only(['status_type', 'order_number', 'company_id', 'tenant_id', 'status_id', 'nis_relevant', 'nis_inventory_scope', 'nis_service_impact', 'category_id', 'fieldset_id', 'model_id', 'location_id', 'expiring_renewal']))"/>
+            <x-table.assets :route="route('api.assets.index', request()->only(['status_type', 'order_number', 'company_id', 'tenant_id', 'status_id', 'nis_relevant', 'nis_inventory_scope', 'nis_service_impact', 'category_id', 'fieldset_id', 'model_id', 'location_id', 'cf_column', 'cf_value', 'expiring_renewal']))"/>
             @push('js')
                 <script>
                     $(function () { $('.cc-adv-select').select2({ width: '100%', allowClear: true }); });
