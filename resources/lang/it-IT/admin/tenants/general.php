@@ -123,6 +123,7 @@ return array (
       'ticket_sla_alert' => 'Avviso SLA ticket',
       'document_review_due' => 'Documenti in revisione',
       'document_assignment_reminder' => 'Promemoria evidenze delegate',
+      'asset_renewal_due' => 'Rinnovi beni in scadenza',
     ),
     'event_descriptions' =>
     array (
@@ -132,6 +133,7 @@ return array (
       'ticket_sla_alert' => 'Invia un digest giornaliero dei ticket aperti con SLA a rischio o già superato.',
       'document_review_due' => 'Invia un digest giornaliero dei documenti in revisione o già scaduti.',
       'document_assignment_reminder' => 'Invia un digest giornaliero delle assegnazioni di evidenze documentali delegate in scadenza o scadute. L\'approvazione resta a carico del reviewer.',
+      'asset_renewal_due' => 'Invia un digest giornaliero dei beni con rinnovo/scadenza in arrivo o già scaduti (domini, IP, monitoraggio, certificati).',
     ),
   ),
   'help' => 'Crea e gestisci i tenant SaaS.',

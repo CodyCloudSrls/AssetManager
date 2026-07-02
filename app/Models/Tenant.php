@@ -35,6 +35,8 @@ class Tenant extends Model
 
     public const MAIL_EVENT_DOCUMENT_ASSIGNMENT_REMINDER = 'document_assignment_reminder';
 
+    public const MAIL_EVENT_ASSET_RENEWAL_DUE = 'asset_renewal_due';
+
     public const COMPLIANCE_JURISDICTION_EU = ComplianceJurisdictions::EU;
 
     public const COMPLIANCE_JURISDICTION_IT = ComplianceJurisdictions::IT;
@@ -411,6 +413,7 @@ class Tenant extends Model
             static::MAIL_EVENT_TICKET_SLA_ALERT => trans('admin/tenants/general.mail.events.ticket_sla_alert'),
             static::MAIL_EVENT_DOCUMENT_REVIEW_DUE => trans('admin/tenants/general.mail.events.document_review_due'),
             static::MAIL_EVENT_DOCUMENT_ASSIGNMENT_REMINDER => trans('admin/tenants/general.mail.events.document_assignment_reminder'),
+            static::MAIL_EVENT_ASSET_RENEWAL_DUE => trans('admin/tenants/general.mail.events.asset_renewal_due'),
         ];
     }
 

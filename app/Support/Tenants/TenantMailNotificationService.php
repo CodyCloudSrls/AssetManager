@@ -2,6 +2,7 @@
 
 namespace App\Support\Tenants;
 
+use App\Mail\TenantAssetRenewalDigestMail;
 use App\Mail\TenantDocumentAssignmentReminderDigestMail;
 use App\Mail\TenantDocumentReviewDigestMail;
 use App\Mail\TenantTicketNotificationMail;
@@ -195,6 +196,39 @@ class TenantMailNotificationService
         ));
 
         return $total;
+    }
+
+    /**
+     * Tenant-aware digest of assets whose renewal/expiry is due or within N days
+     * (domains, IPs, monitoring, certificates), scoped to the tenant's companies and
+     * localized to the tenant language by sendToTenant().
+     */
+    public function sendAssetRenewalDigest(Tenant $tenant, int $warningDays = 30): int
+    {
+        if (! $tenant->notificationEventEnabled(Tenant::MAIL_EVENT_ASSET_RENEWAL_DUE)) {
+            return 0;
+        }
+
+        $companyIds = $tenant->activeCompanyIds();
+
+        if (count($companyIds) === 0) {
+            return 0;
+        }
+
+        $assets = \App\Models\Asset::query()
+            ->whereIn('assets.company_id', $companyIds)
+            ->ExpiringRenewal($warningDays)
+            ->with(['model', 'company'])
+            ->orderBy('renewal_date')
+            ->get();
+
+        if ($assets->isEmpty()) {
+            return 0;
+        }
+
+        $this->sendToTenant($tenant, new TenantAssetRenewalDigestMail($tenant, $assets, $warningDays));
+
+        return $assets->count();
     }
 
     public function sendDocumentAssignmentReminderDigest(Tenant $tenant): int

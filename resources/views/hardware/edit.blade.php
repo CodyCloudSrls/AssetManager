@@ -245,6 +245,21 @@
                 </a>
             </x-form.legend>
 
+            {{-- Scadenze / rinnovi (per asset virtuali: domini, IP, monitoraggio, certificati). --}}
+            <div class="col-md-12">
+                @include ('partials.forms.edit.datepicker', ['translated_name' => trans('admin/hardware/form.renewal_date'),'fieldname' => 'renewal_date', 'help_text' => trans('admin/hardware/form.renewal_date_help')])
+                <div class="form-group {{ $errors->has('auto_renewal') ? ' has-error' : '' }}">
+                    <label class="col-md-3 control-label">{{ trans('admin/hardware/form.auto_renewal') }}</label>
+                    <div class="col-md-9">
+                        <label class="checkbox-inline" style="padding-left:0;">
+                            <input type="hidden" name="auto_renewal" value="0">
+                            <input type="checkbox" name="auto_renewal" value="1" {{ old('auto_renewal', $item->auto_renewal) ? 'checked' : '' }}> {{ trans('admin/hardware/form.auto_renewal_help') }}
+                        </label>
+                        {!! $errors->first('auto_renewal', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+                    </div>
+                </div>
+            </div>
+
             <div id='order_details' class="col-md-12" style="display:none">
                 @include ('partials.forms.edit.order_number')
                 @include ('partials.forms.edit.datepicker', ['translated_name' => trans('general.purchase_date'),'fieldname' => 'purchase_date'])

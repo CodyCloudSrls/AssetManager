@@ -16,6 +16,8 @@ return [
     'advanced_filters_apply' => 'Apply filters',
     'advanced_filters_reset' => 'Reset',
     'advanced_filters_all' => '— All —',
+    'renewal_banner' => '{1} :count asset with an upcoming or overdue renewal/expiry.|[2,*] :count assets with an upcoming or overdue renewal/expiry.',
+    'renewal_banner_link' => 'View assets to renew',
     'asset' => 'Asset',
     'bulk_checkout' => 'Bulk Checkout',
     'bulk_checkin' => 'Bulk Checkin',

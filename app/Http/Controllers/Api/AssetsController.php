@@ -331,6 +331,11 @@ class AssetsController extends Controller
             $assets->whereHas('model', fn ($query) => $query->where('fieldset_id', (int) $request->input('fieldset_id')));
         }
 
+        // Assets whose renewal/expiry is due or within N days (renewal banner link).
+        if ($request->boolean('expiring_renewal')) {
+            $assets->ExpiringRenewal((int) $request->input('renewal_days', 30));
+        }
+
         if ($request->filled('location_id')) {
             $assets->where('assets.location_id', '=', $request->input('location_id'));
         }

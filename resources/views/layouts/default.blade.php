@@ -1727,6 +1727,8 @@
                         @include('notifications')
                     </div>
 
+                    {{-- Renewals-due warning banner (assets with a renewal/expiry within 30 days). --}}
+                    @include('partials.renewal-banner')
 
                     <!-- Content -->
                     <div id="{!! (request()->is('*api*') ? 'app' : 'webui') !!}">

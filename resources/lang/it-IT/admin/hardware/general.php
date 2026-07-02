@@ -16,6 +16,8 @@ return [
     'advanced_filters_apply' => 'Applica filtri',
     'advanced_filters_reset' => 'Azzera',
     'advanced_filters_all' => '— Tutte —',
+    'renewal_banner' => '{1} :count bene con rinnovo/scadenza in arrivo o già scaduto.|[2,*] :count beni con rinnovo/scadenza in arrivo o già scaduti.',
+    'renewal_banner_link' => 'Vedi i beni da rinnovare',
     'asset' => 'Bene',
     'bulk_checkout' => 'Assegnazione Massiva',
     'bulk_checkin' => 'Check-in massivo',

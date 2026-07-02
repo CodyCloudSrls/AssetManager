@@ -91,6 +91,8 @@ class Asset extends Depreciable
 
     protected $casts = [
         'purchase_date' => 'date',
+        'renewal_date' => 'date',
+        'auto_renewal' => 'boolean',
         'eol_explicit' => 'boolean',
         'last_checkout' => 'datetime',
         'last_checkin' => 'datetime',
@@ -133,6 +135,8 @@ class Asset extends Depreciable
         'purchase_cost' => ['nullable', 'numeric', 'gte:0', 'max:99999999999999999.99'],
         'supplier_id' => ['nullable', 'scoped_exists:App\Models\Supplier'],
         'asset_eol_date' => ['nullable', 'date'],
+        'renewal_date' => ['nullable', 'date'],
+        'auto_renewal' => ['nullable', 'boolean'],
         'eol_explicit' => ['nullable', 'boolean'],
         'byod' => ['nullable', 'boolean'],
         'order_number' => ['nullable', 'string', 'max:191'],
@@ -181,6 +185,8 @@ class Asset extends Depreciable
         'expected_checkin',
         'byod',
         'asset_eol_date',
+        'renewal_date',
+        'auto_renewal',
         'eol_explicit',
         'last_audit_date',
         'next_audit_date',
@@ -1090,6 +1096,30 @@ class Asset extends Depreciable
      *
      * @return mixed
      */
+    /**
+     * Signed days until the renewal/expiry date (negative = already overdue, null = no date).
+     */
+    public function renewalDaysLeft(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: fn (mixed $value, array $attributes) => empty($attributes['renewal_date'])
+                ? null
+                : (int) Carbon::now()->startOfDay()->diffInDays(Carbon::parse($attributes['renewal_date'])->startOfDay(), false),
+        );
+    }
+
+    /**
+     * Live assets whose renewal/expiry is already due or falls within $days (domains, IPs,
+     * certificates, monitoring). Used by the renewal banner and the tenant email digest.
+     */
+    public function scopeExpiringRenewal(Builder $query, int $days = 30): Builder
+    {
+        return $query->NotArchived()
+            ->whereNull('deleted_at')
+            ->whereNotNull('renewal_date')
+            ->where('renewal_date', '<=', Carbon::now()->addDays($days)->endOfDay());
+    }
+
     public static function getExpiringWarrantyOrEol($days = 30)
     {
         $now = now();

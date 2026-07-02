@@ -119,7 +119,7 @@
                     </div></div>
                 </div>
             </div>
-            <x-table.assets :route="route('api.assets.index', request()->only(['status_type', 'order_number', 'company_id', 'tenant_id', 'status_id', 'nis_relevant', 'nis_inventory_scope', 'nis_service_impact', 'category_id', 'fieldset_id', 'model_id', 'location_id']))"/>
+            <x-table.assets :route="route('api.assets.index', request()->only(['status_type', 'order_number', 'company_id', 'tenant_id', 'status_id', 'nis_relevant', 'nis_inventory_scope', 'nis_service_impact', 'category_id', 'fieldset_id', 'model_id', 'location_id', 'expiring_renewal']))"/>
             @push('js')
                 <script>
                     $(function () { $('.cc-adv-select').select2({ width: '100%', allowClear: true }); });
