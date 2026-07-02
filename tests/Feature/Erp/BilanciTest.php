@@ -30,10 +30,11 @@ class BilanciTest extends TestCase
 
         $this->get(route('erp.bilanci.index'))->assertOk()->assertSee(trans('erp/bilanci.title'));
 
+        // store() now redirects to the edit page so the official PDF can be attached.
         $this->post(route('erp.bilanci.store'), [
             'anno' => 2024, 'ricavi' => 130005, 'costi' => 125215,
             'costo_personale' => 8006, 'utile' => 1840, 'imposte' => 2886, 'is_deposited' => 1,
-        ])->assertRedirect(route('erp.bilanci.index'));
+        ])->assertStatus(302);
 
         $this->assertDatabaseHas('bilanci_ufficiali', ['anno' => 2024, 'is_deposited' => 1]);
     }

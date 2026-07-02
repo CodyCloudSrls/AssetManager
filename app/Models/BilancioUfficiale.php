@@ -2,15 +2,23 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasUploads;
+use App\Models\Traits\Loggable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Official deposited yearly accounts (authoritative). See migration for the precedence
  * rule. The model exposes the authoritative payroll/result per year for the cockpit.
+ * Supports PDF attachments (the deposited bilancio) via the shared uploads mechanism.
  */
 class BilancioUfficiale extends Model
 {
+    use HasUploads;
+    use Loggable;
+    use SoftDeletes;
+
     protected $table = 'bilanci_ufficiali';
 
     protected $fillable = [

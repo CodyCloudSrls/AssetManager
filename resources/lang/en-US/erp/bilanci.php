@@ -19,4 +19,10 @@ return [
     'stima' => 'Estimate',
     'utile_cumulato' => 'Cumulative profit',
     'empty' => 'No accounts entered. Add the deposited years to align management control.',
+    'attachments' => 'Attachments (balance-sheet PDF)',
+    'upload' => 'Upload',
+    'upload_help' => 'Upload the deposited balance-sheet PDF (signed .p7m is fine too). Automatic figure extraction is not active yet: enter the numbers by hand above.',
+    'no_files' => 'No attachment uploaded for this year.',
+    'save_first_to_upload' => 'Save the year to attach the balance-sheet PDF.',
+    'has_pdf' => 'PDF',
 ];

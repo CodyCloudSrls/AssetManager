@@ -51,9 +51,10 @@ class ErpTenantIsolationTest extends TestCase
         $editorA = $this->editorForCompany($companyA->id);
 
         // The editor forges company_id = B; it must be clamped to their own company A.
+        // (store() redirects to the edit page so the PDF can be attached right away.)
         $this->actingAs($editorA)->post(route('erp.bilanci.store'), [
             'anno' => 2024, 'ricavi' => 50, 'company_id' => $companyB->id,
-        ])->assertRedirect(route('erp.bilanci.index'));
+        ])->assertStatus(302);
 
         $this->assertDatabaseHas('bilanci_ufficiali', ['anno' => 2024, 'company_id' => $companyA->id]);
         $this->assertDatabaseMissing('bilanci_ufficiali', ['anno' => 2024, 'company_id' => $companyB->id]);

@@ -509,8 +509,9 @@ class Actionlog extends SnipeModel
     public function logUploadDelete($object, $filename, array $metadata = [])
     {
         $log = new Actionlog;
-        $log->item_type = $object instanceof SnipeModel ? get_class($object) : $object;
-        $log->item_id = $object->id;
+        // Accept any model instance (not only SnipeModel) or an already-resolved class string.
+        $log->item_type = is_object($object) ? get_class($object) : $object;
+        $log->item_id = is_object($object) ? $object->id : null;
         $log->created_by = auth()->id();
         $log->target_id = null;
         $log->filename = $filename;

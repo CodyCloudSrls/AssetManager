@@ -44,13 +44,14 @@ class BilanciController extends Controller
         $this->authorize('update', CustomerContract::class);
 
         $data = $this->validated($request);
-        $bilancio = new BilancioUfficiale();
+        $bilancio = new BilancioUfficiale;
         $bilancio->fill($data);
         $bilancio->company_id = $this->resolveScopedCompanyId($this->companyIds($request), $data['company_id'] ?? null);
         $bilancio->created_by = auth()->id();
         $bilancio->save();
 
-        return redirect()->route('erp.bilanci.index')->with('success', trans('erp/bilanci.saved'));
+        // Land on edit so the official PDF can be attached right away.
+        return redirect()->route('erp.bilanci.edit', $bilancio)->with('success', trans('erp/bilanci.saved'));
     }
 
     public function edit(Request $request, BilancioUfficiale $bilancio): View

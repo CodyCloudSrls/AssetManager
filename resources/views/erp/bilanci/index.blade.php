@@ -25,6 +25,7 @@
                         <th class="text-right">{{ trans('erp/bilanci.ammortamenti') }}</th>
                         <th class="text-right">{{ trans('erp/bilanci.utile') }}</th>
                         <th class="text-right">{{ trans('erp/bilanci.imposte') }}</th>
+                        <th class="text-center">{{ trans('erp/bilanci.has_pdf') }}</th>
                         <th></th><th></th>
                     </tr>
                 </thead>
@@ -38,6 +39,13 @@
                             <td class="text-right">{{ $f($b->ammortamenti) }}</td>
                             <td class="text-right {{ $b->utile < 0 ? 'text-danger' : 'text-success' }}">{{ $f($b->utile) }}</td>
                             <td class="text-right">{{ $f($b->imposte) }}</td>
+                            <td class="text-center">
+                                @if ($b->uploads()->exists())
+                                    <a href="{{ route('erp.bilanci.edit', $b) }}#files" data-tooltip="true" title="{{ $b->uploads()->count() }} {{ trans('erp/bilanci.attachments') }}"><span class="label label-success"><i class="far fa-file-pdf" aria-hidden="true"></i> {{ $b->uploads()->count() }}</span></a>
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
                             <td class="text-right">
                                 @can('update', \App\Models\CustomerContract::class)
                                     <a href="{{ route('erp.bilanci.edit', $b) }}" class="btn btn-xs btn-default"><x-icon type="edit"/></a>
@@ -50,11 +58,11 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="9" class="text-center text-muted">{{ trans('erp/bilanci.empty') }}</td></tr>
+                        <tr><td colspan="10" class="text-center text-muted">{{ trans('erp/bilanci.empty') }}</td></tr>
                     @endforelse
                 </tbody>
                 @if ($bilanci->isNotEmpty())
-                    <tfoot><tr style="font-weight:bold; border-top:2px solid #ddd;"><td colspan="5">{{ trans('erp/bilanci.utile_cumulato') }}</td><td class="text-right {{ $utileCumulato < 0 ? 'text-danger' : 'text-success' }}">{{ $f($utileCumulato) }}</td><td colspan="3"></td></tr></tfoot>
+                    <tfoot><tr style="font-weight:bold; border-top:2px solid #ddd;"><td colspan="5">{{ trans('erp/bilanci.utile_cumulato') }}</td><td class="text-right {{ $utileCumulato < 0 ? 'text-danger' : 'text-success' }}">{{ $f($utileCumulato) }}</td><td colspan="4"></td></tr></tfoot>
                 @endif
             </table>
         </div>

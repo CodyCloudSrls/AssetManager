@@ -36,4 +36,62 @@
         </div>
     </div></div>
 </form>
+
+{{-- Allegati bilancio: PDF ufficiale del bilancio depositato. Meccanismo upload condiviso
+     (private_uploads/bilanci/ + Actionlog + integrità). L'estrattore automatico verrà dopo. --}}
+<div class="row" id="files"><div class="col-md-8 col-md-offset-2">
+    <div class="box box-default">
+        <div class="box-header with-border"><h2 class="box-title">{{ trans('erp/bilanci.attachments') }}</h2></div>
+        <div class="box-body">
+            @if ($item->exists)
+                @can('files', $item)
+                    <form method="POST" action="{{ route('ui.files.store', ['object_type' => 'bilanci', 'id' => $item->id]) }}" enctype="multipart/form-data" style="margin-bottom:14px;">
+                        @csrf
+                        <div class="form-group">
+                            <input type="file" name="file[]" multiple accept=".pdf,.p7m,.p7c,application/pdf" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="notes" class="form-control" placeholder="{{ trans('general.notes') }}" style="max-width:320px;display:inline-block;">
+                            <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-upload" aria-hidden="true"></i> {{ trans('erp/bilanci.upload') }}</button>
+                        </div>
+                        <p class="help-block">{{ trans('erp/bilanci.upload_help') }}</p>
+                    </form>
+                @endcan
+
+                @php($uploads = $item->uploads()->orderByDesc('created_at')->get())
+                @if ($uploads->isEmpty())
+                    <p class="text-muted">{{ trans('erp/bilanci.no_files') }}</p>
+                @else
+                    <table class="table table-striped">
+                        <thead><tr>
+                            <th>{{ trans('general.file_name') }}</th>
+                            <th>{{ trans('general.notes') }}</th>
+                            <th>{{ trans('general.created_at') }}</th>
+                            <th></th>
+                        </tr></thead>
+                        <tbody>
+                        @foreach ($uploads as $file)
+                            <tr>
+                                <td><a href="{{ route('ui.files.show', ['object_type' => 'bilanci', 'id' => $item->id, 'file_id' => $file->id]) }}"><i class="far fa-file-pdf" aria-hidden="true"></i> {{ $file->filename }}</a></td>
+                                <td>{{ $file->note }}</td>
+                                <td>{{ \App\Helpers\Helper::getFormattedDateObject($file->created_at, 'datetime', false) }}</td>
+                                <td class="text-right">
+                                    @can('files', $item)
+                                        <form method="POST" action="{{ route('ui.files.destroy', ['object_type' => 'bilanci', 'id' => $item->id, 'file_id' => $file->id]) }}" onsubmit="return confirm('{{ trans('general.sure_to_delete') }}');" style="display:inline;">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-xs"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                                        </form>
+                                    @endcan
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                @endif
+            @else
+                <p class="help-block">{{ trans('erp/bilanci.save_first_to_upload') }}</p>
+            @endif
+        </div>
+    </div>
+</div></div>
 @stop

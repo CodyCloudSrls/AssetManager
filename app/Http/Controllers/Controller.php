@@ -26,6 +26,7 @@ namespace App\Http\Controllers;
 use App\Models\Accessory;
 use App\Models\Asset;
 use App\Models\AssetModel;
+use App\Models\BilancioUfficiale;
 use App\Models\Company;
 use App\Models\Component;
 use App\Models\Consumable;
@@ -69,6 +70,7 @@ abstract class Controller extends BaseController
         'models' => AssetModel::class,
         'suppliers' => Supplier::class,
         'users' => User::class,
+        'bilanci' => BilancioUfficiale::class,
     ];
 
     public static $map_storage_path = [
@@ -90,6 +92,7 @@ abstract class Controller extends BaseController
         'models' => 'private_uploads/models/',
         'suppliers' => 'private_uploads/suppliers/',
         'users' => 'private_uploads/users/',
+        'bilanci' => 'private_uploads/bilanci/',
     ];
 
     public static $map_file_prefix = [
@@ -111,6 +114,7 @@ abstract class Controller extends BaseController
         'models' => 'model',
         'suppliers' => 'supplier',
         'users' => 'user',
+        'bilanci' => 'bilancio',
     ];
 
     public function __construct()

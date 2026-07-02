@@ -19,4 +19,10 @@ return [
     'stima' => 'Stima',
     'utile_cumulato' => 'Utile cumulato',
     'empty' => 'Nessun bilancio inserito. Aggiungi gli anni depositati per allineare il controllo di gestione.',
+    'attachments' => 'Allegati (PDF bilancio)',
+    'upload' => 'Carica',
+    'upload_help' => 'Carica il PDF del bilancio depositato (anche .p7m firmato). Per ora l\'estrazione automatica dei numeri non è attiva: i dati si inseriscono a mano qui sopra.',
+    'no_files' => 'Nessun allegato caricato per questo anno.',
+    'save_first_to_upload' => 'Salva l\'anno per poter allegare il PDF del bilancio.',
+    'has_pdf' => 'PDF',
 ];
