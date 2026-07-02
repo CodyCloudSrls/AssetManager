@@ -2464,6 +2464,37 @@
         }
     }
 
+    // Renewal/expiry date + a colored "time left" indicator (bar + label) driven by
+    // row.renewal_days_left (signed: negative = overdue). Mirrors the "% remaining" idea.
+    function renewalDateFormatter(value, row) {
+        if (!value) { return ''; }
+        var out = value.formatted;
+        var days = (row && row.renewal_days_left !== null && typeof row.renewal_days_left !== 'undefined') ? parseInt(row.renewal_days_left, 10) : null;
+        if (days === null || isNaN(days)) { return out; }
+
+        var cls, label;
+        if (days < 0) {
+            cls = 'danger';
+            label = '{{ trans('admin/hardware/form.renewal_overdue') }}'.replace(':days', Math.abs(days));
+        } else if (days === 0) {
+            cls = 'danger';
+            label = '{{ trans('admin/hardware/form.renewal_today') }}';
+        } else if (days <= 30) {
+            cls = 'warning';
+            label = '{{ trans('admin/hardware/form.renewal_in_days') }}'.replace(':days', days);
+        } else {
+            cls = 'success';
+            label = '{{ trans('admin/hardware/form.renewal_in_days') }}'.replace(':days', days);
+        }
+        // Fraction of a 90-day horizon still available (clamped); overdue shows a full red bar.
+        var pct = days < 0 ? 100 : Math.max(4, Math.min(100, Math.round((days / 90) * 100)));
+
+        return out
+            + '<div class="progress" style="height:6px;margin:4px 0 2px;background:#e9e9e9;">'
+            + '<div class="progress-bar progress-bar-' + cls + '" role="progressbar" style="width:' + pct + '%;"></div></div>'
+            + '<small class="text-' + cls + '">' + label + '</small>';
+    }
+
     function iconFormatter(value) {
         if (value) {
             return '<i class="' + value + '  icon-med"></i>';

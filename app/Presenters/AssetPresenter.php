@@ -206,6 +206,20 @@ class AssetPresenter extends Presenter
                 'title' => trans('admin/hardware/form.eol_date'),
                 'formatter' => 'dateDisplayFormatter',
             ], [
+                'field' => 'renewal_date',
+                'searchable' => true,
+                'sortable' => true,
+                'visible' => true,
+                'title' => trans('admin/hardware/form.renewal_date'),
+                'formatter' => 'renewalDateFormatter',
+            ], [
+                'field' => 'auto_renewal',
+                'searchable' => false,
+                'sortable' => true,
+                'visible' => true,
+                'title' => trans('admin/hardware/form.auto_renewal'),
+                'formatter' => 'trueFalseFormatter',
+            ], [
                 'field' => 'warranty_months',
                 'searchable' => true,
                 'sortable' => true,

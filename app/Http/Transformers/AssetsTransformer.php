@@ -51,6 +51,9 @@ class AssetsTransformer
             'model_number' => (($asset->model) && ($asset->model->model_number)) ? e($asset->model->model_number) : null,
             'eol' => (($asset->asset_eol_date != '') && ($asset->purchase_date != '')) ? (int) Carbon::parse($asset->asset_eol_date)->diffInMonths($asset->purchase_date, true).' months' : null,
             'asset_eol_date' => ($asset->asset_eol_date != '') ? Helper::getFormattedDateObject($asset->asset_eol_date, 'date') : null,
+            'renewal_date' => ($asset->renewal_date != '') ? Helper::getFormattedDateObject($asset->renewal_date, 'date') : null,
+            'auto_renewal' => (bool) $asset->auto_renewal,
+            'renewal_days_left' => $asset->renewalDaysLeft,
             'status_label' => ($asset->status) ? [
                 'id' => (int) $asset->status->id,
                 'name' => e($asset->status->name),
