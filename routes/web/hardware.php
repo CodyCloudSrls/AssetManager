@@ -47,6 +47,13 @@ Route::group(
                 ->push(trans('admin/hardware/general.requested'), route('assets.requested'))
             );
 
+        Route::get('overview', [\App\Http\Controllers\Assets\AssetOverviewController::class, 'index'])
+            ->name('hardware.overview')
+            ->breadcrumbs(fn (Trail $trail) =>
+            $trail->parent('hardware.index')
+                ->push(trans('admin/hardware/general.overview_title'), route('hardware.overview'))
+            );
+
         Route::get('audit/due', [AssetsController::class, 'dueForAudit'])
             ->name('assets.audit.due')
             ->breadcrumbs(fn (Trail $trail) =>

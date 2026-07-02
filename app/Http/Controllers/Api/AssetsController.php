@@ -326,6 +326,11 @@ class AssetsController extends Controller
             $assets->InCategory($request->input('category_id'));
         }
 
+        // Filter by the model's custom fieldset (used by the assets overview "Campi" cards).
+        if ($request->filled('fieldset_id')) {
+            $assets->whereHas('model', fn ($query) => $query->where('fieldset_id', (int) $request->input('fieldset_id')));
+        }
+
         if ($request->filled('location_id')) {
             $assets->where('assets.location_id', '=', $request->input('location_id'));
         }

@@ -65,6 +65,12 @@
                     <span class="badge">{{ (isset($total_assets)) ? $total_assets : '' }}</span>
                 </a>
             </li>
+            <li {!! (request()->is('hardware/overview') ? ' class="active"' : '') !!}>
+                <a href="{{ route('hardware.overview') }}">
+                    <x-icon type="circle" class="text-grey fa-fw"/>
+                    {{ trans('admin/hardware/general.overview_title') }}
+                </a>
+            </li>
 
             <?php $status_navs = \App\Models\Statuslabel::where('show_in_nav', '=', 1)->withCount('assets as asset_count')->get(); ?>
             @if (count($status_navs) > 0)

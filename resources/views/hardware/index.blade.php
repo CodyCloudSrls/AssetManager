@@ -64,7 +64,7 @@
                     {{ trans('general.select_all_pages_done') }} <strong class="cc-select-all-done-count"></strong>
                 </span>
             </div>
-            <x-table.assets :route="route('api.assets.index', request()->only(['status_type', 'order_number', 'company_id', 'tenant_id', 'status_id', 'nis_relevant', 'nis_inventory_scope', 'nis_service_impact']))"/>
+            <x-table.assets :route="route('api.assets.index', request()->only(['status_type', 'order_number', 'company_id', 'tenant_id', 'status_id', 'nis_relevant', 'nis_inventory_scope', 'nis_service_impact', 'category_id', 'fieldset_id']))"/>
         </x-box>
     </x-container>
 @stop
