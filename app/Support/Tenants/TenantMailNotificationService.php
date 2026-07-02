@@ -276,6 +276,7 @@ class TenantMailNotificationService
             return;
         }
 
-        Mail::to($recipients)->send($mailable);
+        // Every tenant email renders in the tenant's own language (it-IT / en-US).
+        Mail::to($recipients)->locale($tenant->defaultLocale())->send($mailable);
     }
 }
