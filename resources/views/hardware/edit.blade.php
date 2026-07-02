@@ -212,10 +212,12 @@
     {{-- NIS2 relevance/scope are governed by the asset's category: when the selected model's
          category is flagged for the NIS2 inventory, "relevant" and "scope" are inherited and
          locked (grey). The controller enforces the same rule server-side. --}}
-    @php($ccModelNis = \App\Models\AssetModel::whereHas('category', fn ($q) => $q->where('nis_inventory_required', true))
-        ->with('category:id,name,nis_inventory_scope')
-        ->get()
-        ->mapWithKeys(fn ($m) => [(string) $m->id => ['scope' => (string) $m->category->nis_inventory_scope, 'category' => (string) $m->category->name]]))
+    @php
+        $ccModelNis = \App\Models\AssetModel::whereHas('category', fn ($q) => $q->where('nis_inventory_required', true))
+            ->with('category:id,name,nis_inventory_scope')
+            ->get()
+            ->mapWithKeys(fn ($m) => [(string) $m->id => ['scope' => (string) $m->category->nis_inventory_scope, 'category' => (string) $m->category->name]]);
+    @endphp
     @push('js')
     <script>
     (function () {
