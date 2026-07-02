@@ -39,6 +39,40 @@
     </div>
 </div>
 
+{{-- Default fieldset for asset categories: the models under this category inherit it. --}}
+@php($ccIsAssetCategory = old('category_type', $item->category_type) === 'asset' || $item->category_type === 'asset')
+<div class="form-group {{ $errors->has('fieldset_id') ? ' has-error' : '' }}" id="category-fieldset-row" @if (! $ccIsAssetCategory) style="display:none;" @endif>
+    <label for="fieldset_id" class="col-md-3 control-label">{{ trans('admin/categories/general.default_fieldset') }}</label>
+    <div class="col-md-7">
+        <select name="fieldset_id" id="fieldset_id" class="form-control select2" style="min-width:350px" data-placeholder="{{ trans('admin/categories/general.default_fieldset_none') }}" aria-label="fieldset_id">
+            <option value="">{{ trans('admin/categories/general.default_fieldset_none') }}</option>
+            @foreach ($custom_fieldsets as $id => $name)
+                <option value="{{ $id }}" {{ (int) old('fieldset_id', $item->fieldset_id) === (int) $id ? 'selected' : '' }}>{{ $name }}</option>
+            @endforeach
+        </select>
+        <p class="help-block">{{ trans('admin/categories/general.default_fieldset_help') }}</p>
+        {!! $errors->first('fieldset_id', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        @if ($item->exists)
+            <label class="checkbox-inline" style="padding-left:0; margin-top:6px;">
+                <input type="checkbox" name="apply_fieldset_to_models" value="1"> {{ trans('admin/categories/general.apply_fieldset_to_models') }}
+            </label>
+        @endif
+    </div>
+</div>
+@push('js')
+<script>
+    // Show the default-fieldset picker only for asset categories.
+    (function () {
+        var typeEl = document.querySelector('[name="category_type"]');
+        var row = document.getElementById('category-fieldset-row');
+        if (!typeEl || !row) return;
+        var sync = function () { row.style.display = (typeEl.value === 'asset') ? '' : 'none'; };
+        typeEl.addEventListener('change', sync);
+        sync();
+    })();
+</script>
+@endpush
+
 <fieldset name="nis-inventory">
     <x-form.legend help_text="{{ trans('admin/categories/general.nis_inventory_required_help') }}">
         {{ trans('admin/categories/general.nis_inventory_section') }}

@@ -52,7 +52,8 @@ class CategoriesController extends Controller
         $this->authorize('create', Category::class);
 
         return view('categories/edit')->with('item', new Category)
-            ->with('category_types', Helper::categoryTypeList());
+            ->with('category_types', Helper::categoryTypeList())
+            ->with('custom_fieldsets', \App\Models\CustomFieldset::orderBy('name')->pluck('name', 'id'));
     }
 
     /**
@@ -69,6 +70,8 @@ class CategoriesController extends Controller
         $category = new Category;
         $category->name = $request->input('name');
         $category->category_type = $request->input('category_type');
+        // Default fieldset only makes sense for asset categories.
+        $category->fieldset_id = ($category->category_type === 'asset' && $request->filled('fieldset_id')) ? (int) $request->input('fieldset_id') : null;
         $category->eula_text = $request->input('eula_text');
         $category->use_default_eula = $request->input('use_default_eula', '0');
         $category->require_acceptance = $request->input('require_acceptance', '0');
@@ -108,7 +111,8 @@ class CategoriesController extends Controller
         $this->authorize('update', $category);
 
         return view('categories/edit')->with('item', $category)
-            ->with('category_types', Helper::categoryTypeList());
+            ->with('category_types', Helper::categoryTypeList())
+            ->with('custom_fieldsets', \App\Models\CustomFieldset::orderBy('name')->pluck('name', 'id'));
     }
 
     /**
@@ -145,6 +149,7 @@ class CategoriesController extends Controller
         $category->nis_inventory_scope = $request->input('nis_inventory_scope');
         $category->tag_color = $request->input('tag_color');
         $category->notes = $request->input('notes');
+        $category->fieldset_id = ($category->category_type === 'asset' && $request->filled('fieldset_id')) ? (int) $request->input('fieldset_id') : null;
         [$category->company_id, $category->visibility_type] = Company::normalizeTemplateOwnership(
             $request->input('company_id'),
             $request->input('visibility_type'),
@@ -153,6 +158,12 @@ class CategoriesController extends Controller
         $category = $request->handleImages($category);
 
         if ($category->save()) {
+            // Optionally propagate the default fieldset to the category's models that have
+            // none yet (non-destructive: models with their own fieldset are left untouched).
+            if ($request->boolean('apply_fieldset_to_models') && $category->fieldset_id) {
+                $category->models()->whereNull('fieldset_id')->update(['fieldset_id' => $category->fieldset_id]);
+            }
+
             // Redirect to the new category page
             return redirect()->route('categories.index')->with('success', trans('admin/categories/message.update.success'));
         }

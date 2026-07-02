@@ -91,6 +91,9 @@ class AssetModelsController extends Controller
 
         if ($request->input('fieldset_id') != '') {
             $model->fieldset_id = $request->input('fieldset_id');
+        } elseif ($model->category_id) {
+            // Inherit the category's default fieldset when none is chosen for the model.
+            $model->fieldset_id = optional(\App\Models\Category::find($model->category_id))->fieldset_id;
         }
 
         if ($request->has('use_cloned_image')) {

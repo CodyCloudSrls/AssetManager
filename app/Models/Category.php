@@ -67,6 +67,7 @@ class Category extends SnipeModel
      */
     protected $fillable = [
         'category_type',
+        'fieldset_id',
         'checkin_email',
         'eula_text',
         'name',
@@ -343,6 +344,16 @@ class Category extends SnipeModel
     public function models()
     {
         return $this->hasMany(AssetModel::class, 'category_id');
+    }
+
+    /**
+     * Default custom fieldset for the category. Models under this category inherit it
+     * (set on model create when the model has none, or applied in bulk), so a fieldset
+     * like "Asset Virtuali" is configured once here instead of on every model.
+     */
+    public function fieldset()
+    {
+        return $this->belongsTo(CustomFieldset::class, 'fieldset_id');
     }
 
     /**
