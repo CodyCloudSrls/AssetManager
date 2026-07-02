@@ -88,6 +88,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('import', [DocumentFrameworksController::class, 'importForm'])->name('documentframeworks.import');
         Route::post('import', [DocumentFrameworksController::class, 'import'])->name('documentframeworks.import.store');
         Route::post('{documentframework}/purge-unused-bootstrap', [DocumentFrameworksController::class, 'purgeUnusedBootstrap'])->name('documentframeworks.purge-unused-bootstrap');
+        Route::post('{documentframework}/mark-reviewed', [DocumentFrameworksController::class, 'markReviewed'])->name('documentframeworks.mark-reviewed');
         Route::get('{documentframework}/export/{format}', [DocumentFrameworksController::class, 'export'])
             ->whereIn('format', ['csv', 'xlsx', 'docx'])
             ->name('documentframeworks.export');

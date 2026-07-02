@@ -145,6 +145,10 @@ return array (
       'inventory_low' => 'Low inventory',
       'expected_checkin_due' => 'Expected checkins due',
       'audit_due' => 'Audits due',
+      'contract_expiry_due' => 'Contracts expiring',
+      'notule_unpaid' => 'Unpaid fees (notule)',
+      'framework_review_due' => 'Framework reviews due',
+      'fic_sync_error' => 'Fatture in Cloud sync error',
     ),
     'event_descriptions' =>
     array (
@@ -160,6 +164,10 @@ return array (
       'inventory_low' => 'Send a daily digest for consumables, accessories, components and licenses at or below minimum inventory, scoped to this tenant.',
       'expected_checkin_due' => 'Send a daily digest for assets due or overdue for checkin, scoped to this tenant.',
       'audit_due' => 'Send a daily digest for assets due or overdue for audit, scoped to this tenant.',
+      'contract_expiry_due' => 'Send a daily digest for customer contracts with an upcoming or overdue renewal/end date.',
+      'notule_unpaid' => 'Send a daily digest for unpaid notule (professional fees still to be paid), with the total outstanding.',
+      'framework_review_due' => 'Send a daily digest for compliance frameworks due for periodic review (based on their review cadence).',
+      'fic_sync_error' => 'Send an alert when a scheduled Fatture in Cloud synchronization fails.',
     ),
   ),
   'help' => 'Create and manage SaaS tenants.',

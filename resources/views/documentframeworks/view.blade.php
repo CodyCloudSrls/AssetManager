@@ -190,6 +190,17 @@
                             </ul>
                         </div>
                         <x-button.edit :item="$documentframework" :route="route('documentframeworks.edit', $documentframework)" />
+                        @can('update', $documentframework)
+                            @if ($documentframework->review_cadence_months)
+                                <form method="POST" action="{{ route('documentframeworks.mark-reviewed', $documentframework) }}" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-default" data-tooltip="true"
+                                        title="{{ $documentframework->review_due_at ? trans('admin/documentframeworks/general.review_due').': '.\App\Helpers\Helper::getFormattedDateObject($documentframework->review_due_at, 'date', false) : '' }}">
+                                        <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i> {{ trans('admin/documentframeworks/general.mark_reviewed') }}
+                                    </button>
+                                </form>
+                            @endif
+                        @endcan
                         @can('delete', $documentframework)
                             @if ($documentframework->isDeletable())
                                 <a href="{{ route('documentframeworks.destroy', $documentframework) }}"

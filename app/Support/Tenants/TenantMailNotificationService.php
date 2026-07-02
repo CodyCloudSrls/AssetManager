@@ -4,11 +4,15 @@ namespace App\Support\Tenants;
 
 use App\Mail\TenantAssetRenewalDigestMail;
 use App\Mail\TenantAuditDueDigestMail;
+use App\Mail\TenantContractExpiryDigestMail;
 use App\Mail\TenantDocumentAssignmentReminderDigestMail;
 use App\Mail\TenantDocumentReviewDigestMail;
 use App\Mail\TenantExpectedCheckinDigestMail;
+use App\Mail\TenantFicSyncErrorMail;
+use App\Mail\TenantFrameworkReviewDigestMail;
 use App\Mail\TenantInventoryLowDigestMail;
 use App\Mail\TenantLicenseExpiryDigestMail;
+use App\Mail\TenantNotuleUnpaidDigestMail;
 use App\Mail\TenantTestMail;
 use App\Mail\TenantTicketNotificationMail;
 use App\Mail\TenantTicketSlaDigestMail;
@@ -19,9 +23,12 @@ use App\Models\Asset;
 use App\Models\Company;
 use App\Models\Component;
 use App\Models\Consumable;
+use App\Models\CustomerContract;
 use App\Models\Document;
 use App\Models\DocumentAssignment;
+use App\Models\DocumentFramework;
 use App\Models\License;
+use App\Models\Notula;
 use App\Models\Setting;
 use App\Models\Supplier;
 use App\Models\Tenant;
@@ -485,6 +492,136 @@ class TenantMailNotificationService
             'min_amt' => $item->min_amt,
             'company' => $item->company?->name,
         ];
+    }
+
+    /**
+     * Tenant-aware digest of customer contracts whose renewal or end date falls due within N
+     * days (or is already overdue), scoped to the tenant companies. Expired/terminated
+     * contracts are excluded.
+     */
+    public function sendContractExpiryDigest(Tenant $tenant, int $warningDays = 30): int
+    {
+        if (! $tenant->notificationEventEnabled(Tenant::MAIL_EVENT_CONTRACT_EXPIRY_DUE)) {
+            return 0;
+        }
+
+        $companyIds = $tenant->activeCompanyIds();
+
+        if (count($companyIds) === 0) {
+            return 0;
+        }
+
+        $limit = Carbon::now()->addDays($warningDays)->endOfDay();
+
+        $contracts = CustomerContract::query()
+            ->whereIn('company_id', $companyIds)
+            ->whereNotIn('status', [CustomerContract::STATUS_EXPIRED, CustomerContract::STATUS_TERMINATED])
+            ->where(function ($query) use ($limit) {
+                $query->where(fn ($q) => $q->whereNotNull('renewal_due_at')->where('renewal_due_at', '<=', $limit))
+                    ->orWhere(fn ($q) => $q->whereNotNull('ends_at')->where('ends_at', '<=', $limit));
+            })
+            ->with('customer')
+            ->orderByRaw('COALESCE(renewal_due_at, ends_at) asc')
+            ->get();
+
+        if ($contracts->isEmpty()) {
+            return 0;
+        }
+
+        $this->sendToTenant($tenant, new TenantContractExpiryDigestMail($tenant, $contracts, $warningDays));
+
+        return $contracts->count();
+    }
+
+    /**
+     * Tenant-aware digest of unpaid notule (fees to pay), scoped to the tenant companies,
+     * with the total outstanding amount.
+     */
+    public function sendNotuleUnpaidDigest(Tenant $tenant): int
+    {
+        if (! $tenant->notificationEventEnabled(Tenant::MAIL_EVENT_NOTULE_UNPAID)) {
+            return 0;
+        }
+
+        $companyIds = $tenant->activeCompanyIds();
+
+        if (count($companyIds) === 0) {
+            return 0;
+        }
+
+        $notule = Notula::query()
+            ->forCompanies($companyIds)
+            ->where('status', Notula::STATUS_UNPAID)
+            ->with('supplier')
+            ->orderBy('expected_invoice_date')
+            ->get()
+            ->filter(fn (Notula $n) => $n->residuo > 0)
+            ->values();
+
+        if ($notule->isEmpty()) {
+            return 0;
+        }
+
+        $residuoTotal = round((float) $notule->sum('residuo'), 2);
+
+        $this->sendToTenant($tenant, new TenantNotuleUnpaidDigestMail($tenant, $notule, $residuoTotal));
+
+        return $notule->count();
+    }
+
+    /**
+     * Tenant-aware digest of operational compliance frameworks due for periodic review
+     * (review_cadence_months from last_reviewed_at, else creation), scoped to the tenant.
+     */
+    public function sendFrameworkReviewDigest(Tenant $tenant, int $warningDays = 30): int
+    {
+        if (! $tenant->notificationEventEnabled(Tenant::MAIL_EVENT_FRAMEWORK_REVIEW_DUE)) {
+            return 0;
+        }
+
+        $companyIds = $tenant->activeCompanyIds();
+
+        if (count($companyIds) === 0) {
+            return 0;
+        }
+
+        $frameworks = DocumentFramework::query()
+            ->operational()
+            ->whereIn('document_frameworks.company_id', $companyIds)
+            ->withReviewCadence()
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (DocumentFramework $fw) => $fw->reviewDueWithin($warningDays))
+            ->values();
+
+        if ($frameworks->isEmpty()) {
+            return 0;
+        }
+
+        $this->sendToTenant($tenant, new TenantFrameworkReviewDigestMail($tenant, $frameworks, $warningDays));
+
+        return $frameworks->count();
+    }
+
+    /**
+     * Alert the FiC-owning tenant that a Fatture in Cloud sync run failed. Event-driven
+     * (called from the fic:sync command's failure path), not a scheduled digest.
+     */
+    public function sendFicSyncError(Tenant $tenant, string $errorMessage, string $failedAt): int
+    {
+        if (! $tenant->notificationEventEnabled(Tenant::MAIL_EVENT_FIC_SYNC_ERROR)) {
+            return 0;
+        }
+
+        $recipients = $tenant->notificationRecipients();
+
+        if (count($recipients) === 0) {
+            return 0;
+        }
+
+        $this->sendToTenant($tenant, new TenantFicSyncErrorMail($tenant, $errorMessage, $failedAt));
+
+        return count($recipients);
     }
 
     public function sendDocumentAssignmentReminderDigest(Tenant $tenant): int

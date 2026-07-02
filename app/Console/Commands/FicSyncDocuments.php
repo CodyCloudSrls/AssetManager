@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Support\Fic\FicClient;
 use App\Support\Fic\FicSyncService;
+use App\Support\Tenants\TenantMailNotificationService;
 use Illuminate\Console\Command;
 
 /**
@@ -17,7 +18,7 @@ class FicSyncDocuments extends Command
 
     protected $description = 'Sync Fatture in Cloud documents into the read-only ERP mirror.';
 
-    public function handle(FicClient $client, FicSyncService $sync): int
+    public function handle(FicClient $client, FicSyncService $sync, TenantMailNotificationService $mail): int
     {
         if (! $client->isConfigured() || ! $client->hasCompany()) {
             $this->error('FiC is not fully configured. Set FIC_API_TOKEN and FIC_COMPANY_ID in .env (verify with "php artisan fic:test").');
@@ -34,6 +35,16 @@ class FicSyncDocuments extends Command
             return self::SUCCESS;
         } catch (\Throwable $e) {
             $this->error('✘ FiC sync failed: '.$e->getMessage());
+
+            // Notify the tenant that owns the FiC local company (best-effort; never masks the failure).
+            try {
+                $tenant = $mail->tenantFromCompanyId(config('services.fic.local_company_id') ? (int) config('services.fic.local_company_id') : null);
+                if ($tenant) {
+                    $mail->sendFicSyncError($tenant, $e->getMessage(), now()->toDateTimeString());
+                }
+            } catch (\Throwable $notifyError) {
+                $this->warn('  (could not send FiC sync failure notification: '.$notifyError->getMessage().')');
+            }
 
             return self::FAILURE;
         }

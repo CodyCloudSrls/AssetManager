@@ -50,4 +50,6 @@ return array (
     'internal' => 'Interno',
     'custom' => 'Personalizzato',
   ),
+  'mark_reviewed' => 'Segna come rivista',
+  'review_due' => 'Revisione prevista',
 );

@@ -7,6 +7,7 @@ return [
     'update' => [
         'success' => 'Framework documentale aggiornato correttamente.',
     ],
+    'marked_reviewed' => 'Revisione registrata: il contatore di revisione periodica è stato azzerato.',
     'delete' => [
         'success' => 'Framework documentale eliminato correttamente.',
         'associated_documents' => 'Questo framework documentale è ancora collegato a uno o più documenti o requisiti e non può essere eliminato.',

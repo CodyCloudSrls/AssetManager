@@ -7,6 +7,7 @@ return [
     'update' => [
         'success' => 'Document framework updated successfully.',
     ],
+    'marked_reviewed' => 'Review recorded: the periodic review clock has been reset.',
     'delete' => [
         'success' => 'Document framework deleted successfully.',
         'associated_documents' => 'This document framework is still linked to one or more documents or requirements and cannot be deleted.',

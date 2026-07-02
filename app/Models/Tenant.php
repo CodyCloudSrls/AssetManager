@@ -47,6 +47,14 @@ class Tenant extends Model
 
     public const MAIL_EVENT_AUDIT_DUE = 'audit_due';
 
+    public const MAIL_EVENT_CONTRACT_EXPIRY_DUE = 'contract_expiry_due';
+
+    public const MAIL_EVENT_NOTULE_UNPAID = 'notule_unpaid';
+
+    public const MAIL_EVENT_FRAMEWORK_REVIEW_DUE = 'framework_review_due';
+
+    public const MAIL_EVENT_FIC_SYNC_ERROR = 'fic_sync_error';
+
     public const COMPLIANCE_JURISDICTION_EU = ComplianceJurisdictions::EU;
 
     public const COMPLIANCE_JURISDICTION_IT = ComplianceJurisdictions::IT;
@@ -460,6 +468,10 @@ class Tenant extends Model
             static::MAIL_EVENT_INVENTORY_LOW => trans('admin/tenants/general.mail.events.inventory_low'),
             static::MAIL_EVENT_EXPECTED_CHECKIN_DUE => trans('admin/tenants/general.mail.events.expected_checkin_due'),
             static::MAIL_EVENT_AUDIT_DUE => trans('admin/tenants/general.mail.events.audit_due'),
+            static::MAIL_EVENT_CONTRACT_EXPIRY_DUE => trans('admin/tenants/general.mail.events.contract_expiry_due'),
+            static::MAIL_EVENT_NOTULE_UNPAID => trans('admin/tenants/general.mail.events.notule_unpaid'),
+            static::MAIL_EVENT_FRAMEWORK_REVIEW_DUE => trans('admin/tenants/general.mail.events.framework_review_due'),
+            static::MAIL_EVENT_FIC_SYNC_ERROR => trans('admin/tenants/general.mail.events.fic_sync_error'),
         ];
     }
 

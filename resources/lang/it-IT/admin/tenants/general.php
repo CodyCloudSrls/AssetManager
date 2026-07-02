@@ -145,6 +145,10 @@ return array (
       'inventory_low' => 'Scorte basse',
       'expected_checkin_due' => 'Restituzioni previste',
       'audit_due' => 'Audit in scadenza',
+      'contract_expiry_due' => 'Contratti in scadenza',
+      'notule_unpaid' => 'Notule da pagare',
+      'framework_review_due' => 'Framework da rivedere',
+      'fic_sync_error' => 'Errore sync Fatture in Cloud',
     ),
     'event_descriptions' =>
     array (
@@ -160,6 +164,10 @@ return array (
       'inventory_low' => 'Invia un digest giornaliero di consumabili, accessori, componenti e licenze pari o sotto la scorta minima, limitato a questo tenant.',
       'expected_checkin_due' => 'Invia un digest giornaliero dei beni con restituzione prevista o scaduta, limitato a questo tenant.',
       'audit_due' => 'Invia un digest giornaliero dei beni con audit in scadenza o già scaduto, limitato a questo tenant.',
+      'contract_expiry_due' => 'Invia un digest giornaliero dei contratti cliente con rinnovo/fine in arrivo o già scaduti.',
+      'notule_unpaid' => 'Invia un digest giornaliero delle notule non pagate (compensi ancora da saldare), col totale residuo.',
+      'framework_review_due' => 'Invia un digest giornaliero dei framework compliance da revisionare periodicamente (in base alla cadenza di revisione).',
+      'fic_sync_error' => 'Invia un avviso quando la sincronizzazione programmata con Fatture in Cloud fallisce.',
     ),
   ),
   'help' => 'Crea e gestisci i tenant SaaS.',

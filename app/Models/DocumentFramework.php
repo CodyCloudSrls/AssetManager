@@ -69,6 +69,7 @@ class DocumentFramework extends SnipeModel
         'effective_to',
         'owner_id',
         'review_cadence_months',
+        'last_reviewed_at',
         'status',
         'external_reference_url',
         'compliance_objective',
@@ -95,6 +96,7 @@ class DocumentFramework extends SnipeModel
         'review_cadence_months' => 'integer',
         'effective_from' => 'date',
         'effective_to' => 'date',
+        'last_reviewed_at' => 'date',
     ];
 
     protected $searchableAttributes = [
@@ -275,6 +277,42 @@ class DocumentFramework extends SnipeModel
     public function scopeSystemTemplates($query)
     {
         return $query->where($this->getTable().'.is_system_template', true);
+    }
+
+    /**
+     * Date the framework is next due for periodic review: last review (or creation as the
+     * first-cycle anchor) plus review_cadence_months. Null when no cadence is configured.
+     */
+    public function getReviewDueAtAttribute(): ?\Illuminate\Support\Carbon
+    {
+        if (empty($this->review_cadence_months)) {
+            return null;
+        }
+
+        $anchor = $this->last_reviewed_at ?? $this->created_at;
+
+        return $anchor ? \Illuminate\Support\Carbon::parse($anchor)->addMonths((int) $this->review_cadence_months) : null;
+    }
+
+    /**
+     * Frameworks that have a periodic review cadence configured. The actual "is it due?"
+     * comparison is done in PHP via the review_due_at accessor (see reviewDueWithin), to stay
+     * database-agnostic (MySQL in prod, SQLite in tests).
+     */
+    public function scopeWithReviewCadence($query)
+    {
+        $table = $this->getTable();
+
+        return $query->whereNotNull($table.'.review_cadence_months')
+            ->where($table.'.review_cadence_months', '>', 0);
+    }
+
+    /** True when this framework's next periodic review falls on/before now + N days. */
+    public function reviewDueWithin(int $days): bool
+    {
+        $due = $this->review_due_at;
+
+        return $due !== null && $due->lte(\Illuminate\Support\Carbon::now()->addDays($days)->endOfDay());
     }
 
     public function scopeOrderByCreatedBy($query, $order)

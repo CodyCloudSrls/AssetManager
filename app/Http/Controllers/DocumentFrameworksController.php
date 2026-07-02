@@ -224,6 +224,20 @@ class DocumentFrameworksController extends Controller
         return redirect()->back()->withInput()->withErrors($documentframework->getErrors());
     }
 
+    /**
+     * Record that the framework has just been reviewed, resetting the periodic review clock
+     * (feeds the "framework review due" tenant reminder).
+     */
+    public function markReviewed(DocumentFramework $documentframework): RedirectResponse
+    {
+        $this->authorize('update', $documentframework);
+
+        $documentframework->last_reviewed_at = Carbon::now();
+        $documentframework->save();
+
+        return redirect()->back()->with('success', trans('admin/documentframeworks/message.marked_reviewed'));
+    }
+
     public function destroy(DocumentFramework $documentframework): RedirectResponse
     {
         $this->authorize('delete', $documentframework);

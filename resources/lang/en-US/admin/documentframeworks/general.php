@@ -50,4 +50,6 @@ return array (
     'internal' => 'Internal',
     'custom' => 'Custom',
   ),
+  'mark_reviewed' => 'Mark as reviewed',
+  'review_due' => 'Review due',
 );
