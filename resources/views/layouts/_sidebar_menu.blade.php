@@ -58,17 +58,17 @@
             <x-icon type="angle-left" class="pull-right fa-fw"/>
         </a>
         <ul class="treeview-menu">
+            <li {!! (request()->is('hardware/overview') ? ' class="active"' : '') !!}>
+                <a href="{{ route('hardware.overview') }}">
+                    <x-icon type="dashboard" class="text-grey fa-fw"/>
+                    {{ trans('admin/hardware/general.overview_title') }}
+                </a>
+            </li>
             <li {!! (!request()->query('status_type') && (request()->is('hardware')) ? ' class="active"' : '') !!}>
                 <a href="{{ url('hardware') }}">
                     <x-icon type="circle" class="text-grey fa-fw"/>
                     {{ trans('general.list_all') }}
                     <span class="badge">{{ (isset($total_assets)) ? $total_assets : '' }}</span>
-                </a>
-            </li>
-            <li {!! (request()->is('hardware/overview') ? ' class="active"' : '') !!}>
-                <a href="{{ route('hardware.overview') }}">
-                    <x-icon type="circle" class="text-grey fa-fw"/>
-                    {{ trans('admin/hardware/general.overview_title') }}
                 </a>
             </li>
 

@@ -68,6 +68,9 @@
                  filtra via query param (l'API supporta category_id/status_id/model_id/location_id). --}}
             @php($ccAdvActive = request()->hasAny(['category_id', 'status_id', 'model_id', 'location_id', 'fieldset_id']))
             <div class="hidden-print" style="margin-bottom:12px;">
+                <a href="{{ route('hardware.overview') }}" class="btn btn-default">
+                    <i class="fa-solid fa-gauge-high" aria-hidden="true"></i> {{ trans('admin/hardware/general.overview_title') }}
+                </a>
                 <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#ccAdvancedFilters" aria-expanded="{{ $ccAdvActive ? 'true' : 'false' }}">
                     <i class="fa-solid fa-sliders" aria-hidden="true"></i> {{ trans('admin/hardware/general.advanced_filters') }}
                     @if ($ccAdvActive)<span class="label label-primary">{{ trans('admin/hardware/general.advanced_filters_active') }}</span>@endif
