@@ -369,6 +369,29 @@ class Tenant extends Model
             ?: config('app.name');
     }
 
+    /** The From address for tenant emails: the tenant's own, else the platform default. */
+    public function notificationFromEmail(): string
+    {
+        return $this->rootCompany()?->tenant_mail_from_email
+            ?: config('mail.from.address');
+    }
+
+    /** True when the tenant has its own SMTP server configured (else platform fallback). */
+    public function hasCustomSmtp(): bool
+    {
+        return (bool) $this->rootCompany()?->hasTenantSmtp();
+    }
+
+    /** Runtime mailer config for the tenant's SMTP, or null to fall back to the platform mailer. */
+    public function customMailerConfig(): ?array
+    {
+        $rootCompany = $this->rootCompany();
+
+        return $rootCompany && $rootCompany->hasTenantSmtp()
+            ? $rootCompany->tenantMailerConfig()
+            : null;
+    }
+
     public function documentReviewWarningDays(): int
     {
         return max(1, (int) ($this->rootCompany()?->tenant_document_review_warning_days ?: 30));

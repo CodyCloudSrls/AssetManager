@@ -110,6 +110,8 @@ return [
     'tenant_asset_renewal_subject' => ':tenant asset renewals due (:count)',
     'tenant_asset_renewal_intro' => 'This digest lists assets with a renewal/expiry within the next :days days or already overdue.',
     'tenant_asset_renewal_view' => 'Open assets to renew',
+    'tenant_test_subject' => ':tenant test email',
+    'tenant_test_body' => 'This is a test email: the tenant mail configuration works (SMTP, sender, reply-to and language are correct).',
     'tenant_document_assignment_reminder_due' => 'Delegated evidence due soon',
     'tenant_document_assignment_reminder_escalated' => 'Delegated evidence escalations',
     'tenant_document_assignment_reminder_intro' => 'This digest lists delegated document evidence assignments due within the next :days days or already overdue. Overdue items are escalated for review; approval remains an expert sign-off step.',

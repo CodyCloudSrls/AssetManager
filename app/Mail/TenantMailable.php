@@ -14,7 +14,7 @@ abstract class TenantMailable extends BaseMailable
 
     protected function tenantEnvelope(string $subject): Envelope
     {
-        $fromAddress = config('mail.from.address');
+        $fromAddress = $this->tenant->notificationFromEmail();
         $replyToAddress = $this->tenant->notificationReplyToEmail();
 
         return new Envelope(

@@ -110,6 +110,8 @@ return [
     'tenant_asset_renewal_subject' => 'Rinnovi beni in scadenza :tenant (:count)',
     'tenant_asset_renewal_intro' => 'Questo digest elenca i beni con rinnovo/scadenza entro i prossimi :days giorni o già scaduti.',
     'tenant_asset_renewal_view' => 'Apri i beni da rinnovare',
+    'tenant_test_subject' => 'Email di test :tenant',
+    'tenant_test_body' => 'Questa è una email di test: la configurazione mail del tenant funziona (SMTP, mittente, reply-to e lingua sono corretti).',
     'tenant_document_assignment_reminder_due' => 'Evidenze delegate in scadenza',
     'tenant_document_assignment_reminder_escalated' => 'Evidenze delegate in escalation',
     'tenant_document_assignment_reminder_intro' => 'Questo digest elenca le assegnazioni di evidenze documentali delegate in scadenza entro i prossimi :days giorni o già scadute. Gli elementi scaduti sono escalation operative; l\'approvazione resta un passaggio di sign-off esperto.',

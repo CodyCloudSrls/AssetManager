@@ -27,6 +27,13 @@ class StoreTenantMailSettingsRequest extends FormRequest
                 'string',
                 Rule::in(array_keys(Tenant::mailNotificationEventOptions())),
             ],
+            // Per-tenant SMTP (all optional; when host+port set the tenant sends via its own server).
+            'tenant_mail_host' => 'nullable|string|max:191',
+            'tenant_mail_port' => 'nullable|integer|min:1|max:65535',
+            'tenant_mail_username' => 'nullable|string|max:191',
+            'tenant_mail_password' => 'nullable|string|max:500',
+            'tenant_mail_encryption' => 'nullable|in:tls,ssl',
+            'tenant_mail_from_email' => 'nullable|email|max:191',
         ];
     }
 }

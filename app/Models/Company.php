@@ -122,6 +122,12 @@ final class Company extends SnipeModel
         'tenant_mail_from_name',
         'tenant_mail_notification_events',
         'tenant_document_review_warning_days',
+        'tenant_mail_host',
+        'tenant_mail_port',
+        'tenant_mail_username',
+        'tenant_mail_password',
+        'tenant_mail_encryption',
+        'tenant_mail_from_email',
         'helpdesk_intro',
         'helpdesk_privacy_note',
     ];
@@ -133,7 +139,29 @@ final class Company extends SnipeModel
         'helpdesk_allow_attachments' => 'boolean',
         'tenant_mail_notification_events' => 'array',
         'tenant_document_review_warning_days' => 'integer',
+        'tenant_mail_port' => 'integer',
+        'tenant_mail_password' => 'encrypted',
     ];
+
+    /** True when this company has enough SMTP config to send through its own mail server. */
+    public function hasTenantSmtp(): bool
+    {
+        return filled($this->tenant_mail_host) && filled($this->tenant_mail_port);
+    }
+
+    /** Runtime Laravel mailer config for this company's SMTP (used as a per-tenant mailer). */
+    public function tenantMailerConfig(): array
+    {
+        return [
+            'transport' => 'smtp',
+            'host' => $this->tenant_mail_host,
+            'port' => (int) $this->tenant_mail_port,
+            'encryption' => $this->tenant_mail_encryption ?: null,
+            'username' => $this->tenant_mail_username ?: null,
+            'password' => $this->tenant_mail_password ?: null,
+            'timeout' => null,
+        ];
+    }
 
     protected static array $descendantCompanyIdsCache = [];
     protected static array $ancestorCompanyIdsCache = [];

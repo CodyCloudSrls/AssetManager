@@ -551,10 +551,47 @@ class TenantsController extends Controller
         $rootCompany->helpdesk_contact_email = $request->input('helpdesk_contact_email');
         $rootCompany->tenant_document_review_warning_days = $request->integer('tenant_document_review_warning_days', 30);
         $rootCompany->tenant_mail_notification_events = $selectedEvents;
+
+        // Per-tenant SMTP (optional; blank host = fall back to the platform mailer).
+        $rootCompany->tenant_mail_host = $request->input('tenant_mail_host') ?: null;
+        $rootCompany->tenant_mail_port = $request->filled('tenant_mail_port') ? (int) $request->input('tenant_mail_port') : null;
+        $rootCompany->tenant_mail_username = $request->input('tenant_mail_username') ?: null;
+        $rootCompany->tenant_mail_encryption = $request->input('tenant_mail_encryption') ?: null;
+        $rootCompany->tenant_mail_from_email = $request->input('tenant_mail_from_email') ?: null;
+        // Only overwrite the stored password when a new one is typed (blank = keep existing).
+        if ($request->filled('tenant_mail_password')) {
+            $rootCompany->tenant_mail_password = $request->input('tenant_mail_password');
+        }
+
         $rootCompany->save();
 
         return redirect()->route('tenants.show', $tenant)
             ->with('success', trans('admin/tenants/message.mail.update.success'));
+    }
+
+    /**
+     * Send a test email to the tenant recipients, through the tenant SMTP or the platform
+     * fallback, to verify the mail configuration before relying on it.
+     */
+    public function sendTestMail(Tenant $tenant, \App\Support\Tenants\TenantMailNotificationService $service): RedirectResponse
+    {
+        abort_unless(auth()->user()->canManageTenant($tenant), 403);
+        abort_if(is_null($tenant->rootCompany()), 404);
+
+        try {
+            $count = $service->sendTestEmail($tenant);
+        } catch (\Throwable $e) {
+            return redirect()->route('tenants.mail.edit', $tenant)
+                ->with('error', trans('admin/tenants/general.mail.test_failed', ['error' => $e->getMessage()]));
+        }
+
+        if ($count === 0) {
+            return redirect()->route('tenants.mail.edit', $tenant)
+                ->with('error', trans('admin/tenants/general.mail.test_no_recipients'));
+        }
+
+        return redirect()->route('tenants.mail.edit', $tenant)
+            ->with('success', trans('admin/tenants/general.mail.test_sent'));
     }
 
     /**

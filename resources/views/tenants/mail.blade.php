@@ -12,8 +12,8 @@
     <div class="form-group">
         <div class="col-md-8 col-md-offset-3">
             <div class="alert alert-info" style="margin-bottom: 0;">
-                <strong>{{ trans('admin/tenants/general.mail.smtp_title') }}</strong><br>
-                {{ trans('admin/tenants/general.mail.smtp_help') }}
+                <strong>{{ trans('admin/tenants/general.mail.intro_title') }}</strong><br>
+                {{ trans('admin/tenants/general.mail.intro_help') }}
             </div>
         </div>
     </div>
@@ -48,6 +48,78 @@
             <input class="form-control" type="text" name="tenant_mail_reply_to_name" id="tenant_mail_reply_to_name" value="{{ old('tenant_mail_reply_to_name', $rootCompany->tenant_mail_reply_to_name ?: $tenant->notificationReplyToName()) }}">
         </div>
     </div>
+
+    {{-- ── SMTP dedicato del tenant (opzionale; vuoto = usa il mailer di piattaforma) ── --}}
+    <hr>
+    <div class="form-group"><div class="col-md-offset-3 col-md-8">
+        <h4 style="margin-top:0;">{{ trans('admin/tenants/general.mail.smtp_title') }}</h4>
+        <p class="help-block">{{ trans('admin/tenants/general.mail.smtp_help') }}</p>
+    </div></div>
+
+    <div class="form-group {{ $errors->has('tenant_mail_host') ? ' has-error' : '' }}">
+        <label for="tenant_mail_host" class="col-md-3 control-label">{{ trans('admin/tenants/general.mail.smtp_host') }}</label>
+        <div class="col-md-6">
+            <input class="form-control" type="text" name="tenant_mail_host" id="tenant_mail_host" value="{{ old('tenant_mail_host', $rootCompany->tenant_mail_host) }}" placeholder="smtp.example.com">
+            {!! $errors->first('tenant_mail_host', '<span class="alert-msg">:message</span>') !!}
+        </div>
+    </div>
+    <div class="form-group {{ $errors->has('tenant_mail_port') ? ' has-error' : '' }}">
+        <label for="tenant_mail_port" class="col-md-3 control-label">{{ trans('admin/tenants/general.mail.smtp_port') }}</label>
+        <div class="col-md-3">
+            <input class="form-control" type="number" min="1" max="65535" name="tenant_mail_port" id="tenant_mail_port" value="{{ old('tenant_mail_port', $rootCompany->tenant_mail_port) }}" placeholder="587">
+            {!! $errors->first('tenant_mail_port', '<span class="alert-msg">:message</span>') !!}
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="tenant_mail_encryption" class="col-md-3 control-label">{{ trans('admin/tenants/general.mail.smtp_encryption') }}</label>
+        <div class="col-md-3">
+            <select class="form-control" name="tenant_mail_encryption" id="tenant_mail_encryption">
+                <option value="">—</option>
+                <option value="tls" {{ old('tenant_mail_encryption', $rootCompany->tenant_mail_encryption) === 'tls' ? 'selected' : '' }}>TLS</option>
+                <option value="ssl" {{ old('tenant_mail_encryption', $rootCompany->tenant_mail_encryption) === 'ssl' ? 'selected' : '' }}>SSL</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="tenant_mail_username" class="col-md-3 control-label">{{ trans('admin/tenants/general.mail.smtp_username') }}</label>
+        <div class="col-md-6">
+            <input class="form-control" type="text" name="tenant_mail_username" id="tenant_mail_username" value="{{ old('tenant_mail_username', $rootCompany->tenant_mail_username) }}" autocomplete="off">
+        </div>
+    </div>
+    <div class="form-group {{ $errors->has('tenant_mail_password') ? ' has-error' : '' }}">
+        <label for="tenant_mail_password" class="col-md-3 control-label">{{ trans('admin/tenants/general.mail.smtp_password') }}</label>
+        <div class="col-md-6">
+            <input class="form-control" type="password" name="tenant_mail_password" id="tenant_mail_password" value="" autocomplete="new-password" placeholder="{{ $rootCompany->tenant_mail_password ? '••••••••' : '' }}">
+            <p class="help-block">{{ trans('admin/tenants/general.mail.smtp_password_help') }}</p>
+        </div>
+    </div>
+    <div class="form-group {{ $errors->has('tenant_mail_from_email') ? ' has-error' : '' }}">
+        <label for="tenant_mail_from_email" class="col-md-3 control-label">{{ trans('admin/tenants/general.mail.from_email') }}</label>
+        <div class="col-md-6">
+            <input class="form-control" type="email" name="tenant_mail_from_email" id="tenant_mail_from_email" value="{{ old('tenant_mail_from_email', $rootCompany->tenant_mail_from_email) }}">
+            <p class="help-block">{{ trans('admin/tenants/general.mail.from_email_help') }}</p>
+            {!! $errors->first('tenant_mail_from_email', '<span class="alert-msg">:message</span>') !!}
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-3 col-md-8">
+            <button type="button" class="btn btn-default" id="cc-send-test-mail"><i class="fa-regular fa-paper-plane fa-fw" aria-hidden="true"></i> {{ trans('admin/tenants/general.mail.send_test') }}</button>
+            <p class="help-block">{{ trans('admin/tenants/general.mail.send_test_help') }}</p>
+        </div>
+    </div>
+    @push('js')
+    <script>
+        document.getElementById('cc-send-test-mail')?.addEventListener('click', function () {
+            if (!confirm('{{ trans('admin/tenants/general.mail.send_test_confirm') }}')) return;
+            var f = document.createElement('form');
+            f.method = 'POST';
+            f.action = '{{ route('tenants.mail.test', $tenant) }}';
+            f.innerHTML = '<input type="hidden" name="_token" value="{{ csrf_token() }}">';
+            document.body.appendChild(f);
+            f.submit();
+        });
+    </script>
+    @endpush
 
     <div class="form-group {{ $errors->has('helpdesk_contact_email') ? ' has-error' : '' }}">
         <label for="helpdesk_contact_email" class="col-md-3 control-label">{{ trans('admin/tenants/general.mail.helpdesk_contact_email') }}</label>

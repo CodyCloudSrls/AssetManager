@@ -4,6 +4,7 @@ namespace App\Support\Tenants;
 
 use App\Mail\TenantAssetRenewalDigestMail;
 use App\Mail\TenantDocumentAssignmentReminderDigestMail;
+use App\Mail\TenantTestMail;
 use App\Mail\TenantDocumentReviewDigestMail;
 use App\Mail\TenantTicketNotificationMail;
 use App\Mail\TenantTicketSlaDigestMail;
@@ -302,6 +303,24 @@ class TenantMailNotificationService
         return $tenantId ? Tenant::query()->find($tenantId) : null;
     }
 
+    /**
+     * Send a deliverability test email to the tenant's recipients through the tenant's
+     * own SMTP (or the platform fallback). Bypasses per-event toggles on purpose.
+     * Returns the number of recipients, or 0 when none are configured.
+     */
+    public function sendTestEmail(Tenant $tenant): int
+    {
+        $recipients = $tenant->notificationRecipients();
+
+        if (count($recipients) === 0) {
+            return 0;
+        }
+
+        $this->sendToTenant($tenant, new TenantTestMail($tenant));
+
+        return count($recipients);
+    }
+
     private function sendToTenant(Tenant $tenant, Mailable $mailable): void
     {
         $recipients = $tenant->notificationRecipients();
@@ -310,7 +329,30 @@ class TenantMailNotificationService
             return;
         }
 
-        // Every tenant email renders in the tenant's own language (it-IT / en-US).
-        Mail::to($recipients)->locale($tenant->defaultLocale())->send($mailable);
+        // Send through the tenant's own SMTP when configured (else the platform mailer),
+        // and always render in the tenant's own language (it-IT / en-US).
+        Mail::mailer($this->tenantMailer($tenant))
+            ->to($recipients)
+            ->locale($tenant->defaultLocale())
+            ->send($mailable);
+    }
+
+    /**
+     * Resolve the mailer name for a tenant: a runtime SMTP mailer built from the tenant's
+     * own settings when configured, otherwise null — which makes Laravel use the platform
+     * default mailer (the fallback).
+     */
+    private function tenantMailer(Tenant $tenant): ?string
+    {
+        $config = $tenant->customMailerConfig();
+
+        if (is_null($config)) {
+            return null;
+        }
+
+        $name = 'tenant_'.$tenant->id;
+        config()->set('mail.mailers.'.$name, $config);
+
+        return $name;
     }
 }
