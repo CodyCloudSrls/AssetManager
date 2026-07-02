@@ -25,6 +25,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('snipeit:tenant-document-review-alerts')->daily();
         $schedule->command('snipeit:tenant-document-assignment-reminders')->daily();
         $schedule->command('snipeit:tenant-asset-renewal-alerts')->daily();
+        $schedule->command('snipeit:tenant-stock-alerts')->daily();
         $schedule->command('snipeit:backup')->weekly();
         $schedule->command('backup:clean')->daily();
         $schedule->command('auth:clear-resets')->everyFifteenMinutes();

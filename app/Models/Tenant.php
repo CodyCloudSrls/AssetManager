@@ -37,6 +37,16 @@ class Tenant extends Model
 
     public const MAIL_EVENT_ASSET_RENEWAL_DUE = 'asset_renewal_due';
 
+    public const MAIL_EVENT_ASSET_WARRANTY_DUE = 'asset_warranty_due';
+
+    public const MAIL_EVENT_LICENSE_EXPIRY_DUE = 'license_expiry_due';
+
+    public const MAIL_EVENT_INVENTORY_LOW = 'inventory_low';
+
+    public const MAIL_EVENT_EXPECTED_CHECKIN_DUE = 'expected_checkin_due';
+
+    public const MAIL_EVENT_AUDIT_DUE = 'audit_due';
+
     public const COMPLIANCE_JURISDICTION_EU = ComplianceJurisdictions::EU;
 
     public const COMPLIANCE_JURISDICTION_IT = ComplianceJurisdictions::IT;
@@ -58,17 +68,25 @@ class Tenant extends Model
 
     /** Per-tenant feature flags (modules a tenant has enabled). */
     public const FEATURE_ASSETS = 'assets';
+
     public const FEATURE_DOCUMENTS = 'documents';
+
     public const FEATURE_TICKETS = 'tickets';
+
     public const FEATURE_NIS2 = 'nis2';
+
     public const FEATURE_ERP = 'erp';
 
     // Compliance domains as individually-activatable modules. The flag key matches the
     // framework's compliance_domain, so the nav/pages can be gated + filtered per area.
     public const FEATURE_GDPR = 'gdpr';
+
     public const FEATURE_DL81 = 'dl81';
+
     public const FEATURE_ISO27001 = 'iso27001';
+
     public const FEATURE_AI_ACT = 'ai_act';
+
     public const FEATURE_ISO9001 = 'iso9001';
 
     /** Compliance-domain feature flags, mapped to their framework compliance_domain key. */
@@ -437,6 +455,11 @@ class Tenant extends Model
             static::MAIL_EVENT_DOCUMENT_REVIEW_DUE => trans('admin/tenants/general.mail.events.document_review_due'),
             static::MAIL_EVENT_DOCUMENT_ASSIGNMENT_REMINDER => trans('admin/tenants/general.mail.events.document_assignment_reminder'),
             static::MAIL_EVENT_ASSET_RENEWAL_DUE => trans('admin/tenants/general.mail.events.asset_renewal_due'),
+            static::MAIL_EVENT_ASSET_WARRANTY_DUE => trans('admin/tenants/general.mail.events.asset_warranty_due'),
+            static::MAIL_EVENT_LICENSE_EXPIRY_DUE => trans('admin/tenants/general.mail.events.license_expiry_due'),
+            static::MAIL_EVENT_INVENTORY_LOW => trans('admin/tenants/general.mail.events.inventory_low'),
+            static::MAIL_EVENT_EXPECTED_CHECKIN_DUE => trans('admin/tenants/general.mail.events.expected_checkin_due'),
+            static::MAIL_EVENT_AUDIT_DUE => trans('admin/tenants/general.mail.events.audit_due'),
         ];
     }
 

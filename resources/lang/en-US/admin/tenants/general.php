@@ -140,6 +140,11 @@ return array (
       'document_review_due' => 'Documents due for review',
       'document_assignment_reminder' => 'Delegated evidence reminders',
       'asset_renewal_due' => 'Asset renewals due',
+      'asset_warranty_due' => 'Warranties / EOL due',
+      'license_expiry_due' => 'Licenses expiring',
+      'inventory_low' => 'Low inventory',
+      'expected_checkin_due' => 'Expected checkins due',
+      'audit_due' => 'Audits due',
     ),
     'event_descriptions' =>
     array (
@@ -150,6 +155,11 @@ return array (
       'document_review_due' => 'Send a daily digest for documents that are due or overdue for review.',
       'document_assignment_reminder' => 'Send a daily digest for delegated document evidence assignments that are due soon or overdue. Approval still requires reviewer sign-off.',
       'asset_renewal_due' => 'Send a daily digest for assets with an upcoming or overdue renewal/expiry (domains, IPs, monitoring, certificates).',
+      'asset_warranty_due' => 'Send a daily digest for assets with a warranty or end-of-life approaching, scoped to this tenant.',
+      'license_expiry_due' => 'Send a daily digest for licenses expiring or terminating soon, scoped to this tenant.',
+      'inventory_low' => 'Send a daily digest for consumables, accessories, components and licenses at or below minimum inventory, scoped to this tenant.',
+      'expected_checkin_due' => 'Send a daily digest for assets due or overdue for checkin, scoped to this tenant.',
+      'audit_due' => 'Send a daily digest for assets due or overdue for audit, scoped to this tenant.',
     ),
   ),
   'help' => 'Create and manage SaaS tenants.',

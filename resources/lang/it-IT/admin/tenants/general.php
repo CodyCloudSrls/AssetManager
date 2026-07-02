@@ -140,6 +140,11 @@ return array (
       'document_review_due' => 'Documenti in revisione',
       'document_assignment_reminder' => 'Promemoria evidenze delegate',
       'asset_renewal_due' => 'Rinnovi beni in scadenza',
+      'asset_warranty_due' => 'Garanzie / EOL in scadenza',
+      'license_expiry_due' => 'Licenze in scadenza',
+      'inventory_low' => 'Scorte basse',
+      'expected_checkin_due' => 'Restituzioni previste',
+      'audit_due' => 'Audit in scadenza',
     ),
     'event_descriptions' =>
     array (
@@ -150,6 +155,11 @@ return array (
       'document_review_due' => 'Invia un digest giornaliero dei documenti in revisione o già scaduti.',
       'document_assignment_reminder' => 'Invia un digest giornaliero delle assegnazioni di evidenze documentali delegate in scadenza o scadute. L\'approvazione resta a carico del reviewer.',
       'asset_renewal_due' => 'Invia un digest giornaliero dei beni con rinnovo/scadenza in arrivo o già scaduti (domini, IP, monitoraggio, certificati).',
+      'asset_warranty_due' => 'Invia un digest giornaliero dei beni con garanzia o fine vita (EOL) in avvicinamento, limitato a questo tenant.',
+      'license_expiry_due' => 'Invia un digest giornaliero delle licenze in scadenza o cessazione a breve, limitato a questo tenant.',
+      'inventory_low' => 'Invia un digest giornaliero di consumabili, accessori, componenti e licenze pari o sotto la scorta minima, limitato a questo tenant.',
+      'expected_checkin_due' => 'Invia un digest giornaliero dei beni con restituzione prevista o scaduta, limitato a questo tenant.',
+      'audit_due' => 'Invia un digest giornaliero dei beni con audit in scadenza o già scaduto, limitato a questo tenant.',
     ),
   ),
   'help' => 'Crea e gestisci i tenant SaaS.',

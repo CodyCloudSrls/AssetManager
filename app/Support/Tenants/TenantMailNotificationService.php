@@ -3,21 +3,33 @@
 namespace App\Support\Tenants;
 
 use App\Mail\TenantAssetRenewalDigestMail;
+use App\Mail\TenantAuditDueDigestMail;
 use App\Mail\TenantDocumentAssignmentReminderDigestMail;
-use App\Mail\TenantTestMail;
 use App\Mail\TenantDocumentReviewDigestMail;
+use App\Mail\TenantExpectedCheckinDigestMail;
+use App\Mail\TenantInventoryLowDigestMail;
+use App\Mail\TenantLicenseExpiryDigestMail;
+use App\Mail\TenantTestMail;
 use App\Mail\TenantTicketNotificationMail;
 use App\Mail\TenantTicketSlaDigestMail;
+use App\Mail\TenantWarrantyDigestMail;
+use App\Models\Accessory;
 use App\Models\Actionlog;
+use App\Models\Asset;
 use App\Models\Company;
+use App\Models\Component;
+use App\Models\Consumable;
 use App\Models\Document;
 use App\Models\DocumentAssignment;
+use App\Models\License;
+use App\Models\Setting;
 use App\Models\Supplier;
 use App\Models\Tenant;
 use App\Models\Ticket;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Mail\Mailable;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 
 class TenantMailNotificationService
@@ -216,7 +228,7 @@ class TenantMailNotificationService
             return 0;
         }
 
-        $assets = \App\Models\Asset::query()
+        $assets = Asset::query()
             ->whereIn('assets.company_id', $companyIds)
             ->ExpiringRenewal($warningDays)
             ->with(['model', 'company'])
@@ -230,6 +242,249 @@ class TenantMailNotificationService
         $this->sendToTenant($tenant, new TenantAssetRenewalDigestMail($tenant, $assets, $warningDays));
 
         return $assets->count();
+    }
+
+    /**
+     * Tenant-aware version of the stock "expiring warranties/EOL" alert: assets whose
+     * warranty or end-of-life falls within N days, scoped to the tenant companies.
+     * The default horizon reuses the platform alert_interval setting.
+     */
+    public function sendWarrantyDigest(Tenant $tenant, ?int $warningDays = null): int
+    {
+        if (! $tenant->notificationEventEnabled(Tenant::MAIL_EVENT_ASSET_WARRANTY_DUE)) {
+            return 0;
+        }
+
+        $companyIds = $tenant->activeCompanyIds();
+
+        if (count($companyIds) === 0) {
+            return 0;
+        }
+
+        $days = $warningDays ?? max(1, (int) (Setting::getSettings()?->alert_interval ?? 30));
+
+        // getExpiringWarrantyOrEol computes the warranty window in PHP, so we scope the
+        // resulting collection to the tenant companies instead of at the query level.
+        $assets = Asset::getExpiringWarrantyOrEol($days)
+            ->filter(fn ($asset) => in_array((int) $asset->company_id, $companyIds, true))
+            ->values();
+
+        if ($assets->isEmpty()) {
+            return 0;
+        }
+
+        $assets->load('company');
+
+        $this->sendToTenant($tenant, new TenantWarrantyDigestMail($tenant, $assets, $days));
+
+        return $assets->count();
+    }
+
+    /**
+     * Tenant-aware version of the stock "expiring licenses" alert, scoped to the tenant
+     * companies. The default horizon reuses the platform alert_interval setting.
+     */
+    public function sendLicenseExpiryDigest(Tenant $tenant, ?int $warningDays = null): int
+    {
+        if (! $tenant->notificationEventEnabled(Tenant::MAIL_EVENT_LICENSE_EXPIRY_DUE)) {
+            return 0;
+        }
+
+        $companyIds = $tenant->activeCompanyIds();
+
+        if (count($companyIds) === 0) {
+            return 0;
+        }
+
+        $days = $warningDays ?? max(1, (int) (Setting::getSettings()?->alert_interval ?? 30));
+
+        // ExpiringLicenses uses AND-grouped closures at its root, so a leading whereIn is safe.
+        $licenses = License::query()
+            ->whereIn('licenses.company_id', $companyIds)
+            ->ExpiringLicenses($days)
+            ->with(['company', 'category'])
+            ->orderBy('expiration_date')
+            ->orderBy('termination_date')
+            ->get();
+
+        if ($licenses->isEmpty()) {
+            return 0;
+        }
+
+        $this->sendToTenant($tenant, new TenantLicenseExpiryDigestMail($tenant, $licenses, $days));
+
+        return $licenses->count();
+    }
+
+    /**
+     * Tenant-aware version of the stock "low inventory" alert. Scopes consumables,
+     * accessories, components and licenses to the tenant companies (asset models have no
+     * company and are intentionally left to the platform-wide alert).
+     */
+    public function sendInventoryLowDigest(Tenant $tenant, ?int $threshold = null): int
+    {
+        if (! $tenant->notificationEventEnabled(Tenant::MAIL_EVENT_INVENTORY_LOW)) {
+            return 0;
+        }
+
+        $companyIds = $tenant->activeCompanyIds();
+
+        if (count($companyIds) === 0) {
+            return 0;
+        }
+
+        $threshold = $threshold ?? max(0, (int) (Setting::getSettings()?->alert_threshold ?? 0));
+
+        $items = $this->lowInventoryForCompanies($companyIds, $threshold);
+
+        if ($items->isEmpty()) {
+            return 0;
+        }
+
+        $this->sendToTenant($tenant, new TenantInventoryLowDigestMail($tenant, $items, $threshold));
+
+        return $items->count();
+    }
+
+    /**
+     * Tenant-aware version of the stock "expected checkin" admin digest: assets due or
+     * overdue for checkin, scoped to the tenant companies. The DueOrOverdueForCheckin scope
+     * mixes where/orWhere, so it is wrapped in a closure to keep the company filter intact.
+     */
+    public function sendExpectedCheckinDigest(Tenant $tenant, ?int $warningDays = null): int
+    {
+        if (! $tenant->notificationEventEnabled(Tenant::MAIL_EVENT_EXPECTED_CHECKIN_DUE)) {
+            return 0;
+        }
+
+        $companyIds = $tenant->activeCompanyIds();
+
+        if (count($companyIds) === 0) {
+            return 0;
+        }
+
+        $settings = Setting::getSettings() ?? new Setting;
+        $days = $warningDays ?? max(0, (int) ($settings->due_checkin_days ?? 0));
+
+        $assets = Asset::query()
+            ->whereNull('assets.deleted_at')
+            ->whereIn('assets.company_id', $companyIds)
+            ->where(function ($query) use ($settings) {
+                $query->DueOrOverdueForCheckin($settings);
+            })
+            ->with(['company', 'assignedTo'])
+            ->orderBy('assets.expected_checkin')
+            ->get();
+
+        if ($assets->isEmpty()) {
+            return 0;
+        }
+
+        $this->sendToTenant($tenant, new TenantExpectedCheckinDigestMail($tenant, $assets, $days));
+
+        return $assets->count();
+    }
+
+    /**
+     * Tenant-aware version of the stock "upcoming audits" alert: assets due or overdue for
+     * audit, scoped to the tenant companies. The list is capped at 30 rows but the subject
+     * and body report the full count. dueOrOverdueForAudit mixes where/orWhere, so it is
+     * wrapped in a closure to keep the company filter intact.
+     */
+    public function sendAuditDueDigest(Tenant $tenant, ?int $warningDays = null): int
+    {
+        if (! $tenant->notificationEventEnabled(Tenant::MAIL_EVENT_AUDIT_DUE)) {
+            return 0;
+        }
+
+        $companyIds = $tenant->activeCompanyIds();
+
+        if (count($companyIds) === 0) {
+            return 0;
+        }
+
+        $settings = Setting::getSettings() ?? new Setting;
+        $days = $warningDays ?? max(0, (int) ($settings->audit_warning_days ?? 0));
+
+        $query = Asset::query()
+            ->whereNull('assets.deleted_at')
+            ->whereIn('assets.company_id', $companyIds)
+            ->where(function ($inner) use ($settings) {
+                $inner->dueOrOverdueForAudit($settings);
+            });
+
+        $total = (clone $query)->count();
+
+        if ($total === 0) {
+            return 0;
+        }
+
+        $assets = $query->with(['company', 'assignedTo'])
+            ->orderBy('assets.next_audit_date')
+            ->limit(30)
+            ->get();
+
+        $this->sendToTenant($tenant, new TenantAuditDueDigestMail($tenant, $assets, $days, $total));
+
+        return $total;
+    }
+
+    /**
+     * Company-scoped low-inventory scan mirroring Helper::checkLowInventory(), but limited to
+     * the given companies and enriched with each item's company name for the digest.
+     *
+     * @param  array<int>  $companyIds
+     */
+    private function lowInventoryForCompanies(array $companyIds, int $threshold): Collection
+    {
+        $items = collect();
+
+        $consumables = Consumable::whereIn('company_id', $companyIds)->whereNotNull('min_amt')->with('company')->get();
+        foreach ($consumables as $consumable) {
+            $avail = $consumable->numRemaining();
+            if ($avail <= ($consumable->min_amt + $threshold)) {
+                $items->push($this->lowInventoryRow($consumable, 'consumables', $avail));
+            }
+        }
+
+        $accessories = Accessory::withCount('checkouts as checkouts_count')
+            ->whereIn('company_id', $companyIds)->whereNotNull('min_amt')->with('company')->get();
+        foreach ($accessories as $accessory) {
+            $avail = $accessory->qty - $accessory->checkouts_count;
+            if ($avail <= ($accessory->min_amt + $threshold)) {
+                $items->push($this->lowInventoryRow($accessory, 'accessories', $avail));
+            }
+        }
+
+        $components = Component::whereIn('company_id', $companyIds)->whereNotNull('min_amt')->with('company')->get();
+        foreach ($components as $component) {
+            $avail = $component->numRemaining();
+            if ($avail <= ($component->min_amt + $threshold)) {
+                $items->push($this->lowInventoryRow($component, 'components', $avail));
+            }
+        }
+
+        $licenses = License::whereIn('company_id', $companyIds)->where('min_amt', '>', 0)->with('company')->get();
+        foreach ($licenses as $license) {
+            $avail = $license->remaincount();
+            if ($avail <= ($license->min_amt + $threshold)) {
+                $items->push($this->lowInventoryRow($license, 'licenses', $avail));
+            }
+        }
+
+        return $items;
+    }
+
+    private function lowInventoryRow($item, string $type, int $remaining): array
+    {
+        return [
+            'id' => $item->id,
+            'name' => $item->name,
+            'type' => $type,
+            'remaining' => $remaining,
+            'min_amt' => $item->min_amt,
+            'company' => $item->company?->name,
+        ];
     }
 
     public function sendDocumentAssignmentReminderDigest(Tenant $tenant): int
