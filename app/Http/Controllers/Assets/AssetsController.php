@@ -220,7 +220,7 @@ class AssetsController extends Controller
                 [$asset->customer_id, $asset->customer_contract_id] = $this->resolveAssetCustomerLinks(
                     $model, $request->input('customer_id'), $request->input('customer_contract_id')
                 );
-                $asset->rtd_location_id = request('rtd_location_id', null);
+                $asset->rtd_location_id = request('rtd_location_id') ?: null;
                 $asset->byod = request('byod', 0);
 
                 if (! empty($settings->audit_interval)) {
@@ -229,7 +229,7 @@ class AssetsController extends Controller
 
                 // Set location_id to rtd_location_id ONLY if the asset isn't being checked out
                 if (! request('assigned_user') && ! request('assigned_asset') && ! request('assigned_location')) {
-                    $asset->location_id = $request->input('rtd_location_id', null);
+                    $asset->location_id = $request->input('rtd_location_id') ?: null;
                 }
 
                 if ($request->has('use_cloned_image')) {
@@ -479,7 +479,7 @@ class AssetsController extends Controller
         [$asset->customer_id, $asset->customer_contract_id] = $this->resolveAssetCustomerLinks(
             null, $request->input('customer_id'), $request->input('customer_contract_id')
         );
-        $asset->rtd_location_id = $request->input('rtd_location_id', null);
+        $asset->rtd_location_id = $request->input('rtd_location_id') ?: null;
         $asset->byod = $request->input('byod', 0);
 
         $status = Statuslabel::find($request->input('status_id'));

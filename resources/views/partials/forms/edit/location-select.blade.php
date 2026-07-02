@@ -9,6 +9,10 @@
     <label for="{{ $fieldname }}" class="col-md-3 control-label">{{ $translated_name }}</label>
     <div class="col-md-7">
         <select class="js-data-ajax" data-endpoint="locations" data-placeholder="{{ trans('general.select_location') }}" name="{{ $fieldname }}" style="width: 100%" id="{{ $fieldname }}_location_select" aria-label="{{ $fieldname }}"{{ !empty($locationCompanyId) ? ' data-company-id="'.e($locationCompanyId).'"' : '' }}{{ (isset($multiple) && ($multiple=='true')) ? " multiple='multiple'" : '' }}{!!  ((isset($item)) && (Helper::checkIfRequired($item, $fieldname))) ? ' required ' : '' !!}>
+            {{-- Empty option so select2 allowClear can blank out a single location once set. --}}
+            @if (!isset($multiple) || $multiple != 'true')
+                <option value=""></option>
+            @endif
             @isset($selected)
                 @foreach($selected as $location_id)
                     <option value="{{ $location_id }}" selected="selected" role="option" aria-selected="true"  role="option">
