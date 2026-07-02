@@ -42,6 +42,8 @@ return [
     'default_fieldset_none' => '— None —',
     'default_fieldset_help' => 'Models in this category inherit this custom fieldset (e.g. "Asset Virtuali" for IPs and domains). Set once here instead of on every model.',
     'apply_fieldset_to_models' => 'Apply to models',
+    'apply_nis_to_assets' => 'Apply NIS2 relevance to existing assets',
+    'apply_nis_to_assets_help' => 'Sets "NIS2 relevant" and the scope on every asset in this category. Explicit action: it does not touch per-asset notes or service impact.',
     'use_default_eula' => 'Use the <a href="#" data-toggle="modal" data-target="#eulaModal">primary default EULA</a> instead.',
     'use_default_eula_disabled' => '<del>Use the primary default EULA instead.</del> No primary default EULA is set. Please add one in Settings.',
     'use_default_eula_column' => 'Use default EULA',

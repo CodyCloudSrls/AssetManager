@@ -100,6 +100,17 @@
             {!! $errors->first('nis_inventory_scope', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
         </div>
     </div>
+
+    @if ($item->exists)
+        <div class="form-group">
+            <div class="col-md-7 col-md-offset-3">
+                <label class="checkbox-inline" style="padding-left:0;">
+                    <input type="checkbox" name="apply_nis_to_assets" value="1"> {{ trans('admin/categories/general.apply_nis_to_assets') }}
+                </label>
+                <p class="help-block">{{ trans('admin/categories/general.apply_nis_to_assets_help') }}</p>
+            </div>
+        </div>
+    @endif
 </fieldset>
 
 <livewire:category-edit-form

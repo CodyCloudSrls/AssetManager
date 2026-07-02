@@ -6,8 +6,10 @@ use App\Actions\Categories\DestroyCategoryAction;
 use App\Exceptions\ItemStillHasChildren;
 use App\Helpers\Helper;
 use App\Http\Requests\ImageUploadRequest;
+use App\Models\Asset;
 use App\Models\Category;
 use App\Models\Company;
+use App\Models\CustomFieldset;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -53,7 +55,7 @@ class CategoriesController extends Controller
 
         return view('categories/edit')->with('item', new Category)
             ->with('category_types', Helper::categoryTypeList())
-            ->with('custom_fieldsets', \App\Models\CustomFieldset::orderBy('name')->pluck('name', 'id'));
+            ->with('custom_fieldsets', CustomFieldset::orderBy('name')->pluck('name', 'id'));
     }
 
     /**
@@ -112,7 +114,7 @@ class CategoriesController extends Controller
 
         return view('categories/edit')->with('item', $category)
             ->with('category_types', Helper::categoryTypeList())
-            ->with('custom_fieldsets', \App\Models\CustomFieldset::orderBy('name')->pluck('name', 'id'));
+            ->with('custom_fieldsets', CustomFieldset::orderBy('name')->pluck('name', 'id'));
     }
 
     /**
@@ -162,6 +164,17 @@ class CategoriesController extends Controller
             // none yet (non-destructive: models with their own fieldset are left untouched).
             if ($request->boolean('apply_fieldset_to_models') && $category->fieldset_id) {
                 $category->models()->whereNull('fieldset_id')->update(['fieldset_id' => $category->fieldset_id]);
+            }
+
+            // Optionally propagate the NIS2 inventory relevance/scope to the category's existing
+            // assets (reached through their model). Explicit, opt-in action; only runs when the
+            // category is flagged for the NIS2 inventory, so it never clears manual assessments.
+            if ($request->boolean('apply_nis_to_assets') && $category->nis_inventory_required) {
+                Asset::whereHas('model', fn ($q) => $q->where('category_id', $category->id))
+                    ->update([
+                        'nis_relevant' => true,
+                        'nis_inventory_scope' => $category->nis_inventory_scope,
+                    ]);
             }
 
             // Redirect to the new category page

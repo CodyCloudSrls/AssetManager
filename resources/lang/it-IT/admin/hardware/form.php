@@ -70,6 +70,7 @@ return [
     'nis_inventory_section' => 'Inventario NIS2',
     'nis_inventory_help' => 'Collega il bene al perimetro NIS2 quando supporta servizi, reti, sistemi o processi rilevanti.',
     'nis_relevant' => 'Rilevante ai fini NIS2',
+    'nis_from_category' => 'Rilevanza e ambito NIS2 sono ereditati dalla categoria (:name) e non modificabili qui.',
     'nis_inventory_scope' => 'Ambito inventario NIS2',
     'nis_service_impact' => 'Impatto sul servizio',
     'nis_notes' => 'Note NIS2',

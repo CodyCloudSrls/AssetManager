@@ -70,6 +70,7 @@ return [
     'nis_inventory_section' => 'NIS2 Inventory',
     'nis_inventory_help' => 'Link the asset to the NIS2 perimeter when it supports relevant services, networks, systems, or processes.',
     'nis_relevant' => 'NIS2 Relevant',
+    'nis_from_category' => 'NIS2 relevance and scope are inherited from the category (:name) and not editable here.',
     'nis_inventory_scope' => 'NIS2 Inventory Scope',
     'nis_service_impact' => 'Service Impact',
     'nis_notes' => 'NIS2 Notes',

@@ -175,6 +175,80 @@
         </div>
     </fieldset>
 
+    {{-- NIS2 relevance/scope are governed by the asset's category: when the selected model's
+         category is flagged for the NIS2 inventory, "relevant" and "scope" are inherited and
+         locked (grey). The controller enforces the same rule server-side. --}}
+    @php($ccModelNis = \App\Models\AssetModel::whereHas('category', fn ($q) => $q->where('nis_inventory_required', true))
+        ->with('category:id,name,nis_inventory_scope')
+        ->get()
+        ->mapWithKeys(fn ($m) => [(string) $m->id => ['scope' => (string) $m->category->nis_inventory_scope, 'category' => (string) $m->category->name]]))
+    @push('js')
+    <script>
+    (function () {
+        var ccModelNis = @json($ccModelNis);
+        var lockedTpl = @json(trans('admin/hardware/form.nis_from_category'));
+
+        function modelSelect() { return document.querySelector('[name="model_id"]'); }
+        function relevantChk() { return document.querySelector('input[type="checkbox"][name="nis_relevant"]'); }
+        function scopeSelect() { return document.getElementById('nis_inventory_scope'); }
+
+        function setDisabled(el, on) {
+            el.disabled = on;
+            if (window.jQuery && window.jQuery(el).data('select2')) { window.jQuery(el).prop('disabled', on); }
+        }
+
+        function ensureNote(scope) {
+            var note = document.getElementById('cc-nis-lock-note');
+            if (!note) {
+                note = document.createElement('p');
+                note.id = 'cc-nis-lock-note';
+                note.className = 'help-block';
+                note.style.display = 'none';
+                (scope.parentNode || scope).appendChild(note);
+            }
+            return note;
+        }
+
+        function applyLock(setValues) {
+            var model = modelSelect(), chk = relevantChk(), scope = scopeSelect();
+            if (!model || !chk || !scope) return;
+            var gov = ccModelNis[String(model.value)];
+            var note = ensureNote(scope);
+            if (gov) {
+                if (setValues) {
+                    if (!chk.checked) { chk.checked = true; }
+                    if (String(scope.value) !== String(gov.scope)) {
+                        scope.value = String(gov.scope);
+                        if (window.jQuery) { window.jQuery(scope).trigger('change'); }
+                    }
+                }
+                setDisabled(chk, true);
+                setDisabled(scope, true);
+                if (scope.style.background !== 'rgb(238, 238, 238)') { scope.style.background = '#eee'; }
+                var msg = lockedTpl.replace(':name', gov.category || '');
+                if (note.textContent !== msg) { note.textContent = msg; }
+                if (note.style.display !== '') { note.style.display = ''; }
+            } else {
+                setDisabled(chk, false);
+                setDisabled(scope, false);
+                if (scope.style.background !== '') { scope.style.background = ''; }
+                if (note.style.display !== 'none') { note.style.display = 'none'; }
+            }
+        }
+
+        function init() {
+            applyLock(true);
+            var model = modelSelect();
+            if (model) {
+                model.addEventListener('change', function () { applyLock(true); });
+                if (window.jQuery) { window.jQuery(model).on('change', function () { applyLock(true); }); }
+            }
+        }
+        if (document.readyState !== 'loading') { init(); } else { document.addEventListener('DOMContentLoaded', init); }
+    })();
+    </script>
+    @endpush
+
 
 
     @include ('partials.forms.edit.image-upload', ['image_path' => app('assets_upload_path')])

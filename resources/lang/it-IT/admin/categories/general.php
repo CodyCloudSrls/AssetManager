@@ -42,6 +42,8 @@ return [
     'default_fieldset_none' => '— Nessuno —',
     'default_fieldset_help' => 'I modelli di questa categoria erediteranno questo set di campi personalizzati (es. "Asset Virtuali" per IP e domini). Impostato una volta qui invece che su ogni modello.',
     'apply_fieldset_to_models' => 'Applica ai modelli',
+    'apply_nis_to_assets' => 'Applica la rilevanza NIS2 ai beni esistenti',
+    'apply_nis_to_assets_help' => 'Imposta "rilevante ai fini NIS2" e l\'ambito su tutti i beni di questa categoria. Azione esplicita: non tocca note e impatto sul servizio dei singoli beni.',
     'use_default_eula' => 'Usa <a href="#" data-toggle="modal" data-target="#eulaModal">l\'EULA predefinita</a> invece.',
     'use_default_eula_disabled' => '<del>Usa l\'EULA predefinita.</del> Nessuna EULA predefinita in uso. Per favore aggiungine una nelle Impostazioni.',
     'use_default_eula_column' => 'Usa l\'EULA predefinita',
