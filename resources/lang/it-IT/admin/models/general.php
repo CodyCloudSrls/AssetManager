@@ -13,6 +13,7 @@ return [
     'view_deleted' => 'Visualizza Eliminati',
     'view_models' => 'Visualizza i modelli',
     'fieldset' => 'Campo',
+    'fieldset_from_category' => 'Ereditato dalla categoria (:name) e non modificabile qui. Si imposta sulla categoria.',
     'no_custom_field' => 'Nessun campo personalizzato',
     'add_default_values' => 'Aggiungi valori predefiniti',
     'importer' => [

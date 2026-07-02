@@ -64,5 +64,75 @@
 @include ('partials.forms.edit.requestable', ['requestable_text' => trans('admin/models/general.requestable')])
 @include ('partials.forms.edit.image-upload', ['image_path' => app('models_upload_path')])
 
+{{-- The model custom fieldset is governed by the category default fieldset: when the
+     selected category defines one, the picker is locked (grey, read-only) and inherited.
+     The controller enforces the same rule server-side. --}}
+@php($ccCategoryFieldsets = \App\Models\Category::where('category_type', 'asset')
+    ->whereNotNull('fieldset_id')
+    ->with('fieldset:id,name')
+    ->get()
+    ->mapWithKeys(fn ($c) => [(string) $c->id => ['id' => (int) $c->fieldset_id, 'name' => optional($c->fieldset)->name]]))
+@push('js')
+<script>
+(function () {
+    var ccCategoryFieldsets = @json($ccCategoryFieldsets);
+    var lockedTpl = @json(trans('admin/models/general.fieldset_from_category'));
+
+    function categorySelect() { return document.querySelector('[name="category_id"]'); }
+    function fieldsetSelect() { return document.getElementById('fieldset_id'); }
+
+    function ensureNote(fs) {
+        var note = document.getElementById('cc-fieldset-lock-note');
+        if (!note) {
+            note = document.createElement('p');
+            note.id = 'cc-fieldset-lock-note';
+            note.className = 'help-block';
+            note.style.display = 'none';
+            (fs.parentNode || fs).appendChild(note);
+        }
+        return note;
+    }
+
+    function applyLock(setValue) {
+        var cat = categorySelect();
+        var fs = fieldsetSelect();
+        if (!cat || !fs) return;
+        var lock = ccCategoryFieldsets[String(cat.value)];
+        var note = ensureNote(fs);
+        if (lock) {
+            if (setValue && String(fs.value) !== String(lock.id)) {
+                fs.value = String(lock.id);
+                if (window.jQuery) { window.jQuery(fs).trigger('change'); }
+            }
+            if (!fs.disabled) { fs.disabled = true; }
+            if (fs.style.background !== 'rgb(238, 238, 238)') { fs.style.background = '#eee'; }
+            var msg = lockedTpl.replace(':name', lock.name || '');
+            if (note.textContent !== msg) { note.textContent = msg; }
+            if (note.style.display !== '') { note.style.display = ''; }
+        } else {
+            if (fs.disabled) { fs.disabled = false; }
+            if (fs.style.background !== '') { fs.style.background = ''; }
+            if (note.style.display !== 'none') { note.style.display = 'none'; }
+        }
+    }
+
+    function init() {
+        applyLock(true);
+        var cat = categorySelect();
+        if (cat) {
+            cat.addEventListener('change', function () { applyLock(true); });
+            if (window.jQuery) { window.jQuery(cat).on('change', function () { applyLock(true); }); }
+        }
+        // Re-assert the lock (disabled/style only) after Livewire re-renders the picker.
+        var fs = fieldsetSelect();
+        if (fs && window.MutationObserver) {
+            new MutationObserver(function () { applyLock(false); }).observe(fs.parentNode || fs, { childList: true, attributes: true, subtree: true });
+        }
+    }
+
+    if (document.readyState !== 'loading') { init(); } else { document.addEventListener('DOMContentLoaded', init); }
+})();
+</script>
+@endpush
 
 @stop

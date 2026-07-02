@@ -13,6 +13,7 @@ return [
     'view_deleted' => 'View Deleted',
     'view_models' => 'View Models',
     'fieldset' => 'Fieldset',
+    'fieldset_from_category' => 'Inherited from the category (:name) and not editable here. Change it on the category.',
     'no_custom_field' => 'No custom fields',
     'add_default_values' => 'Add default values',
     'importer' => [

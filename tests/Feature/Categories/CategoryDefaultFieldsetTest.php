@@ -51,6 +51,55 @@ class CategoryDefaultFieldsetTest extends TestCase
         $this->assertSame($fieldset->id, (int) AssetModel::where('name', '.com')->firstOrFail()->fieldset_id);
     }
 
+    public function test_model_fieldset_is_forced_to_the_category_default_even_if_another_is_submitted(): void
+    {
+        $default = CustomFieldset::factory()->create();
+        $other = CustomFieldset::factory()->create();
+        $category = Category::factory()->create(['category_type' => 'asset', 'fieldset_id' => $default->id]);
+        $manufacturer = Manufacturer::factory()->create();
+        $this->actingAs(User::factory()->superuser()->create());
+
+        // The category governs the fieldset: a different submitted value is ignored.
+        $this->post(route('models.store'), [
+            'name' => '.eu', 'category_id' => $category->id, 'manufacturer_id' => $manufacturer->id,
+            'visibility_type' => 'global', 'fieldset_id' => $other->id,
+        ])->assertRedirect();
+
+        $this->assertSame($default->id, (int) AssetModel::where('name', '.eu')->firstOrFail()->fieldset_id);
+    }
+
+    public function test_model_updating_re_inherits_the_category_fieldset(): void
+    {
+        $default = CustomFieldset::factory()->create();
+        $other = CustomFieldset::factory()->create();
+        $category = Category::factory()->create(['category_type' => 'asset', 'fieldset_id' => $default->id]);
+        $manufacturer = Manufacturer::factory()->create();
+        $model = AssetModel::factory()->create(['category_id' => $category->id, 'fieldset_id' => $default->id]);
+        $this->actingAs(User::factory()->superuser()->create());
+
+        $this->put(route('models.update', $model), [
+            'name' => $model->name, 'category_id' => $category->id, 'manufacturer_id' => $manufacturer->id,
+            'visibility_type' => 'global', 'fieldset_id' => $other->id,
+        ])->assertRedirect();
+
+        $this->assertSame($default->id, (int) $model->fresh()->fieldset_id);
+    }
+
+    public function test_model_keeps_its_own_fieldset_when_category_has_none(): void
+    {
+        $chosen = CustomFieldset::factory()->create();
+        $category = Category::factory()->create(['category_type' => 'asset', 'fieldset_id' => null]);
+        $manufacturer = Manufacturer::factory()->create();
+        $this->actingAs(User::factory()->superuser()->create());
+
+        $this->post(route('models.store'), [
+            'name' => 'Server generico', 'category_id' => $category->id, 'manufacturer_id' => $manufacturer->id,
+            'visibility_type' => 'global', 'fieldset_id' => $chosen->id,
+        ])->assertRedirect();
+
+        $this->assertSame($chosen->id, (int) AssetModel::where('name', 'Server generico')->firstOrFail()->fieldset_id);
+    }
+
     public function test_apply_to_models_fills_only_models_without_a_fieldset(): void
     {
         $default = CustomFieldset::factory()->create();

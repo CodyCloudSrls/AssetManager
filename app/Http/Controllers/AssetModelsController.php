@@ -7,6 +7,7 @@ use App\Http\Requests\ImageUploadRequest;
 use App\Http\Requests\StoreAssetModelRequest;
 use App\Models\Actionlog;
 use App\Models\AssetModel;
+use App\Models\Category;
 use App\Models\CustomField;
 use App\Models\SnipeModel;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -62,6 +63,28 @@ class AssetModelsController extends Controller
     }
 
     /**
+     * The custom fieldset of an asset model is governed by its category: when the category
+     * defines a default fieldset, its models (and therefore their assets) inherit it and it
+     * cannot be overridden on the model. Only a category with no default fieldset lets a
+     * model choose its own. The model form disables the picker accordingly, and this makes
+     * the rule authoritative server-side too.
+     */
+    private function resolveModelFieldsetId($categoryId, $submittedFieldsetId): ?int
+    {
+        $categoryFieldsetId = $categoryId
+            ? optional(Category::find($categoryId))->fieldset_id
+            : null;
+
+        if ($categoryFieldsetId) {
+            return (int) $categoryFieldsetId;
+        }
+
+        return ($submittedFieldsetId !== null && $submittedFieldsetId !== '')
+            ? (int) $submittedFieldsetId
+            : null;
+    }
+
+    /**
      * Validate and process the new Asset Model data.
      *
      * @author [A. Gianotto] [<snipe@snipe.net>]
@@ -89,12 +112,7 @@ class AssetModelsController extends Controller
         $model->company_id = $request->input('company_id');
         $model->visibility_type = $request->input('visibility_type');
 
-        if ($request->input('fieldset_id') != '') {
-            $model->fieldset_id = $request->input('fieldset_id');
-        } elseif ($model->category_id) {
-            // Inherit the category's default fieldset when none is chosen for the model.
-            $model->fieldset_id = optional(\App\Models\Category::find($model->category_id))->fieldset_id;
-        }
+        $model->fieldset_id = $this->resolveModelFieldsetId($model->category_id, $request->input('fieldset_id'));
 
         if ($request->has('use_cloned_image')) {
             $cloned_model_img = AssetModel::select('image')->find($request->input('clone_image_from_id'));
@@ -167,7 +185,7 @@ class AssetModelsController extends Controller
         $model->notes = $request->input('notes');
         $model->requestable = $request->input('requestable', '0');
         $model->require_serial = $request->input('require_serial', 0);
-        $model->fieldset_id = $request->input('fieldset_id');
+        $model->fieldset_id = $this->resolveModelFieldsetId($model->category_id, $request->input('fieldset_id'));
         $model->company_id = $request->input('company_id');
         $model->visibility_type = $request->input('visibility_type');
 
