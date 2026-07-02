@@ -64,7 +64,67 @@
                     {{ trans('general.select_all_pages_done') }} <strong class="cc-select-all-done-count"></strong>
                 </span>
             </div>
-            <x-table.assets :route="route('api.assets.index', request()->only(['status_type', 'order_number', 'company_id', 'tenant_id', 'status_id', 'nis_relevant', 'nis_inventory_scope', 'nis_service_impact', 'category_id', 'fieldset_id']))"/>
+            {{-- Filtri avanzati: pannello esplicito e collassabile con select2 (autocomplete),
+                 filtra via query param (l'API supporta category_id/status_id/model_id/location_id). --}}
+            @php($ccAdvActive = request()->hasAny(['category_id', 'status_id', 'model_id', 'location_id', 'fieldset_id']))
+            <div class="hidden-print" style="margin-bottom:12px;">
+                <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#ccAdvancedFilters" aria-expanded="{{ $ccAdvActive ? 'true' : 'false' }}">
+                    <i class="fa-solid fa-sliders" aria-hidden="true"></i> {{ trans('admin/hardware/general.advanced_filters') }}
+                    @if ($ccAdvActive)<span class="label label-primary">{{ trans('admin/hardware/general.advanced_filters_active') }}</span>@endif
+                </button>
+                <div class="collapse{{ $ccAdvActive ? ' in' : '' }}" id="ccAdvancedFilters" style="margin-top:10px;">
+                    <div class="box box-default" style="margin-bottom:0;"><div class="box-body">
+                        <form method="GET" action="{{ route('hardware.index') }}" class="row">
+                            <div class="col-md-3 col-sm-6 form-group">
+                                <label>{{ trans('general.category') }}</label>
+                                <select name="category_id" class="form-control cc-adv-select" data-placeholder="{{ trans('admin/hardware/general.advanced_filters_all') }}">
+                                    <option value="">{{ trans('admin/hardware/general.advanced_filters_all') }}</option>
+                                    @foreach (\App\Models\Category::where('category_type', 'asset')->orderBy('name')->pluck('name', 'id') as $id => $name)
+                                        <option value="{{ $id }}" {{ (int) request('category_id') === (int) $id ? 'selected' : '' }}>{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group">
+                                <label>{{ trans('general.status') }}</label>
+                                <select name="status_id" class="form-control cc-adv-select" data-placeholder="{{ trans('admin/hardware/general.advanced_filters_all') }}">
+                                    <option value="">{{ trans('admin/hardware/general.advanced_filters_all') }}</option>
+                                    @foreach (\App\Models\Statuslabel::orderBy('name')->pluck('name', 'id') as $id => $name)
+                                        <option value="{{ $id }}" {{ (int) request('status_id') === (int) $id ? 'selected' : '' }}>{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group">
+                                <label>{{ trans('general.asset_model') }}</label>
+                                <select name="model_id" class="form-control cc-adv-select" data-placeholder="{{ trans('admin/hardware/general.advanced_filters_all') }}">
+                                    <option value="">{{ trans('admin/hardware/general.advanced_filters_all') }}</option>
+                                    @foreach (\App\Models\AssetModel::orderBy('name')->pluck('name', 'id') as $id => $name)
+                                        <option value="{{ $id }}" {{ (int) request('model_id') === (int) $id ? 'selected' : '' }}>{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3 col-sm-6 form-group">
+                                <label>{{ trans('general.location') }}</label>
+                                <select name="location_id" class="form-control cc-adv-select" data-placeholder="{{ trans('admin/hardware/general.advanced_filters_all') }}">
+                                    <option value="">{{ trans('admin/hardware/general.advanced_filters_all') }}</option>
+                                    @foreach (\App\Models\Location::orderBy('name')->pluck('name', 'id') as $id => $name)
+                                        <option value="{{ $id }}" {{ (int) request('location_id') === (int) $id ? 'selected' : '' }}>{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary btn-sm">{{ trans('admin/hardware/general.advanced_filters_apply') }}</button>
+                                <a href="{{ route('hardware.index') }}" class="btn btn-link btn-sm">{{ trans('admin/hardware/general.advanced_filters_reset') }}</a>
+                            </div>
+                        </form>
+                    </div></div>
+                </div>
+            </div>
+            <x-table.assets :route="route('api.assets.index', request()->only(['status_type', 'order_number', 'company_id', 'tenant_id', 'status_id', 'nis_relevant', 'nis_inventory_scope', 'nis_service_impact', 'category_id', 'fieldset_id', 'model_id', 'location_id']))"/>
+            @push('js')
+                <script>
+                    $(function () { $('.cc-adv-select').select2({ width: '100%', allowClear: true }); });
+                </script>
+            @endpush
         </x-box>
     </x-container>
 @stop
