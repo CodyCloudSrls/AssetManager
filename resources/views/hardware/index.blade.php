@@ -132,7 +132,8 @@
                             </div>
                             <div class="col-md-12">
                                 <button type="submit" class="btn btn-primary btn-sm">{{ trans('admin/hardware/general.advanced_filters_apply') }}</button>
-                                <a href="{{ route('hardware.index') }}" class="btn btn-link btn-sm">{{ trans('admin/hardware/general.advanced_filters_reset') }}</a>
+                                {{-- Reset returns to the cruscotto (the drill-down entry point) rather than the flat full list. --}}
+                                <a href="{{ route('hardware.overview') }}" class="btn btn-link btn-sm">{{ trans('admin/hardware/general.advanced_filters_reset') }}</a>
                             </div>
                         </form>
                     </div></div>
