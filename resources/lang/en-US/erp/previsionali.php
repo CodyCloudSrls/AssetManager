@@ -14,6 +14,6 @@ return [
     'cogs' => 'COGS',
     'opex' => 'OPEX',
     'personale' => 'Labour',
-    'ebit' => 'Expected EBIT',
+    'ebit' => 'Expected EBITDA',
     'empty' => 'No forecast entered.',
 ];

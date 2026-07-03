@@ -14,6 +14,6 @@ return [
     'cogs' => 'COGS',
     'opex' => 'OPEX',
     'personale' => 'Personale',
-    'ebit' => 'EBIT atteso',
+    'ebit' => 'MOL atteso',
     'empty' => 'Nessun previsionale inserito.',
 ];

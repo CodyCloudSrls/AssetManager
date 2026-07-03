@@ -4,7 +4,7 @@ return [
     'title' => 'Controllo di gestione',
     'no_data' => 'Nessun dato Fatture in Cloud sincronizzato. Lancia "php artisan fic:sync" sul server.',
     'ce_title' => 'Conto economico riclassificato (multi-anno)',
-    'ce_help' => 'Da categorie reali Fatture in Cloud. Riclassificazione COGS / OPEX / Personale (Spese materiali = 70% COGS / 30% OPEX). EBIT = Ricavi − COGS − OPEX − Personale.',
+    'ce_help' => 'Da categorie reali Fatture in Cloud. Riclassificazione COGS / OPEX / Personale (Spese materiali = 70% COGS / 30% OPEX). MOL (EBITDA) = Ricavi − COGS − OPEX − Personale (esclude gli ammortamenti).',
     'voce' => 'Voce',
     'ricavi' => 'Ricavi',
     'cogs' => 'COGS (rivendita)',

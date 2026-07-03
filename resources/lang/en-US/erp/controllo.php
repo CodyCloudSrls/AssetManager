@@ -4,7 +4,7 @@ return [
     'title' => 'Management control',
     'no_data' => 'No Fatture in Cloud data synced yet. Run "php artisan fic:sync" on the server.',
     'ce_title' => 'Reclassified income statement (multi-year)',
-    'ce_help' => 'From real Fatture in Cloud categories. COGS / OPEX / Labour reclassification (materials = 70% COGS / 30% OPEX). EBIT = Revenue − COGS − OPEX − Labour.',
+    'ce_help' => 'From real Fatture in Cloud categories. COGS / OPEX / Labour reclassification (materials = 70% COGS / 30% OPEX). EBITDA (MOL) = Revenue − COGS − OPEX − Labour (excludes depreciation).',
     'voce' => 'Item',
     'ricavi' => 'Revenue',
     'cogs' => 'COGS (resale)',

@@ -6,7 +6,7 @@ return [
     'intro' => 'Stato reale dell\'azienda (riconciliato): bilanci depositati + Fatture in Cloud + notule. Precedenza: bilancio depositato → FiC reale → stima.',
     'saved' => 'Dato salvato.',
     'kpi_ricavi' => 'Ricavi anno',
-    'kpi_ebit' => 'EBIT anno',
+    'kpi_ebit' => 'MOL anno',
     'kpi_cassa' => 'Cassa netta YTD',
     'kpi_iva' => 'Saldo IVA da versare',
     'kpi_personale' => 'Costo personale',

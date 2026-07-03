@@ -6,7 +6,7 @@ return [
     'intro' => 'Real company status (reconciled): deposited accounts + Fatture in Cloud + notule. Precedence: deposited accounts → FiC actuals → estimate.',
     'saved' => 'Saved.',
     'kpi_ricavi' => 'Revenue YTD',
-    'kpi_ebit' => 'EBIT YTD',
+    'kpi_ebit' => 'EBITDA YTD',
     'kpi_cassa' => 'Net cash YTD',
     'kpi_iva' => 'VAT to pay',
     'kpi_personale' => 'Labour cost',
