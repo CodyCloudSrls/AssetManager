@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UploadFileRequest;
 use App\Models\Company;
 use App\Models\ContractCostLine;
 use App\Models\ContractSubscription;
@@ -11,11 +12,13 @@ use App\Models\CustomerContractEvent;
 use App\Models\Document;
 use App\Models\Supplier;
 use App\Models\TenantService;
+use App\Support\Files\FileIntegrity;
 use App\Support\Tenants\TenantRecordGuard;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -67,6 +70,7 @@ class CustomerContractsController extends Controller
 
             $this->syncSubscriptionRows($contract, $request->input('subscriptions', []));
             $this->syncTenantServices($contract, $request);
+            $this->storeUploadedFiles($request, $contract);
             $contractForAudit = $this->reloadContractForAudit($contract);
 
             CustomerContractEvent::log(
@@ -127,6 +131,7 @@ class CustomerContractsController extends Controller
             }
             $this->syncSubscriptionRows($contract, $request->input('subscriptions', []));
             $this->syncTenantServices($contract, $request);
+            $this->storeUploadedFiles($request, $contract);
 
             $afterContract = $this->reloadContractForAudit($contract);
             [$oldValues, $newValues] = CustomerContractEvent::changes(
@@ -243,6 +248,11 @@ class CustomerContractsController extends Controller
             'tenant_service_ids_present' => 'nullable|boolean',
             'tenant_service_ids' => 'nullable|array',
             'tenant_service_ids.*' => 'integer',
+            // Optional attachments uploaded directly from the contract form (validated by
+            // client extension — signed .p7m sniff as octet-stream).
+            'file' => 'nullable|array',
+            'file.*' => 'nullable|file|extensions:'.config('filesystems.allowed_upload_extensions_for_validator').'|max:'.\App\Helpers\Helper::file_upload_max_size(),
+            'file_notes' => 'nullable|string|max:65535',
         ]);
 
         $validator->after(function ($validator) use ($request, $contract) {
@@ -344,6 +354,34 @@ class CustomerContractsController extends Controller
             ->find($contract->id);
 
         return $reloadedContract ?: $contract->load('subscriptions.costLines', 'tenantServices');
+    }
+
+    /**
+     * Store attachments uploaded directly from the contract form (create or edit), using the
+     * same generic mechanism as the Files tab (private_uploads/contracts/ + Actionlog +
+     * integrity metadata) so a file uploaded here shows up identically on the contract view.
+     */
+    private function storeUploadedFiles(Request $request, CustomerContract $contract): void
+    {
+        if (! $request->hasFile('file')) {
+            return;
+        }
+
+        $path = self::$map_storage_path['contracts'];
+        if (! Storage::exists($path)) {
+            Storage::makeDirectory($path, 775);
+        }
+
+        $uploader = new UploadFileRequest;
+
+        foreach ($request->file('file') as $file) {
+            if (! $file) {
+                continue;
+            }
+
+            $fileName = $uploader->handleFile($path, self::$map_file_prefix['contracts'].'-'.$contract->id, $file);
+            $contract->logUpload($fileName, $request->input('file_notes'), FileIntegrity::metadataForStoredFile($path.$fileName, $file));
+        }
     }
 
     private function fillContract(CustomerContract $contract, Request $request): void

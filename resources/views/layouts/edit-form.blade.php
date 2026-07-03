@@ -69,6 +69,11 @@
             </div> <!-- ./box-body -->
         </div> <!-- box -->
         </form>
+
+        {{-- Sibling content that must live OUTSIDE the main form (e.g. per-file attachment
+             delete forms, which cannot be nested inside another form). Renders nothing if
+             the child view defines no @section('belowForm'). --}}
+        @yield('belowForm')
     </div> <!-- col-md-8 -->
 
 </div><!-- ./row -->

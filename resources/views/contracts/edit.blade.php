@@ -7,6 +7,11 @@
 ])
 
 @section('inputFields')
+<div class="text-right" style="margin-bottom:10px;">
+    <a href="#contract-attachments" class="btn btn-default btn-sm" title="{{ trans('general.files') }}" aria-label="{{ trans('general.files') }}">
+        <x-icon type="paperclip"/>
+    </a>
+</div>
 @if ($errors->any())
     <div class="alert alert-danger">
         <h4 style="margin-top:0;"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> {{ trans('general.error') }}</h4>
@@ -178,6 +183,40 @@
 
 @include('partials.forms.edit.notes')
 
+{{-- Allegati: caricamento in creazione/modifica, rimozione in modifica (meccanismo file
+     generico condiviso: private_uploads/contracts/ + Actionlog + integrità). --}}
+<div id="contract-attachments" class="form-group {{ ($errors->has('file') || $errors->has('file.0')) ? ' has-error' : '' }}">
+    <label for="file" class="col-md-3 control-label">{{ trans('general.files') }}</label>
+    <div class="col-md-7">
+        <input type="file" name="file[]" id="file" multiple class="form-control" accept="{{ config('filesystems.allowed_upload_mimetypes') }},{{ str_replace(' ', '', config('filesystems.allowed_upload_extensions')) }}">
+        <p class="help-block">{{ trans('general.upload_filetypes_help', ['allowed_filetypes' => config('filesystems.allowed_upload_extensions'), 'size' => \App\Helpers\Helper::file_upload_max_size_readable()]) }}</p>
+        {!! $errors->first('file.0', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+        <input type="text" name="file_notes" class="form-control" placeholder="{{ trans('general.notes') }}" value="{{ old('file_notes') }}" style="margin-top:6px;">
+
+        @if ($contract->exists && ($currentUploads = $contract->uploads()->orderByDesc('created_at')->get())->isNotEmpty())
+            <table class="table table-condensed" style="margin-top:10px;">
+                <tbody>
+                    @foreach ($currentUploads as $upload)
+                        <tr>
+                            <td>
+                                <a href="{{ route('ui.files.show', ['object_type' => 'contracts', 'id' => $contract->id, 'file_id' => $upload->id]) }}"><i class="fa-regular fa-file fa-fw" aria-hidden="true"></i> {{ $upload->filename }}</a>
+                                @if ($upload->note)<span class="text-muted"> — {{ $upload->note }}</span>@endif
+                            </td>
+                            <td class="text-right" style="width:1%;">
+                                @can('files', $contract)
+                                    <button type="submit" form="delete-contract-file-{{ $upload->id }}" class="btn btn-xs btn-danger" onclick="return confirm('{{ trans('general.sure_to_delete') }}');" aria-label="{{ trans('general.delete') }}">
+                                        <x-icon type="delete" class="fa-fw" />
+                                    </button>
+                                @endcan
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+    </div>
+</div>
+
 <template id="subscription-row-template">
     @include('contracts.partials.subscription-row', [
         'rowKey' => '__KEY__',
@@ -204,6 +243,20 @@
         'suppliers' => $suppliers,
     ])
 </template>
+@stop
+
+{{-- Standalone delete forms for the attachments (HTML forms can't nest inside the contract form). --}}
+@section('belowForm')
+    @if ($contract->exists)
+        @can('files', $contract)
+            @foreach ($contract->uploads()->get() as $upload)
+                <form id="delete-contract-file-{{ $upload->id }}" method="POST" action="{{ route('ui.files.destroy', ['object_type' => 'contracts', 'id' => $contract->id, 'file_id' => $upload->id]) }}" class="hidden">
+                    @csrf
+                    @method('DELETE')
+                </form>
+            @endforeach
+        @endcan
+    @endif
 @stop
 
 @section('moar_scripts')
