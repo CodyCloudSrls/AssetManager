@@ -32,7 +32,10 @@ class UploadFileRequest extends Request
         $max_file_size = Helper::file_upload_max_size();
 
         return [
-            'file.*' => 'required|mimes:'.config('filesystems.allowed_upload_extensions_for_validator').'|max:'.$max_file_size,
+            // Validate by client extension, not sniffed MIME: signed files (.p7m/.p7c) sniff
+            // as application/octet-stream, so `mimes:` rejected them despite being allowed.
+            // `extensions:` still runs shouldBlockPhpUpload(), so PHP-disguise is blocked.
+            'file.*' => 'required|file|extensions:'.config('filesystems.allowed_upload_extensions_for_validator').'|max:'.$max_file_size,
         ];
     }
 

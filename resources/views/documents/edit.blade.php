@@ -6,6 +6,9 @@
 @stop
 
 @section('header_right')
+    <a href="#document-attachments" class="btn btn-default" title="{{ trans('admin/documents/form.attachments') }}" aria-label="{{ trans('admin/documents/form.attachments') }}">
+        <x-icon type="paperclip"/>
+    </a>
     <x-button.info-panel-toggle/>
 @endsection
 
@@ -363,7 +366,7 @@
                                         </div>
 
                                         {{-- Allegati opzionali: caricamento in creazione/modifica, rimozione in modifica. --}}
-                                        <div class="form-group {{ ($errors->has('file') || $errors->has('file.0')) ? ' has-error' : '' }}">
+                                        <div id="document-attachments" class="form-group {{ ($errors->has('file') || $errors->has('file.0')) ? ' has-error' : '' }}">
                                             <label for="file" class="col-md-3 control-label">{{ trans('admin/documents/form.attachments') }}</label>
                                             <div class="col-md-7">
                                                 <input type="file" name="file[]" id="file" multiple class="form-control" accept="{{ config('filesystems.allowed_upload_mimetypes') }},{{ str_replace(' ', '', config('filesystems.allowed_upload_extensions')) }}">

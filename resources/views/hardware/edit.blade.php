@@ -6,7 +6,9 @@
     'helpText' => trans('help.assets'),
     'helpPosition' => 'right',
     'formAction' => ($item->id) ? route('hardware.update', $item) : route('hardware.store'),
-    'index_route' => 'hardware.index',
+    // Preserve the list filters forwarded by the "New" button so Cancel returns to the
+    // same filtered list (the component uses this literal URL because it contains '/').
+    'index_route' => route('hardware.index', request()->only(['category_id', 'status_id', 'model_id', 'location_id', 'fieldset_id', 'cf_column', 'cf_value'])),
     'options' => [
                 'back' => trans('admin/hardware/form.redirect_to_type',['type' => trans('general.previous_page')]),
                 'index' => trans('admin/hardware/form.redirect_to_all', ['type' => 'assets']),
@@ -398,6 +400,10 @@
 <script nonce="{{ csrf_token() }}">
 
     $(function () {
+        // Make the "Cliente" select clearable (X) so a customer can be removed from the asset
+        // (plain .select2 has no allowClear). Re-inits over snipeit.js's default init.
+        $('#customer_id').select2({ allowClear: true, placeholder: '{{ trans('general.none') }}', width: '100%' });
+
         // The select2 AJAX reads the company via jQuery's .data('company-id') cache, so
         // updating only the attribute isn't enough — set BOTH the attribute and .data().
         function scopeServicesToCompany(companyId) {

@@ -12,7 +12,9 @@
         /* Whole card is one clickable link; the box keeps a fixed size so the barcode-icon
            zoom on hover stays clipped inside and never shifts the neighbouring cards. */
         .cc-overview-card { display:block; overflow:hidden; }
-        .cc-overview-card:hover, .cc-overview-card:focus { text-decoration:none; }
+        /* Keep the barcode-icon zoom, but cancel the theme's translateY(-1px) lift on hover
+           so the card never shifts / misaligns the row below. */
+        .cc-overview-card:hover, .cc-overview-card:focus { text-decoration:none; transform:none !important; }
         .cc-overview-card .small-box-footer { pointer-events:none; }
     </style>
 

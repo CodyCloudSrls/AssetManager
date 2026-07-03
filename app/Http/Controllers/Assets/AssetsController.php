@@ -125,13 +125,16 @@ class AssetsController extends Controller
      * contract when the form leaves it empty; the customer defaults to that contract's
      * customer. Returns [customer_id, customer_contract_id].
      */
-    private function resolveAssetCustomerLinks(?AssetModel $model, $submittedCustomerId, $submittedContractId): array
+    private function resolveAssetCustomerLinks(?AssetModel $model, $submittedCustomerId, $submittedContractId, bool $deriveCustomerFromContract = true): array
     {
         $submittedCustomerId = ($submittedCustomerId !== null && $submittedCustomerId !== '') ? (int) $submittedCustomerId : null;
         $submittedContractId = ($submittedContractId !== null && $submittedContractId !== '') ? (int) $submittedContractId : null;
 
         $contractId = $submittedContractId ?: $model?->customer_contract_id;
-        $customerId = $submittedCustomerId ?: CustomerContract::find($contractId)?->customer_id;
+        // New assets auto-inherit the contract's customer when left blank. On update we honour
+        // an explicitly-blank customer as "no customer" (so the field's X actually removes it).
+        $customerId = $submittedCustomerId
+            ?: ($deriveCustomerFromContract ? CustomerContract::find($contractId)?->customer_id : null);
 
         return [$customerId ?: null, $contractId ?: null];
     }
@@ -474,10 +477,10 @@ class AssetsController extends Controller
         );
         $asset->nis_service_impact = $request->input('nis_service_impact', 'unknown');
         $asset->nis_notes = $request->input('nis_notes');
-        // On update, keep the form's explicit values (no model re-inheritance); the customer
-        // still derives from the chosen contract when left blank.
+        // On update, keep the form's explicit values (no model re-inheritance) and treat a
+        // blank customer as an explicit removal (deriveCustomerFromContract = false).
         [$asset->customer_id, $asset->customer_contract_id] = $this->resolveAssetCustomerLinks(
-            null, $request->input('customer_id'), $request->input('customer_contract_id')
+            null, $request->input('customer_id'), $request->input('customer_contract_id'), false
         );
         $asset->rtd_location_id = $request->input('rtd_location_id') ?: null;
         $asset->byod = $request->input('byod', 0);

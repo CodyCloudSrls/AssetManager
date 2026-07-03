@@ -64,7 +64,9 @@ class StoreDocumentRequest extends FormRequest
             'tenant_service_ids.*' => 'integer',
             // Optional attachments uploaded directly from the document form.
             'file' => 'nullable|array',
-            'file.*' => 'nullable|file|mimes:'.config('filesystems.allowed_upload_extensions_for_validator').'|max:'.\App\Helpers\Helper::file_upload_max_size(),
+            // Validate by client extension (see UploadFileRequest): signed .p7m/.p7c sniff as
+            // octet-stream, so `mimes:` wrongly rejected them from the in-form upload too.
+            'file.*' => 'nullable|file|extensions:'.config('filesystems.allowed_upload_extensions_for_validator').'|max:'.\App\Helpers\Helper::file_upload_max_size(),
             'file_notes' => 'nullable|string|max:65535',
         ];
     }

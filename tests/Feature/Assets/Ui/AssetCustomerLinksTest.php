@@ -80,6 +80,37 @@ class AssetCustomerLinksTest extends TestCase
         $this->assertSame($assetCustomer->id, (int) $asset->customer_id);
     }
 
+    public function test_clearing_the_customer_on_update_removes_it_and_does_not_re_derive(): void
+    {
+        $this->actingAs(User::factory()->superuser()->create());
+        $company = Company::factory()->create();
+        $customer = $this->customer($company);
+        $contract = $this->contract($company, $customer);
+        $model = AssetModel::factory()->create(['customer_contract_id' => $contract->id]);
+
+        // New asset derives the customer from the model's default contract.
+        $this->post(route('hardware.store'), [
+            'asset_tags' => ['1' => 'DOM-CLR'],
+            'model_id' => $model->id,
+            'status_id' => Statuslabel::factory()->create()->id,
+        ])->assertSessionHasNoErrors();
+        $asset = Asset::where('asset_tag', 'DOM-CLR')->sole();
+        $this->assertSame($customer->id, (int) $asset->customer_id);
+
+        // Update with an explicitly blank customer (contract still set) → the customer is
+        // removed (NULL), NOT re-derived from the contract; the contract is untouched.
+        $this->put(route('hardware.update', $asset), [
+            'asset_tags' => 'DOM-CLR',
+            'model_id' => $model->id,
+            'status_id' => $asset->status_id,
+            'customer_id' => '',
+            'customer_contract_id' => $contract->id,
+        ])->assertSessionHasNoErrors();
+
+        $this->assertNull($asset->fresh()->customer_id);
+        $this->assertSame($contract->id, (int) $asset->fresh()->customer_contract_id);
+    }
+
     public function test_model_persists_its_default_contract(): void
     {
         $this->actingAs(User::factory()->superuser()->create());

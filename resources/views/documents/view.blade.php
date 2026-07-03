@@ -33,25 +33,40 @@
         $renewalDueCount = $document->documentAssignments->filter(fn ($assignment) => $assignment->is_expiring)->count();
         $expiredAssignmentsCount = $document->documentAssignments->filter(fn ($assignment) => $assignment->is_expired)->count();
 
-        $datePercent = function ($end) {
+        // Elapsed share of the real span start->end (0% at start, 100% at/after end).
+        // Previously this used a fixed 3-year window counted backwards from today with no
+        // start baseline, so a doc 4 days into a 2-year span read ~34% instead of ~0.5%.
+        $datePercent = function ($start, $end) {
             if (! $end) {
                 return 0;
             }
 
             $endDate = $end instanceof \Carbon\Carbon ? $end : \Carbon\Carbon::parse($end);
-            $daysUntil = \Carbon\Carbon::today()->diffInDays($endDate, false);
+            $today = \Carbon\Carbon::today();
 
-            if ($daysUntil <= 0) {
-                return 100;
+            if ($today->gte($endDate)) {
+                return 100; // at or past the end date
             }
 
-            $reviewHorizonDays = 365 * 3;
-            $daysInsideHorizon = max(0, $reviewHorizonDays - min($daysUntil, $reviewHorizonDays));
+            $startDate = $start
+                ? ($start instanceof \Carbon\Carbon ? $start : \Carbon\Carbon::parse($start))
+                : $today;
 
-            return min(100, max(0, ($daysInsideHorizon / $reviewHorizonDays) * 100));
+            if ($startDate->gte($endDate)) {
+                return 100; // missing/invalid span
+            }
+
+            $total = $startDate->diffInDays($endDate);
+            $elapsed = $startDate->diffInDays($today, false);
+
+            if ($elapsed <= 0) {
+                return 0; // span not started yet
+            }
+
+            return min(100, max(0, ($elapsed / $total) * 100));
         };
 
-        $reviewPercent = $datePercent($document->next_review_at);
+        $reviewPercent = $datePercent($document->effective_at, $document->next_review_at);
         $reviewDate = $document->next_review_at ? \Carbon\Carbon::parse($document->next_review_at) : null;
         $isReviewOverdue = $reviewDate?->isPast() ?? false;
         $isReviewDueSoon = ! $isReviewOverdue && $reviewDate?->lte(\Carbon\Carbon::today()->addDays(30));
@@ -60,13 +75,19 @@
             ->filter(fn ($assignment) => ! is_null($assignment->renewal_due_at))
             ->sortBy('renewal_due_at')
             ->first();
-        $renewalPercent = $datePercent($nextRenewalAssignment?->renewal_due_at);
+        $renewalPercent = $datePercent(
+            $nextRenewalAssignment?->effective_at ?? $nextRenewalAssignment?->issued_at,
+            $nextRenewalAssignment?->renewal_due_at
+        );
 
         $nextExpiryAssignment = $document->documentAssignments
             ->filter(fn ($assignment) => ! is_null($assignment->expires_at))
             ->sortBy('expires_at')
             ->first();
-        $expiryPercent = $datePercent($nextExpiryAssignment?->expires_at);
+        $expiryPercent = $datePercent(
+            $nextExpiryAssignment?->effective_at ?? $nextExpiryAssignment?->issued_at,
+            $nextExpiryAssignment?->expires_at
+        );
     @endphp
     <x-container columns="2">
         <x-page-column class="col-md-9 main-panel">

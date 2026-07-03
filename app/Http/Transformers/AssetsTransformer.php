@@ -106,6 +106,7 @@ class AssetsTransformer
                 'name' => e($asset->defaultLoc->name),
                 'tag_color' => ($asset->defaultLoc->tag_color) ? e($asset->defaultLoc->tag_color) : null,
             ] : null,
+            'customer' => ($asset->customer) ? e($asset->customer->name) : null,
             'image' => ($asset->getImageUrl()) ? $asset->getImageUrl() : null,
             'qr' => ($setting->qr_code == '1') ? Storage::disk('public')->url('barcodes/qr-'.str_slug($asset->asset_tag).'-'.str_slug($asset->id).'.png') : null,
             'alt_barcode' => ($setting->alt_barcode_enabled == '1') ? Storage::disk('public')->url('barcodes/'.str_slug($setting->alt_barcode).'-'.str_slug($asset->asset_tag).'.png') : null,

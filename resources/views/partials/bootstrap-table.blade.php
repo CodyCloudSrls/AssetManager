@@ -471,7 +471,9 @@
             text: '{{ trans('general.create') }}',
             icon: 'fa fa-plus',
             event () {
-                window.location.href = '{{ route('hardware.create') }}';
+                // Carry the current list filters (category/fieldset/custom-field/…) into the
+                // create form so cancelling returns to the same filtered list.
+                window.location.href = '{{ route('hardware.create') }}' + window.location.search;
             },
             attributes: {
                 title: '{{ trans('general.create') }}',

@@ -114,6 +114,15 @@
                                     @endforeach
                                 </select>
                             </div>
+                            <div class="col-md-3 col-sm-6 form-group">
+                                <label>{{ trans('admin/models/general.fieldset') }}</label>
+                                <select name="fieldset_id" class="form-control cc-adv-select" data-placeholder="{{ trans('admin/hardware/general.advanced_filters_all') }}">
+                                    <option value="">{{ trans('admin/hardware/general.advanced_filters_all') }}</option>
+                                    @foreach (\App\Models\CustomFieldset::orderBy('name')->pluck('name', 'id') as $id => $name)
+                                        <option value="{{ $id }}" {{ (int) request('fieldset_id') === (int) $id ? 'selected' : '' }}>{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <div class="col-md-6 col-sm-6 form-group">
                                 <label>{{ trans('admin/hardware/general.advanced_filters_field') }}</label>
                                 <div class="row">

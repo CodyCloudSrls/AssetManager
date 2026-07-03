@@ -135,6 +135,12 @@ class AssetPresenter extends Presenter
                 'visible' => false,
                 'formatter' => 'deployedLocationFormatter',
             ], [
+                'field' => 'customer',
+                'searchable' => false,
+                'sortable' => false,
+                'title' => trans('admin/hardware/form.customer'),
+                'visible' => false,
+            ], [
                 'field' => 'manufacturer',
                 'searchable' => true,
                 'sortable' => true,

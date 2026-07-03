@@ -121,7 +121,7 @@
                             </div>
                         </div>
 
-                        @foreach (['classification', 'retention_period', 'scope'] as $textField)
+                        @foreach (['version', 'classification', 'retention_period', 'scope'] as $textField)
                             <div class="form-group {{ $errors->has($textField) ? ' has-error' : '' }}">
                                 <label for="{{ $textField }}" class="col-md-3 control-label">{{ trans('admin/documents/form.'.$textField) }}</label>
                                 <div class="col-md-5">
@@ -191,6 +191,7 @@
                 owner_id: 'apply_owner_id',
                 document_type_id: 'apply_document_type_id',
                 document_area: 'apply_document_area',
+                version: 'apply_version',
                 classification: 'apply_classification',
                 retention_period: 'apply_retention_period',
                 scope: 'apply_scope',
