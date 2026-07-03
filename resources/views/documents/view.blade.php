@@ -6,6 +6,9 @@
 @stop
 
 @section('header_right')
+    <a href="{{ route('documents.index') }}" class="btn btn-default">
+        <x-icon type="angle-left" class="fa-fw" /> {{ trans('general.back_to_list') }}
+    </a>
     <x-button.info-panel-toggle/>
 @endsection
 

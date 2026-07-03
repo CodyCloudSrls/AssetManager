@@ -168,6 +168,16 @@
             </div>
           </div> <!--/form-group-->
 
+          {{-- Explicitly clear the location: an empty select alone means "leave unchanged". --}}
+          <div class="form-group">
+            <div class="col-md-9 col-md-offset-3">
+              <label>
+                <input type="checkbox" name="null_rtd_location_id" value="1" aria-label="null_rtd_location_id">
+                {{ trans('admin/hardware/form.bulk_clear_location') }}
+              </label>
+            </div>
+          </div>
+
 
 
           <!-- Purchase Cost -->

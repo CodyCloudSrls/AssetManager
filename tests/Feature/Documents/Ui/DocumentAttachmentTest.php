@@ -76,6 +76,27 @@ class DocumentAttachmentTest extends TestCase
         $this->assertSame(1, $document->fresh()->uploads()->count());
     }
 
+    public function test_bulk_edit_attaches_file_to_all_selected_documents(): void
+    {
+        Storage::fake('local');
+        $this->actingAs(User::factory()->superuser()->create());
+
+        $this->post(route('documents.store'), ['name' => 'Doc A', 'status' => 'draft'])->assertRedirect();
+        $this->post(route('documents.store'), ['name' => 'Doc B', 'status' => 'draft'])->assertRedirect();
+        $a = Document::where('name', 'Doc A')->firstOrFail();
+        $b = Document::where('name', 'Doc B')->firstOrFail();
+
+        // Files-only bulk edit → attached to every selected document.
+        $this->post(route('documents.bulk.update'), [
+            'ids' => [$a->id, $b->id],
+            'file' => [UploadedFile::fake()->create('policy.pdf', 100, 'application/pdf')],
+            'file_notes' => 'bulk',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame(1, $a->fresh()->uploads()->count());
+        $this->assertSame(1, $b->fresh()->uploads()->count());
+    }
+
     public function test_disallowed_filetype_is_rejected_and_document_not_created(): void
     {
         Storage::fake('local');

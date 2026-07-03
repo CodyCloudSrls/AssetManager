@@ -268,6 +268,7 @@ class BulkAssetsController extends Controller
             || ($request->filled('order_number'))
             || ($request->filled('warranty_months'))
             || ($request->filled('rtd_location_id'))
+            || ($request->filled('null_rtd_location_id'))
             || ($request->filled('requestable'))
             || ($request->filled('company_id'))
             || ($request->filled('status_id'))
@@ -440,19 +441,24 @@ class BulkAssetsController extends Controller
                  *
                  * Note: this is kinda dumb and we should just use human-readable values IMHO. - snipe
                  */
-                if ($request->filled('rtd_location_id')) {
+                // "null_rtd_location_id" checkbox = explicitly CLEAR the location (an empty
+                // select alone means "leave unchanged" in bulk, so clearing needs its own flag).
+                $clearLocation = $request->filled('null_rtd_location_id');
+                if ($request->filled('rtd_location_id') || $clearLocation) {
+
+                    $newLocation = $clearLocation ? null : $request->input('rtd_location_id');
 
                     if (($request->filled('update_real_loc')) && (($request->input('update_real_loc')) == '0')) {
-                        $this->update_array['rtd_location_id'] = $request->input('rtd_location_id');
+                        $this->update_array['rtd_location_id'] = $newLocation;
                     }
 
                     if (($request->filled('update_real_loc')) && (($request->input('update_real_loc')) == '1')) {
-                        $this->update_array['location_id'] = $request->input('rtd_location_id');
-                        $this->update_array['rtd_location_id'] = $request->input('rtd_location_id');
+                        $this->update_array['location_id'] = $newLocation;
+                        $this->update_array['rtd_location_id'] = $newLocation;
                     }
 
                     if (($request->filled('update_real_loc')) && (($request->input('update_real_loc')) == '2')) {
-                        $this->update_array['location_id'] = $request->input('rtd_location_id');
+                        $this->update_array['location_id'] = $newLocation;
                     }
 
                 }

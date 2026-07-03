@@ -1571,27 +1571,11 @@
         }
     });
 
-    // If sort order changes, update the sort-order for bulk-actions (for label-generation)
+    // If sort order changes, update the sort-order for bulk-actions (for label-generation).
+    // Tri-state (3rd click = unsort) is handled natively by bootstrap-table via the
+    // data-sort-reset="true" option on the table (see blade/table/index.blade.php), so no
+    // custom reset logic is needed here.
     $('.snipe-table').on('sort.bs.table', function (event, name, order) {
-       var $ccTable = $(this);
-
-       // ── Tri-state sort (LIVE-VERIFY) ──────────────────────────────────────────
-       // bootstrap-table cicla asc → desc → asc. Qui il 3° click sulla STESSA colonna
-       // (transizione desc → asc) viene interpretato come "disattiva ordinamento" e
-       // riporta la tabella all'ordinamento di default (data-sort-name/order).
-       var ccLast = $ccTable.data('cc-last-sort');
-       var ccDefName = ($ccTable.data('sort-name') || 'created_at');
-       var ccDefOrder = ($ccTable.data('sort-order') || 'desc');
-       if (ccLast && ccLast.name === name && ccLast.order === 'desc' && order === 'asc'
-           && (name !== ccDefName || order !== ccDefOrder)) {
-           $ccTable.data('cc-last-sort', { name: ccDefName, order: ccDefOrder });
-           setTimeout(function () {
-               try { $ccTable.bootstrapTable('refreshOptions', { sortName: ccDefName, sortOrder: ccDefOrder }); } catch (e) {}
-           }, 0);
-           return;   // salta l'aggiornamento del bulk-form: lo farà il refresh col default
-       }
-       $ccTable.data('cc-last-sort', { name: name, order: order });
-
        domnode = $(this).data('bulk-form-id') ? $($(this).data('bulk-form-id')).get(0) : null;
        // make safe in case there isn't a bulk-form-id, or it's not found, or has no 'sort' element
        if ( domnode && domnode.elements && domnode.elements.sort ) {
@@ -2258,12 +2242,14 @@
 
     function documentFilesCountFormatter(value, row) {
         var count = parseInt(value, 10);
-
-        if (isNaN(count) || count <= 0) {
-            return '<span class="text-muted">0</span>';
+        if (isNaN(count) || count < 0) {
+            count = 0;
         }
 
-        return '<a href="{{ config('app.url') }}/documents/' + row.id + '#files" data-tooltip="true" title="{{ trans('general.uploaded_files') }}"><i class="fas fa-paperclip fa-fw" aria-hidden="true"></i> ' + count + '</a>';
+        // Always a link to the document's Files tab — including when the count is 0, so you can
+        // open the attachments page and add the first file (0 was previously plain text).
+        var cls = count > 0 ? '' : ' class="text-muted"';
+        return '<a href="{{ config('app.url') }}/documents/' + row.id + '#files"' + cls + ' data-tooltip="true" title="{{ trans('general.uploaded_files') }}"><i class="fas fa-paperclip fa-fw" aria-hidden="true"></i> ' + count + '</a>';
     }
 
     function documentFrameworkRequirementDocumentsCountFormatter(value, row) {

@@ -10,6 +10,7 @@ return [
     'owner' => 'Responsabile',
     'attachments' => 'Allegati',
     'attachment_note' => 'Nota allegato (opzionale)',
+    'bulk_attachments_help' => 'Se carichi dei file qui, vengono aggiunti a TUTTI i documenti selezionati.',
     'reference' => 'Riferimento',
     'version' => 'Versione',
     'status_help' => 'I documenti primari assegnati contano nei documenti minimi solo se sono validi, in corso di validità e hanno almeno un allegato caricato.',

@@ -55,3 +55,21 @@
     white-space: normal;
     overflow: hidden;
 }
+
+/* ── 4) Collapsed rail flyout: transparent hover-bridge so the pointer can travel from the
+        icon to the submenu without crossing a 1–2px dead gap (over .content-wrapper) that
+        drops li:hover and snaps the flyout shut. The bridge is a child of the submenu, so
+        hovering it keeps li:hover alive; it lives in the left gutter (x≈38–56, before the
+        item text) so it never steals clicks. Pure geometry, no colour. ─────────────────── */
+.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
+    position: absolute;
+}
+.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu::before {
+    content: "";
+    position: absolute;
+    top: -12px;
+    left: -14px;
+    width: 20px;
+    height: calc(100% + 14px);
+    background: transparent;
+}

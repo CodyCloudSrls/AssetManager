@@ -193,6 +193,28 @@ class BulkEditAssetsTest extends TestCase
         });
     }
 
+    public function test_bulk_edit_clears_location_when_explicitly_requested()
+    {
+        $location = \App\Models\Location::factory()->create();
+        $assets = Asset::factory()->count(3)->create([
+            'rtd_location_id' => $location->id,
+            'location_id' => $location->id,
+        ]);
+        $id_array = $assets->pluck('id')->toArray();
+
+        // Empty Sede + the "clear" checkbox → the location is removed (update_real_loc=1 = both).
+        $this->actingAs(User::factory()->editAssets()->create())->post(route('hardware/bulksave'), [
+            'ids' => $id_array,
+            'null_rtd_location_id' => '1',
+            'update_real_loc' => '1',
+        ])->assertStatus(302)->assertSessionHasNoErrors();
+
+        Asset::findMany($id_array)->each(function (Asset $asset) {
+            $this->assertNull($asset->rtd_location_id);
+            $this->assertNull($asset->location_id);
+        });
+    }
+
     public function test_bulk_edit_assets_accepts_and_updates_unencrypted_custom_fields()
     {
         $this->markIncompleteIfMySQL('Custom Fields tests do not work on MySQL');

@@ -181,9 +181,10 @@ class DocumentsController extends Controller
     /**
      * Attach optional files uploaded straight from the document create/edit form. Reuses
      * the same storage + audit-log mechanism as the standalone files panel, so they show
-     * up identically on the document view. Validation is handled by StoreDocumentRequest.
+     * up identically on the document view. Validation is handled by the caller's form request
+     * (StoreDocumentRequest for store/update, the bulkUpdate validator for bulk attachments).
      */
-    private function storeUploadedFiles(StoreDocumentRequest $request, Document $document): void
+    private function storeUploadedFiles(Request $request, Document $document): void
     {
         if (! $request->hasFile('file')) {
             return;
@@ -331,10 +332,15 @@ class DocumentsController extends Controller
             'next_review_at' => 'nullable|date_format:Y-m-d',
             'apply_control_url' => 'nullable|boolean',
             'control_url' => 'nullable|url|max:2048',
+            // Optional attachments applied to every selected document. Validate by client
+            // extension (signed .p7m/.p7c sniff as octet-stream), same as the single form.
+            'file' => 'nullable|array',
+            'file.*' => 'nullable|file|extensions:'.config('filesystems.allowed_upload_extensions_for_validator').'|max:'.\App\Helpers\Helper::file_upload_max_size(),
+            'file_notes' => 'nullable|string|max:65535',
         ]);
 
         $validator->after(function ($validator) use ($request, $documents) {
-            if (! $this->bulkUpdateHasSelectedFields($request)) {
+            if (! $this->bulkUpdateHasSelectedFields($request) && ! $request->hasFile('file')) {
                 $validator->errors()->add('bulk_actions', trans('admin/hardware/message.update.nothing_updated'));
             }
 
@@ -381,6 +387,13 @@ class DocumentsController extends Controller
                 $this->persistDocument($document);
             }
         });
+
+        // Attach any uploaded file(s) to every selected document (bulk attachments).
+        if ($request->hasFile('file')) {
+            foreach ($documents as $document) {
+                $this->storeUploadedFiles($request, $document);
+            }
+        }
 
         return redirect()->route('documents.index')
             ->with('success', trans('admin/documents/message.update.success'));

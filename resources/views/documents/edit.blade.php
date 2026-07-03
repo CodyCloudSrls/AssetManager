@@ -6,7 +6,7 @@
 @stop
 
 @section('header_right')
-    <a href="#document-attachments" class="btn btn-default" title="{{ trans('admin/documents/form.attachments') }}" aria-label="{{ trans('admin/documents/form.attachments') }}">
+    <a href="#document-attachments" id="document-attachments-jump" class="btn btn-default" title="{{ trans('admin/documents/form.attachments') }}" aria-label="{{ trans('admin/documents/form.attachments') }}">
         <x-icon type="paperclip"/>
     </a>
     <x-button.info-panel-toggle/>
@@ -536,6 +536,25 @@
         bindToggle('#document_content_toggle', '#document_content_details', '#document_content_icon');
         bindToggle('#document_framework_requirements_toggle', '#document_framework_requirements_details', '#document_framework_requirements_icon', refreshRequirementSelects);
         bindToggle('#document_assignment_advanced_toggle', '#document_assignment_advanced_details', '#document_assignment_advanced_icon');
+
+        // Paperclip (top-right): the attachments live inside the collapsed "Content" section,
+        // so a plain #hash jump can't reach them. Expand that section, scroll to the area and
+        // open the file picker straight away. The picker .click() stays synchronous so the
+        // browser keeps the user-gesture and actually opens the OS dialog.
+        $('#document-attachments-jump').on('click', function (e) {
+            e.preventDefault();
+            if ($('#document_content_details').is(':hidden')) {
+                $('#document_content_toggle').trigger('click');
+            }
+            var area = document.getElementById('document-attachments');
+            if (area) {
+                $('html, body').animate({ scrollTop: $(area).offset().top - 70 }, 250);
+            }
+            var fileInput = document.getElementById('file');
+            if (fileInput) {
+                fileInput.click();
+            }
+        });
 
         const requirementMap = @json($frameworkRequirementOptionsByFramework);
         const primarySelect = $('#primary_requirement_ids');

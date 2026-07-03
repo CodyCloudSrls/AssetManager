@@ -11,7 +11,7 @@
     'fixed_right_number' => null,
     'sort_order' => 'asc',
     'sort_field' => 'name',
-    'sort_reset' => false,
+    'sort_reset' => true,
     'nosticky' => false,
 ])
 

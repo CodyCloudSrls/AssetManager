@@ -14,7 +14,7 @@
 @section('content')
     <div class="row">
         <div class="col-md-9 col-md-offset-1">
-            <form class="form-horizontal" method="post" action="{{ route('documents.bulk.update') }}" autocomplete="off" role="form">
+            <form class="form-horizontal" method="post" action="{{ route('documents.bulk.update') }}" autocomplete="off" role="form" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="bulk_actions" value="edit">
 
@@ -164,6 +164,17 @@
                                     <input type="checkbox" name="apply_control_url" value="1" @checked(old('apply_control_url'))>
                                     {{ trans('general.apply') }}
                                 </label>
+                            </div>
+                        </div>
+
+                        {{-- Allegati: se carichi file qui, vengono aggiunti a TUTTI i documenti selezionati. --}}
+                        <div class="form-group {{ ($errors->has('file') || $errors->has('file.0')) ? ' has-error' : '' }}">
+                            <label for="file" class="col-md-3 control-label">{{ trans('admin/documents/form.attachments') }}</label>
+                            <div class="col-md-7">
+                                <input type="file" name="file[]" id="file" multiple class="form-control" accept="{{ config('filesystems.allowed_upload_mimetypes') }},{{ str_replace(' ', '', config('filesystems.allowed_upload_extensions')) }}">
+                                <p class="help-block">{{ trans('admin/documents/form.bulk_attachments_help') }}</p>
+                                {!! $errors->first('file.0', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+                                <input type="text" name="file_notes" class="form-control" placeholder="{{ trans('admin/documents/form.attachment_note') }}" value="{{ old('file_notes') }}" style="margin-top:6px;">
                             </div>
                         </div>
 

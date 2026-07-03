@@ -59,6 +59,7 @@ return array (
   'avatar_delete' => 'Cancella Avatar',
   'avatar_upload' => 'Carica Avatar',
   'back' => 'Indietro',
+  'back_to_list' => 'Torna alla lista',
   'bad_data' => 'Non è stato trovato nulla. Forse dati errati?',
   'bulkaudit' => 'Controllo Inventario',
   'bulkaudit_status' => 'Stato Controllo Inventario',

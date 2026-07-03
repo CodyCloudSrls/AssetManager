@@ -10,6 +10,7 @@ return [
     'owner' => 'Owner',
     'attachments' => 'Attachments',
     'attachment_note' => 'Attachment note (optional)',
+    'bulk_attachments_help' => 'Files uploaded here are attached to ALL the selected documents.',
     'reference' => 'Reference',
     'version' => 'Version',
     'status_help' => 'Assigned primary documents count toward requirement minimum documents only when they are valid, currently effective, and have at least one uploaded file.',

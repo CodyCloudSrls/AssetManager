@@ -5,6 +5,12 @@
 @parent
 @stop
 
+@section('header_right')
+    <a href="{{ route('contracts.index') }}" class="btn btn-default">
+        <x-icon type="angle-left" class="fa-fw" /> {{ trans('general.back_to_list') }}
+    </a>
+@endsection
+
 @section('content')
     <x-container columns="2">
         <x-page-column class="col-md-9 main-panel">

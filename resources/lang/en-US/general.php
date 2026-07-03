@@ -59,6 +59,7 @@ return [
     'avatar_delete' => 'Delete Avatar',
     'avatar_upload' => 'Upload Avatar',
     'back' => 'Back',
+    'back_to_list' => 'Back to list',
     'bad_data' => 'Nothing found. Maybe bad data?',
     'bulkaudit' => 'Bulk Audit',
     'bulkaudit_status' => 'Audit Status',
