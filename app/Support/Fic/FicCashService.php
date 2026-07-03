@@ -52,10 +52,15 @@ class FicCashService
                     $balances[$name] = ($balances[$name] ?? 0) - $out;
                 }
                 // Track the real money settled against each document (the truth for
-                // open receivables/payables, more reliable than the payment plan).
+                // open receivables/payables, more reliable than the payment plan). Key by
+                // DIRECTION + id: issued and received documents share FiC id sequences, so
+                // an issued invoice and a received expense can both be #100 — keying by id
+                // alone would let one's settlement corrupt the other's paid status.
                 $docId = $row['document']['id'] ?? null;
-                if ($docId) {
-                    $settled[$docId] = ($settled[$docId] ?? 0) + abs($in) + abs($out);
+                $docDirection = $this->directionForCashbookDoc($row['document']['type'] ?? null);
+                if ($docId && $docDirection !== null) {
+                    $key = $docDirection.':'.$docId;
+                    $settled[$key] = ($settled[$key] ?? 0) + abs($in) + abs($out);
                 }
 
                 // Persist the movement for the per-channel incassi reconciliation.
@@ -87,7 +92,7 @@ class FicCashService
      * receivables/payables inflated by stale FiC payment plans on documents that were
      * actually settled (e.g. via the cashbook).
      *
-     * @param  array<int|string, float>  $settled  fic document id => settled amount
+     * @param  array<string, float>  $settled  "direction:fic_id" => settled amount
      */
     private function reconcileDocuments(array $settled): int
     {
@@ -95,25 +100,50 @@ class FicCashService
             return 0;
         }
 
-        $reconciled = 0;
-        foreach (array_chunk($settled, 500, true) as $chunk) {
-            $docs = FicDocument::whereIn('fic_id', array_keys($chunk))->get();
-            foreach ($docs as $doc) {
-                $cash = round((float) ($chunk[$doc->fic_id] ?? 0), 2);
-                $effectivePaid = round(max((float) $doc->paid_amount, $cash), 2);
-                $effectivePaid = min($effectivePaid, (float) $doc->amount_gross); // never over-pay
-                $paid = $effectivePaid >= (float) $doc->amount_gross - 0.01;
+        // Group by direction so each fic_id is matched to the document of the RIGHT
+        // direction only (issued/received share id sequences — see sync()).
+        $byDirection = [];
+        foreach ($settled as $key => $amount) {
+            [$direction, $ficId] = explode(':', $key, 2);
+            $byDirection[$direction][$ficId] = ($byDirection[$direction][$ficId] ?? 0) + (float) $amount;
+        }
 
-                if (abs($effectivePaid - (float) $doc->paid_amount) > 0.01 || $doc->paid !== $paid) {
-                    $doc->paid_amount = $effectivePaid;
-                    $doc->paid = $paid;
-                    $doc->save();
-                    $reconciled++;
+        $reconciled = 0;
+        foreach ($byDirection as $direction => $amounts) {
+            foreach (array_chunk($amounts, 500, true) as $chunk) {
+                $docs = FicDocument::where('direction', $direction)
+                    ->whereIn('fic_id', array_keys($chunk))->get();
+                foreach ($docs as $doc) {
+                    $cash = round((float) ($chunk[$doc->fic_id] ?? 0), 2);
+                    $effectivePaid = round(max((float) $doc->paid_amount, $cash), 2);
+                    $effectivePaid = min($effectivePaid, (float) $doc->amount_gross); // never over-pay
+                    $paid = $effectivePaid >= (float) $doc->amount_gross - 0.01;
+
+                    if (abs($effectivePaid - (float) $doc->paid_amount) > 0.01 || $doc->paid !== $paid) {
+                        $doc->paid_amount = $effectivePaid;
+                        $doc->paid = $paid;
+                        $doc->save();
+                        $reconciled++;
+                    }
                 }
             }
         }
 
         return $reconciled;
+    }
+
+    /**
+     * The fic_documents direction a cashbook movement's document settles, or null when the
+     * document type is not mirrored into fic_documents (so it is skipped rather than matched
+     * by id alone). Mirrors FicSyncService::TYPES.
+     */
+    private function directionForCashbookDoc(?string $type): ?string
+    {
+        return match ($type) {
+            'invoice', 'credit_note', 'receipt' => FicDocument::DIRECTION_ISSUED,
+            'expense' => FicDocument::DIRECTION_RECEIVED,
+            default => null,
+        };
     }
 
     /**

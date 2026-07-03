@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Erp;
 
+use App\Models\BilancioUfficiale;
 use App\Models\FicDocument;
 use App\Models\User;
 use App\Support\Reports\ManagementControlReport;
@@ -65,6 +66,43 @@ class ManagementControlReportTest extends TestCase
 
         $this->assertCount(1, $crediti); // same VAT -> one row, not two
         $this->assertEqualsWithDelta(150, (float) $crediti->first()->aperto, 0.01);
+    }
+
+    public function test_a_deposited_bilancio_payroll_overrides_the_fic_labour_actuals(): void
+    {
+        $this->received(2026, 5000, 0, 'Stipendi e salari');        // FiC labour = 5000
+        BilancioUfficiale::create(['company_id' => null, 'anno' => 2026, 'is_deposited' => true, 'costo_personale' => 8000]);
+
+        $ce = (new ManagementControlReport())->contoEconomico(null, [2026])[2026];
+
+        $this->assertEqualsWithDelta(8000, $ce['personale'], 0.01);
+        $this->assertSame('reale', $ce['personale_source']);
+    }
+
+    public function test_a_provisional_bilancio_does_not_override_fic_payroll(): void
+    {
+        $this->received(2026, 5000, 0, 'Stipendi e salari');
+        // is_deposited = false → a provisional estimate must NOT be treated as authoritative.
+        BilancioUfficiale::create(['company_id' => null, 'anno' => 2026, 'is_deposited' => false, 'costo_personale' => 8000]);
+
+        $ce = (new ManagementControlReport())->contoEconomico(null, [2026])[2026];
+
+        $this->assertEqualsWithDelta(5000, $ce['personale'], 0.01);
+        $this->assertSame('fic', $ce['personale_source']);
+    }
+
+    public function test_payroll_is_summed_across_the_scope_companies_for_the_year(): void
+    {
+        BilancioUfficiale::create(['company_id' => 1, 'anno' => 2026, 'is_deposited' => true, 'costo_personale' => 3000]);
+        BilancioUfficiale::create(['company_id' => 2, 'anno' => 2026, 'is_deposited' => true, 'costo_personale' => 5000]);
+        // Out of scope / other year — must not leak into the total.
+        BilancioUfficiale::create(['company_id' => 9, 'anno' => 2026, 'is_deposited' => true, 'costo_personale' => 7000]);
+        BilancioUfficiale::create(['company_id' => 1, 'anno' => 2025, 'is_deposited' => true, 'costo_personale' => 1000]);
+
+        $payroll = BilancioUfficiale::payrollByYear([1, 2]);
+
+        $this->assertEqualsWithDelta(8000, $payroll[2026], 0.01); // 3000 + 5000 (not 9's 7000)
+        $this->assertEqualsWithDelta(1000, $payroll[2025], 0.01);
     }
 
     public function test_page_renders(): void

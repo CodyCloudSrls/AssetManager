@@ -49,12 +49,22 @@ class BilancioUfficiale extends Model
         return $query->whereIn('company_id', $companyIds);
     }
 
-    /** Authoritative payroll cost per year (anno => costo_personale) for the given scope. */
+    /**
+     * Authoritative payroll cost per year (anno => costo_personale) for the given scope.
+     *
+     * Only *deposited* accounts are authoritative — a provisional estimate must not
+     * override the FiC actuals (same gate the imposte precedence uses). Values are summed
+     * across all companies in scope so a multi-company tenant consolidates instead of
+     * keeping a single company's figure.
+     */
     public static function payrollByYear(?array $companyIds): array
     {
         return static::query()->forCompanies($companyIds)
+            ->where('is_deposited', true)
             ->get(['anno', 'costo_personale'])
-            ->mapWithKeys(fn ($b) => [(int) $b->anno => (float) $b->costo_personale])
+            ->groupBy('anno')
+            ->map(fn ($rows) => (float) $rows->sum('costo_personale'))
+            ->mapWithKeys(fn ($sum, $anno) => [(int) $anno => (float) $sum])
             ->all();
     }
 }

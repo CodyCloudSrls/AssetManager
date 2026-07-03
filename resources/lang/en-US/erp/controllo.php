@@ -12,7 +12,7 @@ return [
     'margine_pct' => 'Gross margin %',
     'opex' => 'OPEX',
     'personale' => 'Labour',
-    'ebit' => 'EBIT',
+    'ebit' => 'EBITDA (MOL)',
     'iva_title' => 'VAT — debit / credit / balance',
     'year' => 'Year',
     'iva_debito' => 'VAT on sales',

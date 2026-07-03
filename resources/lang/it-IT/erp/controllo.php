@@ -12,7 +12,7 @@ return [
     'margine_pct' => 'Margine lordo %',
     'opex' => 'OPEX',
     'personale' => 'Personale',
-    'ebit' => 'EBIT',
+    'ebit' => 'MOL (EBITDA)',
     'iva_title' => 'IVA — debito / credito / saldo',
     'year' => 'Anno',
     'iva_debito' => 'IVA a debito',

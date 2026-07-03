@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Customers\DestroyCustomerAction;
 use App\Http\Requests\ImageUploadRequest;
+use App\Models\Company;
 use App\Models\Customer;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -98,7 +99,9 @@ class CustomersController extends Controller
     private function fillCustomer(Customer $customer, ImageUploadRequest $request): void
     {
         $customer->fill($request->only([
-            'company_id',
+            // company_id is NOT mass-filled — it is clamped below to a company the caller
+            // may actually manage, so a forged company_id cannot create/move the customer
+            // into another tenant (Company::getIdForCurrentUser is Snipe's canonical clamp).
             'name',
             'customer_number',
             'status',
@@ -131,6 +134,7 @@ class CustomersController extends Controller
             'notes',
         ]));
 
+        $customer->company_id = Company::getIdForCurrentUser($request->input('company_id'));
         $customer->url = $customer->addhttp($request->input('url'));
         $customer->sdi_code = $request->filled('sdi_code') ? strtoupper(trim($request->input('sdi_code'))) : null;
     }

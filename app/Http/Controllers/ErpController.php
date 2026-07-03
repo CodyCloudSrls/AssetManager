@@ -366,7 +366,9 @@ class ErpController extends Controller
             return [(int) $userCompanyId];
         }
 
-        return null;
+        // Non-superuser with no active tenant and no company: an empty scope (see nothing),
+        // never null — null means "unrestricted" and would expose every tenant's FiC data.
+        return [];
     }
 
     /** Apply the same withoutGlobalScopes + whereIn(company_id) pattern used across the app. */

@@ -63,6 +63,9 @@ class ManagementControlReport
                 'opex' => round($opex, 2),
                 'personale' => round($personale, 2),
                 'personale_source' => $hasOfficial ? 'reale' : 'fic',
+                // Pre-depreciation operating result = EBITDA / MOL (depreciation is not in
+                // the FiC cost data — it lives in the asset register / bilancio simulato).
+                // Labelled "MOL (EBITDA)" in the UI; the key stays 'ebit' for compatibility.
                 'ebit' => round($margine - $opex - $personale, 2),
             ];
         }

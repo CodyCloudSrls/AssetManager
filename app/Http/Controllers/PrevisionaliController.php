@@ -108,6 +108,8 @@ class PrevisionaliController extends Controller
             return null;
         }
 
-        return is_null($user?->company_id) ? null : [(int) $user->company_id];
+        // No superuser, no active tenant, no company: an empty scope (see/touch nothing),
+        // never null — null means "unrestricted" and would leak every tenant's records.
+        return is_null($user?->company_id) ? [] : [(int) $user->company_id];
     }
 }

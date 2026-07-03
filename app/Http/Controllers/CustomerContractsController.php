@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\ContractCostLine;
 use App\Models\ContractSubscription;
 use App\Models\Customer;
@@ -43,6 +44,12 @@ class CustomerContractsController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $this->authorize('create', CustomerContract::class);
+
+        // Clamp company_id to a company the caller may manage BEFORE validation, so the
+        // cross-field checks (customer/document/supplier must match company_id) and the
+        // persisted value all use the safe company — a forged company_id can never place
+        // the contract into another tenant.
+        $request->merge(['company_id' => Company::getIdForCurrentUser($request->input('company_id'))]);
 
         $validator = $this->validator($request);
         if ($validator->fails()) {
@@ -100,6 +107,10 @@ class CustomerContractsController extends Controller
     public function update(Request $request, CustomerContract $contract): RedirectResponse
     {
         $this->authorize('update', $contract);
+
+        // Clamp company_id to a company the caller may manage BEFORE validation (see store()):
+        // prevents moving the contract — and its subscriptions/cost lines — into another tenant.
+        $request->merge(['company_id' => Company::getIdForCurrentUser($request->input('company_id'))]);
 
         $validator = $this->validator($request, $contract);
         if ($validator->fails()) {
