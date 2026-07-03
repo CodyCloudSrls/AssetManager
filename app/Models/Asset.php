@@ -1217,6 +1217,23 @@ class Asset extends Depreciable
     }
 
     /**
+     * The "Indirizzo IP" asset this asset (a "Dominio") lives on. Used to inherit the IP's
+     * Hetrix status (one-way IP -> domain, propagated by AssetObserver::saved()).
+     */
+    public function linkedIp()
+    {
+        return $this->belongsTo(Asset::class, 'linked_ip_asset_id');
+    }
+
+    /**
+     * Domain assets linked to this asset (the inverse: this asset acting as an Indirizzo IP).
+     */
+    public function linkedDomains()
+    {
+        return $this->hasMany(Asset::class, 'linked_ip_asset_id');
+    }
+
+    /**
      * Tenant services (NIS2 perimeter) that this asset supports. Many-to-many.
      */
     public function tenantServices()

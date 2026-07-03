@@ -77,6 +77,8 @@ return [
     'customer_help' => 'The customer that owns this asset (e.g. the client a domain/IP belongs to). If blank, it is derived from the contract.',
     'customer_contract' => 'Customer contract',
     'customer_contract_inherit' => '— Inherit from the model —',
+    'linked_ip' => 'Linked IP address (Hetrix)',
+    'linked_ip_help' => 'Domains only: link the IP address it lives on. The domain inherits the IP\'s Hetrix status, and any Hetrix change on the IP propagates to the linked domains.',
     'customer_contract_help' => 'The contract this asset is served/billed under. If blank, it inherits the model default contract.',
     'nis_relevant' => 'NIS2 Relevant',
     'nis_from_category' => 'NIS2 relevance and scope are inherited from the category (:name) and not editable here.',

@@ -224,6 +224,7 @@ class AssetsController extends Controller
                     $model, $request->input('customer_id'), $request->input('customer_contract_id')
                 );
                 $asset->rtd_location_id = request('rtd_location_id') ?: null;
+                $asset->linked_ip_asset_id = request('linked_ip_asset_id') ?: null;
                 $asset->byod = request('byod', 0);
 
                 if (! empty($settings->audit_interval)) {
@@ -483,6 +484,7 @@ class AssetsController extends Controller
             null, $request->input('customer_id'), $request->input('customer_contract_id'), false
         );
         $asset->rtd_location_id = $request->input('rtd_location_id') ?: null;
+        $asset->linked_ip_asset_id = $request->input('linked_ip_asset_id') ?: null;
         $asset->byod = $request->input('byod', 0);
 
         $status = Statuslabel::find($request->input('status_id'));

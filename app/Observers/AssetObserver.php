@@ -4,8 +4,10 @@ namespace App\Observers;
 
 use App\Models\Actionlog;
 use App\Models\Asset;
+use App\Models\CustomField;
 use App\Models\Setting;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class AssetObserver
 {
@@ -180,6 +182,53 @@ class AssetObserver
 
         if ((! is_null($asset->asset_eol_date)) && (! is_null($asset->purchase_date)) && (is_null($asset->model?->eol) || ($asset->model?->eol == 0))) {
             $asset->eol_explicit = true;
+        }
+    }
+
+    /**
+     * One-way Hetrix propagation between an "Indirizzo IP" asset and the "Dominio" assets
+     * linked to it (linked_ip_asset_id). Runs on every asset save but no-ops instantly unless
+     * a Hetrix custom field exists AND either the IP link or the Hetrix value changed. All
+     * propagation writes go through the query builder (no model events) to avoid re-entrancy,
+     * and the whole method is guarded so it can never break a normal asset save.
+     */
+    public function saved(Asset $asset)
+    {
+        try {
+            // Cheap guard first (no query): only proceed when the IP link was (re)assigned or
+            // a custom field changed. Ordinary saves (checkout/audit/…) short-circuit here.
+            $changed = $asset->getChanges();
+            $linkAssigned = array_key_exists('linked_ip_asset_id', $changed) && $asset->linked_ip_asset_id;
+            $customFieldChanged = false;
+            foreach (array_keys($changed) as $key) {
+                if (str_starts_with($key, '_snipeit_')) {
+                    $customFieldChanged = true;
+                    break;
+                }
+            }
+            if (! $linkAssigned && ! $customFieldChanged) {
+                return;
+            }
+
+            $col = CustomField::where('name', 'Hetrix')->value('db_column');
+            if (! $col) {
+                return;
+            }
+
+            // Domain side: when the IP link is (re)assigned, inherit the IP's Hetrix value.
+            if ($linkAssigned) {
+                $ip = Asset::withoutGlobalScopes()->find($asset->linked_ip_asset_id);
+                if ($ip && $ip->{$col} !== $asset->{$col}) {
+                    Asset::withoutGlobalScopes()->whereKey($asset->id)->update([$col => $ip->{$col}]);
+                }
+            }
+
+            // IP side: when this asset's Hetrix value changes, push it to every linked domain.
+            if (array_key_exists($col, $changed)) {
+                Asset::withoutGlobalScopes()->where('linked_ip_asset_id', $asset->id)->update([$col => $asset->{$col}]);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Hetrix propagation skipped: '.$e->getMessage());
         }
     }
 }

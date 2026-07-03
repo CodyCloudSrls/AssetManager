@@ -143,6 +143,21 @@
                 {!! $errors->first('customer_contract_id', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
             </div>
         </div>
+
+        {{-- Solo per i domini: collega l'Indirizzo IP per ereditarne lo stato Hetrix. --}}
+        @include('partials.forms.edit.asset-select', [
+            'translated_name' => trans('admin/hardware/form.linked_ip'),
+            'fieldname' => 'linked_ip_asset_id',
+            'item' => $item,
+            'asset_selector_div_id' => 'linked-ip-asset',
+            'select_id' => 'linked_ip_asset_select',
+            'required' => 'false',
+        ])
+        <div class="form-group" style="margin-top:-10px;">
+            <div class="col-md-7 col-md-offset-3">
+                <p class="help-block">{{ trans('admin/hardware/form.linked_ip_help') }}</p>
+            </div>
+        </div>
     </fieldset>
 
     <fieldset name="nis-inventory-asset">

@@ -77,6 +77,8 @@ return [
     'customer_help' => 'Il cliente proprietario del bene (es. il cliente a cui appartiene un dominio/IP). Se vuoto, viene dedotto dal contratto.',
     'customer_contract' => 'Contratto verso cliente',
     'customer_contract_inherit' => '— Eredita dal modello —',
+    'linked_ip' => 'Indirizzo IP collegato (Hetrix)',
+    'linked_ip_help' => 'Solo per i domini: collega l\'Indirizzo IP su cui risiede. Il dominio eredita lo stato Hetrix dell\'IP, e ogni modifica dell\'Hetrix sull\'IP si propaga ai domini collegati.',
     'customer_contract_help' => 'Contratto con cui il bene è servito/fatturato. Se vuoto, eredita il contratto predefinito del modello.',
     'nis_relevant' => 'Rilevante ai fini NIS2',
     'nis_from_category' => 'Rilevanza e ambito NIS2 sono ereditati dalla categoria (:name) e non modificabili qui.',
