@@ -194,26 +194,39 @@
         @endcan
     </div>
 
-    {{-- ===== Planned management-control modules (PDF roadmap) ===== --}}
+    {{-- ════════ MODULI DEL CONTROLLO DI GESTIONE (link attivi) ════════ --}}
     <div class="row">
         <div class="col-md-12">
-            <div class="box box-default">
-                <div class="box-header with-border"><h3 class="box-title">{{ trans('erp/general.roadmap_title') }}</h3></div>
-                <div class="box-body">
-                    <div class="row">
-                        @foreach (['pnl' => 'chart-line', 'cashflow' => 'chart-line', 'deadlines' => 'warning', 'reconciliation' => 'long-arrow-right', 'cockpit' => 'chart-line', 'payroll' => 'users'] as $moduleKey => $moduleIcon)
-                            <div class="col-md-4 col-sm-6" style="margin-bottom:16px;">
-                                <div class="box box-default" style="height:100%; padding:14px; opacity:.7;">
-                                    <h4 style="margin-top:0;"><x-icon :type="$moduleIcon" class="fa-fw" /> {{ trans('erp/general.modules.'.$moduleKey) }}
-                                        <span class="label label-default pull-right">{{ trans('erp/general.status_planned') }}</span></h4>
-                                    <p class="text-muted">{{ trans('erp/general.modules.'.$moduleKey.'_help') }}</p>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                    <div class="callout callout-info" style="margin-top:8px;"><p>{{ trans('erp/general.connectors_note') }}</p></div>
-                </div>
-            </div>
+            <h2 style="border-bottom:2px solid #605ca8; padding-bottom:6px;">
+                <x-icon type="erp" class="fa-fw" /> {{ trans('erp/general.hub_title') }}
+            </h2>
         </div>
+    </div>
+    <div class="row">
+        {{-- Each card links to a live module; visible only when the caller can actually open it
+             (reports.view for the analytical pages, contracts.view for the data pages) so there
+             are never dead links. --}}
+        @php($hubModules = [
+            ['key' => 'fotografia', 'route' => 'erp.fotografia', 'icon' => 'chart-line', 'reports' => true],
+            ['key' => 'controllo', 'route' => 'erp.controllo', 'icon' => 'chart-line', 'reports' => true],
+            ['key' => 'simulato', 'route' => 'erp.bilancio', 'icon' => 'records', 'reports' => true],
+            ['key' => 'riconciliazione', 'route' => 'erp.riconciliazione', 'icon' => 'long-arrow-right', 'reports' => true],
+            ['key' => 'ammortamenti', 'route' => 'erp.ammortamenti', 'icon' => 'chart-line', 'reports' => true],
+            ['key' => 'bilanci', 'route' => 'erp.bilanci.index', 'icon' => 'records', 'reports' => false],
+            ['key' => 'notule', 'route' => 'erp.notule.index', 'icon' => 'records', 'reports' => false],
+            ['key' => 'previsionali', 'route' => 'erp.previsionali.index', 'icon' => 'chart-line', 'reports' => false],
+            ['key' => 'finanziamenti', 'route' => 'erp.finanziamenti.index', 'icon' => 'warning', 'reports' => false],
+        ])
+        @foreach ($hubModules as $m)
+            @if (($m['reports'] && auth()->user()?->can('reports.view')) || (! $m['reports'] && auth()->user()?->can('view', \App\Models\CustomerContract::class)))
+                <div class="col-md-4 col-sm-6" style="margin-bottom:16px;">
+                    <a href="{{ route($m['route']) }}" class="box box-default" style="display:block; height:100%; padding:14px; text-decoration:none;">
+                        <h4 style="margin-top:0;"><x-icon :type="$m['icon']" class="fa-fw" /> {{ trans('erp/general.hub.'.$m['key']) }}
+                            <span class="label label-success pull-right">{{ trans('erp/general.status_active') }}</span></h4>
+                        <p class="text-muted">{{ trans('erp/general.hub.'.$m['key'].'_help') }}</p>
+                    </a>
+                </div>
+            @endif
+        @endforeach
     </div>
 @stop

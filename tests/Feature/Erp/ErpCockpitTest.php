@@ -17,6 +17,24 @@ class ErpCockpitTest extends TestCase
             ->assertSee(trans('erp/general.title'));
     }
 
+    public function test_cockpit_shows_active_module_hub_and_no_planned_placeholders(): void
+    {
+        $response = $this->actingAs(User::factory()->superuser()->create())
+            ->get(route('erp.index'))
+            ->assertOk();
+
+        // The module hub links to real pages, all marked Active…
+        $response->assertSee(trans('erp/general.hub_title'))
+            ->assertSee(trans('erp/general.hub.controllo'))
+            ->assertSee(trans('erp/general.hub.fotografia'))
+            ->assertSee(route('erp.controllo'))
+            ->assertSee(route('erp.riconciliazione'));
+
+        // …and the stale "coming soon" roadmap is gone.
+        $response->assertDontSee(trans('erp/general.status_planned'))
+            ->assertDontSee(trans('erp/general.roadmap_title'));
+    }
+
     public function test_cockpit_shows_fiscal_data_and_scadenzario_from_mirror(): void
     {
         FicDocument::create([
