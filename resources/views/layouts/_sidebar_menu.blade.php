@@ -52,7 +52,7 @@
 @endif
 @can('index', \App\Models\Asset::class)
     <li class="treeview{{ ((request()->is('statuslabels/*') || request()->is(['hardware*', 'maintenances*'])) ? ' active' : '') }}">
-        <a href="#">
+        <a href="{{ route('hardware.overview') }}">
             <x-icon type="assets" class="fa-fw" />
             <span>{{ trans('general.assets') }}</span>
             <x-icon type="angle-left" class="pull-right fa-fw"/>
@@ -275,7 +275,7 @@
 @if ($ccErpVisible)
     <li class="header">{{ trans('nav/modules.erp') }}</li>
     <li class="treeview{{ (request()->is('erp*') || request()->is('contracts*') || request()->is('reports/contract-forecast')) ? ' active' : '' }}">
-        <a href="#" class="dropdown-toggle">
+        <a href="{{ route('erp.index') }}" class="dropdown-toggle">
             <x-icon type="erp" class="fa-fw" />
             <span>{{ trans('erp/general.title') }}</span>
             <x-icon type="angle-left" class="pull-right fa-fw"/>
@@ -338,7 +338,7 @@
             @php($ccDomActive = (request()->is('documentframeworks*') || request()->is('documentframeworkrequirements*')) && request('compliance_domain') === $ccDom)
             @php($ccDomReportsActive = $ccDomReports && (request()->is('reports/nis-risk-matrix') || request()->is('reports/nis-real-coverage')))
             <li class="treeview{{ ($ccDomActive || $ccDomReportsActive) ? ' active' : '' }}">
-                <a href="#" class="dropdown-toggle">
+                <a href="{{ route('documentframeworks.index', ['compliance_domain' => $ccDom]) }}" class="dropdown-toggle">
                     <x-icon type="compliance" class="fa-fw" />
                     <span>{{ $ccDomainLabels[$ccDom] }}</span>
                     <x-icon type="angle-left" class="pull-right fa-fw"/>
@@ -366,7 +366,7 @@
 @if ($ccDocsVisible)
     <li class="header">{{ trans('nav/modules.documents') }}</li>
     <li class="treeview{{ (request()->is('documents*') ? ' active' : '') }}">
-        <a href="#">
+        <a href="{{ route('documents.index') }}">
             <x-icon type="documents" class="fa-fw" />
             <span>{{ trans('general.documents') }}</span>
             <x-icon type="angle-left" class="pull-right fa-fw"/>
@@ -410,7 +410,7 @@
 @if ($ccTicketsVisible)
     <li class="header">{{ trans('nav/modules.tickets') }}</li>
     <li class="treeview{{ (request()->is('tickets*') ? ' active' : '') }}">
-        <a href="#">
+        <a href="{{ route('tickets.index') }}">
             <x-icon type="tickets" class="fa-fw" />
             <span>{{ trans('general.tickets') }}</span>
             <x-icon type="angle-left" class="pull-right fa-fw"/>
@@ -438,7 +438,7 @@
 @endif
 @can('view', \App\Models\User::class)
     <li class="treeview{{ (request()->is('users*') ? ' active' : '') }}" id="users-sidenav-option">
-        <a href="#" {{$snipeSettings->shortcuts_enabled == 1 ? "accesskey=6" : ''}}>
+        <a href="{{ route('users.index') }}" {{$snipeSettings->shortcuts_enabled == 1 ? "accesskey=6" : ''}}>
             <x-icon type="users" class="fa-fw" />
             <span>{{ trans('general.people') }}</span>
             <x-icon type="angle-left" class="pull-right fa-fw"/>

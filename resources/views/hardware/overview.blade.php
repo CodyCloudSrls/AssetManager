@@ -8,15 +8,9 @@
 @section('content')
     @php($ccColors = ['bg-aqua', 'bg-green', 'bg-yellow', 'bg-red', 'bg-blue', 'bg-navy', 'bg-teal', 'bg-olive', 'bg-purple', 'bg-maroon'])
 
-    <style>
-        /* Whole card is one clickable link; the box keeps a fixed size so the barcode-icon
-           zoom on hover stays clipped inside and never shifts the neighbouring cards. */
-        .cc-overview-card { display:block; overflow:hidden; }
-        /* Keep the barcode-icon zoom, but cancel the theme's translateY(-1px) lift on hover
-           so the card never shifts / misaligns the row below. */
-        .cc-overview-card:hover, .cc-overview-card:focus { text-decoration:none; transform:none !important; }
-        .cc-overview-card .small-box-footer { pointer-events:none; }
-    </style>
+    {{-- The .cc-overview-card hover rules (no enlarge/shift) live in
+         public/css/codycloud-sidebar.css (external + cache-busted) so they reliably win the
+         cascade over the theme's icon-zoom — not an in-body <style>. --}}
 
     <div class="row">
         <div class="col-md-12">

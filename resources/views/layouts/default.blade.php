@@ -1621,7 +1621,9 @@
                         </a>
                     </div>
                     <!-- sidebar menu: : style can be found in sidebar.less -->
-                    <ul class="sidebar-menu" data-widget="tree" {{ \App\Helpers\Helper::determineLanguageDirection() == 'rtl' ? 'style="margin-right:12px' : '' }}>
+                    {{-- data-follow-link: top-level items WITH a real href navigate to their index
+                         (AdminLTE tree preventDefaults them otherwise); items left at href="#" still toggle. --}}
+                    <ul class="sidebar-menu" data-widget="tree" data-follow-link="true" {{ \App\Helpers\Helper::determineLanguageDirection() == 'rtl' ? 'style="margin-right:12px' : '' }}>
                         @include('layouts._sidebar_menu')
 
 

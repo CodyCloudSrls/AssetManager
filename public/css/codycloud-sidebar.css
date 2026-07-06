@@ -56,20 +56,30 @@
     overflow: hidden;
 }
 
-/* ── 4) Collapsed rail flyout: transparent hover-bridge so the pointer can travel from the
-        icon to the submenu without crossing a 1–2px dead gap (over .content-wrapper) that
-        drops li:hover and snaps the flyout shut. The bridge is a child of the submenu, so
-        hovering it keeps li:hover alive; it lives in the left gutter (x≈38–56, before the
-        item text) so it never steals clicks. Pure geometry, no colour. ─────────────────── */
-.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
-    position: absolute;
+/* ── 4) Collapsed rail flyout: STOP AdminLTE clipping it. AdminLTE hides the popout via
+        `.sidebar-menu{overflow:hidden}` and only reveals it with `.sidebar-menu:hover{
+        overflow:visible}`; crossing the 1–2px dead gap (over .content-wrapper) drops that
+        hover and the popout is re-clipped to the 50px rail before it can be reached. Forcing
+        overflow visible in collapsed mode means the popout can never be clipped away — the
+        real fix (a transparent ::before bridge could not un-clip an overflow:hidden ancestor
+        and also covered the rail icons). ─────────────────────────────────────────────────── */
+.sidebar-mini.sidebar-collapse .sidebar-menu {
+    overflow: visible !important;
 }
-.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu::before {
-    content: "";
-    position: absolute;
-    top: -12px;
-    left: -14px;
-    width: 20px;
-    height: calc(100% + 14px);
-    background: transparent;
+/* Close the header→body seam so the pointer travels icon → header → submenu on one
+   continuous hover surface (pull the body up to overlap the ~44px header label; the matching
+   padding keeps the first child in place). Covers both li:hover and the JS hold class. */
+.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu,
+.sidebar-mini.sidebar-collapse .sidebar-menu > li.cc-flyout-hold > .treeview-menu {
+    margin-top: -6px !important;
+    padding-top: 11px !important;
 }
+
+/* ── 5) "Panoramica beni" overview cards: fixed-size clickable cards. Kill the hover lift AND
+        the AdminLTE icon zoom (font-size 64→95 on hover) so the card never enlarges or shifts
+        the row below. Lives here (external, ?v=filemtime cache-busted, last stylesheet)
+        instead of an in-body <style>, so it reliably wins the cascade and busts stale caches. */
+.cc-overview-card { display: block; overflow: hidden; }
+.cc-overview-card:hover, .cc-overview-card:focus { text-decoration: none; transform: none !important; }
+.cc-overview-card:hover .icon { font-size: 64px !important; }
+.cc-overview-card .small-box-footer { pointer-events: none; }
