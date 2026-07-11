@@ -52,6 +52,7 @@ return [
         'title' => 'Sintesi economica contratti',
         'help' => 'Ricavi, costi e margine dai contratti attivi nel periodo :from – :to (motore di previsione contratti riusato).',
         'full_forecast' => 'Previsione completa',
+        'currency' => 'Valuta',
         'revenue' => 'Ricavi',
         'cost' => 'Costi',
         'net' => 'Netto',

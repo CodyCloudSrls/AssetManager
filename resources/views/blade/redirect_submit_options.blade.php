@@ -8,6 +8,11 @@
 ])
 
 <div class="box-footer">
+    {{-- Per-form captured origin: each tab/form submits ITS OWN "previous page" so the
+         post-save "back" redirect is immune to the shared, single-use url.intended session
+         slot (which two browser tabs would clobber → 404). Carries the filtered list's query
+         string, so filters survive the save. --}}
+    <input type="hidden" name="back_url" value="{{ url()->previous() }}">
     <div class="row">
 
         <div class="col-md-3">

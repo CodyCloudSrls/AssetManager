@@ -52,6 +52,7 @@ return [
         'title' => 'Contract financial summary',
         'help' => 'Revenue, cost and margin from active contracts over :from – :to (reusing the contract forecast engine).',
         'full_forecast' => 'Full forecast',
+        'currency' => 'Currency',
         'revenue' => 'Revenue',
         'cost' => 'Cost',
         'net' => 'Net',

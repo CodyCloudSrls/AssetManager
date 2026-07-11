@@ -246,6 +246,21 @@
                                     @endforeach
                                 @endif
 
+                                {{-- Hetrix: mostra l'associazione IP↔dominio su ENTRAMBI i lati (sola lettura).
+                                     Il dominio mostra l'IP su cui risiede; l'IP mostra i domini collegati. --}}
+                                @if ($asset->linkedIp)
+                                    <x-data-row :label="trans('admin/hardware/form.linked_ip')">
+                                        <a href="{{ route('hardware.show', $asset->linkedIp->id) }}">{{ $asset->linkedIp->name ?: $asset->linkedIp->asset_tag }}</a>
+                                    </x-data-row>
+                                @endif
+                                @if ($asset->linkedDomains->isNotEmpty())
+                                    <x-data-row :label="trans('admin/hardware/form.linked_domains')">
+                                        @foreach ($asset->linkedDomains as $ccDomain)
+                                            <a href="{{ route('hardware.show', $ccDomain->id) }}">{{ $ccDomain->name ?: $ccDomain->asset_tag }}</a>{{ ! $loop->last ? ', ' : '' }}
+                                        @endforeach
+                                    </x-data-row>
+                                @endif
+
 
 
                                 @if($asset->journal->last())

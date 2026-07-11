@@ -8,20 +8,34 @@
  * Easy to revert: remove this file's <link> in layouts/default.blade.php.
  */
 
-/* ── 1) Expanded: keep the caret pinned right and give the title room so long
-        labels ("Catalogo & impostazioni", "ERP / Controllo di gestione") wrap
-        instead of running under the caret. ───────────────────────────────── */
+/* ── 1) Expanded: the caret is a compact, clearly-clickable toggle target pinned to the
+        FIRST text line on the right. The label navigates (data-follow-link); the caret only
+        toggles the submenu (caret handler JS in default.blade.php). IMPORTANT: we position it
+        with top/right ONLY (no CSS transform) — AdminLTE rotates the open caret with
+        `transform:rotate(-90deg)` at higher specificity, so a transform here would be
+        overridden (dropping the caret out of place when a submenu is open). The extra right
+        padding also stops long labels ("Catalogo & impostazioni", "ERP / Controllo di
+        gestione") from colliding with / hiding under the caret. ──────────────────────────── */
 .sidebar-menu > li > a {
     position: relative;
-    padding-right: 30px;
+    padding-right: 40px;
 }
-.sidebar-menu > li > a > .pull-right,
-.sidebar-menu > li > a > .pull-right-container {
+.sidebar-menu > li.treeview > a > .pull-right,
+.sidebar-menu > li.treeview > a > .pull-right-container {
     position: absolute !important;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
+    right: 6px;
+    top: 9px;                 /* pin to the first line; survives AdminLTE's rotate-on-open */
+    width: 26px;
+    height: 26px;
+    line-height: 26px;
+    text-align: center;
     margin: 0 !important;
+    border-radius: 3px;
+    cursor: pointer;
+}
+/* Discoverable hover so users see the caret is its own toggle target. */
+.sidebar-menu > li.treeview > a > .pull-right:hover {
+    background-color: rgba(255, 255, 255, .10);
 }
 /* The title may take two lines rather than collide with / hide under the caret. */
 .sidebar-menu > li > a > span {
@@ -53,6 +67,11 @@
     line-height: 1.15;
     text-align: center;
     white-space: normal;
+    /* Break single long words (Documenti, Gestionale, Amministrazione) so they wrap in the
+       ~46px rail instead of overflowing and being clipped to "DOCUMEN"/"AMMINIST". */
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
     overflow: hidden;
 }
 
@@ -83,3 +102,17 @@
 .cc-overview-card:hover, .cc-overview-card:focus { text-decoration: none; transform: none !important; }
 .cc-overview-card:hover .icon { font-size: 64px !important; }
 .cc-overview-card .small-box-footer { pointer-events: none; }
+
+/* ── 6) Expanded sidebar: give the menu its OWN scroll so it can never be taller than the
+        viewport. AdminLTE's lte.layout.fix() sets `.content-wrapper` min-height to the FULL
+        sidebar height whenever the sidebar is taller than the window, and re-runs it on every
+        `expanded.tree`/`collapsed.tree`. With this module-heavy nav, opening a submenu pushed
+        the sidebar past the viewport and ballooned the content area into a huge empty (dark)
+        block below short pages that only cleared on reload. Capping `.sidebar` height bounds
+        the measured `outerHeight()` to ~viewport, so fix() can never balloon it. Scoped to the
+        EXPANDED state only, so the collapsed rail keeps its hover fly-outs (section 4). ────── */
+.sidebar-mini:not(.sidebar-collapse) .main-sidebar .sidebar {
+    max-height: calc(100vh - 50px);
+    overflow-y: auto;
+    overflow-x: hidden;
+}

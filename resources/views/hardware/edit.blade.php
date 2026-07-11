@@ -6,12 +6,22 @@
     'helpText' => trans('help.assets'),
     'helpPosition' => 'right',
     'formAction' => ($item->id) ? route('hardware.update', $item) : route('hardware.store'),
-    // Preserve the list filters forwarded by the "New" button so Cancel returns to the
-    // same filtered list (the component uses this literal URL because it contains '/').
-    'index_route' => route('hardware.index', request()->only(['category_id', 'status_id', 'model_id', 'location_id', 'fieldset_id', 'cf_column', 'cf_value'])),
+    // Cancel target:
+    //  • CREATE forwards the list filters as query params (via the "New" button), so we rebuild
+    //    the filtered index from them.
+    //  • EDIT has no filters in its URL (/hardware/{id}/edit), so request()->only() would be empty
+    //    and Cancel would drop the user on the UNFILTERED list. Instead return to the referring
+    //    list we came from (its filters live in the referrer's query string), guarded to a
+    //    same-host hardware list URL so we never bounce back to an edit/create/view page.
+    'index_route' => $item->id
+        ? ((\Illuminate\Support\Str::startsWith(url()->previous(), url('/hardware'))
+                && ! \Illuminate\Support\Str::contains(url()->previous(), ['/edit', '/create', '/clone']))
+            ? url()->previous()
+            : route('hardware.index'))
+        : route('hardware.index', request()->only(['category_id', 'status_id', 'model_id', 'location_id', 'fieldset_id', 'cf_column', 'cf_value'])),
     'options' => [
                 'back' => trans('admin/hardware/form.redirect_to_type',['type' => trans('general.previous_page')]),
-                'index' => trans('admin/hardware/form.redirect_to_all', ['type' => 'assets']),
+                'index' => trans('admin/hardware/form.redirect_to_all_assets'),
                 'item' => trans('admin/hardware/form.redirect_to_type', ['type' => trans('general.asset')]),
                 'other_redirect' => trans('admin/hardware/form.redirect_to_type', [ 'type' => trans('general.asset').' '.trans('general.asset_model')]),
                ]
@@ -144,20 +154,60 @@
             </div>
         </div>
 
-        {{-- Solo per i domini: collega l'Indirizzo IP per ereditarne lo stato Hetrix. --}}
-        @include('partials.forms.edit.asset-select', [
-            'translated_name' => trans('admin/hardware/form.linked_ip'),
-            'fieldname' => 'linked_ip_asset_id',
-            'item' => $item,
-            'asset_selector_div_id' => 'linked-ip-asset',
-            'select_id' => 'linked_ip_asset_select',
-            'required' => 'false',
-        ])
-        <div class="form-group" style="margin-top:-10px;">
-            <div class="col-md-7 col-md-offset-3">
-                <p class="help-block">{{ trans('admin/hardware/form.linked_ip_help') }}</p>
+        {{-- Solo per i domini: collega l'Indirizzo IP per ereditarne lo stato Hetrix. Il campo
+             appare SOLO quando il modello selezionato è nella categoria "Dominio" (id 77). Server-side
+             per l'asset corrente, e via JS quando si cambia modello (mappa modello→dominio sotto). --}}
+        @php
+            $ccDomainCategoryName = 'Dominio';
+            $ccIsDomain = $item->model && $item->model->category
+                && mb_strtolower(trim($item->model->category->name)) === mb_strtolower($ccDomainCategoryName);
+            $ccDomainModelIds = \App\Models\AssetModel::whereHas('category', fn ($q) => $q->whereRaw('LOWER(TRIM(name)) = ?', [mb_strtolower($ccDomainCategoryName)]))
+                ->pluck('id')->map(fn ($id) => (string) $id)->values();
+        @endphp
+        <div id="cc-linked-ip-wrap" @unless($ccIsDomain) style="display:none;" @endunless>
+            @include('partials.forms.edit.asset-select', [
+                'translated_name' => trans('admin/hardware/form.linked_ip'),
+                'fieldname' => 'linked_ip_asset_id',
+                'item' => $item,
+                'asset_selector_div_id' => 'linked-ip-asset',
+                'select_id' => 'linked_ip_asset_select',
+                'required' => 'false',
+            ])
+            <div class="form-group" style="margin-top:-10px;">
+                <div class="col-md-7 col-md-offset-3">
+                    <p class="help-block">{{ trans('admin/hardware/form.linked_ip_help') }}</p>
+                </div>
             </div>
         </div>
+        @push('js')
+        <script>
+        (function () {
+            var domainModels = @json($ccDomainModelIds);
+            function modelSel() { return document.querySelector('[name="model_id"]'); }
+            function wrap() { return document.getElementById('cc-linked-ip-wrap'); }
+            function apply() {
+                var m = modelSel(), w = wrap();
+                if (!m || !w) { return; }
+                var isDomain = domainModels.indexOf(String(m.value)) !== -1;
+                w.style.display = isDomain ? '' : 'none';
+                // If it stops being a domain, clear any stale IP link so it isn't saved.
+                if (!isDomain) {
+                    var sel = document.getElementById('linked_ip_asset_select');
+                    if (sel && sel.value) { sel.value = ''; if (window.jQuery) { window.jQuery(sel).trigger('change'); } }
+                }
+            }
+            function init() {
+                var m = modelSel();
+                if (m) {
+                    m.addEventListener('change', apply);
+                    if (window.jQuery) { window.jQuery(m).on('change', apply); }
+                }
+                apply();
+            }
+            if (document.readyState !== 'loading') { init(); } else { document.addEventListener('DOMContentLoaded', init); }
+        })();
+        </script>
+        @endpush
     </fieldset>
 
     <fieldset name="nis-inventory-asset">
@@ -365,29 +415,31 @@
 
     <div class="col-md-12 col-sm-12">
         <fieldset name="order-info">
+            {{-- Whole section (rinnovi + ordine + fornitore + costo) is ONE collapsible unit,
+                 EXPANDED by default so Fornitore/Data acquisto/Costo are visible without hunting
+                 for a caret (era il caso del "fornitore mancante sui domini": stava nascosto qui).
+                 Il cookie order_info_open ricorda la scelta dell'utente. --}}
             <x-form.legend>
                 <a id="order_info">
-                    <x-icon type="caret-right" class="fa-fw" id="order_info_icon" />
+                    <x-icon type="caret-down" class="fa-fw" id="order_info_icon" />
                     {{ trans('admin/hardware/form.order_details') }}
                 </a>
             </x-form.legend>
 
-            {{-- Scadenze / rinnovi (per asset virtuali: domini, IP, monitoraggio, certificati). --}}
-            <div class="col-md-12">
+            <div id='order_details' class="col-md-12">
+                {{-- Scadenze / rinnovi (per asset virtuali: domini, IP, monitoraggio, certificati). --}}
                 @include ('partials.forms.edit.datepicker', ['translated_name' => trans('admin/hardware/form.renewal_date'),'fieldname' => 'renewal_date', 'help_text' => trans('admin/hardware/form.renewal_date_help')])
                 <div class="form-group {{ $errors->has('auto_renewal') ? ' has-error' : '' }}">
-                    <label class="col-md-3 control-label">{{ trans('admin/hardware/form.auto_renewal') }}</label>
-                    <div class="col-md-9">
-                        <label class="checkbox-inline" style="padding-left:0;">
+                    <label for="auto_renewal" class="col-md-3 control-label">{{ trans('admin/hardware/form.auto_renewal') }}</label>
+                    <div class="col-md-7">
+                        <label style="font-weight:400; margin:0; padding-top:7px;">
                             <input type="hidden" name="auto_renewal" value="0">
-                            <input type="checkbox" name="auto_renewal" value="1" {{ old('auto_renewal', $item->auto_renewal) ? 'checked' : '' }}> {{ trans('admin/hardware/form.auto_renewal_help') }}
+                            <input type="checkbox" id="auto_renewal" name="auto_renewal" value="1" {{ old('auto_renewal', $item->auto_renewal) ? 'checked' : '' }}> {{ trans('admin/hardware/form.auto_renewal_help') }}
                         </label>
                         {!! $errors->first('auto_renewal', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
                     </div>
                 </div>
-            </div>
 
-            <div id='order_details' class="col-md-12" style="display:none">
                 @include ('partials.forms.edit.order_number')
                 @include ('partials.forms.edit.datepicker', ['translated_name' => trans('general.purchase_date'),'fieldname' => 'purchase_date'])
                 @include ('partials.forms.edit.datepicker', ['translated_name' => trans('admin/hardware/form.eol_date'),'fieldname' => 'asset_eol_date'])
@@ -657,7 +709,9 @@
             }
             if (trimmed_cookie.startsWith('order_info_open=')) {
                 elems = all_cookies[i].split('=', 2)
-                if (elems[1] == 'true') {
+                // #order_details now defaults to OPEN, so only collapse it if the user
+                // explicitly closed it before (cookie == 'false').
+                if (elems[1] == 'false') {
                     $('#order_info').trigger('click')
                 }
             }

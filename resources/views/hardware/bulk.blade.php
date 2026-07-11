@@ -194,6 +194,53 @@
 
           <!-- Supplier -->
            @include ('partials.forms.edit.supplier-select', ['translated_name' => trans('general.supplier'), 'fieldname' => 'supplier_id'])
+          {{-- Explicitly clear the supplier: an empty select alone means "leave unchanged". --}}
+          <div class="form-group">
+            <div class="col-md-9 col-md-offset-3">
+              <label>
+                <input type="checkbox" name="null_supplier_id" value="1" aria-label="null_supplier_id">
+                {{ trans('admin/hardware/form.bulk_clear_supplier') }}
+              </label>
+            </div>
+          </div>
+
+          <!-- Customer (cliente) -->
+          <div class="form-group {{ $errors->has('customer_id') ? ' has-error' : '' }}">
+            <label for="customer_id" class="col-md-3 control-label">{{ trans('admin/hardware/form.customer') }}</label>
+            <div class="col-md-7">
+              <select name="customer_id" id="customer_id" class="form-control select2" data-placeholder="{{ trans('admin/hardware/form.customer') }}" aria-label="customer_id" style="width:100%;">
+                <option value=""></option>
+                @foreach (\App\Models\Customer::orderBy('name')->get(['id', 'name']) as $cust)
+                  <option value="{{ $cust->id }}" {{ (int) old('customer_id') === (int) $cust->id ? 'selected' : '' }}>{{ $cust->name }}</option>
+                @endforeach
+              </select>
+              {!! $errors->first('customer_id', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-md-9 col-md-offset-3">
+              <label>
+                <input type="checkbox" name="null_customer_id" value="1" aria-label="null_customer_id">
+                {{ trans('admin/hardware/form.bulk_clear_customer') }}
+              </label>
+            </div>
+          </div>
+
+          {{-- Linked IP (Hetrix): applies only to assets in the "Dominio" category (guarded server-side). --}}
+          <div class="form-group {{ $errors->has('linked_ip_asset_id') ? ' has-error' : '' }}">
+            <label for="linked_ip_asset_id" class="col-md-3 control-label">{{ trans('admin/hardware/form.linked_ip') }}</label>
+            <div class="col-md-7">
+              <select name="linked_ip_asset_id" id="linked_ip_asset_id" class="form-control select2" data-placeholder="{{ trans('admin/hardware/form.linked_ip') }}" aria-label="linked_ip_asset_id" style="width:100%;">
+                <option value="">{{ '' }}</option>
+                @foreach (\App\Models\Asset::whereHas('model.category', fn ($q) => $q->whereRaw('LOWER(TRIM(name)) IN (?, ?)', ['indirizzo ip', 'ipv4']))->orderBy('name')->get(['id', 'name', 'asset_tag']) as $ip)
+                  <option value="{{ $ip->id }}" {{ (int) old('linked_ip_asset_id') === (int) $ip->id ? 'selected' : '' }}>{{ $ip->name ?: $ip->asset_tag }}</option>
+                @endforeach
+              </select>
+              <p class="help-block">{{ trans('admin/hardware/form.bulk_linked_ip_help') }}</p>
+              {!! $errors->first('linked_ip_asset_id', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
+            </div>
+          </div>
+
           <!-- Company -->
           @include ('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id'])
 

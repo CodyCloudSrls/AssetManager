@@ -265,6 +265,10 @@ class BulkAssetsController extends Controller
             || ($request->filled('expected_checkin'))
             || ($request->filled('purchase_cost'))
             || ($request->filled('supplier_id'))
+            || ($request->filled('null_supplier_id'))
+            || ($request->filled('customer_id'))
+            || ($request->filled('null_customer_id'))
+            || ($request->filled('linked_ip_asset_id'))
             || ($request->filled('order_number'))
             || ($request->filled('warranty_months'))
             || ($request->filled('rtd_location_id'))
@@ -310,6 +314,7 @@ class BulkAssetsController extends Controller
                     ->conditionallyAddItem('order_number')
                     ->conditionallyAddItem('requestable')
                     ->conditionallyAddItem('supplier_id')
+                    ->conditionallyAddItem('customer_id')
                     ->conditionallyAddItem('warranty_months')
                     ->conditionallyAddItem('next_audit_date')
                     ->conditionallyAddItem('asset_eol_date')
@@ -380,6 +385,23 @@ class BulkAssetsController extends Controller
 
                 if ($request->input('null_nis_notes') == '1') {
                     $this->update_array['nis_notes'] = null;
+                }
+
+                // Explicit clear checkboxes for supplier / customer (empty select = leave unchanged).
+                if ($request->input('null_supplier_id') == '1') {
+                    $this->update_array['supplier_id'] = null;
+                }
+                if ($request->input('null_customer_id') == '1') {
+                    $this->update_array['customer_id'] = null;
+                }
+
+                // Linked IP (Hetrix) only makes sense for "Dominio" assets: apply it per-asset,
+                // skipping non-domains so a mixed selection doesn't get a bogus IP link.
+                if ($request->filled('linked_ip_asset_id')) {
+                    $ccCatName = $asset->model?->category?->name;
+                    if ($ccCatName && mb_strtolower(trim($ccCatName)) === 'dominio') {
+                        $this->update_array['linked_ip_asset_id'] = $request->input('linked_ip_asset_id');
+                    }
                 }
 
                 if ($request->filled('purchase_cost')) {

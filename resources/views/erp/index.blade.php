@@ -49,7 +49,7 @@
                     <table class="table table-striped snipe-table">
                         <thead>
                             <tr>
-                                <th>{{ trans('general.currency') }}</th>
+                                <th>{{ trans('erp/general.financials.currency') }}</th>
                                 <th class="text-right">{{ trans('erp/general.financials.revenue') }}</th>
                                 <th class="text-right">{{ trans('erp/general.financials.cost') }}</th>
                                 <th class="text-right">{{ trans('erp/general.financials.net') }}</th>

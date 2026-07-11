@@ -1650,11 +1650,43 @@ class Helper
         $checkout_to_type = session('checkout_to_type') ?? null;
         $checkedInFrom = session('checkedInFrom');
         $other_redirect = session('other_redirect');
-        $backUrl = session()->pull('url.intended', 'home');
+
+        // A real per-table index URL to fall back to. NEVER fall back to the literal string
+        // 'home' — there is no /home route (name('home') lives at path '/'), so redirecting to
+        // 'home' produced a 404. This was the crash on the 2nd browser tab: url.intended is a
+        // single, single-use session slot shared by all tabs, so once tab 1 consumed it, tab 2
+        // got the 'home' fallback and 404'd.
+        $indexRoutes = [
+            'Assets' => 'hardware.index',
+            'Users' => 'users.index',
+            'Licenses' => 'licenses.index',
+            'Accessories' => 'accessories.index',
+            'Components' => 'components.index',
+            'Consumables' => 'consumables.index',
+        ];
+        $indexFallback = isset($indexRoutes[$table]) ? route($indexRoutes[$table]) : url('/');
+
+        // Prefer the per-form captured origin (hidden back_url on the submitted form) — immune to
+        // the cross-tab session clobbering above and it carries the filtered list's query string,
+        // so "torna alla pagina precedente" keeps the user's filters. Fall back to the (single-use)
+        // session value, then to the index.
+        $backUrl = $request->input('back_url') ?: session()->pull('url.intended', null) ?: $indexFallback;
+
+        // Open-redirect guard: only allow same-origin absolute URLs, or root-relative paths that
+        // are NOT protocol-relative ("//evil.com"). Anything else falls back to the index.
+        $appRoot = rtrim(url('/'), '/');
+        $backUrlIsSafe = is_string($backUrl) && $backUrl !== '' && (
+            $backUrl === $appRoot
+            || str_starts_with($backUrl, $appRoot.'/')
+            || (str_starts_with($backUrl, '/') && ! str_starts_with($backUrl, '//'))
+        );
+        if (! $backUrlIsSafe) {
+            $backUrl = $indexFallback;
+        }
 
         // return to previous page
         if ($redirect_option == 'back') {
-            return redirect()->intended($backUrl);
+            return redirect()->to($backUrl);
         }
 
         // return to index

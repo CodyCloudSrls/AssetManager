@@ -1881,6 +1881,18 @@
                 });
             })();
 
+            // Caret = dedicated submenu toggle. Top-level items with a real index navigate
+            // when you click the LABEL (data-follow-link=true). The caret is a child of that
+            // same <a>, so a click on it would ALSO navigate — here we only cancel that
+            // navigation with preventDefault. We deliberately do NOT stopPropagation, so
+            // AdminLTE's own lte.tree handler (delegated on .sidebar-menu, trigger ".treeview a")
+            // still runs and expands/collapses the submenu. Net effect: caret = pure toggle,
+            // label = navigate. (The caret is display:none in the collapsed rail, so this is
+            // only ever hit when the sidebar is expanded.)
+            $('.sidebar-menu').on('click', 'li.treeview > a > .pull-right, li.treeview > a > .pull-right-container', function (e) {
+                e.preventDefault();
+            });
+
             // Handle the first selected tabs regardless of permissions
             if ($('li.snipetab').is(':first-of-type')) {
                 var hash = $('li.snipetab:first-of-type').children().attr('href');

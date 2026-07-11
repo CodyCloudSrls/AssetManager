@@ -177,6 +177,7 @@ class Asset extends Depreciable
         'supplier_id',
         'customer_id',
         'customer_contract_id',
+        'linked_ip_asset_id',
         'warranty_months',
         'requestable',
         'nis_relevant',

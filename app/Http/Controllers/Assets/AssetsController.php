@@ -326,11 +326,10 @@ class AssetsController extends Controller
         }
         DB::commit();
 
-        if ($request->input('redirect_option') === 'back') {
-            session()->put(['redirect_option' => 'index']);
-        } else {
-            session()->put(['redirect_option' => $request->input('redirect_option')]);
-        }
+        // Honor the chosen redirect option as-is. (We used to coerce 'back' → 'index' on create,
+        // which dropped the filtered list the user came from and dumped them on the unfiltered
+        // index; the per-form back_url now carries that filtered origin safely.)
+        session()->put(['redirect_option' => $request->input('redirect_option')]);
 
         session()->put(['checkout_to_type' => $request->input('checkout_to_type'),
             'other_redirect' => 'model']);
@@ -570,7 +569,10 @@ class AssetsController extends Controller
 
         // Validate required serial based on model setting
         if ($model && $model->require_serial === 1 && empty($serial[1])) {
-            return redirect()->to(Helper::getRedirectOption($request, $asset->id, 'Assets'))
+            // getRedirectOption() already returns a RedirectResponse — return it directly
+            // (wrapping it in redirect()->to() passes a RedirectResponse where a string URL is
+            // expected, producing a malformed target).
+            return Helper::getRedirectOption($request, $asset->id, 'Assets')
                 ->with('warning', trans('admin/hardware/form.serial_required_post_model_update', [
                     'asset_model' => $model->name,
                 ]));
