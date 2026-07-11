@@ -75,6 +75,8 @@ return [
     'nis_inventory_section' => 'NIS2 Inventory',
     'nis_inventory_help' => 'Link the asset to the NIS2 perimeter when it supports relevant services, networks, systems, or processes.',
     'customer_section' => 'Customer & contract',
+    'company_owned' => 'Company-owned',
+    'company_owned_help' => 'Owned by us (no customer/contract)',
     'customer' => 'Customer',
     'customer_help' => 'The customer that owns this asset (e.g. the client a domain/IP belongs to). If blank, it is derived from the contract.',
     'customer_contract' => 'Customer contract',

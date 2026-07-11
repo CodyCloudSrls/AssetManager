@@ -220,8 +220,11 @@ class AssetsController extends Controller
                 );
                 $asset->nis_service_impact = $request->input('nis_service_impact', 'unknown');
                 $asset->nis_notes = $request->input('nis_notes');
+                // "Bene aziendale (nostro)" → don't inherit the model's default contract/customer;
+                // keep it customer-less. (On update this is already the behaviour: blank = removal.)
                 [$asset->customer_id, $asset->customer_contract_id] = $this->resolveAssetCustomerLinks(
-                    $model, $request->input('customer_id'), $request->input('customer_contract_id')
+                    $model, $request->input('customer_id'), $request->input('customer_contract_id'),
+                    ! $request->boolean('company_owned')
                 );
                 $asset->rtd_location_id = request('rtd_location_id') ?: null;
                 $asset->linked_ip_asset_id = request('linked_ip_asset_id') ?: null;

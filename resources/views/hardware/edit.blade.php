@@ -126,6 +126,47 @@
     <fieldset name="customer-links">
         <x-form.legend>{{ trans('admin/hardware/form.customer_section') }}</x-form.legend>
 
+        {{-- "Bene aziendale (nostro)": nessun cliente/contratto. Spuntandolo azzera e blocca i due
+             campi sotto. Stato iniziale derivato dal bene (spuntato se non ha cliente) — nessuna
+             colonna nuova: in update un cliente vuoto resta vuoto, in create company_owned=1 evita
+             l'ereditarietà del contratto di default del modello. --}}
+        <div class="form-group">
+            <label class="col-md-3 control-label">{{ trans('admin/hardware/form.company_owned') }}</label>
+            <div class="col-md-7">
+                <label style="font-weight:400; padding-top:7px;">
+                    <input type="hidden" name="company_owned" value="0">
+                    <input type="checkbox" id="cc_company_owned" name="company_owned" value="1"> {{ trans('admin/hardware/form.company_owned_help') }}
+                </label>
+            </div>
+        </div>
+        @push('js')
+        <script>
+        (function () {
+            var chk = document.getElementById('cc_company_owned');
+            var cust = document.getElementById('customer_id');
+            var contr = document.getElementById('customer_contract_id');
+            if (!chk || !cust) { return; }
+            function lock(on) {
+                [cust, contr].forEach(function (el) {
+                    if (!el) { return; }
+                    if (on) { el.value = ''; }
+                    el.disabled = on;
+                    if (window.jQuery && window.jQuery(el).data('select2')) {
+                        window.jQuery(el).prop('disabled', on).trigger('change');
+                    }
+                });
+            }
+            function init() {
+                // Derived initial state: an asset with no customer is treated as "ours".
+                if (! cust.value) { chk.checked = true; }
+                lock(chk.checked);
+                chk.addEventListener('change', function () { lock(chk.checked); });
+            }
+            if (document.readyState !== 'loading') { init(); } else { document.addEventListener('DOMContentLoaded', init); }
+        })();
+        </script>
+        @endpush
+
         <div class="form-group {{ $errors->has('customer_id') ? ' has-error' : '' }}">
             <label for="customer_id" class="col-md-3 control-label">{{ trans('admin/hardware/form.customer') }}</label>
             <div class="col-md-7">

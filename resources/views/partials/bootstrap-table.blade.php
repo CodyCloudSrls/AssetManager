@@ -354,9 +354,44 @@
 
             window.snipeTableMarkResponsiveShell($table);
 
+            // Second horizontal scrollbar at the TOP of wide tables, synced with the table's own
+            // (bottom) scroll — so you can scroll a wide beni/asset list without dragging to the
+            // bottom first. Defensive: never throws, and hides itself when the table fits.
+            if (!window.snipeTableTopScroll) {
+                window.snipeTableTopScroll = function ($tbl) {
+                    try {
+                        var $body = $tbl.closest('.fixed-table-body');
+                        var $container = $tbl.closest('.fixed-table-container');
+                        if (!$body.length || !$container.length) { return; }
+                        var body = $body[0];
+                        var $wrap = $container.prev('.cc-top-scroll');
+                        if (!$wrap.length) {
+                            $wrap = $('<div class="cc-top-scroll"><div class="cc-top-scroll-inner"></div></div>');
+                            $wrap.css({ overflowX: 'auto', overflowY: 'hidden', marginBottom: '2px' });
+                            $wrap.children().css({ height: '1px' });
+                            $container.before($wrap);
+                            var lock = false;
+                            $wrap.on('scroll', function () { if (lock) { return; } lock = true; body.scrollLeft = $wrap[0].scrollLeft; lock = false; });
+                            $body.on('scroll', function () { if (lock) { return; } lock = true; $wrap[0].scrollLeft = body.scrollLeft; lock = false; });
+                        }
+                        var sw = body.scrollWidth, cw = body.clientWidth;
+                        $wrap.children().css('width', sw + 'px');
+                        $wrap.css('display', (sw > cw + 1) ? 'block' : 'none');
+                    } catch (e) { /* never break the table */ }
+                };
+            }
+            if (!window.__ccTopScrollResizeBound) {
+                window.__ccTopScrollResizeBound = true;
+                $(window).on('resize', function () {
+                    $('table.snipe-table').each(function () { window.snipeTableTopScroll($(this)); });
+                });
+            }
+
             $table.on('post-body.bs.table reset-view.bs.table column-switch.bs.table', function () {
                 window.snipeTableMarkResponsiveShell($table);
+                window.snipeTableTopScroll($table);
             });
+            window.snipeTableTopScroll($table);
 
         });
     });

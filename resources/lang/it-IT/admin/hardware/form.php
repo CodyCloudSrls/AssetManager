@@ -78,6 +78,8 @@ return [
     'nis_inventory_section' => 'Inventario NIS2',
     'nis_inventory_help' => 'Collega il bene al perimetro NIS2 quando supporta servizi, reti, sistemi o processi rilevanti.',
     'customer_section' => 'Cliente e contratto',
+    'company_owned' => 'Bene aziendale',
+    'company_owned_help' => 'È nostro (azienda): nessun cliente/contratto',
     'customer' => 'Cliente',
     'customer_help' => 'Il cliente proprietario del bene (es. il cliente a cui appartiene un dominio/IP). Se vuoto, viene dedotto dal contratto.',
     'customer_contract' => 'Contratto verso cliente',

@@ -217,15 +217,29 @@ class StatuslabelsController extends Controller
     {
         $this->authorize('view', Statuslabel::class);
 
+        // Also count, per label, how many of those assets are currently assigned/checked out
+        // (Asset::Deployed() == assigned_to > 0). We surface those in a single "Assegnato" slice
+        // so the chart reflects what is actually deployed — read-only, no asset data is changed.
+        $deployedCount = ['assets as deployed_count' => function ($q) {
+            $q->where('assigned_to', '>', 0);
+        }];
+
         if (Setting::getSettings()->show_archived_in_list == 0) {
-            $statuslabels = Statuslabel::withCount('assets')->where('archived', '0')->get();
+            $statuslabels = Statuslabel::withCount(array_merge(['assets'], $deployedCount))->where('archived', '0')->get();
         } else {
-            $statuslabels = Statuslabel::withCount('assets')->get();
+            $statuslabels = Statuslabel::withCount(array_merge(['assets'], $deployedCount))->get();
         }
 
         $total = [];
+        $deployedTotal = 0;
 
         foreach ($statuslabels as $statuslabel) {
+            $deployed = (int) $statuslabel->deployed_count;
+            $deployedTotal += $deployed;
+            // A status label only counts assets that are NOT currently assigned; the assigned
+            // ones move to the single "Assegnato" slice below (so they aren't double-counted).
+            $remaining = (int) $statuslabel->assets_count - $deployed;
+
             if (! array_key_exists($statuslabel->name, $total)) {
                 $total[$statuslabel->name] = [
                     'label' => $statuslabel->name,
@@ -233,11 +247,20 @@ class StatuslabelsController extends Controller
                 ];
             }
 
-            $total[$statuslabel->name]['count'] += (int) $statuslabel->assets_count;
+            $total[$statuslabel->name]['count'] += $remaining;
 
             if (($statuslabel->color != '') && empty($total[$statuslabel->name]['color'])) {
                 $total[$statuslabel->name]['color'] = $statuslabel->color;
             }
+        }
+
+        if ($deployedTotal > 0) {
+            $deployedLabel = trans('general.deployed');
+            $total[$deployedLabel] = [
+                'label' => $deployedLabel,
+                'count' => ($total[$deployedLabel]['count'] ?? 0) + $deployedTotal,
+                'color' => $total[$deployedLabel]['color'] ?? '#00a65a',
+            ];
         }
 
         return (new PieChartTransformer)->transformPieChartDate($total);
