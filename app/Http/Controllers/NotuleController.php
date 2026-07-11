@@ -112,8 +112,15 @@ class NotuleController extends Controller
         $notula->fill($data);
         // Checkbox: absent when unchecked, so coerce to a definite boolean.
         $notula->invoice_received = (bool) ($data['invoice_received'] ?? false);
-        // Only a paid notula keeps a payment date.
-        if ($notula->status !== Notula::STATUS_PAID) {
+
+        // paid_amount is NOT NULL in the DB: an unpaid notula has nothing paid yet (0), a paid
+        // one defaults to the full amount unless a partial amount was entered. Guards the 500
+        // on creating an unpaid notula (the form omits paid_amount when status = unpaid).
+        if ($notula->status === Notula::STATUS_PAID) {
+            $notula->paid_amount = $data['paid_amount'] ?? $notula->amount ?? 0;
+        } else {
+            $notula->paid_amount = $data['paid_amount'] ?? 0;
+            // Only a paid notula keeps a payment date.
             $notula->paid_at = null;
         }
     }

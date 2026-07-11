@@ -60,6 +60,19 @@ class NotuleTest extends TestCase
         $this->assertDatabaseHas('notule', ['professional_name' => 'Geom. Neri']);
     }
 
+    public function test_unpaid_notula_with_empty_paid_amount_defaults_to_zero(): void
+    {
+        $this->actingAs(User::factory()->superuser()->create());
+
+        // The create form submits paid_amount='' for an unpaid notula → must not 500 on the
+        // NOT NULL column (this was the second-and-onward creation failure).
+        $this->post(route('erp.notule.store'), [
+            'professional_name' => 'Andrea Becattini', 'amount' => 366, 'paid_amount' => '', 'status' => Notula::STATUS_UNPAID,
+        ])->assertSessionHasNoErrors()->assertRedirect(route('erp.notule.index'));
+
+        $this->assertEqualsWithDelta(0, (float) Notula::where('professional_name', 'Andrea Becattini')->firstOrFail()->paid_amount, 0.01);
+    }
+
     public function test_paid_amount_persists_and_residuo_is_computed(): void
     {
         $this->actingAs(User::factory()->superuser()->create());
