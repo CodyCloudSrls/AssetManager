@@ -101,11 +101,58 @@ class CustomerContractsController extends Controller
         $limit = app('api_limit_value');
         $offset = Helper::clampPaginationOffset($request->input('offset'), $contracts->count(), $limit);
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
-        $sort = in_array($request->input('sort'), $allowedColumns, true) ? $request->input('sort') : 'created_at';
+        $requestedSort = $request->input('sort');
 
-        $contracts->orderBy($sort, $order);
-
+        // Count BEFORE applying any ORDER BY, so the count query never carries the computed-sort
+        // subqueries (portable; and Laravel strips orders on aggregates anyway).
         $total = $contracts->count();
+
+        // customer + monthly_* are NOT real DB columns: `customer` is a belongsTo and the monthly_*
+        // values are computed in CustomerContractsTransformer from subscriptions/costLines. To sort
+        // the server-side page by exactly what the table DISPLAYS, reproduce each value as a
+        // correlated subquery. The CASE divisors mirror ContractSubscription::monthlyAmount()
+        // (one_time => 0, else raw = monthly); deleted_at IS NULL matches the SoftDeletes eager
+        // loads; is_active is intentionally NOT filtered (the transformer sums active + inactive).
+        $revenueSub = '(SELECT COALESCE(SUM(CASE cs.billing_frequency '
+            ."WHEN 'one_time' THEN 0 "
+            ."WHEN 'bimonthly' THEN cs.quantity * cs.unit_price / 2 "
+            ."WHEN 'quarterly' THEN cs.quantity * cs.unit_price / 3 "
+            ."WHEN 'quadrimester' THEN cs.quantity * cs.unit_price / 4 "
+            ."WHEN 'semiannual' THEN cs.quantity * cs.unit_price / 6 "
+            ."WHEN 'annual' THEN cs.quantity * cs.unit_price / 12 "
+            .'ELSE cs.quantity * cs.unit_price END), 0) '
+            .'FROM contract_subscriptions cs '
+            .'WHERE cs.customer_contract_id = customer_contracts.id AND cs.deleted_at IS NULL)';
+
+        $costSub = '(SELECT COALESCE(SUM(CASE ccl.cost_frequency '
+            ."WHEN 'one_time' THEN 0 "
+            ."WHEN 'bimonthly' THEN ccl.quantity * ccl.unit_cost / 2 "
+            ."WHEN 'quarterly' THEN ccl.quantity * ccl.unit_cost / 3 "
+            ."WHEN 'quadrimester' THEN ccl.quantity * ccl.unit_cost / 4 "
+            ."WHEN 'semiannual' THEN ccl.quantity * ccl.unit_cost / 6 "
+            ."WHEN 'annual' THEN ccl.quantity * ccl.unit_cost / 12 "
+            .'ELSE ccl.quantity * ccl.unit_cost END), 0) '
+            .'FROM contract_cost_lines ccl '
+            .'JOIN contract_subscriptions cs2 ON cs2.id = ccl.contract_subscription_id '
+            .'WHERE cs2.customer_contract_id = customer_contracts.id '
+            .'AND cs2.deleted_at IS NULL AND ccl.deleted_at IS NULL)';
+
+        $computedSort = [
+            'customer' => '(SELECT c.name FROM customers c WHERE c.id = customer_contracts.customer_id AND c.deleted_at IS NULL)',
+            'monthly_revenue' => $revenueSub,
+            'monthly_cost' => $costSub,
+            'monthly_net' => $revenueSub.' - '.$costSub,
+        ];
+
+        // $order is sanitized to the literal 'asc'/'desc' above and the subquery SQL is fully
+        // static (no request data), so appending $order to orderByRaw is injection-safe.
+        if (array_key_exists($requestedSort, $computedSort)) {
+            $contracts->orderByRaw($computedSort[$requestedSort].' '.$order);
+        } else {
+            $sort = in_array($requestedSort, $allowedColumns, true) ? $requestedSort : 'created_at';
+            $contracts->orderBy($sort, $order);
+        }
+
         $contracts = $contracts->skip($offset)->take($limit)->get();
 
         return (new CustomerContractsTransformer)->transformContracts($contracts, $total);

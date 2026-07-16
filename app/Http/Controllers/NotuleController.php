@@ -25,7 +25,7 @@ class NotuleController extends Controller
 
         $companyIds = $this->notuleCompanyIds($request);
         $notule = Notula::forCompanies($companyIds)->with('supplier')
-            ->orderByDesc('competence_date')->orderByDesc('id')->paginate(50);
+            ->orderByDesc('competence_date')->orderByDesc('id')->get();
 
         $totals = [
             'pending' => Notula::outstandingTotal($companyIds),

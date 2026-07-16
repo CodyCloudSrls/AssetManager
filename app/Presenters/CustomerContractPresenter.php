@@ -33,7 +33,7 @@ class CustomerContractPresenter extends Presenter
             [
                 'field' => 'customer',
                 'searchable' => true,
-                'sortable' => false,
+                'sortable' => true,
                 'title' => trans('general.customer'),
                 'visible' => true,
                 'formatter' => 'customersLinkObjFormatter',
@@ -63,21 +63,21 @@ class CustomerContractPresenter extends Presenter
             [
                 'field' => 'monthly_revenue',
                 'searchable' => false,
-                'sortable' => false,
+                'sortable' => true,
                 'title' => trans('admin/contracts/general.monthly_revenue'),
                 'visible' => true,
             ],
             [
                 'field' => 'monthly_cost',
                 'searchable' => false,
-                'sortable' => false,
+                'sortable' => true,
                 'title' => trans('admin/contracts/general.monthly_cost'),
                 'visible' => true,
             ],
             [
                 'field' => 'monthly_net',
                 'searchable' => false,
-                'sortable' => false,
+                'sortable' => true,
                 'title' => trans('admin/contracts/general.monthly_net'),
                 'visible' => true,
             ],

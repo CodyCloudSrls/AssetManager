@@ -25,21 +25,21 @@
                         <div class="col-md-4 col-sm-6"><div class="small-box bg-aqua"><div class="inner"><h4 style="margin:0;">EUR {{ \App\Helpers\Helper::formatCurrencyOutput($totals['all']) }}</h4><p>{{ trans('erp/notule.tot_all') }}</p></div></div></div>
                     </div>
 
-                    <table class="table table-striped snipe-table">
+                    <table id="notuleListingTable" data-cookie-id-table="notuleListingTable" data-id-table="notuleListingTable" data-pagination="true" data-search="true" data-show-columns="true" data-show-export="true" data-export-options='{"fileName": "notule-{{ date('Y-m-d') }}"}' class="table table-striped snipe-table">
                         <thead>
                             <tr>
-                                <th>{{ trans('erp/notule.competence_date') }}</th>
-                                <th>{{ trans('erp/notule.professional') }}</th>
-                                <th>{{ trans('erp/notule.description') }}</th>
-                                <th class="text-right">{{ trans('erp/notule.amount') }}</th>
-                                <th class="text-right">{{ trans('erp/notule.paid') }}</th>
-                                <th class="text-right">{{ trans('erp/notule.residuo') }}</th>
-                                <th>{{ trans('erp/notule.status') }}</th>
-                                <th></th>
+                                <th data-sortable="true" data-sorter="notuleDateSorter">{{ trans('erp/notule.competence_date') }}</th>
+                                <th data-sortable="true">{{ trans('erp/notule.professional') }}</th>
+                                <th data-sortable="true">{{ trans('erp/notule.description') }}</th>
+                                <th class="text-right" data-sortable="true" data-sorter="notuleCurrencySorter">{{ trans('erp/notule.amount') }}</th>
+                                <th class="text-right" data-sortable="true" data-sorter="notuleCurrencySorter">{{ trans('erp/notule.paid') }}</th>
+                                <th class="text-right" data-sortable="true" data-sorter="notuleCurrencySorter">{{ trans('erp/notule.residuo') }}</th>
+                                <th data-sortable="true" data-sorter="notuleTextSorter">{{ trans('erp/notule.status') }}</th>
+                                <th data-sortable="false" data-searchable="false" data-switchable="false"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($notule as $n)
+                            @foreach ($notule as $n)
                                 <tr>
                                     <td>{{ optional($n->competence_date)->format('d/m/Y') ?? '—' }}</td>
                                     <td>{{ $n->display_name }}</td>
@@ -64,15 +64,46 @@
                                         @endcan
                                     </td>
                                 </tr>
-                            @empty
-                                <tr><td colspan="7" class="text-center text-muted">{{ trans('erp/notule.empty') }}</td></tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
-                    {{ $notule->links() }}
                     <p class="help-block">{{ trans('erp/notule.dedup_note') }}</p>
                 </div>
             </div>
         </div>
     </div>
+@stop
+
+@section('moar_scripts')
+@include('partials.bootstrap-table')
+<script nonce="{{ csrf_token() }}">
+    // Currency cells render as "1,234.56" (en) OR "1.234,56" (it) depending on the
+    // digit_separator setting (Helper::formatCurrencyOutput), so parse BOTH: whichever of
+    // comma/dot appears LAST is the decimal separator.
+    window.notuleParseCurrency = function (v) {
+        var s = String(v == null ? '' : v).replace(/<[^>]*>/g, '').replace(/[^0-9.,-]/g, '');
+        if (s === '' || s === '-') { return 0; }
+        var lc = s.lastIndexOf(','), ld = s.lastIndexOf('.');
+        if (lc > ld) { s = s.replace(/\./g, '').replace(',', '.'); } else { s = s.replace(/,/g, ''); }
+        var n = parseFloat(s);
+        return isNaN(n) ? 0 : n;
+    };
+    window.notuleCurrencySorter = function (a, b) {
+        return window.notuleParseCurrency(a) - window.notuleParseCurrency(b);
+    };
+    // d/m/Y cells; the em-dash placeholder for a null date sorts as 0 (earliest).
+    window.notuleParseDate = function (v) {
+        var m = String(v == null ? '' : v).replace(/<[^>]*>/g, '').match(/(\d{2})\/(\d{2})\/(\d{4})/);
+        return m ? new Date(+m[3], +m[2] - 1, +m[1]).getTime() : 0;
+    };
+    window.notuleDateSorter = function (a, b) {
+        return window.notuleParseDate(a) - window.notuleParseDate(b);
+    };
+    // Status column: sort by the visible label text (strip the <span>/icon markup).
+    window.notuleTextSorter = function (a, b) {
+        var ta = String(a == null ? '' : a).replace(/<[^>]*>/g, '').trim().toLowerCase(),
+            tb = String(b == null ? '' : b).replace(/<[^>]*>/g, '').trim().toLowerCase();
+        return ta < tb ? -1 : (ta > tb ? 1 : 0);
+    };
+</script>
 @stop
