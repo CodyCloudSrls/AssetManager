@@ -255,9 +255,12 @@
                                 @endif
                                 @if ($asset->linkedDomains->isNotEmpty())
                                     <x-data-row :label="trans('admin/hardware/form.linked_domains')">
-                                        @foreach ($asset->linkedDomains as $ccDomain)
-                                            <a href="{{ route('hardware.show', $ccDomain->id) }}">{{ $ccDomain->name ?: $ccDomain->asset_tag }}</a>{{ ! $loop->last ? ', ' : '' }}
-                                        @endforeach
+                                        <span class="text-muted">({{ $asset->linkedDomains->count() }})</span>
+                                        <div style="max-height:160px; overflow:auto; margin-top:4px;">
+                                            @foreach ($asset->linkedDomains as $ccDomain)
+                                                <div><a href="{{ route('hardware.show', $ccDomain->id) }}">{{ $ccDomain->name ?: $ccDomain->asset_tag }}</a></div>
+                                            @endforeach
+                                        </div>
                                     </x-data-row>
                                 @endif
 

@@ -598,6 +598,9 @@ return [
     'deny' => 'Nega il permesso per :area',
     'inherit' => 'Eredita il permesso per :area da gruppi di permessi',
     'use_groups' => 'Si consiglia vivamente di utilizzare i gruppi di permessi invece di assegnare i permessi individuali per una gestione più semplice.',
+    'priority_legend' => 'Priorità dei permessi',
+    'priority_note_user' => 'I permessi impostati qui sull\'UTENTE hanno la PRIORITÀ su quelli del gruppo: un «Consenti» (verde) o «Nega» (rosso) sull\'utente vince sempre. «Eredita» (⧉) lascia decidere ai gruppi dell\'utente. Un «Nega» esplicito batte qualsiasi «Consenti» ereditato dal gruppo.',
+    'priority_note_group' => 'Questi sono i permessi di base del gruppo. I permessi impostati sul singolo utente hanno la priorità: un «Consenti» (verde) o «Nega» (rosso) sull\'utente sovrascrive il gruppo.',
     'assetsfiles' => [
         'name' => 'Gestisci file dei beni',
         'note' => 'Permette di caricare, scaricare ed eliminare i file associati ai beni. (Ha senso solo con privilegi di visualizzazione o superiori.)',

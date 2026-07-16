@@ -171,7 +171,7 @@
           {{-- Explicitly clear the location: an empty select alone means "leave unchanged". --}}
           <div class="form-group">
             <div class="col-md-9 col-md-offset-3">
-              <label>
+              <label class="cc-check">
                 <input type="checkbox" name="null_rtd_location_id" value="1" aria-label="null_rtd_location_id">
                 {{ trans('admin/hardware/form.bulk_clear_location') }}
               </label>
@@ -197,7 +197,7 @@
           {{-- Explicitly clear the supplier: an empty select alone means "leave unchanged". --}}
           <div class="form-group">
             <div class="col-md-9 col-md-offset-3">
-              <label>
+              <label class="cc-check">
                 <input type="checkbox" name="null_supplier_id" value="1" aria-label="null_supplier_id">
                 {{ trans('admin/hardware/form.bulk_clear_supplier') }}
               </label>
@@ -219,7 +219,7 @@
           </div>
           <div class="form-group">
             <div class="col-md-9 col-md-offset-3">
-              <label>
+              <label class="cc-check">
                 <input type="checkbox" name="null_customer_id" value="1" aria-label="null_customer_id">
                 {{ trans('admin/hardware/form.bulk_clear_customer') }}
               </label>

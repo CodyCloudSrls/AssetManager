@@ -133,8 +133,8 @@
         <div class="form-group">
             <label class="col-md-3 control-label">{{ trans('admin/hardware/form.company_owned') }}</label>
             <div class="col-md-7">
-                <label style="font-weight:400; padding-top:7px;">
-                    <input type="hidden" name="company_owned" value="0">
+                <input type="hidden" name="company_owned" value="0">
+                <label class="cc-check" style="padding-top:5px;">
                     <input type="checkbox" id="cc_company_owned" name="company_owned" value="1"> {{ trans('admin/hardware/form.company_owned_help') }}
                 </label>
             </div>
@@ -473,8 +473,8 @@
                 <div class="form-group {{ $errors->has('auto_renewal') ? ' has-error' : '' }}">
                     <label for="auto_renewal" class="col-md-3 control-label">{{ trans('admin/hardware/form.auto_renewal') }}</label>
                     <div class="col-md-7">
-                        <label style="font-weight:400; margin:0; padding-top:7px;">
-                            <input type="hidden" name="auto_renewal" value="0">
+                        <input type="hidden" name="auto_renewal" value="0">
+                        <label class="cc-check" style="padding-top:5px;">
                             <input type="checkbox" id="auto_renewal" name="auto_renewal" value="1" {{ old('auto_renewal', $item->auto_renewal) ? 'checked' : '' }}> {{ trans('admin/hardware/form.auto_renewal_help') }}
                         </label>
                         {!! $errors->first('auto_renewal', '<span class="alert-msg"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}

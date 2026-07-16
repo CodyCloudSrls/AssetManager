@@ -180,6 +180,23 @@ class AssetsTransformer
             $array['custom_fields'] = new \stdClass; // HACK to force generation of empty object instead of empty list
         }
 
+        // Hetrix: a "Dominio" asset has no IP of its own — surface its LINKED IP's address in the
+        // shared "IP Address" column (custom field _snipeit_ip_address_5) so the beni list reflects
+        // the association. Display-only (added post-query), so domains still sort/search as empty
+        // on that column. Requires linkedIp to be eager-loaded (see Api\AssetsController::index).
+        if (empty($asset->_snipeit_ip_address_5) && $asset->linkedIp && $asset->linkedIp->name) {
+            if (! isset($fields_array) || ! is_array($fields_array)) {
+                $fields_array = [];
+            }
+            $fields_array['IP Address'] = [
+                'field' => '_snipeit_ip_address_5',
+                'value' => e($asset->linkedIp->name),
+                'field_format' => 'TEXT',
+                'element' => 'text',
+            ];
+            $array['custom_fields'] = $fields_array;
+        }
+
         $permissions_array['available_actions'] = [
             'checkout' => ($asset->deleted_at == '' && Gate::allows('checkout', Asset::class)) ? true : false,
             'checkin' => ($asset->deleted_at == '' && Gate::allows('checkin', Asset::class)) ? true : false,

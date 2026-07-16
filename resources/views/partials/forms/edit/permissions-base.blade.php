@@ -1,4 +1,18 @@
 
+@once
+    {{-- Priority legend + make the "Deny" state read as clearly SELECTED (like the green "Allow"),
+         so a "No" is as explicit as a "Yes" and the role-vs-user precedence is stated up front. --}}
+    <style nonce="{{ csrf_token() }}">
+        .radio-slider-inputs .deny:checked + label { background-color: #d9534f !important; color: #fff !important; }
+        .radio-slider-inputs .allow:not(:checked) + label { box-shadow: inset 0 0 0 1px rgba(92, 184, 92, .55); }
+        .radio-slider-inputs .deny:not(:checked) + label { box-shadow: inset 0 0 0 1px rgba(217, 83, 79, .55); }
+    </style>
+    <div class="callout callout-info" style="margin: 0 0 15px;">
+        <h4><i class="fa-solid fa-circle-info" aria-hidden="true"></i> {{ trans('permissions.priority_legend') }}</h4>
+        <p style="margin-bottom:0;">{{ $use_inherit ? trans('permissions.priority_note_user') : trans('permissions.priority_note_group') }}</p>
+    </div>
+@endonce
+
 @foreach ($permissions as $main_section => $main_section_permission)
 
   <!-- handle superadmin and reports, and anything else with only one option -->

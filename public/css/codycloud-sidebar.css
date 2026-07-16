@@ -18,7 +18,7 @@
         gestione") from colliding with / hiding under the caret. ──────────────────────────── */
 .sidebar-menu > li > a {
     position: relative;
-    padding-right: 40px;
+    padding-right: 44px;
 }
 .sidebar-menu > li.treeview > a > .pull-right,
 .sidebar-menu > li.treeview > a > .pull-right-container {
@@ -37,10 +37,12 @@
 .sidebar-menu > li.treeview > a > .pull-right:hover {
     background-color: rgba(255, 255, 255, .10);
 }
-/* The title may take two lines rather than collide with / hide under the caret. */
+/* The title may take two lines rather than collide with / hide under the caret. word-break also
+   splits a single long word ("impostazioni") so it can never run under the caret zone. */
 .sidebar-menu > li > a > span {
     white-space: normal;
     overflow-wrap: anywhere;
+    word-break: break-word;
     vertical-align: middle;
 }
 
@@ -100,7 +102,14 @@
         instead of an in-body <style>, so it reliably wins the cascade and busts stale caches. */
 .cc-overview-card { display: block; overflow: hidden; }
 .cc-overview-card:hover, .cc-overview-card:focus { text-decoration: none; transform: none !important; }
-.cc-overview-card:hover .icon { font-size: 64px !important; }
+/* Freeze the barcode icon size on hover (AdminLTE zooms it 64→95, which is the "enlargement"
+   Francesca dislikes — it shifts/obscures neighbours). Keep it out of flow and fixed at the
+   resting 64px. */
+.cc-overview-card .icon { position: absolute !important; transition: color .25s linear !important; }
+.cc-overview-card:hover .icon, .cc-overview-card:focus .icon { font-size: 64px !important; }
+/* Keep the effect she likes: instead of growing, the bars BRIGHTEN on hover (theme keeps them
+   at ~5-10% white at rest). Equal-specificity !important + last-loaded stylesheet → wins. */
+.cc-overview-card:hover .icon, .cc-overview-card:focus .icon { color: rgba(255, 255, 255, 0.30) !important; }
 .cc-overview-card .small-box-footer { pointer-events: none; }
 
 /* ── 6) Expanded sidebar: give the menu its OWN scroll so it can never be taller than the
@@ -115,4 +124,30 @@
     max-height: calc(100vh - 50px);
     overflow-y: auto;
     overflow-x: hidden;
+    /* Thin scrollbar so it doesn't eat ~15px of label width (which pushed long titles under the
+       caret). Firefox + WebKit. */
+    scrollbar-width: thin;
+}
+.sidebar-mini:not(.sidebar-collapse) .main-sidebar .sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+.sidebar-mini:not(.sidebar-collapse) .main-sidebar .sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 3px;
+}
+
+/* ── 7) Checkbox + wrapping label alignment. A <label> wrapping "<input type=checkbox> long
+        text" wraps the 2nd line UNDER the checkbox (misaligned). Flex keeps the box top-left and
+        the text in its own column so every line lines up. Apply class="cc-check" on the label. ── */
+label.cc-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-weight: 400;
+    margin: 0;
+}
+label.cc-check > input[type="checkbox"],
+label.cc-check > input[type="radio"] {
+    margin: 3px 0 0 0;
+    flex: 0 0 auto;
 }

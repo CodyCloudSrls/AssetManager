@@ -680,5 +680,8 @@ return [
     'deny' => 'Deny Permission for :area',
     'inherit' => 'Inherit Permission for :area from permission groups',
     'use_groups' => 'We strongly suggest using Permission Groups instead of assigning individual permissions for easier management.',
+    'priority_legend' => 'Permission priority',
+    'priority_note_user' => 'Permissions set here on the USER take PRIORITY over the group\'s: an "Allow" (green) or "Deny" (red) on the user always wins. "Inherit" (⧉) defers to the user\'s groups. An explicit "Deny" beats any "Allow" inherited from a group.',
+    'priority_note_group' => 'These are the group\'s base permissions. Permissions set on an individual user take priority: an "Allow" (green) or "Deny" (red) on the user overrides the group.',
 
 ];
