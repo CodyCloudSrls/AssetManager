@@ -363,6 +363,16 @@
               {!! $errors->first('nis_inventory_scope', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
             </div>
           </div>
+          {{-- Svuota completamente l'ambito inventario NIS2: la select vuota significa "non
+               cambiare", quindi azzerarlo richiede un flag esplicito (come per le note NIS2). --}}
+          <div class="form-group {{ $errors->has('null_nis_inventory_scope') ? ' has-error' : '' }}">
+            <div class="col-md-8 col-md-offset-3">
+              <label class="form-control">
+                <input type="checkbox" name="null_nis_inventory_scope" value="1">
+                {{ trans_choice('general.set_to_null', count($assets),['selection_count' => count($assets)]) }}
+              </label>
+            </div>
+          </div>
 
           <div class="form-group {{ $errors->has('nis_service_impact') ? ' has-error' : '' }}">
             <label for="nis_service_impact" class="col-md-3 control-label">{{ trans('admin/hardware/form.nis_service_impact') }}</label>

@@ -24,15 +24,47 @@ class NotuleController extends Controller
         $this->authorize('view', CustomerContract::class);
 
         $companyIds = $this->notuleCompanyIds($request);
-        $notule = Notula::forCompanies($companyIds)->with('supplier')
-            ->orderByDesc('competence_date')->orderByDesc('id')->get();
+
+        // Closed sets: a forged value is dropped, never handed to the query builder.
+        $status = in_array($request->input('status'), array_keys(Notula::statusOptions()), true)
+            ? (string) $request->input('status') : null;
+        $invoiced = in_array($request->input('invoiced'), ['0', '1'], true)
+            ? (string) $request->input('invoiced') : null;
+        $professional = (string) $request->input('professional', '');
+
+        // Single factory: the rows AND both total cards derive from the same scoped+filtered
+        // query, so the cards can never contradict the visible rows, and no filter can escape
+        // forCompanies() (the tenant guard).
+        $base = function () use ($companyIds, $status, $invoiced, $professional) {
+            $query = Notula::forCompanies($companyIds);
+
+            if (! is_null($status)) {
+                $query->where('status', $status);
+            }
+            if (! is_null($invoiced)) {
+                $query->where('invoice_received', $invoiced === '1');
+            }
+            // display_name prefers the supplier name, so the free-text bucket is only the rows
+            // WITHOUT a supplier_id (see Notula::getDisplayNameAttribute()).
+            if (str_starts_with($professional, 'sup:')) {
+                $query->where('supplier_id', (int) substr($professional, 4));
+            } elseif (str_starts_with($professional, 'txt:')) {
+                $query->whereNull('supplier_id')->where('professional_name', substr($professional, 4));
+            }
+
+            return $query;
+        };
+
+        $notule = $base()->with('supplier')->orderByDesc('competence_date')->orderByDesc('id')->get();
 
         $totals = [
-            'pending' => Notula::outstandingTotal($companyIds),
-            'all' => (float) Notula::forCompanies($companyIds)->whereIn('status', [Notula::STATUS_UNPAID, Notula::STATUS_PAID])->sum('amount'),
+            'pending' => Notula::outstandingSum($base()),
+            'all' => (float) $base()->whereIn('status', [Notula::STATUS_UNPAID, Notula::STATUS_PAID])->sum('amount'),
         ];
 
-        return view('erp.notule.index', compact('notule', 'totals'));
+        $professionals = $this->notuleProfessionalOptions($companyIds);
+
+        return view('erp.notule.index', compact('notule', 'totals', 'professionals'));
     }
 
     public function create(): View
@@ -123,6 +155,42 @@ class NotuleController extends Controller
             // Only a paid notula keeps a payment date.
             $notula->paid_at = null;
         }
+    }
+
+    /**
+     * Professionals actually used by this tenant's notule. A notula names its professional either
+     * through supplier_id (display_name = supplier name) or through the free-text
+     * professional_name, so the list is the union of both; option values are prefixed so the two
+     * shapes stay distinguishable ("sup:<id>" vs "txt:<name>").
+     *
+     * @return array<string,string> option value => label
+     */
+    private function notuleProfessionalOptions(?array $companyIds): array
+    {
+        $options = [];
+
+        $supplierIds = Notula::forCompanies($companyIds)->whereNotNull('supplier_id')
+            ->distinct()->pluck('supplier_id')->all();
+
+        if ($supplierIds !== []) {
+            // withTrashed(): Notula::supplier() is withTrashed() too, so a soft-deleted supplier
+            // must stay selectable or its rows become unfilterable.
+            foreach (Supplier::withTrashed()->whereIn('id', $supplierIds)->get(['id', 'name']) as $supplier) {
+                $options['sup:'.$supplier->id] = $supplier->name;
+            }
+        }
+
+        $freeNames = Notula::forCompanies($companyIds)->whereNull('supplier_id')
+            ->whereNotNull('professional_name')->where('professional_name', '<>', '')
+            ->distinct()->pluck('professional_name')->all();
+
+        foreach ($freeNames as $name) {
+            $options['txt:'.$name] = $name;
+        }
+
+        asort($options, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return $options;
     }
 
     private function notuleCompanyIds(Request $request): ?array

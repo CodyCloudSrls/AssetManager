@@ -285,6 +285,7 @@ class BulkAssetsController extends Controller
             || ($request->filled('nis_service_impact'))
             || ($request->filled('nis_notes'))
             || ($request->filled('null_nis_notes'))
+            || ($request->filled('null_nis_inventory_scope'))
             || ($request->filled('apply_tenant_service_ids'))
             || ($request->filled('null_name'))
             || ($request->filled('null_purchase_date'))
@@ -385,6 +386,13 @@ class BulkAssetsController extends Controller
 
                 if ($request->input('null_nis_notes') == '1') {
                     $this->update_array['nis_notes'] = null;
+                }
+
+                // Explicitly clear the NIS2 inventory scope (an empty select means "leave
+                // unchanged"). Runs after the conditionallyAddItem() chain, so clearing wins
+                // if both a value and the clear flag were somehow submitted.
+                if ($request->input('null_nis_inventory_scope') == '1') {
+                    $this->update_array['nis_inventory_scope'] = null;
                 }
 
                 // Explicit clear checkboxes for supplier / customer (empty select = leave unchanged).

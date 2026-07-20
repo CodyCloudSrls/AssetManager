@@ -88,10 +88,20 @@ class Notula extends Model
         return round((float) $this->amount - (float) $this->paid_amount, 2);
     }
 
+    /**
+     * Outstanding sum (amount − paid_amount) over an ALREADY-scoped query. Exists so the notule
+     * index can show a total for the *filtered* set without duplicating the accrual expression
+     * (which must stay in sync with scopeAccruable()).
+     */
+    public static function outstandingSum(Builder $query): float
+    {
+        return round((float) $query->accruable()
+            ->sum(\Illuminate\Support\Facades\DB::raw('amount - paid_amount')), 2);
+    }
+
     /** Total still to pay across pending notule for the scope (feeds controllo di gestione). */
     public static function outstandingTotal(?array $companyIds): float
     {
-        return round((float) static::query()->forCompanies($companyIds)->accruable()
-            ->sum(\Illuminate\Support\Facades\DB::raw('amount - paid_amount')), 2);
+        return static::outstandingSum(static::query()->forCompanies($companyIds));
     }
 }

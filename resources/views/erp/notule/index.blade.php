@@ -20,6 +20,52 @@
                 <div class="box-body">
                     <p class="help-block">{{ trans('erp/notule.intro') }}</p>
 
+                    {{-- Filtri lato server: professionista / stato / fatturata. I totali sotto sono
+                         calcolati sullo STESSO set filtrato, così le card non contraddicono mai le
+                         righe visibili. I filtri tenant (tenant_id/company_id) passano invariati. --}}
+                    <form method="get" action="{{ route('erp.notule.index') }}" class="form-inline" role="search" style="margin-bottom:14px;">
+                        @foreach (request()->only(['tenant_id', 'company_id']) as $ccName => $ccValue)
+                            <input type="hidden" name="{{ $ccName }}" value="{{ $ccValue }}">
+                        @endforeach
+
+                        <div class="form-group" style="margin-right:8px;">
+                            <label for="notule_professional_filter" class="sr-only">{{ trans('erp/notule.professional') }}</label>
+                            <select class="form-control select2" name="professional" id="notule_professional_filter" aria-label="{{ trans('erp/notule.professional') }}" style="min-width:220px;">
+                                <option value="">{{ trans('erp/notule.all_professionals') }}</option>
+                                @foreach ($professionals as $ccValue => $ccLabel)
+                                    <option value="{{ $ccValue }}" @selected(request('professional') === (string) $ccValue)>{{ $ccLabel }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-right:8px;">
+                            <label for="notule_status_filter" class="sr-only">{{ trans('erp/notule.status') }}</label>
+                            <select class="form-control select2" name="status" id="notule_status_filter" aria-label="{{ trans('erp/notule.status') }}" style="min-width:170px;">
+                                <option value="">{{ trans('erp/notule.all_statuses') }}</option>
+                                @foreach (\App\Models\Notula::statusOptions() as $ccValue => $ccLabel)
+                                    <option value="{{ $ccValue }}" @selected(request('status') === (string) $ccValue)>{{ $ccLabel }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-right:8px;">
+                            <label for="notule_invoiced_filter" class="sr-only">{{ trans('erp/notule.invoice_column') }}</label>
+                            <select class="form-control select2" name="invoiced" id="notule_invoiced_filter" aria-label="{{ trans('erp/notule.invoice_column') }}" style="min-width:180px;">
+                                <option value="">{{ trans('erp/notule.all_invoiced') }}</option>
+                                <option value="1" @selected(request('invoiced') === '1')>{{ trans('erp/notule.invoiced_yes') }}</option>
+                                <option value="0" @selected(request('invoiced') === '0')>{{ trans('erp/notule.invoiced_no') }}</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <x-icon type="search" />
+                            {{ trans('erp/notule.apply_filters') }}
+                        </button>
+                        <a href="{{ route('erp.notule.index', request()->only(['tenant_id', 'company_id'])) }}" class="btn btn-default">
+                            {{ trans('erp/notule.clear_filters') }}
+                        </a>
+                    </form>
+
                     <div class="row" style="margin-bottom:14px;">
                         <div class="col-md-4 col-sm-6"><div class="small-box bg-yellow"><div class="inner"><h4 style="margin:0;">EUR {{ \App\Helpers\Helper::formatCurrencyOutput($totals['pending']) }}</h4><p>{{ trans('erp/notule.tot_pending') }}</p></div></div></div>
                         <div class="col-md-4 col-sm-6"><div class="small-box bg-aqua"><div class="inner"><h4 style="margin:0;">EUR {{ \App\Helpers\Helper::formatCurrencyOutput($totals['all']) }}</h4><p>{{ trans('erp/notule.tot_all') }}</p></div></div></div>
