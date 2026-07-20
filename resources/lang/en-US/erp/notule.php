@@ -19,6 +19,7 @@ return [
     'status_unpaid' => 'Unpaid',
     'status_paid' => 'Paid',
     'invoice_received' => 'Invoice received',
+    'invoice_column' => 'Invoiced',
     'invoice_received_help' => 'Tick when you have received the professional\'s invoice: the cost then comes from Fatture in Cloud and no longer counts among the notule.',
     'paid' => 'Paid',
     'paid_help' => 'Amount already paid (residuo = fee - paid).',

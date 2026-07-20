@@ -19,6 +19,7 @@ return [
     'status_unpaid' => 'Non pagata',
     'status_paid' => 'Pagata',
     'invoice_received' => 'Fattura ricevuta',
+    'invoice_column' => 'Fatturata',
     'invoice_received_help' => 'Segna quando hai ricevuto la fattura del professionista: il costo passa a Fatture in Cloud e non viene più contato tra le notule.',
     'paid' => 'Pagato',
     'paid_help' => 'Quanto gia pagato (residuo = compenso - pagato).',

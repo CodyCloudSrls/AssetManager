@@ -35,6 +35,7 @@
                                 <th class="text-right" data-sortable="true" data-sorter="notuleCurrencySorter">{{ trans('erp/notule.paid') }}</th>
                                 <th class="text-right" data-sortable="true" data-sorter="notuleCurrencySorter">{{ trans('erp/notule.residuo') }}</th>
                                 <th data-sortable="true" data-sorter="notuleTextSorter">{{ trans('erp/notule.status') }}</th>
+                                <th data-sortable="true" data-sorter="notuleTextSorter">{{ trans('erp/notule.invoice_column') }}</th>
                                 <th data-sortable="false" data-searchable="false" data-switchable="false"></th>
                             </tr>
                         </thead>
@@ -50,8 +51,12 @@
                                     <td>
                                         @php($cls = ['unpaid' => 'label-warning', 'paid' => 'label-success'][$n->status] ?? 'label-default')
                                         <span class="label {{ $cls }}">{{ $n->status_label }}</span>
+                                    </td>
+                                    <td>
                                         @if ($n->invoice_received)
-                                            <span class="label label-info" title="{{ trans('erp/notule.invoice_received') }}"><i class="fa-solid fa-file-invoice"></i></span>
+                                            <span class="label label-success" title="{{ trans('erp/notule.invoice_received') }}"><i class="fa-solid fa-file-invoice"></i> {{ trans('general.yes') }}</span>
+                                        @else
+                                            <span class="label label-default">{{ trans('general.no') }}</span>
                                         @endif
                                     </td>
                                     <td class="text-right">
