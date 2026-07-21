@@ -10,6 +10,16 @@
  * badges. Structural/component redesign is a later phase.
  */
 
+/* Le variabili sotto usano light-dark(), che risolve SOLO se color-scheme è
+   dichiarato. layouts/default.blade.php lo dichiara nel suo <style> inline, ma
+   layouts/basic.blade.php (login / 2FA) NO: lì light-dark() ripiegava sul valore
+   chiaro pur avendo data-theme="dark", rendendo il login bianco-su-bianco.
+   Dichiararlo QUI rende il tema auto-sufficiente per qualunque layout lo carichi.
+   Valori identici a quelli già presenti nel layout principale -> nessun effetto lì. */
+:root { color-scheme: light dark; }
+[data-theme="light"] { color-scheme: light; }
+[data-theme="dark"] { color-scheme: dark; }
+
 :root {
     /* CerberoSOC-aligned palette: neutral near-black surfaces (no blue tint) +
        vivid indigo primary, matching the SOC console look. */
@@ -2199,4 +2209,55 @@ label.btn > input[type="checkbox"] {
 .main-header .nav.navbar-nav,
 .main-header .navbar-left {
     background-color: light-dark(#ffffff, #111114) !important;
+}
+
+/* ---- A) La SIDEBAR resta scura in ENTRAMBI i temi. Le sue regole usano
+   var(--cc-surface*) che ora si schiariscono: in modalità chiara comparivano
+   righe chiare con testo bianco su barra scura (hover/voce attiva/sottomenù).
+   Ridefinendo le variabili SOLO dentro la sidebar, ogni regola che le usa torna
+   scura senza toccare una singola regola. Valori = quelli scuri originali,
+   quindi in dark non cambia assolutamente nulla. ---- */
+.main-sidebar,
+.main-sidebar * {
+    --cc-bg: #0a0a0c;
+    --cc-bg-elevated: #111114;
+    --cc-surface: #161619;
+    --cc-surface-2: #1c1c21;
+    --cc-surface-hover: #232329;
+    --cc-border: #26262b;
+    --cc-border-strong: #34343c;
+    --cc-text: #f4f5f7;
+    --cc-text-muted: #9b9ba6;
+    --cc-text-dim: #6b6b76;
+}
+
+/* ---- B) Header, tab, bottoni e voci dei menù a tendina: qui lo sfondo ORA è
+   chiaro, ma il testo era #fff fisso -> bianco su chiaro, illeggibile (è la voce
+   evidenziata del menù utente segnalata da Francesca). Il valore scuro resta
+   #ffffff, quindi la dark non cambia. ---- */
+.main-header .navbar .nav > li.active > a,
+.main-header .navbar .nav > .active > a,
+.main-header .navbar .nav > li > a.active,
+.main-header .navbar .nav > .open > a,
+.main-header .navbar .nav > .open > a:hover,
+.main-header .navbar .nav > .open > a:focus,
+.main-header .navbar-custom-menu .dropdown-menu > li > a:hover,
+.main-header .navbar-custom-menu .dropdown-menu > li > a:focus,
+.main-header .navbar-nav .dropdown-menu > li > a:hover,
+.main-header .dropdown-menu > li > a:hover,
+.main-header .dropdown-menu > li > a:focus,
+.main-header .dropdown-menu > li:hover > a,
+.main-header .dropdown-menu > .active > a,
+.main-header .dropdown-menu > .active > a:hover,
+.fixed-table-toolbar .btn:hover,
+.btn-tableButton:hover,
+.btn-tableButton:focus,
+.btn-default:hover,
+.btn-default:focus,
+.nav-tabs > li.active > a,
+.nav-tabs > li > a:hover,
+.nav-tabs-custom > .nav-tabs > li.active > a,
+.nav-tabs-custom > .nav-tabs > li.active > a:link,
+.nav-tabs-custom > .nav-tabs > li.active > a:visited {
+    color: light-dark(#1c1c21, #ffffff) !important;
 }

@@ -1591,6 +1591,19 @@
                             @endif
 
 
+                            {{-- Tasto rapido chiaro/scuro in barra: lo stesso toggle esiste anche nel
+                                 menù utente, ma da lì servono due clic. data-theme-toggle-compact =
+                                 solo icona (senza etichetta), gestito dal JS in fondo alla pagina. --}}
+                            <li>
+                                <a type="button" href="#" data-theme-toggle data-theme-toggle-compact
+                                   aria-label="{{ trans('general.dark_mode') }}"
+                                   title="{{ trans('general.dark_mode') }}"
+                                   onclick="event.preventDefault();">
+                                    <i class="fa-solid fa-moon fa-fw"></i>
+                                    <span class="sr-only">{{ trans('general.dark_mode') }}</span>
+                                </a>
+                            </li>
+
                             @can('superadmin')
                                 <li>
                                     <a href="{{ route('settings.index') }}">
@@ -1927,8 +1940,16 @@
              * Utility function to update the button text and aria-label.
              */
             function updateButton({ buttonEl, isDark }) {
+                if (!buttonEl) { return; }
                 const newCta = isDark ? '{{ trans('general.light_mode') }}' : '{{ trans('general.dark_mode') }}';
                 const newCtaButton = isDark ? '<i class="fa-regular fa-sun fa-fw"></i> ' : '<i class="fa-solid fa-moon fa-fw"></i> ';
+                // Compact (header) toggle: icon only, label kept for screen readers.
+                if (buttonEl.hasAttribute('data-theme-toggle-compact')) {
+                    buttonEl.setAttribute('aria-label', newCta);
+                    buttonEl.setAttribute('title', newCta);
+                    buttonEl.innerHTML = newCtaButton + '<span class="sr-only">' + newCta + '</span>';
+                    return;
+                }
                 // use an aria-label if omitting text on the button
                 // and using a sun/moon icon, for example
                 buttonEl.setAttribute("aria-label", newCta);
@@ -1951,7 +1972,9 @@
              * 1. Grab what we need from the DOM and system settings on page load
              */
 
-            const button = document.querySelector("[data-theme-toggle]");
+            // There are now TWO toggles (user menu + compact one in the header bar), so bind them all.
+            const themeButtons = Array.from(document.querySelectorAll("[data-theme-toggle]"));
+            const button = themeButtons[0];
             const localStorageTheme = localStorage.getItem("theme");
             const systemSettingDark = window.matchMedia("(prefers-color-scheme: dark)");
             const clearButton = document.querySelector("[data-theme-toggle-clear]");
@@ -1964,20 +1987,22 @@
             /**
              * 3. Update the theme setting and button text according to current settings
              */
-            updateButton({ buttonEl: button, isDark: currentThemeSetting === "dark" });
+            themeButtons.forEach((el) => updateButton({ buttonEl: el, isDark: currentThemeSetting === "dark" }));
             updateThemeOnHtmlEl({ theme: currentThemeSetting });
 
             /**
-             * 4. Add an event listener to toggle the theme
+             * 4. Add an event listener to toggle the theme (on every toggle, keeping them in sync)
              */
-            button.addEventListener("click", (event) => {
-                const newTheme = currentThemeSetting === "dark" ? "light" : "dark";
+            themeButtons.forEach((el) => {
+                el.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    const newTheme = currentThemeSetting === "dark" ? "light" : "dark";
 
-                localStorage.setItem("theme", newTheme);
-                updateButton({ buttonEl: button, isDark: newTheme === "dark" });
-                updateThemeOnHtmlEl({ theme: newTheme });
-
-                currentThemeSetting = newTheme;
+                    localStorage.setItem("theme", newTheme);
+                    currentThemeSetting = newTheme;
+                    themeButtons.forEach((b) => updateButton({ buttonEl: b, isDark: newTheme === "dark" }));
+                    updateThemeOnHtmlEl({ theme: newTheme });
+                });
             });
 
 
