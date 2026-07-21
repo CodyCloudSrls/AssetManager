@@ -247,6 +247,9 @@
                 fixedColumns: data_with_default('fixed-columns', 'true'),
                 fixedRightNumber: data_with_default('fixed-right-number', '1'),
                 stickyHeader: true,
+                // La topbar ora è fissa (56px): senza questo offset l'intestazione "sticky"
+                // della tabella si aggancia a top:0 e finisce DIETRO la barra.
+                stickyHeaderOffsetY: 56,
                 stickyHeaderOffsetLeft: parseInt($('body').css('padding-left'), 10),
                 stickyHeaderOffsetRight: parseInt($('body').css('padding-right'), 10),
                 trimOnSearch: false,

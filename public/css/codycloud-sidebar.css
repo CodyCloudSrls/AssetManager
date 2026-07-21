@@ -84,8 +84,12 @@
         overflow visible in collapsed mode means the popout can never be clipped away — the
         real fix (a transparent ::before bridge could not un-clip an overflow:hidden ancestor
         and also covered the rail icons). ─────────────────────────────────────────────────── */
+/* NB: il rail compresso è alto ~1185px (misurato) contro ~700-800px di viewport, quindi ORA
+   scorre (sezione 6) e non può più essere overflow:visible. I fly-out non vengono ritagliati
+   perché il JS in default.blade.php li porta a position:fixed (unico modo per uscire da un
+   contenitore di scroll). Regola lasciata qui, neutralizzata, per storia. */
 .sidebar-mini.sidebar-collapse .sidebar-menu {
-    overflow: visible !important;
+    /* overflow: visible !important;  <-- sostituito dallo scroller della sezione 6 */
 }
 /* Close the header→body seam so the pointer travels icon → header → submenu on one
    continuous hover surface (pull the body up to overlap the ~44px header label; the matching
@@ -112,22 +116,94 @@
 .cc-overview-card:hover .icon, .cc-overview-card:focus .icon { color: rgba(255, 255, 255, 0.30) !important; }
 .cc-overview-card .small-box-footer { pointer-events: none; }
 
-/* ── 6) Expanded sidebar: give the menu its OWN scroll so it can never be taller than the
-        viewport. AdminLTE's lte.layout.fix() sets `.content-wrapper` min-height to the FULL
-        sidebar height whenever the sidebar is taller than the window, and re-runs it on every
-        `expanded.tree`/`collapsed.tree`. With this module-heavy nav, opening a submenu pushed
-        the sidebar past the viewport and ballooned the content area into a huge empty (dark)
-        block below short pages that only cleared on reload. Capping `.sidebar` height bounds
-        the measured `outerHeight()` to ~viewport, so fix() can never balloon it. Scoped to the
-        EXPANDED state only, so the collapsed rail keeps its hover fly-outs (section 4). ────── */
-.sidebar-mini:not(.sidebar-collapse) .main-sidebar .sidebar {
-    max-height: calc(100vh - 50px);
+/* ── 6) SHELL FISSA — header e sidebar ancorati, scorre solo il contenuto. ─────────────
+        Deliberatamente NON si usa la classe `fixed` di AdminLTE: il suo JS la legge e fa due
+        cose non disattivabili — (a) lte.pushmenu aggiunge `sidebar-mini-expand-feature`, e
+        TUTTE le regole dei fly-out del rail sono scoped `:not(.sidebar-mini-expand-feature)`,
+        quindi i fly-out morirebbero; (b) lte.layout.fixSidebar() applica slimScroll a
+        `.sidebar` con overflow:hidden INLINE, che ritaglia di nuovo i fly-out.
+        Inoltre `.fixed` assume un header 50/100px, mentre il tema lo fissa a 56px.
+        Gli offset ORIZZONTALI restano quelli di AdminLTE (230px / 50px + transizione .3s),
+        così espandi/comprimi si anima esattamente come prima. ─────────────────────────────── */
+
+html { scroll-padding-top: 56px; }
+
+.main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+.main-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    height: 100dvh;
+}
+
+/* Il contenuto passa sotto la barra fissa e non deve più essere allungato da
+   lte.layout.fix(), che scrive un min-height INLINE su .content-wrapper calcolato
+   sull'altezza TOTALE della sidebar (era l'origine del blocco vuoto enorme).
+   Una dichiarazione d'autore !important batte lo stile inline. */
+.content-wrapper {
+    padding-top: 56px;
+    min-height: calc(100vh - 56px) !important;
+}
+
+/* overrides.css (dentro all.css) spinge ancora giù il menu assumendo la vecchia navbar a due
+   righe: margin-top 160px/50px a certe larghezze. Con la brand-row dentro la sidebar è spazio
+   morto che mangerebbe l'area di scroll. */
+.main-sidebar .sidebar-menu { margin-top: 0; }
+
+/* Colonna flex: brand row fissa in alto, menu che scorre.
+   height:100% con !important PERCHÉ lte.layout.fixSidefar() (ramo non-`fixed`, quello che
+   gira davvero) scrive `height:auto` INLINE su .sidebar a ogni load e resize — verificato dal
+   vivo: sectionInlineHeight="auto". Senza !important il flex collasserebbe e il menu
+   traboccherebbe sopra il contenuto, irraggiungibile. */
+.main-sidebar .sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100% !important;
+    padding-bottom: 0;
+}
+.main-sidebar .cc-sidebar-head { flex: 0 0 auto; }
+
+/* Lo scroller è .sidebar-menu in ENTRAMBI gli stati: misurati 1185px (rail compresso) e
+   6559px (espanso) contro 768-900px di viewport, quindi anche il rail deve scorrere. */
+.main-sidebar .sidebar-menu {
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    /* Thin scrollbar so it doesn't eat ~15px of label width (which pushed long titles under the
-       caret). Firefox + WebKit. */
+    overscroll-behavior: contain;
     scrollbar-width: thin;
 }
+.main-sidebar .sidebar-menu::-webkit-scrollbar { width: 6px; }
+.main-sidebar .sidebar-menu::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 3px;
+}
+
+/* Mobile: si conserva il drawer off-canvas di AdminLTE (transform), va corretto solo
+   l'offset verticale (AdminLTE assume un header a due righe da 100px, qui è 56px). */
+@media (max-width: 767px) {
+    .content-wrapper { padding-top: 56px; }
+}
+
+/* Stampa: AdminLTE nasconde già header/sidebar, ma il suo reset del padding è scoped
+   `.fixed`, che qui non usiamo — senza questo la prima pagina inizierebbe con 56px vuoti. */
+@media print {
+    .main-header,
+    .main-sidebar { position: static !important; }
+    .content-wrapper {
+        padding-top: 0 !important;
+        min-height: 0 !important;
+    }
+}
+
 .sidebar-mini:not(.sidebar-collapse) .main-sidebar .sidebar::-webkit-scrollbar {
     width: 6px;
 }

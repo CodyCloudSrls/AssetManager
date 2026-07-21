@@ -1865,31 +1865,75 @@
             // fully clickable.
             (function () {
                 var HOLD_DELAY = 350;
+
+                // The collapsed rail is ~1185px tall against a ~700-800px viewport, so it is now
+                // an internal SCROLL container (see section 6 of codycloud-sidebar.css). An
+                // absolutely-positioned fly-out is always clipped by a scrolling ancestor, so we
+                // re-anchor it to position:fixed with coordinates taken from the item's real rect.
+                // That is the only way to escape the scroller while keeping the rail scrollable.
+                function pinFlyout($li) {
+                    var li = $li[0];
+                    if (!li) { return; }
+                    var rect = li.getBoundingClientRect();
+                    var span = li.querySelector(':scope > a > span');
+                    var menu = li.querySelector(':scope > .treeview-menu');
+                    if (span) {
+                        span.style.position = 'fixed';
+                        span.style.left = rect.right + 'px';
+                        span.style.top = rect.top + 'px';
+                    }
+                    if (menu) {
+                        var top = rect.top + rect.height;
+                        menu.style.position = 'fixed';
+                        menu.style.left = rect.right + 'px';
+                        menu.style.top = top + 'px';
+                        // A long submenu opened near the bottom must stay reachable.
+                        menu.style.maxHeight = Math.max(120, window.innerHeight - top - 8) + 'px';
+                        menu.style.overflowY = 'auto';
+                    }
+                }
+                function unpinFlyout($li) {
+                    var li = $li[0];
+                    if (!li) { return; }
+                    [':scope > a > span', ':scope > .treeview-menu'].forEach(function (sel) {
+                        var el = li.querySelector(sel);
+                        if (!el) { return; }
+                        el.style.position = '';
+                        el.style.left = '';
+                        el.style.top = '';
+                        el.style.maxHeight = '';
+                        el.style.overflowY = '';
+                    });
+                }
+
                 function closeFlyout($li) {
                     var t = $li.data('ccFlyoutTimer');
                     if (t) { clearTimeout(t); $li.removeData('ccFlyoutTimer'); }
                     $li.removeClass('cc-flyout-hold');
+                    unpinFlyout($li);
                 }
-                $(document).on('mouseenter', '.main-sidebar .sidebar-menu > li.treeview', function () {
+                $(document).on('mouseenter', '.main-sidebar .sidebar-menu > li', function () {
                     var $li = $(this);
                     var t = $li.data('ccFlyoutTimer');
                     if (t) { clearTimeout(t); $li.removeData('ccFlyoutTimer'); }
                     if ($('body').hasClass('sidebar-collapse')) {
                         // Only ONE flyout open at a time — close any others immediately so
                         // they don't pile up while moving down the icon rail.
-                        $('.main-sidebar .sidebar-menu > li.treeview.cc-flyout-hold').not($li).each(function () {
+                        $('.main-sidebar .sidebar-menu > li.cc-flyout-hold').not($li).each(function () {
                             closeFlyout($(this));
                         });
                         $li.addClass('cc-flyout-hold');
+                        pinFlyout($li);
                     }
                 });
-                $(document).on('mouseleave', '.main-sidebar .sidebar-menu > li.treeview', function () {
+                $(document).on('mouseleave', '.main-sidebar .sidebar-menu > li', function () {
                     var $li = $(this);
                     var existing = $li.data('ccFlyoutTimer');
                     if (existing) { clearTimeout(existing); }
                     $li.data('ccFlyoutTimer', setTimeout(function () {
                         $li.removeClass('cc-flyout-hold');
                         $li.removeData('ccFlyoutTimer');
+                        unpinFlyout($li);
                     }, HOLD_DELAY));
                 });
             })();
