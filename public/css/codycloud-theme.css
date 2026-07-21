@@ -13,23 +13,26 @@
 :root {
     /* CerberoSOC-aligned palette: neutral near-black surfaces (no blue tint) +
        vivid indigo primary, matching the SOC console look. */
-    --cc-bg: #0a0a0c;
-    --cc-bg-elevated: #111114;
-    --cc-surface: #161619;
-    --cc-surface-2: #1c1c21;
-    --cc-surface-hover: #232329;
-    --cc-border: #26262b;
-    --cc-border-strong: #34343c;
-    --cc-text: #f4f5f7;
-    --cc-text-muted: #9b9ba6;
-    --cc-text-dim: #6b6b76;
+    /* light-dark(chiaro, scuro): il secondo valore è IDENTICO alla palette scura originale,
+       quindi la dark mode non cambia di un pixel; il primo dà una vera modalità chiara.
+       Funziona perché il layout imposta color-scheme via [data-theme] (default.blade.php). */
+    --cc-bg: light-dark(#f4f5f7, #0a0a0c);
+    --cc-bg-elevated: light-dark(#ffffff, #111114);
+    --cc-surface: light-dark(#ffffff, #161619);
+    --cc-surface-2: light-dark(#f7f8fa, #1c1c21);
+    --cc-surface-hover: light-dark(#eceef3, #232329);
+    --cc-border: light-dark(#e2e4ea, #26262b);
+    --cc-border-strong: light-dark(#c9ccd4, #34343c);
+    --cc-text: light-dark(#1c1c21, #f4f5f7);
+    --cc-text-muted: light-dark(#5f6070, #9b9ba6);
+    --cc-text-dim: light-dark(#85868f, #6b6b76);
     --cc-primary: #4b6bfb;
     --cc-primary-hover: #3b5bf0;
-    --cc-danger: #f87171;
-    --cc-warning: #fb923c;
-    --cc-success: #22c55e;
-    --cc-info: #38bdf8;
-    --cc-purple: #a78bfa;
+    --cc-danger: light-dark(#dc2626, #f87171);
+    --cc-warning: light-dark(#b45309, #fb923c);
+    --cc-success: light-dark(#15803d, #22c55e);
+    --cc-info: light-dark(#0284c7, #38bdf8);
+    --cc-purple: light-dark(#7c3aed, #a78bfa);
     --cc-radius: 12px;
     --cc-radius-sm: 9px;
     --cc-font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -47,24 +50,24 @@
     --nav-primary-text-color: #c8c8d0;
     --btn-theme-hover: #34343c;
     /* Kill the grey footer and sidebar-submenu tints */
-    --main-footer-bg-color: #0a0a0c;
-    --main-footer-text-color: #9b9ba6;
-    --main-footer-top-border-color: #26262b;
+    --main-footer-bg-color: light-dark(#ffffff, #0a0a0c);
+    --main-footer-text-color: light-dark(#5f6070, #9b9ba6);
+    --main-footer-top-border-color: light-dark(#e2e4ea, #26262b);
     --sidenav-hover-color-bg: #1c1c21;
     --sidenav-text-hover-color: #ffffff;
     --sidenav-text-nohover-color: #c8c8d0;
     /* Box / content backgrounds were a grey (#3d4144 / #222222) in the branding's
        dark mode — used by .box, .list-group-item, info-panel items, etc. Re-point
        them at the neutral SOC surfaces so nothing renders grey. */
-    --box-bg: #161619;
-    --color-bg: #0a0a0c;
-    --table-stripe-bg: #161619;
-    --input-group-bg: #1c1c21;
+    --box-bg: light-dark(#ffffff, #161619);
+    --color-bg: light-dark(#f4f5f7, #0a0a0c);
+    --table-stripe-bg: light-dark(#ffffff, #161619);
+    --input-group-bg: light-dark(#f7f8fa, #1c1c21);
     /* These were a grey (#605e5e) in the branding's dark mode and were used by the
        branding as the ACTIVE TAB background + box-header borders — the source of the
        "grey corners" on tabs/buttons. Point them at the dark border colour. */
-    --box-header-top-border-color: #26262b;
-    --box-header-bottom-border-color: #26262b;
+    --box-header-top-border-color: light-dark(#e2e4ea, #26262b);
+    --box-header-bottom-border-color: light-dark(#e2e4ea, #26262b);
 }
 
 /* ---------- Brand moved into the sidebar ---------- */
@@ -2173,4 +2176,27 @@ label.btn > input[type="checkbox"] {
     background-color: var(--cc-surface-2) !important;
     color: #ffffff !important;
     border-radius: var(--cc-radius-sm) var(--cc-radius-sm) 0 0 !important;
+}
+
+/* ============================================================================
+   LIGHT MODE — correzioni mirate.
+   Il layout base (layouts/default.blade.php) dipinge alcune aree con
+   --main-theme-color / --nav-primary-text-color, che sono il colore BRAND (usato
+   anche dai bottoni) e restano scuri per progetto. Dentro l'header devono invece
+   seguire la superficie, altrimenti in chiaro resta una fascia scura sulla navbar
+   bianca. Ogni valore usa light-dark(chiaro, scuro) con lo scuro IDENTICO
+   all'attuale: la dark mode non cambia di un pixel.
+   ============================================================================ */
+/* Solo lo SFONDO: il colore del testo è già gestito sopra da
+   `.main-header .navbar .nav > li > a { color: var(--cc-text-muted) }`, che è
+   theme-aware. Toccarlo qui lo scavalcherebbe (regola più specifica) e
+   cambierebbe la dark mode. */
+.main-header .navbar-nav > li > a:link,
+.main-header .navbar-nav > li > a:visited,
+/* …e i CONTENITORI della barra (la striscia dietro ricerca/icone), altrimenti in
+   chiaro resta un blocco scuro sulla navbar bianca. */
+.main-header .navbar-nav,
+.main-header .nav.navbar-nav,
+.main-header .navbar-left {
+    background-color: light-dark(#ffffff, #111114) !important;
 }
