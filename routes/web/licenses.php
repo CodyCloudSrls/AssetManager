@@ -50,6 +50,12 @@ Route::group(['prefix' => 'licenses', 'middleware' => ['auth']], function () {
             'getExportLicensesCsv'
         ]
     )->name('licenses.export');
+
+    // Bulk edit / bulk delete: the list's "Modifica massiva" dropdown POSTs the selected ids
+    // here; edit() branches on bulk_actions (edit -> edit form, delete -> confirm view).
+    Route::post('bulkedit', [Licenses\BulkLicensesController::class, 'edit'])->name('licenses.bulkedit');
+    Route::post('bulkeditsave', [Licenses\BulkLicensesController::class, 'update'])->name('licenses.bulkeditsave');
+    Route::post('bulkdelete', [Licenses\BulkLicensesController::class, 'destroy'])->name('licenses.bulkdelete');
 });
 
 Route::resource('licenses', Licenses\LicensesController::class, [

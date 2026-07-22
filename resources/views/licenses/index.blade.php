@@ -10,7 +10,10 @@
 {{-- Page content --}}
 @section('content')
     <x-container>
-        <x-box>
+        <x-box name="licenses">
+            <x-slot:bulkactions>
+                <x-table.bulk-licenses/>
+            </x-slot:bulkactions>
 
             <x-table.licenses
                 fixed_right_number="2"
