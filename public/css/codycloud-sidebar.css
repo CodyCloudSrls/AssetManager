@@ -204,6 +204,22 @@ html { scroll-padding-top: 56px; }
     border-radius: 3px;
 }
 
+/* Rail COMPRESSO: nascondi la scrollbar del menu. Una barra visibile dentro un rail di 50px è
+   brutta e sposta le icone dal centro (segnalazione "icone decentrate"). Il rail continua a
+   scorrere con la rotellina; in modalità espansa la barra sottile resta. */
+.sidebar-mini.sidebar-collapse .main-sidebar .sidebar-menu {
+    scrollbar-width: none;
+}
+.sidebar-mini.sidebar-collapse .main-sidebar .sidebar-menu::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+/* In modalità COMPRESSA il padding-destro extra (per il caret, invisibile qui) non serve e
+   sbilancerebbe l'icona: azzeralo così l'icona resta centrata nel rail. */
+.sidebar-mini.sidebar-collapse .sidebar-menu > li > a {
+    padding-right: 5px !important;
+}
+
 /* Mobile: si conserva il drawer off-canvas di AdminLTE (transform), va corretto solo
    l'offset verticale (AdminLTE assume un header a due righe da 100px, qui è 56px). */
 @media (max-width: 767px) {
