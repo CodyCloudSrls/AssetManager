@@ -15,7 +15,7 @@
             <div class="row" style="margin-bottom: 15px;">
                 <div class="col-md-12">
                     <form method="get" action="{{ route('contracts.index') }}" class="form-inline" role="search">
-                        @foreach (request()->only(['tenant_id', 'company_id', 'customer_id', 'renewal_status', 'tenant_service_id']) as $filterName => $filterValue)
+                        @foreach (request()->only(['tenant_id', 'company_id', 'renewal_status', 'tenant_service_id']) as $filterName => $filterValue)
                             <input type="hidden" name="{{ $filterName }}" value="{{ $filterValue }}">
                         @endforeach
 
@@ -25,6 +25,16 @@
                                 <option value="">{{ trans('admin/contracts/general.all_statuses') }}</option>
                                 @foreach (\App\Models\CustomerContract::statusOptions() as $statusValue => $statusLabel)
                                     <option value="{{ $statusValue }}" @selected(request('status') === $statusValue)>{{ $statusLabel }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-left:8px;">
+                            <label for="contract_customer_filter" class="sr-only">{{ trans('general.customer') }}</label>
+                            <select class="form-control select2" name="customer_id" id="contract_customer_filter" aria-label="{{ trans('general.customer') }}" style="min-width: 200px;">
+                                <option value="">{{ trans('admin/contracts/general.all_customers') }}</option>
+                                @foreach (\App\Models\Customer::orderBy('name')->get(['id', 'name']) as $ccCustomer)
+                                    <option value="{{ $ccCustomer->id }}" @selected((int) request('customer_id') === (int) $ccCustomer->id)>{{ $ccCustomer->name }}</option>
                                 @endforeach
                             </select>
                         </div>

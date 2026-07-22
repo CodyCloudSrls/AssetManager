@@ -26,6 +26,7 @@ return [
     'status_expired' => 'Expired',
     'status_terminated' => 'Terminated',
     'all_statuses' => 'All statuses',
+    'all_customers' => 'All customers',
     'apply_filters' => 'Apply filters',
     'clear_filters' => 'Clear filters',
     'bulk_update_success' => 'Contracts updated successfully.',

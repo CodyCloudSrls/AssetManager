@@ -640,7 +640,16 @@ class AssetsController extends Controller
 
         $asset->delete();
 
-        return redirect()->route('hardware.index')->with('success', trans('admin/hardware/message.delete.success'));
+        // Return to the FILTERED list we came from (its filters live in the referrer's query
+        // string), so deleting a bene from a filtered view doesn't reset the filters. Guarded to
+        // a same-host hardware list URL so we never bounce to an edit/create/show page.
+        $back = url()->previous();
+        $isHardwareList = \Illuminate\Support\Str::startsWith($back, url('/hardware'))
+            && ! \Illuminate\Support\Str::contains($back, ['/edit', '/create', '/clone'])
+            && ! preg_match('#/hardware/\d+($|\?)#', $back);
+        $target = $isHardwareList ? $back : route('hardware.index');
+
+        return redirect()->to($target)->with('success', trans('admin/hardware/message.delete.success'));
     }
 
     /**

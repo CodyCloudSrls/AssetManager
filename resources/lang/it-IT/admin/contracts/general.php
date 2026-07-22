@@ -26,6 +26,7 @@ return [
     'status_expired' => 'Scaduto',
     'status_terminated' => 'Terminato',
     'all_statuses' => 'Tutti gli stati',
+    'all_customers' => 'Tutti i clienti',
     'apply_filters' => 'Applica filtri',
     'clear_filters' => 'Pulisci filtri',
     'bulk_update_success' => 'Contratti aggiornati correttamente.',
