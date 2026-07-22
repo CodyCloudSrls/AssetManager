@@ -104,16 +104,33 @@
         the AdminLTE icon zoom (font-size 64→95 on hover) so the card never enlarges or shifts
         the row below. Lives here (external, ?v=filemtime cache-busted, last stylesheet)
         instead of an in-body <style>, so it reliably wins the cascade and busts stale caches. */
-.cc-overview-card { display: block; overflow: hidden; }
-.cc-overview-card:hover, .cc-overview-card:focus { text-decoration: none; transform: none !important; }
-/* Freeze the barcode icon size on hover (AdminLTE zooms it 64→95, which is the "enlargement"
-   Francesca dislikes — it shifts/obscures neighbours). Keep it out of flow and fixed at the
-   resting 64px. */
-.cc-overview-card .icon { position: absolute !important; transition: color .25s linear !important; }
-.cc-overview-card:hover .icon, .cc-overview-card:focus .icon { font-size: 64px !important; }
-/* Keep the effect she likes: instead of growing, the bars BRIGHTEN on hover (theme keeps them
-   at ~5-10% white at rest). Equal-specificity !important + last-loaded stylesheet → wins. */
-.cc-overview-card:hover .icon, .cc-overview-card:focus .icon { color: rgba(255, 255, 255, 0.30) !important; }
+/* Richiesta ESATTA di Francesca (riformulata): le PIACE che il codice a barre si ingrandisca
+   DENTRO il bottone al passaggio del mouse; NON vuole che il BOTTONE cambi dimensione e sposti
+   gli altri. Il mio fix precedente aveva fatto l'opposto (aveva tolto l'ingrandimento). Ora:
+   - il barcode torna a ingrandirsi (effetto ripristinato),
+   - overflow:hidden lo RITAGLIA dentro la card, così cresce "dentro" senza allargarla,
+   - l'icona è position:absolute (fuori dal flusso: non può spostare i vicini),
+   - contain:layout è la GARANZIA hard: per spec nessuna modifica interna alla card può
+     rifluire sul layout esterno, quindi le altre card non si spostano MAI, qualunque
+     regola vinca la cascata. Le colonne .col-lg-3 hanno larghezza fissa -> niente riflusso. */
+.cc-overview-card {
+    display: block;
+    overflow: hidden !important;
+    contain: layout paint;
+}
+.cc-overview-card:hover, .cc-overview-card:focus {
+    text-decoration: none;
+    transform: none !important;   /* niente lift/scale: la card non si muove */
+}
+.cc-overview-card .icon {
+    position: absolute !important;
+    transition: font-size .2s ease, color .2s ease !important;
+}
+/* L'effetto: il barcode cresce (ritagliato dentro la card) e si illumina un po'. */
+.cc-overview-card:hover .icon, .cc-overview-card:focus .icon {
+    font-size: 112px !important;
+    color: rgba(255, 255, 255, 0.28) !important;
+}
 .cc-overview-card .small-box-footer { pointer-events: none; }
 
 /* ── 6) SHELL FISSA — header e sidebar ancorati, scorre solo il contenuto. ─────────────
