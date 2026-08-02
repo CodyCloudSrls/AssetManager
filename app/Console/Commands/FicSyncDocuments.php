@@ -8,6 +8,7 @@ use App\Support\Fic\FicRateLimitException;
 use App\Support\Fic\FicSyncService;
 use App\Support\Tenants\TenantMailNotificationService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Syncs Fatture in Cloud documents into the read-only ERP mirror (fic_documents).
@@ -50,6 +51,11 @@ class FicSyncDocuments extends Command
             return self::SUCCESS;
         } catch (\Throwable $e) {
             $this->error('✘ FiC sync failed: '.$e->getMessage());
+
+            // Always leave a grep-able ERROR in the log — the tenant e-mail alert goes to
+            // MAIL_MAILER=log (i.e. nobody), so without this a failure is completely silent
+            // (this is what let a dead token go unnoticed for ~10 days).
+            Log::error('FiC document sync failed: '.$e->getMessage(), ['exception' => $e]);
 
             // Notify the tenant that owns the FiC local company (best-effort; never masks the failure).
             try {

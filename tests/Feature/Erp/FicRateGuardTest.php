@@ -7,6 +7,7 @@ use App\Support\Fic\FicRateGuard;
 use App\Support\Fic\FicRateLimitException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class FicRateGuardTest extends TestCase
@@ -124,5 +125,17 @@ class FicRateGuardTest extends TestCase
             ->assertExitCode(0); // SUCCESS = skipped, not a failure
 
         Http::assertNothingSent();
+    }
+
+    public function test_sync_failure_leaves_a_log_trace(): void
+    {
+        // A dead token (401) is a real failure — it must leave a grep-able ERROR in the log,
+        // because the tenant e-mail alert goes to MAIL_MAILER=log (nobody reads it).
+        Http::fake(['*' => Http::response(['error' => 'invalid_token'], 401)]);
+        Log::shouldReceive('error')
+            ->atLeast()->once()
+            ->withArgs(fn ($message) => str_contains((string) $message, 'FiC document sync failed'));
+
+        $this->artisan('fic:sync')->assertExitCode(1); // FAILURE
     }
 }

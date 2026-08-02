@@ -7,6 +7,7 @@ use App\Support\Fic\FicClient;
 use App\Support\Fic\FicRateGuard;
 use App\Support\Fic\FicRateLimitException;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Syncs the real bank/cash account balances from the FiC cashbook (conti correnti).
@@ -46,6 +47,7 @@ class FicSyncCash extends Command
             return self::SUCCESS;
         } catch (\Throwable $e) {
             $this->error('✘ Cassa sync failed: '.$e->getMessage());
+            Log::error('FiC cassa sync failed: '.$e->getMessage(), ['exception' => $e]);
 
             return self::FAILURE;
         }
