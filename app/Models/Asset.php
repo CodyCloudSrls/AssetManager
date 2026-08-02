@@ -1117,10 +1117,14 @@ class Asset extends Depreciable
      */
     public function scopeExpiringRenewal(Builder $query, int $days = 30): Builder
     {
+        // Columns are qualified with `assets.` on purpose: the assets index API JOINs
+        // status_labels (for sorting), and BOTH tables have `deleted_at`/`renewal_date`-adjacent
+        // columns, so an unqualified `deleted_at` throws "ambiguous column" and 500s the list —
+        // which showed 0 rows while the renewal banner (no join) counted correctly.
         return $query->NotArchived()
-            ->whereNull('deleted_at')
-            ->whereNotNull('renewal_date')
-            ->where('renewal_date', '<=', Carbon::now()->addDays($days)->endOfDay());
+            ->whereNull('assets.deleted_at')
+            ->whereNotNull('assets.renewal_date')
+            ->where('assets.renewal_date', '<=', Carbon::now()->addDays($days)->endOfDay());
     }
 
     public static function getExpiringWarrantyOrEol($days = 30)
