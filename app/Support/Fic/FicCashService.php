@@ -6,6 +6,7 @@ use App\Models\FicCashbookEntry;
 use App\Models\FicDocument;
 use App\Models\FicPaymentAccount;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Computes the real balance of each bank/cash account (conti correnti) from the FiC
@@ -15,6 +16,16 @@ use Illuminate\Support\Carbon;
 class FicCashService
 {
     private const START_YEAR = 2021;
+
+    /**
+     * A response of this size is treated as "possibly truncated": the FiC cashbook endpoint
+     * does not page reliably, so instead of trusting page 2+ we split the date range and
+     * re-query smaller windows (see collectRange()). Kept at the endpoint's max page size.
+     */
+    private const PAGE_SIZE = 1000;
+
+    /** Backstop for the single-day pagination fallback (a day with 1M movements is absurd). */
+    private const MAX_PAGES = 50;
 
     public function __construct(private FicClient $client)
     {
@@ -30,17 +41,17 @@ class FicCashService
         $cursor = Carbon::create(self::START_YEAR, 1, 1)->startOfMonth();
         $end = Carbon::now()->endOfMonth();
 
-        // Fetch month by month: each month fits comfortably in one response, so there is
-        // no pagination ambiguity (the cashbook endpoint does not page reliably).
+        // Fetch month by month: each month fits comfortably in one response today. If a
+        // month ever grows past a single page, collectRange() splits it by date and re-queries
+        // — so completeness never depends on the (unreliable) cashbook pagination. Months are
+        // disjoint date windows, so no movement is ever fetched or counted twice.
         while ($cursor->lte($end)) {
-            $response = $this->client->cashbook(
-                $cursor->copy()->startOfMonth()->format('Y-m-d'),
-                $cursor->copy()->endOfMonth()->format('Y-m-d'),
-                1,
-                1000,
+            $rows = $this->collectRange(
+                $cursor->copy()->startOfMonth(),
+                $cursor->copy()->endOfMonth(),
             );
 
-            foreach (($response['data'] ?? []) as $row) {
+            foreach ($rows as $row) {
                 $in = (float) ($row['amount_in'] ?? 0);
                 $out = (float) ($row['amount_out'] ?? 0);
                 if ($in != 0.0) {
@@ -84,6 +95,68 @@ class FicCashService
         }
 
         return ['accounts' => count($balances), 'total' => round($total, 2), 'reconciled' => $reconciled];
+    }
+
+    /**
+     * Every cashbook movement in the inclusive [$from, $to] date range, resilient to growth.
+     *
+     * A single page (PAGE_SIZE rows) is enough for any range today. If a range ever comes
+     * back "full" — meaning it might be truncated — we do NOT trust page 2 (the endpoint's
+     * pagination is unreliable); instead we split the window in half by date and re-query each
+     * half. The halves are disjoint date ranges and a movement carries one date, so it lands
+     * in exactly one half: no gaps, no double counting. Recursion bottoms out at a single day;
+     * a single saturated day (extremely unlikely) is the only case that falls back to paging,
+     * with an id-dedup guard and a warning so it never passes silently.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function collectRange(Carbon $from, Carbon $to): array
+    {
+        $rows = $this->client->cashbook($from->format('Y-m-d'), $to->format('Y-m-d'), 1, self::PAGE_SIZE)['data'] ?? [];
+
+        // Not a full page => this single request already covers the whole range.
+        if (count($rows) < self::PAGE_SIZE) {
+            return $rows;
+        }
+
+        // Full page over more than one day => split by date and recurse. intdiv() keeps the
+        // midpoint on a day boundary; the right half starts the day after, so the two windows
+        // are disjoint and together cover every day of [$from, $to].
+        if ($from->toDateString() !== $to->toDateString()) {
+            $mid = $from->copy()->addDays(intdiv($from->diffInDays($to), 2));
+
+            return array_merge(
+                $this->collectRange($from->copy(), $mid->copy()),
+                $this->collectRange($mid->copy()->addDay(), $to->copy()),
+            );
+        }
+
+        // Degenerate: one calendar day with >= PAGE_SIZE movements — cannot split further.
+        // Walk pages as a last resort, de-duplicating by movement id in case the unreliable
+        // pagination repeats rows (double counting would corrupt the balances).
+        Log::warning('FiC cashbook: '.$from->toDateString().' has >= '.self::PAGE_SIZE.' movements; using pagination fallback for that day.');
+
+        $byId = [];
+        foreach ($rows as $row) {
+            $byId[$this->rowKey($row)] = $row;
+        }
+
+        $page = 1;
+        do {
+            $page++;
+            $pageRows = $this->client->cashbook($from->format('Y-m-d'), $to->format('Y-m-d'), $page, self::PAGE_SIZE)['data'] ?? [];
+            foreach ($pageRows as $row) {
+                $byId[$this->rowKey($row)] = $row;
+            }
+        } while (count($pageRows) >= self::PAGE_SIZE && $page < self::MAX_PAGES);
+
+        return array_values($byId);
+    }
+
+    /** A stable de-dup key for a cashbook movement (its id; a content hash if it somehow lacks one). */
+    private function rowKey(array $row): string
+    {
+        return isset($row['id']) ? 'id:'.$row['id'] : 'noid:'.md5((string) json_encode($row));
     }
 
     /**
