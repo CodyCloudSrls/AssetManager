@@ -18,7 +18,7 @@
                 {{ trans('button.bulk_actions') }}
             </span>
 
-            <select name="bulk_actions" class="form-control select2" aria-label="bulk_actions" style="width: 350px !important;">
+            <select name="bulk_actions" class="form-control select2" aria-label="bulk_actions" style="width: 350px; max-width: 100%;">
                 @if ((isset($status)) && ($status == 'Deleted'))
                     @can('delete', \App\Models\Asset::class)
                         <option value="restore">{{trans('button.restore')}}</option>

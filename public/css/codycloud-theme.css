@@ -2261,3 +2261,24 @@ label.btn > input[type="checkbox"] {
 .nav-tabs-custom > .nav-tabs > li.active > a:visited {
     color: light-dark(#1c1c21, #ffffff) !important;
 }
+
+/* -------------------------------------------------------------------------
+   Bulk-actions toolbar on phones (Beni / Utenti / ...).
+   The action <select> is pinned to a fixed 350px. select2 copies that width
+   onto the container it renders, which then overflows the box on narrow
+   viewports and gets clipped by the shell's overflow-x:hidden — the "Modifica
+   Massiva" row cut off at the edge. Below the phone breakpoint let the select
+   (and its select2 container) shrink to the available width; the "Vai" button
+   sits underneath. Desktop/tablet keep the original 350px, so no regression.
+   The wrapper id ends in "Toolbar" for every bulk table (see blade/box). ------ */
+@media (max-width: 480px) {
+    [id$="Toolbar"] .form-inline .select2-container {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    [id$="Toolbar"] .form-inline select.select2 {
+        width: 100% !important;
+        max-width: 100%;
+    }
+}
