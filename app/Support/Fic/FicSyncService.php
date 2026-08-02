@@ -21,16 +21,22 @@ class FicSyncService
     }
 
     /**
-     * Document types synced per direction. Credit notes (note di credito) net AGAINST
-     * invoices, so they are stored with negative amounts. Receipts (ricevute) are sales
-     * paid on issue.
+     * Document types synced per direction. Credit notes (note di credito, issued AND received)
+     * net AGAINST invoices/costs, so they are stored with negative amounts. Receipts (ricevute)
+     * are sales paid on issue. `passive_credit_note` = supplier credit notes: they REDUCE costs,
+     * so they must be synced (otherwise the controllo di gestione overstates costs).
+     * NB: `self_invoice` (autofatture reverse-charge, issued+received) is deliberately NOT here —
+     * its cost/revenue treatment is an accounting decision, left to the bookkeeper.
      *
      * @var array<string, string[]>
      */
     private const TYPES = [
         FicDocument::DIRECTION_ISSUED => ['invoice', 'credit_note', 'receipt'],
-        FicDocument::DIRECTION_RECEIVED => ['expense'],
+        FicDocument::DIRECTION_RECEIVED => ['expense', 'passive_credit_note'],
     ];
+
+    /** Types whose amounts NET (subtract) rather than add — stored with a negative sign. */
+    private const CREDIT_NOTE_TYPES = ['credit_note', 'passive_credit_note'];
 
     /** @return array{issued:int, received:int} */
     public function syncAll(): array
@@ -74,9 +80,9 @@ class FicSyncService
     {
         [$paid, $paidAmount, $dueOn, $paidOn] = $this->paymentSummary($doc['payments_list'] ?? []);
 
-        // Credit notes reduce revenue / receivables: store them negative so every
-        // aggregate (ricavi, IVA, crediti) nets them automatically.
-        $sign = $type === 'credit_note' ? -1 : 1;
+        // Credit notes (issued AND passive) reduce revenue/cost/receivables/payables: store them
+        // negative so every aggregate (ricavi, costi, IVA, crediti, debiti) nets them automatically.
+        $sign = in_array($type, self::CREDIT_NOTE_TYPES, true) ? -1 : 1;
 
         FicDocument::updateOrCreate(
             [

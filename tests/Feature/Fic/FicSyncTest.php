@@ -39,6 +39,16 @@ class FicSyncTest extends TestCase
                     'payments_list' => [['amount' => 610, 'status' => 'paid', 'due_date' => '2026-01-31', 'paid_date' => '2026-02-05']],
                 ]], 'current_page' => 1, 'last_page' => 1], 200);
             }
+            // Supplier credit note: FiC reports POSITIVE amounts; it must be stored NEGATIVE so it
+            // reduces costs in the controllo di gestione.
+            if (str_contains($url, '/received_documents') && $type === 'passive_credit_note') {
+                return Http::response(['data' => [[
+                    'id' => 3003, 'type' => 'passive_credit_note', 'category' => 'Spese Immateriali', 'number' => 'NC-2', 'date' => '2026-01-20',
+                    'amount_net' => 200, 'amount_vat' => 44, 'amount_gross' => 244, 'currency' => 'EUR',
+                    'entity' => ['name' => 'Supplier Spa', 'vat_number' => 'IT999'],
+                    'payments_list' => [['amount' => 244, 'status' => 'paid', 'due_date' => '2026-01-20', 'paid_date' => '2026-01-20']],
+                ]], 'current_page' => 1, 'last_page' => 1], 200);
+            }
 
             return Http::response($empty, 200);
         });
@@ -51,7 +61,15 @@ class FicSyncTest extends TestCase
         $result = (new FicSyncService(new FicClient()))->syncAll();
 
         $this->assertEquals(1, $result['issued']);
-        $this->assertEquals(1, $result['received']);
+        $this->assertEquals(2, $result['received'], 'expense + passive_credit_note');
+
+        // Supplier credit note stored NEGATIVE so it nets against costs.
+        $creditNote = FicDocument::received()->where('doc_type', 'passive_credit_note')->first();
+        $this->assertNotNull($creditNote, 'passive_credit_note must be synced');
+        $this->assertEqualsWithDelta(-200, (float) $creditNote->amount_net, 0.01);
+        $this->assertEqualsWithDelta(-244, (float) $creditNote->amount_gross, 0.01);
+        // Received net = expense(+500) + credit note(-200) = 300 (costs correctly reduced).
+        $this->assertEqualsWithDelta(300, (float) FicDocument::received()->sum('amount_net'), 0.01);
 
         $issued = FicDocument::issued()->first();
         $this->assertEquals(1001, $issued->fic_id);
@@ -77,6 +95,6 @@ class FicSyncTest extends TestCase
         $sync->syncAll();
 
         $this->assertEquals(1, FicDocument::issued()->count());
-        $this->assertEquals(1, FicDocument::received()->count());
+        $this->assertEquals(2, FicDocument::received()->count()); // expense + passive_credit_note, not duplicated
     }
 }
