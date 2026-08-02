@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Support\Fic\FicClient;
+use App\Support\Fic\FicRateGuard;
+use App\Support\Fic\FicRateLimitException;
 use App\Support\Fic\FicSyncService;
 use App\Support\Tenants\TenantMailNotificationService;
 use Illuminate\Console\Command;
@@ -26,11 +28,24 @@ class FicSyncDocuments extends Command
             return self::FAILURE;
         }
 
+        // Skip the run entirely while a rate-limit cooldown is open — do not even open the
+        // connection. This is a normal, self-healing state, not a failure.
+        if (FicRateGuard::isCoolingDown()) {
+            $this->info('FiC sync skipped: rate-limit cooldown active until '.FicRateGuard::cooldownUntil().'.');
+
+            return self::SUCCESS;
+        }
+
         try {
             $result = $sync->syncAll();
             $this->info('✔ FiC sync complete.');
             $this->line('  Issued documents:   '.$result['issued']);
             $this->line('  Received documents: '.$result['received']);
+
+            return self::SUCCESS;
+        } catch (FicRateLimitException $e) {
+            // The guard tripped mid-run (near the quota): back off quietly, don't alert.
+            $this->warn('FiC sync paused to protect the quota: '.$e->getMessage());
 
             return self::SUCCESS;
         } catch (\Throwable $e) {

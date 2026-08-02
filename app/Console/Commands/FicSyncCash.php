@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use App\Support\Fic\FicCashService;
 use App\Support\Fic\FicClient;
+use App\Support\Fic\FicRateGuard;
+use App\Support\Fic\FicRateLimitException;
 use Illuminate\Console\Command;
 
 /**
@@ -25,11 +27,21 @@ class FicSyncCash extends Command
             return self::FAILURE;
         }
 
+        if (FicRateGuard::isCoolingDown()) {
+            $this->info('Cassa sync skipped: rate-limit cooldown active until '.FicRateGuard::cooldownUntil().'.');
+
+            return self::SUCCESS;
+        }
+
         try {
             $result = $cash->sync();
             $this->info('✔ Cassa sync complete.');
             $this->line('  Accounts: '.$result['accounts']);
             $this->line('  Total cash: '.number_format($result['total'], 2).' EUR');
+
+            return self::SUCCESS;
+        } catch (FicRateLimitException $e) {
+            $this->warn('Cassa sync paused to protect the quota: '.$e->getMessage());
 
             return self::SUCCESS;
         } catch (\Throwable $e) {

@@ -40,6 +40,13 @@ class FicTestConnection extends Command
                 $this->warn('  Set FIC_COMPANY_ID in .env to the company id you want to sync.');
             }
 
+            // Show the remaining call budget the guard just captured from the response headers.
+            $budget = \App\Support\Fic\FicRateGuard::snapshot();
+            $this->line('  Budget chiamate — orario: '.($budget['hourly_remaining'] ?? '?').'/1000, mensile: '.($budget['monthly_remaining'] ?? '?').'/40000');
+            if ($budget['cooldown_until']) {
+                $this->warn('  Cooldown attivo fino a: '.$budget['cooldown_until']);
+            }
+
             return self::SUCCESS;
         } catch (\Throwable $e) {
             $this->error('✘ FiC connection failed: '.$e->getMessage());

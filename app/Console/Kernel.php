@@ -33,7 +33,11 @@ class Kernel extends ConsoleKernel
         $schedule->command('saml:clear_expired_nonces')->weekly();
 
         // ERP: keep the read-only Fatture in Cloud mirror fresh (no-op if FiC unconfigured).
-        $schedule->command('fic:sync')->everyTenMinutes()->withoutOverlapping();
+        // Hourly, not every 10 min: one full re-sync is ~27 API calls (the received-documents
+        // page count dominates), so every-10-min = ~3,888/day ≈ 117k/month, ~3x FiC's 40,000
+        // monthly cap. Hourly = ~648/day ≈ 19k/month, comfortably under; FicRateGuard is the
+        // hard backstop. Documents are entered manually in FiC, so hourly freshness is ample.
+        $schedule->command('fic:sync')->hourly()->withoutOverlapping();
         // Real bank/cash balances from the cashbook — heavier, so once a day.
         $schedule->command('fic:sync-cassa')->dailyAt('02:30')->withoutOverlapping();
     }

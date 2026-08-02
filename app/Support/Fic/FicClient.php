@@ -2,6 +2,7 @@
 
 namespace App\Support\Fic;
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 
@@ -44,19 +45,36 @@ class FicClient
             ->acceptJson()
             ->baseUrl($this->baseUrl)
             ->timeout(20)
-            ->retry(2, 200);
+            // Retry ONLY transient network errors. `throw: false` keeps HTTP errors as returned
+            // responses (never retryable exceptions), so a 401/403/422/429 is NOT retried —
+            // retrying those just wastes calls and, for 429/quota, digs the hole deeper.
+            ->retry(3, 300, fn ($e) => $e instanceof ConnectionException, throw: false);
+    }
+
+    /**
+     * Single choke point for every GET: refuse the call while a rate-limit cooldown is open,
+     * then read the response's remaining-budget headers (and open a cooldown if we're near the
+     * hourly/monthly quota) BEFORE surfacing any HTTP error to the caller.
+     */
+    private function fetch(string $path, array $query = []): array
+    {
+        FicRateGuard::guard();
+        $response = $this->request()->get($path, $query);
+        FicRateGuard::record($response);
+
+        return $response->throw()->json() ?? [];
     }
 
     /** GET /user/info — cheapest call to verify the token works. */
     public function userInfo(): array
     {
-        return $this->request()->get('/user/info')->throw()->json() ?? [];
+        return $this->fetch('/user/info');
     }
 
     /** GET /user/companies — the companies the token can access. */
     public function companies(): array
     {
-        return $this->request()->get('/user/companies')->throw()->json() ?? [];
+        return $this->fetch('/user/companies');
     }
 
     /**
@@ -66,29 +84,29 @@ class FicClient
      */
     public function issuedDocuments(string $type = 'invoice', int $page = 1, int $perPage = 50): array
     {
-        return $this->request()->get("/c/{$this->companyId}/issued_documents", [
+        return $this->fetch("/c/{$this->companyId}/issued_documents", [
             'type' => $type,
             'fieldset' => 'detailed',
             'page' => $page,
             'per_page' => $perPage,
-        ])->throw()->json() ?? [];
+        ]);
     }
 
     /** GET /c/{company}/received_documents — purchase documents (supplier invoices). */
     public function receivedDocuments(string $type = 'expense', int $page = 1, int $perPage = 50): array
     {
-        return $this->request()->get("/c/{$this->companyId}/received_documents", [
+        return $this->fetch("/c/{$this->companyId}/received_documents", [
             'type' => $type,
             'fieldset' => 'detailed',
             'page' => $page,
             'per_page' => $perPage,
-        ])->throw()->json() ?? [];
+        ]);
     }
 
     /** GET /c/{company}/info/payment_accounts — bank/cash accounts. */
     public function paymentAccounts(): array
     {
-        return $this->request()->get("/c/{$this->companyId}/info/payment_accounts")->throw()->json() ?? [];
+        return $this->fetch("/c/{$this->companyId}/info/payment_accounts");
     }
 
     /**
@@ -97,11 +115,11 @@ class FicClient
      */
     public function cashbook(string $dateFrom, string $dateTo, int $page = 1, int $perPage = 100): array
     {
-        return $this->request()->get("/c/{$this->companyId}/cashbook", [
+        return $this->fetch("/c/{$this->companyId}/cashbook", [
             'date_from' => $dateFrom,
             'date_to' => $dateTo,
             'page' => $page,
             'per_page' => $perPage,
-        ])->throw()->json() ?? [];
+        ]);
     }
 }
