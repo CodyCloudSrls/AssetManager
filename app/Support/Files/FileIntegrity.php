@@ -13,7 +13,25 @@ class FileIntegrity
     public static function metadataForStoredFile(string $storagePath, ?UploadedFile $sourceFile = null): array
     {
         try {
-            $contents = Storage::get($storagePath);
+            // Hash the STORED file by streaming it in constant memory (hash_update_stream reads
+            // in chunks) instead of Storage::get() loading the whole file into a PHP string and
+            // hashing it in one shot. Same bytes -> identical sha256 (hash parity preserved), so
+            // previously recorded hashes still verify. Hashing the stored file (not the source)
+            // also stays correct when the stored bytes differ from the upload (e.g. sanitized SVG).
+            $stream = Storage::readStream($storagePath);
+            if (! is_resource($stream)) {
+                throw new \RuntimeException('unable to open stored file for hashing: '.$storagePath);
+            }
+
+            $context = hash_init('sha256');
+            try {
+                hash_update_stream($context, $stream);
+            } finally {
+                fclose($stream);
+            }
+
+            $sha256 = hash_final($context);
+            $size = Storage::size($storagePath);
         } catch (Throwable $exception) {
             return [
                 'integrity' => [
@@ -32,8 +50,8 @@ class FileIntegrity
             'integrity' => [
                 'status' => 'recorded',
                 'algorithm' => 'sha256',
-                'sha256' => hash('sha256', $contents),
-                'size_bytes' => strlen($contents),
+                'sha256' => $sha256,
+                'size_bytes' => $size,
                 'storage_disk' => config('filesystems.default'),
                 'storage_path' => $storagePath,
                 'original_filename' => $sourceFile?->getClientOriginalName(),

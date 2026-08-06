@@ -49,17 +49,32 @@ class UploadFileRequest extends Request
         $extension = $file->getClientOriginalExtension();
         $file_name = $name_prefix.'-'.str_random(8).'-'.str_slug(basename($file->getClientOriginalName(), '.'.$extension)).'.'.$file->guessExtension();
 
-        // Check for SVG and sanitize it
-        if ($file->getMimeType() === 'image/svg+xml') {
-            $uploaded_file = $this->handleSVG($file);
-        } else {
-            $uploaded_file = file_get_contents($file);
-        }
+        // Store at exactly $dirname.$file_name — the same key every caller rebuilds by raw
+        // concatenation to look up integrity/download, so the two can never diverge.
+        $storagePath = $dirname.$file_name;
 
         try {
-            Storage::put($dirname.$file_name, $uploaded_file);
-        } catch (\Exception $e) {
-            Log::debug($e);
+            if ($file->getMimeType() === 'image/svg+xml') {
+                // SVG must be sanitized before it is stored, so it can't be streamed as-is.
+                $stored = Storage::put($storagePath, $this->handleSVG($file));
+            } else {
+                // Stream the uploaded temp file straight to disk instead of reading the whole
+                // file into memory (file_get_contents). A large PDF no longer spikes memory or
+                // slows the request — which is what let big uploads run long enough to trip the
+                // front-tier read timeout (record saved, but the browser saw the connection drop).
+                $stream = fopen($file->getRealPath(), 'rb');
+                $stored = Storage::put($storagePath, $stream);
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            }
+
+            if ($stored === false) {
+                Log::error('File upload failed to store: '.$storagePath);
+            }
+        } catch (\Throwable $e) {
+            // Was Log::debug — a failed/partial write must be visible in production, not silent.
+            Log::error('File upload failed to store '.$storagePath.': '.$e->getMessage());
         }
 
         return $file_name;

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Customers\DestroyCustomerAction;
+use App\Http\Controllers\Concerns\PreventsDuplicateSubmit;
 use App\Http\Requests\ImageUploadRequest;
 use App\Models\Company;
 use App\Models\Customer;
@@ -12,6 +13,8 @@ use RuntimeException;
 
 class CustomersController extends Controller
 {
+    use PreventsDuplicateSubmit;
+
     public function index(): View
     {
         $this->authorize('view', Customer::class);
@@ -29,6 +32,13 @@ class CustomersController extends Controller
     public function store(ImageUploadRequest $request): RedirectResponse
     {
         $this->authorize('create', Customer::class);
+
+        // A second click of "Salva" used to create the customer on the first request, then bounce
+        // the second with a confusing "name already taken / cliente omonimo" validation error.
+        // Consume the one-time submit nonce first: the duplicate now redirects cleanly to the list.
+        if ($this->isDuplicateSubmit($request)) {
+            return redirect()->route('customers.index')->with('success', trans('admin/customers/message.create.success'));
+        }
 
         $customer = new Customer;
         $this->fillCustomer($customer, $request);

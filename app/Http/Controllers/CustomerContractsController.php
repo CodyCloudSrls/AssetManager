@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Helper;
+use App\Http\Controllers\Concerns\PreventsDuplicateSubmit;
 use App\Http\Requests\UploadFileRequest;
 use App\Models\Company;
 use App\Models\ContractCostLine;
@@ -18,12 +20,15 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class CustomerContractsController extends Controller
 {
+    use PreventsDuplicateSubmit;
+
     public function index(): View
     {
         $this->authorize('view', CustomerContract::class);
@@ -48,6 +53,12 @@ class CustomerContractsController extends Controller
     {
         $this->authorize('create', CustomerContract::class);
 
+        // Stop a double/triple click (or a bfcache re-post) from creating duplicate contracts:
+        // the one-time submit nonce is consumed atomically, so only the first POST gets through.
+        if ($this->isDuplicateSubmit($request)) {
+            return redirect()->route('contracts.index')->with('success', trans('admin/contracts/general.create_success'));
+        }
+
         // Clamp company_id to a company the caller may manage BEFORE validation, so the
         // cross-field checks (customer/document/supplier must match company_id) and the
         // persisted value all use the safe company — a forged company_id can never place
@@ -70,7 +81,6 @@ class CustomerContractsController extends Controller
 
             $this->syncSubscriptionRows($contract, $request->input('subscriptions', []));
             $this->syncTenantServices($contract, $request);
-            $this->storeUploadedFiles($request, $contract);
             $contractForAudit = $this->reloadContractForAudit($contract);
 
             CustomerContractEvent::log(
@@ -80,6 +90,12 @@ class CustomerContractsController extends Controller
                 CustomerContractEvent::snapshot($contractForAudit)
             );
         });
+
+        // Store attachments AFTER the transaction commits (mirrors DocumentsController): the slow
+        // file write + hashing must not hold the contract row lock or stretch the request out
+        // inside the transaction — that long in-transaction window is what let large uploads run
+        // past the front-tier read timeout (record saved, yet the browser saw the connection drop).
+        $this->storeUploadedFiles($request, $contract);
 
         return redirect()->route('contracts.index')->with('success', trans('admin/contracts/general.create_success'));
     }
@@ -112,6 +128,12 @@ class CustomerContractsController extends Controller
     {
         $this->authorize('update', $contract);
 
+        // A double click here re-runs the whole save and re-uploads the same attachments; the
+        // one-time nonce lets only the first POST through.
+        if ($this->isDuplicateSubmit($request)) {
+            return redirect()->route('contracts.show', $contract)->with('success', trans('admin/contracts/general.update_success'));
+        }
+
         // Clamp company_id to a company the caller may manage BEFORE validation (see store()):
         // prevents moving the contract — and its subscriptions/cost lines — into another tenant.
         $request->merge(['company_id' => Company::getIdForCurrentUser($request->input('company_id'))]);
@@ -131,7 +153,6 @@ class CustomerContractsController extends Controller
             }
             $this->syncSubscriptionRows($contract, $request->input('subscriptions', []));
             $this->syncTenantServices($contract, $request);
-            $this->storeUploadedFiles($request, $contract);
 
             $afterContract = $this->reloadContractForAudit($contract);
             [$oldValues, $newValues] = CustomerContractEvent::changes(
@@ -148,6 +169,9 @@ class CustomerContractsController extends Controller
                 );
             }
         });
+
+        // File I/O after commit — see store() (keeps the transaction short, off the file path).
+        $this->storeUploadedFiles($request, $contract);
 
         return redirect()->route('contracts.show', $contract)->with('success', trans('admin/contracts/general.update_success'));
     }
@@ -251,7 +275,7 @@ class CustomerContractsController extends Controller
             // Optional attachments uploaded directly from the contract form (validated by
             // client extension — signed .p7m sniff as octet-stream).
             'file' => 'nullable|array',
-            'file.*' => 'nullable|file|extensions:'.config('filesystems.allowed_upload_extensions_for_validator').'|max:'.\App\Helpers\Helper::file_upload_max_size(),
+            'file.*' => 'nullable|file|extensions:'.config('filesystems.allowed_upload_extensions_for_validator').'|max:'.Helper::file_upload_max_size(),
             'file_notes' => 'nullable|string|max:65535',
         ]);
 
@@ -379,8 +403,14 @@ class CustomerContractsController extends Controller
                 continue;
             }
 
-            $fileName = $uploader->handleFile($path, self::$map_file_prefix['contracts'].'-'.$contract->id, $file);
-            $contract->logUpload($fileName, $request->input('file_notes'), FileIntegrity::metadataForStoredFile($path.$fileName, $file));
+            try {
+                $fileName = $uploader->handleFile($path, self::$map_file_prefix['contracts'].'-'.$contract->id, $file);
+                $contract->logUpload($fileName, $request->input('file_notes'), FileIntegrity::metadataForStoredFile($path.$fileName, $file));
+            } catch (\Throwable $e) {
+                // Runs after commit, so a single bad attachment must not 500 the save or block the
+                // remaining files — the contract already exists and files can be re-added. Log it.
+                Log::error('Contract attachment upload failed (contract '.$contract->id.'): '.$e->getMessage());
+            }
         }
     }
 

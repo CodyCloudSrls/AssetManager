@@ -2166,6 +2166,25 @@
 
                 },
 
+                // Runs ONLY once the form has passed validation. Disable the submit control(s) and
+                // show a spinner so a second/third click can't fire another full multipart POST —
+                // that double-submit created duplicate contracts/customers and re-uploaded the PDF
+                // N times. A validation failure never reaches here, so the button stays enabled for
+                // the user to correct.
+                submitHandler: function (form) {
+                    var $primary = $(form).find('#submit_button');
+                    if ($primary.length && $primary.data('cc-label') === undefined) {
+                        $primary.data('cc-label', $primary.html());
+                        $primary.html('<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ' + $primary.text().trim());
+                    }
+                    $(form).find('button[type=submit], input[type=submit]').prop('disabled', true).addClass('disabled');
+                    // Call the REAL submit() via the prototype: some edit forms have a control
+                    // named "submit" (edit-form top button) which would otherwise shadow the method
+                    // and make form.submit() throw. This native submit bypasses this handler (no
+                    // loop) and drops only the submit button's name — no controller reads that.
+                    HTMLFormElement.prototype.submit.call(form);
+                },
+
             });
 
             $.extend($.validator.messages, {
@@ -2307,6 +2326,32 @@
                     $('#submit_button').prop('disabled', true);
                     this.submit();
                 });
+            });
+
+            // The create/edit submitHandler (jQuery-validate, above) disables the Save button on
+            // submit. If the user saves and then hits Back, the browser can restore that page from
+            // the back/forward cache with the button still disabled — re-enable it here so the form
+            // is usable again. (Also covers the checkout button above.)
+            $(window).on('pageshow', function (e) {
+                if (e.originalEvent && e.originalEvent.persisted) {
+                    var $primary = $('#submit_button');
+                    if ($primary.data('cc-label') !== undefined) {
+                        $primary.html($primary.data('cc-label')).removeData('cc-label');
+                    }
+                    $('#create-form, #checkout_form').find('button[type=submit], input[type=submit]')
+                        .prop('disabled', false).removeClass('disabled');
+                    // The restored DOM still carries the ALREADY-CONSUMED one-time nonce; without a
+                    // fresh one, a deliberate re-edit-and-save of this bfcache page would be rejected
+                    // server-side as a duplicate and silently dropped. Mint a new nonce so a genuine
+                    // resubmit goes through (true same-page double-clicks still share one nonce).
+                    var $nonce = $('#create-form input[name="_submit_nonce"]');
+                    if ($nonce.length) {
+                        var fresh = (window.crypto && crypto.randomUUID)
+                            ? crypto.randomUUID()
+                            : ('r-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+                        $nonce.val(fresh);
+                    }
+                }
             });
 
             // Select encrypted custom fields to hide them in the asset list

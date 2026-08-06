@@ -58,6 +58,10 @@
 
                     <!-- CSRF Token -->
                     {{ csrf_field() }}
+                    {{-- One-time submit nonce (fresh on every render, never from old()): lets the
+                         server reject a double/triple-clicked or bfcache re-post. See
+                         App\Http\Controllers\Concerns\PreventsDuplicateSubmit. --}}
+                    <input type="hidden" name="_submit_nonce" value="{{ \Illuminate\Support\Str::uuid() }}">
                     @yield('inputFields')
                         <x-redirect_submit_options
                                 :index_route="$index_route ?? null"
