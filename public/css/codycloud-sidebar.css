@@ -46,17 +46,30 @@
     vertical-align: middle;
 }
 
-/* ── 2) Collapsed rail flyout: let the parent title size to its content so it is
-        no longer truncated. ──────────────────────────────────────────────── */
+/* ── 2) Collapsed rail flyout: header (titolo) e corpo (sotto-voci) come UN pannello unico.
+        - STESSA larghezza fissa su entrambi: con `min-width` il corpo poteva crescere oltre il
+          titolo quando una sotto-voce era lunga, dando "due blocchi di dimensioni diverse".
+        - Una linea di chiusura sotto il titolo (separatore col corpo).
+        - Voce SENZA sotto-voci (leaf): niente linea penzolante, angolo in basso arrotondato →
+          il titolo diventa un blocco chiuso, non più "strano da guardare". ─────────────────── */
 .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > a > span {
-    width: auto !important;
-    min-width: 220px;
+    width: 220px !important;
     box-sizing: border-box;
     white-space: nowrap !important;
-    overflow: visible !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
 }
 .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
+    width: 220px !important;
     min-width: 220px;
+    box-sizing: border-box;
+}
+/* leaf (nessuna sotto-voce): il separatore non serve e starebbe appeso in fondo -> togli la
+   linea e chiudi con l'angolo arrotondato (AdminLTE dà già border-bottom-right-radius sui leaf). */
+.sidebar-mini.sidebar-collapse .sidebar-menu > li:not(.treeview):hover > a > span {
+    border-bottom: 0;
+    border-bottom-right-radius: 4px;
 }
 
 /* ── 3) Collapsed rail: show the section headers (abbreviated, wrapped) so the
@@ -132,6 +145,15 @@
     color: rgba(255, 255, 255, 0.28) !important;
 }
 .cc-overview-card .small-box-footer { pointer-events: none; }
+
+/* Griglia panoramica: card di ALTEZZA UGUALE così la griglia (float di Bootstrap 3) non si
+   disallinea quando il nome di una categoria va a due righe (una card più alta faceva
+   "agganciare" il float e sballava tutte le righe sotto). flex-wrap mantiene le larghezze
+   responsive dei col (25% lg / 50% sm / 100% xs); il col diventa flex così l'unica card figlia
+   si stira all'altezza della riga (align-items:stretch di default). */
+.cc-overview-grid { display: flex; flex-wrap: wrap; }
+.cc-overview-grid > [class*="col-"] { display: flex; }
+.cc-overview-grid .cc-overview-card { width: 100%; }
 
 /* ── 6) SHELL FISSA — header e sidebar ancorati, scorre solo il contenuto. ─────────────
         Deliberatamente NON si usa la classe `fixed` di AdminLTE: il suo JS la legge e fa due

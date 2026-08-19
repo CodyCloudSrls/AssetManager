@@ -1112,8 +1112,13 @@ class Asset extends Depreciable
     }
 
     /**
-     * Live assets whose renewal/expiry is already due or falls within $days (domains, IPs,
-     * certificates, monitoring). Used by the renewal banner and the tenant email digest.
+     * Live assets whose renewal/expiry is already due or falls within $days AND that need a
+     * MANUAL action (domains, IPs, certificates, monitoring). Used by the renewal banner, the
+     * "Vedi i beni da rinnovare" list and the tenant email digest.
+     *
+     * Assets flagged `auto_renewal` are EXCLUDED: they renew by themselves, so surfacing them in
+     * a "to renew" alert wrongly implies an action the user does not need to take (Francesca's
+     * report). NULL/false auto_renewal still counts (no auto-renew known -> may need action).
      */
     public function scopeExpiringRenewal(Builder $query, int $days = 30): Builder
     {
@@ -1124,7 +1129,11 @@ class Asset extends Depreciable
         return $query->NotArchived()
             ->whereNull('assets.deleted_at')
             ->whereNotNull('assets.renewal_date')
-            ->where('assets.renewal_date', '<=', Carbon::now()->addDays($days)->endOfDay());
+            ->where('assets.renewal_date', '<=', Carbon::now()->addDays($days)->endOfDay())
+            ->where(function (Builder $q) {
+                // exclude auto_renewal = true; keep false/NULL (SQL: `<> 1` alone would drop NULLs).
+                $q->where('assets.auto_renewal', false)->orWhereNull('assets.auto_renewal');
+            });
     }
 
     public static function getExpiringWarrantyOrEol($days = 30)

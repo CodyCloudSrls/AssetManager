@@ -30,7 +30,7 @@
 
     {{-- ─────────── Categorie ─────────── --}}
     <h3 style="margin:6px 4px 10px;">{{ trans('general.categories') }}</h3>
-    <div class="row">
+    <div class="row cc-overview-grid">
         @forelse ($categories as $i => $cat)
             <div class="col-lg-3 col-sm-6 col-xs-12">
                 <a href="{{ route('hardware.index', ['category_id' => $cat->id]) }}" class="small-box cc-overview-card {{ $ccColors[$i % count($ccColors)] }}">
@@ -54,7 +54,7 @@
         <hr>
         <h3 style="margin:6px 4px 10px;">{{ trans('admin/hardware/general.overview_fields') }}</h3>
         <p class="help-block" style="margin:0 4px 10px;">{{ trans('admin/hardware/general.overview_fields_help') }}</p>
-        <div class="row">
+        <div class="row cc-overview-grid">
             @foreach ($fieldsets as $i => $row)
                 <div class="col-lg-3 col-sm-6 col-xs-12">
                     <a href="{{ route('hardware.index', ['fieldset_id' => $row->fieldset->id]) }}" class="small-box cc-overview-card {{ $ccColors[($i + 3) % count($ccColors)] }}">
