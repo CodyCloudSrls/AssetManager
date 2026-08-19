@@ -22,12 +22,6 @@ class BilancioPdfExtractor
         return $this->parse($text);
     }
 
-    /** True when the PDF yields usable text (so the UI can warn on scanned/empty PDFs). */
-    public function hasText(string $absolutePath): bool
-    {
-        return trim($this->extractText($absolutePath)) !== '';
-    }
-
     /**
      * Parse already-extracted plain text into the Conto Economico figures (the core logic,
      * independent of Ghostscript/PDF — used directly in tests).

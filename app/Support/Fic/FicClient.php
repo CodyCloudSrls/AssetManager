@@ -104,11 +104,6 @@ class FicClient
     }
 
     /** GET /c/{company}/info/payment_accounts — bank/cash accounts. */
-    public function paymentAccounts(): array
-    {
-        return $this->fetch("/c/{$this->companyId}/info/payment_accounts");
-    }
-
     /**
      * GET /c/{company}/cashbook — prima nota movements in a date range. Summing in/out
      * per account all-time gives the real bank/cash balances (conti correnti).

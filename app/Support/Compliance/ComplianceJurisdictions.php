@@ -5,6 +5,7 @@ namespace App\Support\Compliance;
 class ComplianceJurisdictions
 {
     public const EU = 'EU';
+
     public const IT = 'IT';
 
     public static function values(): array
@@ -45,12 +46,5 @@ class ComplianceJurisdictions
                 return [$jurisdiction => $countryName.' - '.$statusLabel];
             })
             ->all();
-    }
-
-    public static function nis2OverlayStatus(?string $jurisdiction): string
-    {
-        $jurisdiction = self::normalize($jurisdiction);
-
-        return config("compliance_frameworks.nis2_country_overlays.{$jurisdiction}.status", 'review_required');
     }
 }

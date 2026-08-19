@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Models\Traits\Searchable;
 use App\Models\Traits\TenantTemplateTrait;
 use App\Presenters\Presentable;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Gate;
@@ -361,13 +360,6 @@ class DocumentFramework extends SnipeModel
     public function setComplianceObjectiveAttribute($value)
     {
         $this->attributes['compliance_objective'] = ($value === '' ? null : $value);
-    }
-
-    public function isCurrent(): bool
-    {
-        return $this->status === 'active'
-            && ($this->effective_from === null || $this->effective_from->lte(Carbon::today()))
-            && ($this->effective_to === null || $this->effective_to->gte(Carbon::today()));
     }
 
     public function isSystemTemplate(): bool

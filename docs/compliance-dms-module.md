@@ -95,7 +95,7 @@ A **framework** is a compliance/regulatory reference (NIS2 Allegato 1/2, ISO 270
 | `compliance_domain` | Soft FK (string key) into `compliance_domains.key` — e.g. `nis2`, `gdpr`, `iso27001` (see `complianceDomain()` relation below). |
 | `jurisdiction`, `version`, `authority_name`, `framework_code`, `external_reference_url`, `compliance_objective`, `description` | Descriptive metadata. Empty-string setters coerce to `null` (`:341-364`). |
 | `status` | Enum `draft/active/superseded/archived` (rule `:42`; `getStatusOptions :170-178`). |
-| `effective_from` / `effective_to` | Validity window (`date` casts). `isCurrent()` = status `active` **and** today within window (`:366-371`). |
+| `effective_from` / `effective_to` | Validity window (`date` casts) — the active period of the framework. |
 | `review_cadence_months`, `last_reviewed_at` | Periodic-review cadence. `review_due_at` accessor = `(last_reviewed_at ?? created_at) + cadence` (`:286-295`); `reviewDueWithin($days)` (`:311-316`). |
 | `is_active`, `sort_order` | List/ordering flags. `scopeActive :260-263`, `scopeOrdered :265-268`. |
 | `company_id` | `NULL` ⇒ global template; set ⇒ owned by that company. Cast `integer`. |
